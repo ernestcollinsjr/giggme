@@ -222,7 +222,7 @@ const Setlist = () => {
                             {song.audio_url && (song.audio_url.includes('youtube.com') || song.audio_url.includes('youtu.be')) && (
                               <div className="space-y-1">
                                 <a
-                                  href={song.audio_url!}
+                                  href={`/open?to=${encodeURIComponent(song.audio_url!)}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-xs text-primary hover:underline break-all inline-block"
@@ -233,7 +233,7 @@ const Setlist = () => {
                                 <div className="flex items-center gap-2">
                                   <Button asChild variant="ghost" size="sm">
                                     <a
-                                      href={song.audio_url!}
+                                      href={`/open?to=${encodeURIComponent(song.audio_url!)}`}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       onClick={(e) => e.stopPropagation()}

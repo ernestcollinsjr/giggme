@@ -12,6 +12,7 @@ import Bookings from "./pages/Bookings";
 import Rehearsals from "./pages/Rehearsals";
 import Setlist from "./pages/Setlist";
 import NotFound from "./pages/NotFound";
+import OpenExternal from "./pages/OpenExternal";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/bookings" element={<Bookings />} />
           <Route path="/rehearsals" element={<Rehearsals />} />
           <Route path="/setlist" element={<Setlist />} />
+          <Route path="/open" element={<OpenExternal />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

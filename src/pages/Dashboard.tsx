@@ -37,6 +37,19 @@ interface Gig {
   user_id: string;
 }
 
+interface GigInvite {
+  id: string;
+  gig_id: string;
+  member_id: string;
+  status: string;
+  gigs: {
+    id: string;
+    date: string;
+    venue: string;
+    notes: string | null;
+  };
+}
+
 type UserRole = "band_leader" | "band_member" | "booking_manager";
 
 const Dashboard = () => {
@@ -48,6 +61,7 @@ const Dashboard = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [rehearsals, setRehearsals] = useState<Rehearsal[]>([]);
   const [gigs, setGigs] = useState<Gig[]>([]);
+  const [gigInvites, setGigInvites] = useState<GigInvite[]>([]);
   const [loading, setLoading] = useState(true);
 
   const checkAuth = async () => {
@@ -94,6 +108,29 @@ const Dashboard = () => {
           .order("date", { ascending: true });
         
         setGigs(gigData || []);
+      }
+      
+      // Fetch pending gig invites for band members only
+      if (roleData.role === "band_member") {
+        const { data: inviteData } = await supabase
+          .from("gig_members")
+          .select(`
+            id,
+            gig_id,
+            member_id,
+            status,
+            gigs (
+              id,
+              date,
+              venue,
+              notes
+            )
+          `)
+          .eq("member_id", user.id)
+          .eq("status", "pending")
+          .order("created_at", { ascending: false });
+        
+        setGigInvites(inviteData || []);
       }
       
       // Booking managers see bands (leaders and members)
@@ -190,6 +227,31 @@ const Dashboard = () => {
     );
   };
 
+  const handleInviteResponse = async (inviteId: string, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from("gig_members")
+        .update({ status: newStatus })
+        .eq("id", inviteId);
+
+      if (error) throw error;
+
+      toast({
+        title: newStatus === "accepted" ? "Invite accepted!" : "Invite declined",
+        description: `You have ${newStatus} the gig invite.`,
+      });
+
+      // Refresh invites
+      setGigInvites(gigInvites.filter(invite => invite.id !== inviteId));
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Action failed",
+        description: error.message,
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -233,9 +295,66 @@ const Dashboard = () => {
           </div>
         </div>
 
+        {userRole === "band_member" && gigInvites.length > 0 && (
+          <Card className="border-border/50 shadow-lg bg-gradient-to-br from-primary/5 to-accent/5">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Music className="h-5 w-5 text-primary" />
+                Gig Invites
+              </CardTitle>
+              <CardDescription>
+                You have {gigInvites.length} pending gig {gigInvites.length === 1 ? 'invite' : 'invites'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {gigInvites.map((invite) => (
+                  <div key={invite.id} className="p-4 border rounded-lg bg-background">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                          <Calendar className="h-4 w-4" />
+                          {new Date(invite.gigs.date).toLocaleDateString('en-US', { 
+                            weekday: 'short', 
+                            year: 'numeric', 
+                            month: 'short', 
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </div>
+                        <h4 className="font-semibold">{invite.gigs.venue}</h4>
+                        {invite.gigs.notes && (
+                          <p className="text-sm text-muted-foreground mt-1">{invite.gigs.notes}</p>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          onClick={() => handleInviteResponse(invite.id, "accepted")}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          Accept
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="destructive"
+                          onClick={() => handleInviteResponse(invite.id, "declined")}
+                        >
+                          Decline
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {(userRole === "band_leader" || userRole === "band_member") && (
           <>
-            <Card 
+            <Card
               className="border-border/50 shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
               onClick={() => navigate("/rehearsals")}
             >

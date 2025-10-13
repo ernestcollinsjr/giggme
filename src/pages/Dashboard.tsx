@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Music, Briefcase, MapPin, Calendar, Crown, LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
+import RoleSwitcher from "@/components/RoleSwitcher";
 
 interface Profile {
   id: string;
@@ -29,73 +30,73 @@ const Dashboard = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+  const checkAuth = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    
+    setUser(user);
+    
+    // Fetch user profile
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+    
+    // Fetch user role
+    const { data: roleData } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .single();
+    
+    if (profileData && roleData) {
+      setProfile(profileData);
+      setUserRole(roleData.role as UserRole);
       
-      if (!user) {
-        navigate("/auth");
-        return;
-      }
-      
-      setUser(user);
-      
-      // Fetch user profile
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-      
-      // Fetch user role
-      const { data: roleData } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .single();
-      
-      if (profileData && roleData) {
-        setProfile(profileData);
-        setUserRole(roleData.role as UserRole);
+      // Booking managers see bands (leaders and members)
+      // Band members/leaders see booking managers
+      if (roleData.role === "booking_manager") {
+        const { data: bandLeaders } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .in("role", ["band_leader", "band_member"]);
         
-        // Booking managers see bands (leaders and members)
-        // Band members/leaders see booking managers
-        if (roleData.role === "booking_manager") {
-          const { data: bandLeaders } = await supabase
-            .from("user_roles")
-            .select("user_id")
-            .in("role", ["band_leader", "band_member"]);
+        if (bandLeaders && bandLeaders.length > 0) {
+          const userIds = bandLeaders.map(r => r.user_id);
+          const { data: bandProfiles } = await supabase
+            .from("profiles")
+            .select("*")
+            .in("id", userIds);
           
-          if (bandLeaders && bandLeaders.length > 0) {
-            const userIds = bandLeaders.map(r => r.user_id);
-            const { data: bandProfiles } = await supabase
-              .from("profiles")
-              .select("*")
-              .in("id", userIds);
-            
-            setProfiles(bandProfiles || []);
-          }
-        } else {
-          const { data: managers } = await supabase
-            .from("user_roles")
-            .select("user_id")
-            .eq("role", "booking_manager");
+          setProfiles(bandProfiles || []);
+        }
+      } else {
+        const { data: managers } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .eq("role", "booking_manager");
+        
+        if (managers && managers.length > 0) {
+          const userIds = managers.map(r => r.user_id);
+          const { data: managerProfiles } = await supabase
+            .from("profiles")
+            .select("*")
+            .in("id", userIds);
           
-          if (managers && managers.length > 0) {
-            const userIds = managers.map(r => r.user_id);
-            const { data: managerProfiles } = await supabase
-              .from("profiles")
-              .select("*")
-              .in("id", userIds);
-            
-            setProfiles(managerProfiles || []);
-          }
+          setProfiles(managerProfiles || []);
         }
       }
-      
-      setLoading(false);
-    };
+    }
     
+    setLoading(false);
+  };
+
+  useEffect(() => {
     checkAuth();
 
     const { data: subscription } = supabase.auth.onAuthStateChange((event, session) => {
@@ -200,6 +201,8 @@ const Dashboard = () => {
             </Button>
           </div>
         </div>
+
+        <RoleSwitcher currentRole={userRole} onRoleChange={checkAuth} />
 
         {(userRole === "band_leader" || userRole === "band_member") && (
           <Card className="border-border/50 shadow-lg">

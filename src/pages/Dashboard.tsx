@@ -213,7 +213,14 @@ const Dashboard = () => {
               <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                 Welcome, {profile?.name}
               </h1>
-              <p className="text-muted-foreground mt-1">
+              <Badge variant="secondary" className="mt-2">
+                {userRole === "booking_manager" 
+                  ? "Booking Manager" 
+                  : userRole === "band_leader"
+                  ? "Band Leader"
+                  : "Band Member"}
+              </Badge>
+              <p className="text-muted-foreground mt-2">
                 {userRole === "booking_manager" 
                   ? "Find bands and manage your roster" 
                   : userRole === "band_leader"

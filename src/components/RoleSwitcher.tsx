@@ -28,11 +28,18 @@ const RoleSwitcher = ({ currentRole, onRoleChange }: RoleSwitcherProps) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Update the role in user_roles table
+      // Delete existing role and insert new one
+      await supabase
+        .from("user_roles")
+        .delete()
+        .eq("user_id", user.id);
+
       const { error } = await supabase
         .from("user_roles")
-        .update({ role: newRole })
-        .eq("user_id", user.id);
+        .insert({ 
+          user_id: user.id,
+          role: newRole 
+        });
 
       if (error) throw error;
 

@@ -220,13 +220,6 @@ const Dashboard = () => {
                   ? "Band Leader"
                   : "Band Member"}
               </Badge>
-              <p className="text-muted-foreground mt-2">
-                {userRole === "booking_manager" 
-                  ? "Find bands and manage your roster" 
-                  : userRole === "band_leader"
-                  ? "Lead your band and connect with booking managers"
-                  : "Share your location and connect with managers"}
-              </p>
             </div>
           </div>
           <div className="flex gap-2">

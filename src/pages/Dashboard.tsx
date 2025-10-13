@@ -96,7 +96,6 @@ const Dashboard = () => {
       }
       
       // Booking managers see bands (leaders and members)
-      // Band members/leaders see booking managers
       if (roleData.role === "booking_manager") {
         const { data: bandLeaders } = await supabase
           .from("user_roles")
@@ -111,21 +110,6 @@ const Dashboard = () => {
             .in("id", userIds);
           
           setProfiles(bandProfiles || []);
-        }
-      } else {
-        const { data: managers } = await supabase
-          .from("user_roles")
-          .select("user_id")
-          .eq("role", "booking_manager");
-        
-        if (managers && managers.length > 0) {
-          const userIds = managers.map(r => r.user_id);
-          const { data: managerProfiles } = await supabase
-            .from("profiles")
-            .select("*")
-            .in("id", userIds);
-          
-          setProfiles(managerProfiles || []);
         }
       }
     }
@@ -373,57 +357,57 @@ const Dashboard = () => {
           </>
         )}
 
-        <Card className="border-border/50 shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              {userRole === "booking_manager" ? <Music className="h-5 w-5" /> : <Briefcase className="h-5 w-5" />}
-              {userRole === "booking_manager" ? "Available Bands" : "Booking Managers"}
-            </CardTitle>
-            <CardDescription>
-              {userRole === "booking_manager"
-                ? "Browse bands and start building your roster"
-                : "Connect with booking managers for your next gig"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4">
-              {profiles.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
-                  No {userRole === "booking_manager" ? "bands" : "booking managers"} available yet
-                </p>
-              ) : (
-                profiles.map((p) => (
-                  <Card key={p.id} className="border-border/50">
-                    <CardContent className="pt-6">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-lg">{p.name}</h3>
-                          {p.instrument && (
-                            <Badge variant="secondary" className="mt-2">
-                              {p.instrument}
-                            </Badge>
-                          )}
-                          <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                            {p.bio}
-                          </p>
-                          {p.location_lat && p.location_lng && (
-                            <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
-                              <MapPin className="h-3 w-3" />
-                              <span>Location shared</span>
-                            </div>
-                          )}
+        {userRole === "booking_manager" && (
+          <Card className="border-border/50 shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Music className="h-5 w-5" />
+                Available Bands
+              </CardTitle>
+              <CardDescription>
+                Browse bands and start building your roster
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4">
+                {profiles.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">
+                    No bands available yet
+                  </p>
+                ) : (
+                  profiles.map((p) => (
+                    <Card key={p.id} className="border-border/50">
+                      <CardContent className="pt-6">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-lg">{p.name}</h3>
+                            {p.instrument && (
+                              <Badge variant="secondary" className="mt-2">
+                                {p.instrument}
+                              </Badge>
+                            )}
+                            <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                              {p.bio}
+                            </p>
+                            {p.location_lat && p.location_lng && (
+                              <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
+                                <MapPin className="h-3 w-3" />
+                                <span>Location shared</span>
+                              </div>
+                            )}
+                          </div>
+                          <Button size="sm" className="ml-4">
+                            Contact
+                          </Button>
                         </div>
-                        <Button size="sm" className="ml-4">
-                          Contact
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <Card className="border-border/50 shadow-lg bg-gradient-to-br from-primary/5 to-secondary/5">
           <CardContent className="pt-6">

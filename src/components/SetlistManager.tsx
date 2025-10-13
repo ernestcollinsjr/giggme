@@ -290,7 +290,7 @@ export const SetlistManager = () => {
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="title">Title</Label>
+                <Label htmlFor="title">Setlist for Gig below</Label>
                 <Input
                   id="title"
                   value={newSetlistTitle}

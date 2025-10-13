@@ -10,6 +10,7 @@ import { Music, Plus, Trash2, Upload, Link as LinkIcon, ChevronUp, ChevronDown }
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import YouTubePlayer from "@/components/YouTubePlayer";
 
 interface Song {
   id: string;
@@ -40,6 +41,8 @@ export const SetlistManager = () => {
   const [youtubeLink, setYoutubeLink] = useState("");
   const [selectedSet, setSelectedSet] = useState(1);
   const [uploading, setUploading] = useState(false);
+  const [ytOpen, setYtOpen] = useState(false);
+  const [ytUrl, setYtUrl] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSetlists();
@@ -604,18 +607,16 @@ export const SetlistManager = () => {
                                       {song.audio_url}
                                     </a>
                                     <div className="flex items-center gap-2">
-                                      <Button asChild
+                                      <Button
                                         variant="ghost"
                                         size="sm"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setYtUrl(song.audio_url);
+                                          setYtOpen(true);
+                                        }}
                                       >
-                                        <a
-                                          href={`/open?to=${encodeURIComponent(song.audio_url)}`}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          onClick={(e) => e.stopPropagation()}
-                                        >
-                                          Open
-                                        </a>
+                                        Watch
                                       </Button>
                                       <Button
                                         variant="ghost"

@@ -7,6 +7,7 @@ import { Music, ArrowLeft, Play, Pause } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
 import { SetlistManager } from "@/components/SetlistManager";
+import YouTubePlayer from "@/components/YouTubePlayer";
 
 interface SetlistSong {
   id: string;
@@ -33,6 +34,8 @@ const Setlist = () => {
   const [playingAudio, setPlayingAudio] = useState<HTMLAudioElement | null>(null);
   const [playingSongId, setPlayingSongId] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [ytOpen, setYtOpen] = useState(false);
+  const [ytUrl, setYtUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -240,16 +243,17 @@ const Setlist = () => {
                                         {song.audio_url}
                                       </a>
                                       <div className="flex items-center gap-2">
-                                        <Button asChild variant="ghost" size="sm">
-                                          <a
-                                            href={`/open?to=${encodeURIComponent(song.audio_url!)}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            onClick={(e) => e.stopPropagation()}
-                                          >
-                                            Open
-                                          </a>
-                                        </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setYtUrl(song.audio_url!);
+                                      setYtOpen(true);
+                                    }}
+                                  >
+                                    Watch
+                                  </Button>
                                         <Button
                                           variant="ghost"
                                           size="sm"
@@ -297,6 +301,14 @@ const Setlist = () => {
           </>
         )}
       </div>
+      <YouTubePlayer
+        url={ytUrl || ""}
+        open={ytOpen}
+        onOpenChange={(o) => {
+          setYtOpen(o);
+          if (!o) setYtUrl(null);
+        }}
+      />
 
       <BottomNav />
     </div>

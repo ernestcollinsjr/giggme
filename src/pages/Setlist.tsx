@@ -220,15 +220,47 @@ const Setlist = () => {
                               <p className="text-sm text-foreground">{song.artist}</p>
                             )}
                             {song.audio_url && (song.audio_url.includes('youtube.com') || song.audio_url.includes('youtu.be')) && (
-                              <a 
-                                href={encodeURI(song.audio_url)} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-xs text-primary hover:underline break-all inline-block"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                {song.audio_url}
-                              </a>
+                              <div className="space-y-1">
+                                <a 
+                                  href={encodeURI(song.audio_url)} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-primary hover:underline break-all inline-block"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  {song.audio_url}
+                                </a>
+                                <div className="flex items-center gap-2">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const w = window.open(song.audio_url!, '_blank', 'noopener,noreferrer');
+                                      if (!w) {
+                                        window.location.href = song.audio_url!;
+                                      }
+                                    }}
+                                  >
+                                    Open
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={async (e) => {
+                                      e.stopPropagation();
+                                      try {
+                                        await navigator.clipboard.writeText(song.audio_url!);
+                                        toast({ title: 'Link copied', description: 'YouTube URL copied to clipboard' });
+                                      } catch {
+                                        toast({ variant: 'destructive', title: 'Copy failed', description: 'Unable to copy link' });
+                                      }
+                                    }}
+                                  >
+                                    Copy link
+                                  </Button>
+                                </div>
+                              </div>
                             )}
                           </div>
                         </div>

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Music, ArrowLeft, Play, Pause } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
+import { SetlistManager } from "@/components/SetlistManager";
 
 interface SetlistSong {
   id: string;
@@ -30,6 +31,7 @@ const Setlist = () => {
   const [loading, setLoading] = useState(true);
   const [playingAudio, setPlayingAudio] = useState<HTMLAudioElement | null>(null);
   const [playingSongId, setPlayingSongId] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -38,6 +40,17 @@ const Setlist = () => {
       if (!user) {
         navigate("/auth");
         return;
+      }
+
+      // Fetch user role
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .single();
+
+      if (roleData) {
+        setUserRole(roleData.role);
       }
       
       fetchSetlists();
@@ -147,24 +160,34 @@ const Setlist = () => {
               Setlists
             </h1>
             <p className="text-muted-foreground mt-1">
-              View and play songs from your band's setlists
+              {userRole === "band_leader" 
+                ? "Manage and upload setlists for your band" 
+                : "View and play songs from your band's setlists"}
             </p>
           </div>
         </div>
 
-        {setlists.length === 0 ? (
+        {userRole === "band_leader" ? (
           <Card className="border-border/50 shadow-lg">
             <CardContent className="pt-6">
-              <div className="text-center py-12">
-                <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">
-                  No setlists available yet. Your band leader will upload them soon!
-                </p>
-              </div>
+              <SetlistManager />
             </CardContent>
           </Card>
         ) : (
-          setlists.map((setlist) => (
+          <>
+            {setlists.length === 0 ? (
+              <Card className="border-border/50 shadow-lg">
+                <CardContent className="pt-6">
+                  <div className="text-center py-12">
+                    <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">
+                      No setlists available yet. Your band leader will upload them soon!
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              setlists.map((setlist) => (
             <Card key={setlist.id} className="border-border/50 shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -218,6 +241,8 @@ const Setlist = () => {
               </CardContent>
             </Card>
           ))
+        )}
+          </>
         )}
       </div>
 

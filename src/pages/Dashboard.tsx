@@ -227,8 +227,9 @@ const Dashboard = () => {
             <Button variant="outline" onClick={() => navigate("/profile-setup")}>
               Edit Profile
             </Button>
-            <Button variant="ghost" size="icon" onClick={handleLogout}>
-              <LogOut className="h-5 w-5" />
+            <Button variant="destructive" onClick={handleLogout} className="gap-2">
+              <LogOut className="h-4 w-4" />
+              Logout
             </Button>
           </div>
         </div>

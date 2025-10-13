@@ -9,6 +9,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Music, Briefcase, MapPin, Calendar, Crown, LogOut, ListMusic } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
+import { SetlistManager } from "@/components/SetlistManager";
 
 interface Profile {
   id: string;
@@ -491,6 +492,14 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           </>
+        )}
+
+        {userRole === "band_leader" && (
+          <Card className="border-border/50 shadow-lg">
+            <CardContent className="pt-6">
+              <SetlistManager />
+            </CardContent>
+          </Card>
         )}
 
         {userRole === "booking_manager" && (

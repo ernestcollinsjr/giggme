@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "@supabase/supabase-js";
-import { LogOut } from "lucide-react";
+import { LogOut, Crown, Music, Briefcase } from "lucide-react";
 
 const ProfileSetup = () => {
   const navigate = useNavigate();
@@ -17,6 +17,7 @@ const ProfileSetup = () => {
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<string>("");
+  const [hasRole, setHasRole] = useState(false);
   
   const [bio, setBio] = useState("");
   const [instrument, setInstrument] = useState("");
@@ -55,6 +56,7 @@ const ProfileSetup = () => {
         
         if (roleData) {
           setRole(roleData.role);
+          setHasRole(true);
         }
       }
     };
@@ -115,6 +117,38 @@ const ProfileSetup = () => {
     }
   };
 
+  const handleRoleSelection = async (selectedRole: string) => {
+    setLoading(true);
+    try {
+      if (!user) throw new Error("No user found");
+
+      const { error } = await supabase
+        .from("user_roles")
+        .insert([{ 
+          user_id: user.id,
+          role: selectedRole as any
+        }]);
+
+      if (error) throw error;
+
+      setRole(selectedRole);
+      setHasRole(true);
+
+      toast({
+        title: "Role selected!",
+        description: "Now complete your profile to get started.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Role selection failed",
+        description: error.message,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -156,6 +190,79 @@ const ProfileSetup = () => {
       setLoading(false);
     }
   };
+
+  // Show role selection if user hasn't selected a role yet
+  if (!hasRole) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-primary/10">
+        <Card className="w-full max-w-4xl border-border/50 shadow-xl">
+          <CardHeader>
+            <div className="flex items-start justify-between">
+              <div>
+                <CardTitle className="text-2xl">Choose Your Role</CardTitle>
+                <CardDescription>
+                  Select how you'll be using the platform
+                </CardDescription>
+              </div>
+              <Button variant="ghost" size="icon" onClick={handleLogout}>
+                <LogOut className="h-5 w-5" />
+              </Button>
+            </div>
+          </CardHeader>
+          
+          <CardContent>
+            <div className="grid md:grid-cols-3 gap-6">
+              {[
+                { 
+                  value: "band_leader", 
+                  label: "Band Leader", 
+                  description: "Lead your band, manage your group, and connect with booking managers",
+                  icon: Crown,
+                  iconBg: "bg-primary/10",
+                  iconColor: "text-primary"
+                },
+                { 
+                  value: "band_member", 
+                  label: "Band Member", 
+                  description: "Share your location, showcase your skills, and stay connected",
+                  icon: Music,
+                  iconBg: "bg-secondary/10",
+                  iconColor: "text-secondary"
+                },
+                { 
+                  value: "booking_manager", 
+                  label: "Booking Manager", 
+                  description: "Discover talented bands and manage your roster",
+                  icon: Briefcase,
+                  iconBg: "bg-accent/10",
+                  iconColor: "text-accent"
+                },
+              ].map((roleOption) => {
+                const Icon = roleOption.icon;
+                return (
+                  <Card 
+                    key={roleOption.value}
+                    className="border-border/50 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105"
+                    onClick={() => !loading && handleRoleSelection(roleOption.value)}
+                  >
+                    <CardContent className="pt-6">
+                      <div className={`w-12 h-12 rounded-full ${roleOption.iconBg} flex items-center justify-center mb-4`}>
+                        <Icon className={`h-6 w-6 ${roleOption.iconColor}`} />
+                      </div>
+                      <h3 className="text-xl font-semibold mb-2">{roleOption.label}</h3>
+                      <p className="text-muted-foreground text-sm">
+                        {roleOption.description}
+                      </p>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-primary/10">

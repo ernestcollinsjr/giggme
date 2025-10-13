@@ -9,7 +9,6 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Music, Briefcase, MapPin, Calendar, Crown, LogOut, ListMusic } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
-import RoleSwitcher from "@/components/RoleSwitcher";
 
 interface Profile {
   id: string;
@@ -233,8 +232,6 @@ const Dashboard = () => {
             </Button>
           </div>
         </div>
-
-        <RoleSwitcher currentRole={userRole} onRoleChange={checkAuth} />
 
         {(userRole === "band_leader" || userRole === "band_member") && (
           <>

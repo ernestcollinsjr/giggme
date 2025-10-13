@@ -14,6 +14,7 @@ interface SetlistSong {
   artist: string | null;
   audio_url: string | null;
   order_index: number;
+  set_number: number;
 }
 
 interface Setlist {
@@ -76,6 +77,7 @@ const Setlist = () => {
             .from("setlist_songs")
             .select("*")
             .eq("setlist_id", setlist.id)
+            .order("set_number", { ascending: true })
             .order("order_index", { ascending: true });
 
           return {
@@ -204,78 +206,88 @@ const Setlist = () => {
                     No songs in this setlist yet
                   </p>
                 ) : (
-                  <div className="space-y-2">
-                    {setlist.songs.map((song, index) => (
-                      <div
-                        key={song.id}
-                        className="flex items-center justify-between p-3 rounded-lg bg-accent/50 hover:bg-accent transition-colors"
-                      >
-                        <div className="flex items-center gap-3 flex-1">
-                          <span className="text-sm text-muted-foreground font-medium w-6">
-                            {index + 1}
-                          </span>
-                          <div className="flex-1">
-                            <p className="font-medium">{song.title}</p>
-                            {song.artist && (
-                              <p className="text-sm text-foreground">{song.artist}</p>
-                            )}
-                            {song.audio_url && (song.audio_url.includes('youtube.com') || song.audio_url.includes('youtu.be')) && (
-                              <div className="space-y-1">
-                                <a
-                                  href={`/open?to=${encodeURIComponent(song.audio_url!)}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-xs text-primary hover:underline break-all inline-block"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  {song.audio_url}
-                                </a>
-                                <div className="flex items-center gap-2">
-                                  <Button asChild variant="ghost" size="sm">
-                                    <a
-                                      href={`/open?to=${encodeURIComponent(song.audio_url!)}`}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      Open
-                                    </a>
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={async (e) => {
-                                      e.stopPropagation();
-                                      try {
-                                        await navigator.clipboard.writeText(song.audio_url!);
-                                        toast({ title: 'Link copied', description: 'YouTube URL copied to clipboard' });
-                                      } catch {
-                                        toast({ variant: 'destructive', title: 'Copy failed', description: 'Unable to copy link' });
-                                      }
-                                    }}
-                                  >
-                                    Copy link
-                                  </Button>
+                  <div className="space-y-6">
+                    {[1, 2, 3, 4].map((setNum) => {
+                      const setSongs = setlist.songs.filter(song => song.set_number === setNum);
+                      if (setSongs.length === 0) return null;
+                      
+                      return (
+                        <div key={setNum} className="space-y-2">
+                          <h3 className="font-semibold">Set {setNum} ({setSongs.length} songs)</h3>
+                          {setSongs.map((song, index) => (
+                            <div
+                              key={song.id}
+                              className="flex items-center justify-between p-3 rounded-lg bg-accent/50 hover:bg-accent transition-colors"
+                            >
+                              <div className="flex items-center gap-3 flex-1">
+                                <span className="text-sm text-muted-foreground font-medium w-6">
+                                  {index + 1}
+                                </span>
+                                <div className="flex-1">
+                                  <p className="font-medium">{song.title}</p>
+                                  {song.artist && (
+                                    <p className="text-sm text-foreground">{song.artist}</p>
+                                  )}
+                                  {song.audio_url && (song.audio_url.includes('youtube.com') || song.audio_url.includes('youtu.be')) && (
+                                    <div className="space-y-1">
+                                      <a
+                                        href={`/open?to=${encodeURIComponent(song.audio_url!)}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-xs text-primary hover:underline break-all inline-block"
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        {song.audio_url}
+                                      </a>
+                                      <div className="flex items-center gap-2">
+                                        <Button asChild variant="ghost" size="sm">
+                                          <a
+                                            href={`/open?to=${encodeURIComponent(song.audio_url!)}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            onClick={(e) => e.stopPropagation()}
+                                          >
+                                            Open
+                                          </a>
+                                        </Button>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={async (e) => {
+                                            e.stopPropagation();
+                                            try {
+                                              await navigator.clipboard.writeText(song.audio_url!);
+                                              toast({ title: 'Link copied', description: 'YouTube URL copied to clipboard' });
+                                            } catch {
+                                              toast({ variant: 'destructive', title: 'Copy failed', description: 'Unable to copy link' });
+                                            }
+                                          }}
+                                        >
+                                          Copy link
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
-                            )}
-                          </div>
+                              {song.audio_url && (
+                                <Button
+                                  size="icon"
+                                  variant={playingSongId === song.id ? "default" : "ghost"}
+                                  onClick={() => handlePlayPause(song)}
+                                >
+                                  {playingSongId === song.id ? (
+                                    <Pause className="h-4 w-4" />
+                                  ) : (
+                                    <Play className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              )}
+                            </div>
+                          ))}
                         </div>
-                        {song.audio_url && (
-                          <Button
-                            size="icon"
-                            variant={playingSongId === song.id ? "default" : "ghost"}
-                            onClick={() => handlePlayPause(song)}
-                          >
-                            {playingSongId === song.id ? (
-                              <Pause className="h-4 w-4" />
-                            ) : (
-                              <Play className="h-4 w-4" />
-                            )}
-                          </Button>
-                        )}
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </CardContent>

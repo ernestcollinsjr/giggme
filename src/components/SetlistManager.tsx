@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Music, Plus, Trash2, Upload, Link as LinkIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Song {
   id: string;
@@ -16,6 +17,7 @@ interface Song {
   artist: string | null;
   audio_url: string | null;
   order_index: number;
+  set_number: number;
 }
 
 interface Setlist {
@@ -36,6 +38,7 @@ export const SetlistManager = () => {
   const [songTitle, setSongTitle] = useState("");
   const [songArtist, setSongArtist] = useState("");
   const [youtubeLink, setYoutubeLink] = useState("");
+  const [selectedSet, setSelectedSet] = useState(1);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
@@ -57,11 +60,12 @@ export const SetlistManager = () => {
 
       const setlistsWithSongs = await Promise.all(
         (setlistsData || []).map(async (setlist) => {
-          const { data: songsData } = await supabase
-            .from("setlist_songs")
-            .select("*")
-            .eq("setlist_id", setlist.id)
-            .order("order_index", { ascending: true });
+      const { data: songsData } = await supabase
+        .from("setlist_songs")
+        .select("*")
+        .eq("setlist_id", setlist.id)
+        .order("set_number", { ascending: true })
+        .order("order_index", { ascending: true });
 
           return {
             ...setlist,
@@ -197,6 +201,7 @@ export const SetlistManager = () => {
             artist: null,
             audio_url: publicUrl,
             order_index: currentOrderIndex++,
+            set_number: selectedSet,
           });
 
           if (insertError) throw insertError;
@@ -281,6 +286,7 @@ export const SetlistManager = () => {
         artist: songArtist.trim() || null,
         audio_url: url,
         order_index: orderIndex,
+        set_number: selectedSet,
       });
 
       if (error) throw error;
@@ -416,6 +422,20 @@ export const SetlistManager = () => {
                 </TabsList>
                 <TabsContent value="upload" className="space-y-4">
                   <div>
+                    <Label htmlFor="set-number-upload">Select Set</Label>
+                    <Select value={selectedSet.toString()} onValueChange={(value) => setSelectedSet(parseInt(value))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a set" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">Set 1</SelectItem>
+                        <SelectItem value="2">Set 2</SelectItem>
+                        <SelectItem value="3">Set 3</SelectItem>
+                        <SelectItem value="4">Set 4</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
                     <Label htmlFor="audio-file">Audio Files (Select multiple)</Label>
                     <Input
                       id="audio-file"
@@ -431,6 +451,20 @@ export const SetlistManager = () => {
                   </div>
                 </TabsContent>
                 <TabsContent value="youtube" className="space-y-4">
+                  <div>
+                    <Label htmlFor="set-number-youtube">Select Set</Label>
+                    <Select value={selectedSet.toString()} onValueChange={(value) => setSelectedSet(parseInt(value))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a set" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">Set 1</SelectItem>
+                        <SelectItem value="2">Set 2</SelectItem>
+                        <SelectItem value="3">Set 3</SelectItem>
+                        <SelectItem value="4">Set 4</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <div>
                     <Label htmlFor="yt-song-title">Song Title</Label>
                     <Input
@@ -465,76 +499,85 @@ export const SetlistManager = () => {
               </Tabs>
 
               {setlist.songs.length > 0 && (
-                <div className="space-y-2 mt-6">
-                  <h3 className="font-semibold text-sm">Songs ({setlist.songs.length})</h3>
-                  {setlist.songs.map((song, index) => (
-                    <div
-                      key={song.id}
-                      className="flex items-center justify-between p-3 rounded-lg bg-accent/50"
-                    >
-                      <div className="flex items-center gap-3 flex-1">
-                        <span className="text-sm text-muted-foreground font-medium w-6">
-                          {index + 1}
-                        </span>
-                        <div className="flex-1">
-                          <p className="font-medium">{song.title}</p>
-                          {song.artist && (
-                            <p className="text-sm text-foreground">{song.artist}</p>
-                          )}
-                          {song.audio_url && (song.audio_url.includes('youtube.com') || song.audio_url.includes('youtu.be')) && (
-                            <div className="space-y-1">
-                               <a 
-                                 href={`/open?to=${encodeURIComponent(song.audio_url)}`}
-                                 target="_blank"
-                                 rel="noopener noreferrer"
-                                 className="text-xs text-primary hover:underline break-all inline-block"
-                                 onClick={(e) => e.stopPropagation()}
-                               >
-                                 {song.audio_url}
-                               </a>
-                              <div className="flex items-center gap-2">
-                                 <Button asChild
-                                   variant="ghost"
-                                   size="sm"
-                                 >
-                                    <a
+                <div className="space-y-6 mt-6">
+                  {[1, 2, 3, 4].map((setNum) => {
+                    const setSongs = setlist.songs.filter(song => song.set_number === setNum);
+                    if (setSongs.length === 0) return null;
+                    
+                    return (
+                      <div key={setNum} className="space-y-2">
+                        <h3 className="font-semibold">Set {setNum} ({setSongs.length} songs)</h3>
+                        {setSongs.map((song, index) => (
+                          <div
+                            key={song.id}
+                            className="flex items-center justify-between p-3 rounded-lg bg-accent/50"
+                          >
+                            <div className="flex items-center gap-3 flex-1">
+                              <span className="text-sm text-muted-foreground font-medium w-6">
+                                {index + 1}
+                              </span>
+                              <div className="flex-1">
+                                <p className="font-medium">{song.title}</p>
+                                {song.artist && (
+                                  <p className="text-sm text-foreground">{song.artist}</p>
+                                )}
+                                {song.audio_url && (song.audio_url.includes('youtube.com') || song.audio_url.includes('youtu.be')) && (
+                                  <div className="space-y-1">
+                                    <a 
                                       href={`/open?to=${encodeURIComponent(song.audio_url)}`}
                                       target="_blank"
                                       rel="noopener noreferrer"
+                                      className="text-xs text-primary hover:underline break-all inline-block"
                                       onClick={(e) => e.stopPropagation()}
                                     >
-                                     Open
-                                   </a>
-                                 </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={async (e) => {
-                                    e.stopPropagation();
-                                    try {
-                                      await navigator.clipboard.writeText(song.audio_url);
-                                      toast({ title: 'Link copied', description: 'YouTube URL copied to clipboard' });
-                                    } catch {
-                                      toast({ variant: 'destructive', title: 'Copy failed', description: 'Unable to copy link' });
-                                    }
-                                  }}
-                                >
-                                  Copy link
-                                </Button>
+                                      {song.audio_url}
+                                    </a>
+                                    <div className="flex items-center gap-2">
+                                      <Button asChild
+                                        variant="ghost"
+                                        size="sm"
+                                      >
+                                        <a
+                                          href={`/open?to=${encodeURIComponent(song.audio_url)}`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          onClick={(e) => e.stopPropagation()}
+                                        >
+                                          Open
+                                        </a>
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={async (e) => {
+                                          e.stopPropagation();
+                                          try {
+                                            await navigator.clipboard.writeText(song.audio_url);
+                                            toast({ title: 'Link copied', description: 'YouTube URL copied to clipboard' });
+                                          } catch {
+                                            toast({ variant: 'destructive', title: 'Copy failed', description: 'Unable to copy link' });
+                                          }
+                                        }}
+                                      >
+                                        Copy link
+                                      </Button>
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             </div>
-                          )}
-                        </div>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => deleteSong(song.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => deleteSong(song.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </CardContent>

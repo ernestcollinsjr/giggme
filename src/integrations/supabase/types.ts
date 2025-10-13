@@ -190,6 +190,7 @@ export type Database = {
           created_at: string
           id: string
           order_index: number
+          set_number: number
           setlist_id: string
           title: string
         }
@@ -199,6 +200,7 @@ export type Database = {
           created_at?: string
           id?: string
           order_index?: number
+          set_number?: number
           setlist_id: string
           title: string
         }
@@ -208,6 +210,7 @@ export type Database = {
           created_at?: string
           id?: string
           order_index?: number
+          set_number?: number
           setlist_id?: string
           title?: string
         }

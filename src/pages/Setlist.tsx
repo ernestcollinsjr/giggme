@@ -222,11 +222,28 @@ const Setlist = () => {
                             {song.audio_url && (song.audio_url.includes('youtube.com') || song.audio_url.includes('youtu.be')) && (
                               <div className="space-y-1">
                                 <a 
-                                  href={encodeURI(song.audio_url)} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
+                                  href={song.audio_url!}
                                   className="text-xs text-primary hover:underline break-all inline-block"
-                                  onClick={(e) => e.stopPropagation()}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    const url = song.audio_url!;
+                                    try {
+                                      const w = window.open(url, '_blank', 'noopener,noreferrer');
+                                      if (w) return;
+                                      if (window.top) {
+                                        window.top.location.href = url;
+                                        return;
+                                      }
+                                      window.location.href = url;
+                                    } catch {
+                                      if (window.top) {
+                                        window.top.location.href = url;
+                                      } else {
+                                        window.location.href = url;
+                                      }
+                                    }
+                                  }}
                                 >
                                   {song.audio_url}
                                 </a>

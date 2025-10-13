@@ -450,14 +450,24 @@ export const SetlistManager = () => {
                       key={song.id}
                       className="flex items-center justify-between p-3 rounded-lg bg-accent/50"
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 flex-1">
                         <span className="text-sm text-muted-foreground font-medium w-6">
                           {index + 1}
                         </span>
-                        <div>
+                        <div className="flex-1">
                           <p className="font-medium">{song.title}</p>
                           {song.artist && (
-                            <p className="text-sm text-muted-foreground">{song.artist}</p>
+                            <p className="text-sm text-foreground">{song.artist}</p>
+                          )}
+                          {song.audio_url && song.audio_url.includes('youtube.com') && (
+                            <a 
+                              href={song.audio_url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-xs text-primary hover:underline break-all"
+                            >
+                              {song.audio_url}
+                            </a>
                           )}
                         </div>
                       </div>

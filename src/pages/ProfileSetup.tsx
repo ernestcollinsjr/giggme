@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "@supabase/supabase-js";
+import { LogOut } from "lucide-react";
 
 const ProfileSetup = () => {
   const navigate = useNavigate();
@@ -101,6 +102,19 @@ const ProfileSetup = () => {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate("/");
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Logout failed",
+        description: error.message,
+      });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -147,14 +161,21 @@ const ProfileSetup = () => {
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-primary/10">
       <Card className="w-full max-w-2xl border-border/50 shadow-xl">
         <CardHeader>
-          <CardTitle className="text-2xl">Complete Your Profile</CardTitle>
-          <CardDescription>
-            {role === "band_leader"
-              ? "Add your band details to help booking managers find you"
-              : role === "band_member"
-              ? "Add your musical details to help managers find you"
-              : "Add your details to start connecting with bands"}
-          </CardDescription>
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle className="text-2xl">Complete Your Profile</CardTitle>
+              <CardDescription>
+                {role === "band_leader"
+                  ? "Add your band details to help booking managers find you"
+                  : role === "band_member"
+                  ? "Add your musical details to help managers find you"
+                  : "Add your details to start connecting with bands"}
+              </CardDescription>
+            </div>
+            <Button variant="ghost" size="icon" onClick={handleLogout}>
+              <LogOut className="h-5 w-5" />
+            </Button>
+          </div>
         </CardHeader>
         
         <CardContent>

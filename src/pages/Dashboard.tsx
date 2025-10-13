@@ -5,7 +5,7 @@ import { User } from "@supabase/supabase-js";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Music, Briefcase, MapPin, Calendar, Crown } from "lucide-react";
+import { Music, Briefcase, MapPin, Calendar, Crown, LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
 
@@ -109,6 +109,19 @@ const Dashboard = () => {
     };
   }, [navigate]);
 
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate("/");
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Logout failed",
+        description: error.message,
+      });
+    }
+  };
+
   const handleShareLocation = async () => {
     if (!navigator.geolocation) {
       toast({
@@ -178,9 +191,14 @@ const Dashboard = () => {
                 : "Share your location and connect with managers"}
             </p>
           </div>
-          <Button variant="outline" onClick={() => navigate("/profile-setup")}>
-            Edit Profile
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate("/profile-setup")}>
+              Edit Profile
+            </Button>
+            <Button variant="ghost" size="icon" onClick={handleLogout}>
+              <LogOut className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
 
         {(userRole === "band_leader" || userRole === "band_member") && (

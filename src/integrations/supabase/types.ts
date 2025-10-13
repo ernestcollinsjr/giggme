@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      gig_members: {
+        Row: {
+          created_at: string
+          gig_id: string
+          id: string
+          member_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          gig_id: string
+          id?: string
+          member_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          gig_id?: string
+          id?: string
+          member_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gig_members_gig_id_fkey"
+            columns: ["gig_id"]
+            isOneToOne: false
+            referencedRelation: "gigs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gigs: {
         Row: {
           created_at: string | null
@@ -55,6 +90,27 @@ export type Database = {
           },
         ]
       }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           bio: string | null
@@ -94,6 +150,101 @@ export type Database = {
           photo_url?: string | null
           rider_notes?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      rehearsals: {
+        Row: {
+          band_leader_id: string
+          created_at: string
+          date: string
+          id: string
+          notes: string | null
+          updated_at: string
+          venue: string
+        }
+        Insert: {
+          band_leader_id: string
+          created_at?: string
+          date: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          venue: string
+        }
+        Update: {
+          band_leader_id?: string
+          created_at?: string
+          date?: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          venue?: string
+        }
+        Relationships: []
+      }
+      setlist_songs: {
+        Row: {
+          artist: string | null
+          audio_url: string | null
+          created_at: string
+          id: string
+          order_index: number
+          setlist_id: string
+          title: string
+        }
+        Insert: {
+          artist?: string | null
+          audio_url?: string | null
+          created_at?: string
+          id?: string
+          order_index?: number
+          setlist_id: string
+          title: string
+        }
+        Update: {
+          artist?: string | null
+          audio_url?: string | null
+          created_at?: string
+          id?: string
+          order_index?: number
+          setlist_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "setlist_songs_setlist_id_fkey"
+            columns: ["setlist_id"]
+            isOneToOne: false
+            referencedRelation: "setlists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      setlists: {
+        Row: {
+          band_leader_id: string
+          created_at: string
+          description: string | null
+          id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          band_leader_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          band_leader_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }

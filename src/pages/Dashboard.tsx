@@ -5,7 +5,7 @@ import { User } from "@supabase/supabase-js";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Music, Briefcase, MapPin, Calendar, Crown, LogOut } from "lucide-react";
+import { Music, Briefcase, MapPin, Calendar, Crown, LogOut, ListMusic } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
 import RoleSwitcher from "@/components/RoleSwitcher";
@@ -205,22 +205,41 @@ const Dashboard = () => {
         <RoleSwitcher currentRole={userRole} onRoleChange={checkAuth} />
 
         {(userRole === "band_leader" || userRole === "band_member") && (
-          <Card className="border-border/50 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-primary" />
-                Location Sharing
-              </CardTitle>
-              <CardDescription>
-                Let managers know where you are for on-time arrivals
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button onClick={handleShareLocation} className="w-full">
-                Share My Location
-              </Button>
-            </CardContent>
-          </Card>
+          <>
+            <Card className="border-border/50 shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ListMusic className="h-5 w-5 text-primary" />
+                  Setlists
+                </CardTitle>
+                <CardDescription>
+                  View your band's setlists and play songs
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button onClick={() => navigate("/setlist")} className="w-full">
+                  View Setlists
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="border-border/50 shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-primary" />
+                  Location Sharing
+                </CardTitle>
+                <CardDescription>
+                  Let managers know where you are for on-time arrivals
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button onClick={handleShareLocation} className="w-full">
+                  Share My Location
+                </Button>
+              </CardContent>
+            </Card>
+          </>
         )}
 
         <Card className="border-border/50 shadow-lg">

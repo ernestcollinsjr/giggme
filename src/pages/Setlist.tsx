@@ -236,9 +236,21 @@ const Setlist = () => {
                                     size="sm"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      const w = window.open(song.audio_url!, '_blank', 'noopener,noreferrer');
-                                      if (!w) {
-                                        window.location.href = song.audio_url!;
+                                      const url = song.audio_url!;
+                                      try {
+                                        const w = window.open(url, '_blank', 'noopener,noreferrer');
+                                        if (w) return;
+                                        if (window.top) {
+                                          window.top.location.href = url;
+                                          return;
+                                        }
+                                        window.location.href = url;
+                                      } catch {
+                                        if (window.top) {
+                                          window.top.location.href = url;
+                                        } else {
+                                          window.location.href = url;
+                                        }
                                       }
                                     }}
                                   >

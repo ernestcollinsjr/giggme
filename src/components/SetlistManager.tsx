@@ -249,15 +249,27 @@ export const SetlistManager = () => {
       return;
     }
 
+    // Clean and validate the YouTube URL
+    const cleanedUrl = youtubeLink.trim();
+    
+    if (!cleanedUrl.includes('youtube.com') && !cleanedUrl.includes('youtu.be')) {
+      toast({
+        variant: "destructive",
+        title: "Invalid YouTube link",
+        description: "Please enter a valid YouTube URL",
+      });
+      return;
+    }
+
     try {
       const setlist = setlists.find((s) => s.id === selectedSetlist);
       const orderIndex = setlist ? setlist.songs.length : 0;
 
       const { error } = await supabase.from("setlist_songs").insert({
         setlist_id: selectedSetlist,
-        title: songTitle,
-        artist: songArtist || null,
-        audio_url: youtubeLink,
+        title: songTitle.trim(),
+        artist: songArtist.trim() || null,
+        audio_url: cleanedUrl,
         order_index: orderIndex,
       });
 

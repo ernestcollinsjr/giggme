@@ -30,19 +30,30 @@ const ProfileSetup = () => {
       setUser(user);
       
       if (user) {
+        // Fetch profile
         const { data: profile } = await supabase
           .from("profiles")
           .select("*")
           .eq("id", user.id)
           .single();
         
+        // Fetch role from user_roles table
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .single();
+        
         if (profile) {
-          setRole(profile.role);
           setBio(profile.bio || "");
           setInstrument(profile.instrument || "");
           setRiderNotes(profile.rider_notes || "");
           setPhotoUrl(profile.photo_url || "");
           setPhotoPreview(profile.photo_url || "");
+        }
+        
+        if (roleData) {
+          setRole(roleData.role);
         }
       }
     };
@@ -102,7 +113,7 @@ const ProfileSetup = () => {
       const updates = {
         id: user.id,
         bio,
-        instrument: (role === "band" ? instrument : null) as any,
+        instrument: (role === "band_leader" || role === "band_member" ? instrument : null) as any,
         rider_notes: riderNotes,
         photo_url: uploadedPhotoUrl || photoUrl,
         updated_at: new Date().toISOString(),
@@ -138,8 +149,10 @@ const ProfileSetup = () => {
         <CardHeader>
           <CardTitle className="text-2xl">Complete Your Profile</CardTitle>
           <CardDescription>
-            {role === "band" 
-              ? "Add your musical details to help managers find you" 
+            {role === "band_leader"
+              ? "Add your band details to help booking managers find you"
+              : role === "band_member"
+              ? "Add your musical details to help managers find you"
               : "Add your details to start connecting with bands"}
           </CardDescription>
         </CardHeader>
@@ -170,9 +183,13 @@ const ProfileSetup = () => {
               <Label htmlFor="bio">Bio</Label>
               <Textarea
                 id="bio"
-                placeholder={role === "band" 
-                  ? "Tell us about your music style, experience, and what makes you unique..." 
-                  : "Tell us about your experience managing bands and artists..."}
+                placeholder={
+                  role === "band_leader"
+                    ? "Tell us about your band, music style, experience, and what makes you unique..."
+                    : role === "band_member"
+                    ? "Tell us about your music style, experience, and what makes you unique..."
+                    : "Tell us about your experience managing bands and artists..."
+                }
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 rows={4}
@@ -180,7 +197,7 @@ const ProfileSetup = () => {
               />
             </div>
             
-            {role === "band" && (
+            {(role === "band_leader" || role === "band_member") && (
               <div className="space-y-2">
                 <Label htmlFor="instrument">Primary Instrument</Label>
                 <Select value={instrument} onValueChange={setInstrument} required>
@@ -203,13 +220,15 @@ const ProfileSetup = () => {
             
             <div className="space-y-2">
               <Label htmlFor="rider">
-                {role === "band" ? "Rider Requirements" : "Management Notes"}
+                {role === "band_leader" || role === "band_member" ? "Rider Requirements" : "Management Notes"}
               </Label>
               <Textarea
                 id="rider"
-                placeholder={role === "band"
-                  ? "Stage setup, sound requirements, green room needs, etc.\nExample: Needs quiet green room, 3 vocal mics, drum riser"
-                  : "Your approach to management, availability, preferred genres..."}
+                placeholder={
+                  role === "band_leader" || role === "band_member"
+                    ? "Stage setup, sound requirements, green room needs, etc.\nExample: Needs quiet green room, 3 vocal mics, drum riser"
+                    : "Your approach to management, availability, preferred genres..."
+                }
                 value={riderNotes}
                 onChange={(e) => setRiderNotes(e.target.value)}
                 rows={4}

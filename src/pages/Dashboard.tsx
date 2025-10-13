@@ -12,18 +12,20 @@ import BottomNav from "@/components/BottomNav";
 interface Profile {
   id: string;
   name: string;
-  role: string;
   bio: string;
   instrument: string;
   location_lat: number;
   location_lng: number;
 }
 
+type UserRole = "band_leader" | "band_member" | "booking_manager";
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -38,29 +40,56 @@ const Dashboard = () => {
       
       setUser(user);
       
+      // Fetch user profile
       const { data: profileData } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", user.id)
         .single();
       
-      if (profileData) {
+      // Fetch user role
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .single();
+      
+      if (profileData && roleData) {
         setProfile(profileData);
+        setUserRole(roleData.role as UserRole);
         
-        if (profileData.role === "manager") {
-          const { data: bandProfiles } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("role", "band");
+        // Booking managers see bands (leaders and members)
+        // Band members/leaders see booking managers
+        if (roleData.role === "booking_manager") {
+          const { data: bandLeaders } = await supabase
+            .from("user_roles")
+            .select("user_id")
+            .in("role", ["band_leader", "band_member"]);
           
-          setProfiles(bandProfiles || []);
+          if (bandLeaders && bandLeaders.length > 0) {
+            const userIds = bandLeaders.map(r => r.user_id);
+            const { data: bandProfiles } = await supabase
+              .from("profiles")
+              .select("*")
+              .in("id", userIds);
+            
+            setProfiles(bandProfiles || []);
+          }
         } else {
-          const { data: managerProfiles } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("role", "manager");
+          const { data: managers } = await supabase
+            .from("user_roles")
+            .select("user_id")
+            .eq("role", "booking_manager");
           
-          setProfiles(managerProfiles || []);
+          if (managers && managers.length > 0) {
+            const userIds = managers.map(r => r.user_id);
+            const { data: managerProfiles } = await supabase
+              .from("profiles")
+              .select("*")
+              .in("id", userIds);
+            
+            setProfiles(managerProfiles || []);
+          }
         }
       }
       
@@ -142,7 +171,11 @@ const Dashboard = () => {
               Welcome, {profile?.name}
             </h1>
             <p className="text-muted-foreground mt-1">
-              {profile?.role === "band" ? "Share your location and connect with managers" : "Find bands and manage your roster"}
+              {userRole === "booking_manager" 
+                ? "Find bands and manage your roster" 
+                : userRole === "band_leader"
+                ? "Lead your band and connect with booking managers"
+                : "Share your location and connect with managers"}
             </p>
           </div>
           <Button variant="outline" onClick={() => navigate("/profile-setup")}>
@@ -150,7 +183,7 @@ const Dashboard = () => {
           </Button>
         </div>
 
-        {profile?.role === "band" && (
+        {(userRole === "band_leader" || userRole === "band_member") && (
           <Card className="border-border/50 shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -172,20 +205,20 @@ const Dashboard = () => {
         <Card className="border-border/50 shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              {profile?.role === "band" ? <Briefcase className="h-5 w-5" /> : <Music className="h-5 w-5" />}
-              {profile?.role === "band" ? "Available Managers" : "Available Bands"}
+              {userRole === "booking_manager" ? <Music className="h-5 w-5" /> : <Briefcase className="h-5 w-5" />}
+              {userRole === "booking_manager" ? "Available Bands" : "Booking Managers"}
             </CardTitle>
             <CardDescription>
-              {profile?.role === "band" 
-                ? "Connect with managers to book your next gig" 
-                : "Browse bands and start building your roster"}
+              {userRole === "booking_manager"
+                ? "Browse bands and start building your roster"
+                : "Connect with booking managers for your next gig"}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4">
               {profiles.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
-                  No {profile?.role === "band" ? "managers" : "bands"} available yet
+                  No {userRole === "booking_manager" ? "bands" : "booking managers"} available yet
                 </p>
               ) : (
                 profiles.map((p) => (

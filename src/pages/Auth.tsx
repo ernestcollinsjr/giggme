@@ -13,7 +13,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [role, setRole] = useState<"band" | "manager">("band");
+  const [role, setRole] = useState<"band_leader" | "band_member" | "booking_manager">("band_member");
   
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -143,24 +143,33 @@ const Auth = () => {
               <form onSubmit={handleSignup} className="space-y-4">
                 <div className="space-y-2">
                   <Label>I am a...</Label>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-3 gap-3">
                     <Button
                       type="button"
-                      variant={role === "band" ? "default" : "outline"}
-                      onClick={() => setRole("band")}
+                      variant={role === "band_leader" ? "default" : "outline"}
+                      onClick={() => setRole("band_leader")}
                       className="h-20 flex flex-col gap-2"
                     >
                       <Music className="h-6 w-6" />
-                      <span>Band Member</span>
+                      <span className="text-xs text-center">Band Leader</span>
                     </Button>
                     <Button
                       type="button"
-                      variant={role === "manager" ? "default" : "outline"}
-                      onClick={() => setRole("manager")}
+                      variant={role === "band_member" ? "default" : "outline"}
+                      onClick={() => setRole("band_member")}
+                      className="h-20 flex flex-col gap-2"
+                    >
+                      <Music className="h-6 w-6" />
+                      <span className="text-xs text-center">Band Member</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={role === "booking_manager" ? "default" : "outline"}
+                      onClick={() => setRole("booking_manager")}
                       className="h-20 flex flex-col gap-2"
                     >
                       <Briefcase className="h-6 w-6" />
-                      <span>Manager</span>
+                      <span className="text-xs text-center">Booking Manager</span>
                     </Button>
                   </div>
                 </div>

@@ -5,6 +5,7 @@ import { User } from "@supabase/supabase-js";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Music, Briefcase, MapPin, Calendar, Crown, LogOut, ListMusic } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
@@ -15,6 +16,7 @@ interface Profile {
   name: string;
   bio: string;
   instrument: string;
+  photo_url: string | null;
   location_lat: number;
   location_lng: number;
 }
@@ -201,17 +203,25 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/10 pb-20">
       <div className="max-w-4xl mx-auto p-4 space-y-6">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Welcome, {profile?.name}
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              {userRole === "booking_manager" 
-                ? "Find bands and manage your roster" 
-                : userRole === "band_leader"
-                ? "Lead your band and connect with booking managers"
-                : "Share your location and connect with managers"}
-            </p>
+          <div className="flex items-center gap-4">
+            <Avatar className="h-16 w-16 border-2 border-primary">
+              <AvatarImage src={profile?.photo_url || undefined} alt={profile?.name} />
+              <AvatarFallback className="text-lg font-semibold bg-primary/10">
+                {profile?.name?.charAt(0)?.toUpperCase() || "U"}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                Welcome, {profile?.name}
+              </h1>
+              <p className="text-muted-foreground mt-1">
+                {userRole === "booking_manager" 
+                  ? "Find bands and manage your roster" 
+                  : userRole === "band_leader"
+                  ? "Lead your band and connect with booking managers"
+                  : "Share your location and connect with managers"}
+              </p>
+            </div>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => navigate("/profile-setup")}>

@@ -145,14 +145,23 @@ export const SetlistManager = () => {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!selectedSetlist || !e.target.files || e.target.files.length === 0) return;
 
-    const file = e.target.files[0];
-    if (!file.type.startsWith("audio/")) {
+    const files = Array.from(e.target.files);
+    const audioFiles = files.filter(file => file.type.startsWith("audio/"));
+
+    if (audioFiles.length === 0) {
       toast({
         variant: "destructive",
-        title: "Invalid file",
-        description: "Please upload an audio file (mp3, wav, etc.)",
+        title: "Invalid files",
+        description: "Please upload audio files (mp3, wav, etc.)",
       });
       return;
+    }
+
+    if (audioFiles.length !== files.length) {
+      toast({
+        title: "Some files skipped",
+        description: `${files.length - audioFiles.length} non-audio files were skipped`,
+      });
     }
 
     setUploading(true);
@@ -161,44 +170,68 @@ export const SetlistManager = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("setlist-audio")
-        .upload(fileName, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from("setlist-audio")
-        .getPublicUrl(fileName);
-
       const setlist = setlists.find((s) => s.id === selectedSetlist);
-      const orderIndex = setlist ? setlist.songs.length : 0;
+      let currentOrderIndex = setlist ? setlist.songs.length : 0;
 
-      const { error: insertError } = await supabase.from("setlist_songs").insert({
-        setlist_id: selectedSetlist,
-        title: songTitle || file.name,
-        artist: songArtist || null,
-        audio_url: publicUrl,
-        order_index: orderIndex,
-      });
+      let successCount = 0;
+      let failCount = 0;
 
-      if (insertError) throw insertError;
+      for (const file of audioFiles) {
+        try {
+          const fileExt = file.name.split(".").pop();
+          const fileName = `${user.id}/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
 
-      toast({
-        title: "Song added",
-        description: "The song has been uploaded successfully",
-      });
+          const { error: uploadError } = await supabase.storage
+            .from("setlist-audio")
+            .upload(fileName, file);
+
+          if (uploadError) throw uploadError;
+
+          const { data: { publicUrl } } = supabase.storage
+            .from("setlist-audio")
+            .getPublicUrl(fileName);
+
+          const { error: insertError } = await supabase.from("setlist_songs").insert({
+            setlist_id: selectedSetlist,
+            title: file.name.replace(/\.[^/.]+$/, ""),
+            artist: null,
+            audio_url: publicUrl,
+            order_index: currentOrderIndex++,
+          });
+
+          if (insertError) throw insertError;
+          successCount++;
+        } catch (error) {
+          console.error(`Error uploading ${file.name}:`, error);
+          failCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        toast({
+          title: "Songs uploaded",
+          description: `Successfully added ${successCount} song${successCount > 1 ? 's' : ''} to the setlist`,
+        });
+      }
+
+      if (failCount > 0) {
+        toast({
+          variant: "destructive",
+          title: "Some uploads failed",
+          description: `${failCount} file${failCount > 1 ? 's' : ''} could not be uploaded`,
+        });
+      }
 
       setSongTitle("");
       setSongArtist("");
       fetchSetlists();
+      
+      // Reset file input
+      e.target.value = "";
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Error uploading file",
+        title: "Error uploading files",
         description: error.message,
       });
     } finally {
@@ -361,32 +394,18 @@ export const SetlistManager = () => {
                 </TabsList>
                 <TabsContent value="upload" className="space-y-4">
                   <div>
-                    <Label htmlFor="song-title">Song Title</Label>
-                    <Input
-                      id="song-title"
-                      value={songTitle}
-                      onChange={(e) => setSongTitle(e.target.value)}
-                      placeholder="Enter song title"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="song-artist">Artist (optional)</Label>
-                    <Input
-                      id="song-artist"
-                      value={songArtist}
-                      onChange={(e) => setSongArtist(e.target.value)}
-                      placeholder="Enter artist name"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="audio-file">Audio File</Label>
+                    <Label htmlFor="audio-file">Audio Files (Select multiple)</Label>
                     <Input
                       id="audio-file"
                       type="file"
                       accept="audio/*"
+                      multiple
                       onChange={handleFileUpload}
                       disabled={uploading}
                     />
+                    <p className="text-sm text-muted-foreground mt-2">
+                      You can select up to 30+ songs at once. File names will be used as song titles.
+                    </p>
                   </div>
                 </TabsContent>
                 <TabsContent value="youtube" className="space-y-4">

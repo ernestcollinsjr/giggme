@@ -73,8 +73,8 @@ const RoleSwitcher = ({ currentRole, onRoleChange }: RoleSwitcherProps) => {
         description: `Switched to ${roles.find(r => r.value === newRole)?.label}`,
       });
 
-      // Navigate to profile setup to complete profile for new role
-      navigate("/profile-setup");
+      // Refresh the page to show role-specific features
+      onRoleChange();
     } catch (error: any) {
       toast({
         variant: "destructive",

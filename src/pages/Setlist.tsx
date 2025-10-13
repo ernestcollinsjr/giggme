@@ -221,57 +221,25 @@ const Setlist = () => {
                             )}
                             {song.audio_url && (song.audio_url.includes('youtube.com') || song.audio_url.includes('youtu.be')) && (
                               <div className="space-y-1">
-                                <a 
+                                <a
                                   href={song.audio_url!}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
                                   className="text-xs text-primary hover:underline break-all inline-block"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    const url = song.audio_url!;
-                                    try {
-                                      const w = window.open(url, '_blank', 'noopener,noreferrer');
-                                      if (w) return;
-                                      if (window.top) {
-                                        window.top.location.href = url;
-                                        return;
-                                      }
-                                      window.location.href = url;
-                                    } catch {
-                                      if (window.top) {
-                                        window.top.location.href = url;
-                                      } else {
-                                        window.location.href = url;
-                                      }
-                                    }
-                                  }}
+                                  onClick={(e) => e.stopPropagation()}
                                 >
                                   {song.audio_url}
                                 </a>
                                 <div className="flex items-center gap-2">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      const url = song.audio_url!;
-                                      try {
-                                        const w = window.open(url, '_blank', 'noopener,noreferrer');
-                                        if (w) return;
-                                        if (window.top) {
-                                          window.top.location.href = url;
-                                          return;
-                                        }
-                                        window.location.href = url;
-                                      } catch {
-                                        if (window.top) {
-                                          window.top.location.href = url;
-                                        } else {
-                                          window.location.href = url;
-                                        }
-                                      }
-                                    }}
-                                  >
-                                    Open
+                                  <Button asChild variant="ghost" size="sm">
+                                    <a
+                                      href={song.audio_url!}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      Open
+                                    </a>
                                   </Button>
                                   <Button
                                     variant="ghost"

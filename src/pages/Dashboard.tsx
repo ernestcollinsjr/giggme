@@ -238,7 +238,10 @@ const Dashboard = () => {
 
         {(userRole === "band_leader" || userRole === "band_member") && (
           <>
-            <Card className="border-border/50 shadow-lg">
+            <Card 
+              className="border-border/50 shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
+              onClick={() => navigate("/rehearsals")}
+            >
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Calendar className="h-5 w-5 text-primary" />
@@ -278,10 +281,16 @@ const Dashboard = () => {
                     ))}
                   </div>
                 )}
+                <Button variant="outline" className="w-full mt-4">
+                  View All Rehearsals
+                </Button>
               </CardContent>
             </Card>
 
-            <Card className="border-border/50 shadow-lg">
+            <Card 
+              className="border-border/50 shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
+              onClick={() => navigate("/bookings")}
+            >
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Music className="h-5 w-5 text-primary" />
@@ -321,14 +330,14 @@ const Dashboard = () => {
                               <p className="text-sm text-muted-foreground mt-1">{gig.notes}</p>
                             )}
                           </div>
-                          <Button size="sm" onClick={() => navigate("/bookings")}>
-                            View
-                          </Button>
                         </div>
                       </div>
                     ))}
                   </div>
                 )}
+                <Button variant="outline" className="w-full mt-4">
+                  View All Gigs
+                </Button>
               </CardContent>
             </Card>
 

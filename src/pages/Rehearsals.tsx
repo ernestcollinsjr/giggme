@@ -8,32 +8,30 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar as CalendarIcon, Clock, MapPin, Plus, Trash2, Music } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, MapPin, Plus, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import BottomNav from "@/components/BottomNav";
 
-interface Gig {
+interface Rehearsal {
   id: string;
   date: string;
   venue: string;
   notes: string | null;
-  status: string;
-  user_id: string;
+  band_leader_id: string;
 }
 
-const Bookings = () => {
+const Rehearsals = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [gigs, setGigs] = useState<Gig[]>([]);
+  const [rehearsals, setRehearsals] = useState<Rehearsal[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   
   // Form state
   const [date, setDate] = useState<Date>();
-  const [time, setTime] = useState("19:00");
+  const [time, setTime] = useState("12:00");
   const [venue, setVenue] = useState("");
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -59,17 +57,17 @@ const Bookings = () => {
 
     setUserRole(roleData?.role || null);
 
-    // Fetch gigs
-    const { data: gigData } = await supabase
-      .from("gigs")
+    // Fetch rehearsals
+    const { data: rehearsalData } = await supabase
+      .from("rehearsals")
       .select("*")
       .order("date", { ascending: true });
 
-    setGigs(gigData || []);
+    setRehearsals(rehearsalData || []);
     setLoading(false);
   };
 
-  const handleAddGig = async () => {
+  const handleAddRehearsal = async () => {
     if (!date || !venue.trim()) {
       toast({
         variant: "destructive",
@@ -86,36 +84,35 @@ const Bookings = () => {
 
       // Combine date and time
       const [hours, minutes] = time.split(":").map(Number);
-      const gigDateTime = new Date(date);
-      gigDateTime.setHours(hours, minutes, 0, 0);
+      const rehearsalDateTime = new Date(date);
+      rehearsalDateTime.setHours(hours, minutes, 0, 0);
 
       const { error } = await supabase
-        .from("gigs")
+        .from("rehearsals")
         .insert({
-          user_id: user.id,
-          date: gigDateTime.toISOString(),
+          band_leader_id: user.id,
+          date: rehearsalDateTime.toISOString(),
           venue: venue.trim(),
           notes: notes.trim() || null,
-          status: "pending",
         });
 
       if (error) throw error;
 
       toast({
-        title: "Gig added",
-        description: "The gig has been scheduled successfully.",
+        title: "Rehearsal added",
+        description: "The rehearsal has been scheduled successfully.",
       });
 
       // Reset form and refresh data
       setDate(undefined);
-      setTime("19:00");
+      setTime("12:00");
       setVenue("");
       setNotes("");
       checkAuthAndFetchData();
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Failed to add gig",
+        title: "Failed to add rehearsal",
         description: error.message,
       });
     } finally {
@@ -123,25 +120,25 @@ const Bookings = () => {
     }
   };
 
-  const handleDeleteGig = async (id: string) => {
+  const handleDeleteRehearsal = async (id: string) => {
     try {
       const { error } = await supabase
-        .from("gigs")
+        .from("rehearsals")
         .delete()
         .eq("id", id);
 
       if (error) throw error;
 
       toast({
-        title: "Gig deleted",
-        description: "The gig has been removed.",
+        title: "Rehearsal deleted",
+        description: "The rehearsal has been removed.",
       });
 
       checkAuthAndFetchData();
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Failed to delete gig",
+        title: "Failed to delete rehearsal",
         description: error.message,
       });
     }
@@ -163,10 +160,10 @@ const Bookings = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Gigs & Bookings
+              Rehearsals
             </h1>
             <p className="text-muted-foreground mt-1">
-              {isBandLeader ? "Manage your band's performance schedule" : "View upcoming gigs"}
+              {isBandLeader ? "Manage your band's rehearsal schedule" : "View upcoming rehearsals"}
             </p>
           </div>
           <Button variant="outline" onClick={() => navigate("/dashboard")}>
@@ -179,9 +176,9 @@ const Bookings = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Plus className="h-5 w-5" />
-                Schedule New Gig
+                Schedule New Rehearsal
               </CardTitle>
-              <CardDescription>Add a new performance to your calendar</CardDescription>
+              <CardDescription>Add a new rehearsal to your calendar</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
@@ -232,7 +229,7 @@ const Bookings = () => {
                   <MapPin className="h-4 w-4 text-muted-foreground" />
                   <Input
                     id="venue"
-                    placeholder="e.g., Blue Note Jazz Club, City Arena, etc."
+                    placeholder="e.g., Studio A, Main Hall, etc."
                     value={venue}
                     onChange={(e) => setVenue(e.target.value)}
                   />
@@ -243,16 +240,16 @@ const Bookings = () => {
                 <Label htmlFor="notes">Notes (Optional)</Label>
                 <Textarea
                   id="notes"
-                  placeholder="Performance details, setlist info, special requirements..."
+                  placeholder="Any additional information or reminders..."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={3}
                 />
               </div>
 
-              <Button onClick={handleAddGig} disabled={isSubmitting} className="w-full">
+              <Button onClick={handleAddRehearsal} disabled={isSubmitting} className="w-full">
                 <Plus className="h-4 w-4 mr-2" />
-                Add Gig
+                Add Rehearsal
               </Button>
             </CardContent>
           </Card>
@@ -261,38 +258,33 @@ const Bookings = () => {
         <Card className="border-border/50 shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Music className="h-5 w-5 text-primary" />
-              Scheduled Gigs
+              <CalendarIcon className="h-5 w-5 text-primary" />
+              Scheduled Rehearsals
             </CardTitle>
-            <CardDescription>Upcoming performances and bookings</CardDescription>
+            <CardDescription>Upcoming rehearsal sessions</CardDescription>
           </CardHeader>
           <CardContent>
-            {gigs.length === 0 ? (
+            {rehearsals.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">
-                No gigs scheduled yet
+                No rehearsals scheduled yet
               </p>
             ) : (
               <div className="space-y-3">
-                {gigs.map((gig) => (
-                  <div key={gig.id} className="p-4 border rounded-lg">
+                {rehearsals.map((rehearsal) => (
+                  <div key={rehearsal.id} className="p-4 border rounded-lg">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Badge variant={gig.status === 'confirmed' ? 'default' : 'secondary'}>
-                            {gig.status}
-                          </Badge>
-                        </div>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                           <CalendarIcon className="h-4 w-4" />
-                          {format(new Date(gig.date), "PPP 'at' p")}
+                          {format(new Date(rehearsal.date), "PPP 'at' p")}
                         </div>
                         <div className="flex items-center gap-2 mb-2">
                           <MapPin className="h-4 w-4 text-primary" />
-                          <h4 className="font-semibold">{gig.venue}</h4>
+                          <h4 className="font-semibold">{rehearsal.venue}</h4>
                         </div>
-                        {gig.notes && (
+                        {rehearsal.notes && (
                           <p className="text-sm text-muted-foreground mt-2">
-                            {gig.notes}
+                            {rehearsal.notes}
                           </p>
                         )}
                       </div>
@@ -300,7 +292,7 @@ const Bookings = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleDeleteGig(gig.id)}
+                          onClick={() => handleDeleteRehearsal(rehearsal.id)}
                         >
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
@@ -319,4 +311,4 @@ const Bookings = () => {
   );
 };
 
-export default Bookings;
+export default Rehearsals;

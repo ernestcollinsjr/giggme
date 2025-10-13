@@ -249,14 +249,24 @@ export const SetlistManager = () => {
       return;
     }
 
-    // Clean and validate the YouTube URL
-    const cleanedUrl = youtubeLink.trim();
-    
-    if (!cleanedUrl.includes('youtube.com') && !cleanedUrl.includes('youtu.be')) {
+    // Normalize and validate the YouTube URL
+    let url = youtubeLink.trim();
+    if (!/^https?:\/\//i.test(url)) {
+      url = `https://${url}`;
+    }
+
+    try {
+      const parsed = new URL(url);
+      const host = parsed.hostname.toLowerCase();
+      const isYouTube = host.includes('youtube.com') || host.includes('youtu.be');
+      if (!isYouTube) {
+        throw new Error('Not a valid YouTube domain');
+      }
+    } catch (e) {
       toast({
         variant: "destructive",
         title: "Invalid YouTube link",
-        description: "Please enter a valid YouTube URL",
+        description: "Please enter a valid YouTube URL (youtube.com or youtu.be)",
       });
       return;
     }
@@ -269,7 +279,7 @@ export const SetlistManager = () => {
         setlist_id: selectedSetlist,
         title: songTitle.trim(),
         artist: songArtist.trim() || null,
-        audio_url: cleanedUrl,
+        audio_url: url,
         order_index: orderIndex,
       });
 
@@ -473,7 +483,7 @@ export const SetlistManager = () => {
                           )}
                           {song.audio_url && (song.audio_url.includes('youtube.com') || song.audio_url.includes('youtu.be')) && (
                             <a 
-                              href={song.audio_url} 
+                              href={encodeURI(song.audio_url)} 
                               target="_blank" 
                               rel="noopener noreferrer"
                               className="text-xs text-primary hover:underline break-all inline-block"

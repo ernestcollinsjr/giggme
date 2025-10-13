@@ -221,7 +221,7 @@ const Setlist = () => {
                             )}
                             {song.audio_url && (song.audio_url.includes('youtube.com') || song.audio_url.includes('youtu.be')) && (
                               <a 
-                                href={song.audio_url} 
+                                href={encodeURI(song.audio_url)} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
                                 className="text-xs text-primary hover:underline break-all inline-block"

@@ -191,7 +191,7 @@ const Setlist = () => {
             <Card key={setlist.id} className="border-border/50 shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Music className="h-5 w-5 text-primary" />
+                  <span className="text-muted-foreground">For:</span>
                   {setlist.title}
                 </CardTitle>
                 {setlist.description && (

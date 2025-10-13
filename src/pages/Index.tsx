@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Music, Briefcase, MapPin, Calendar, Star } from "lucide-react";
+import { Music, Briefcase, MapPin, Star, Users, Crown } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -29,7 +29,7 @@ const Index = () => {
             GigMe
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Connect bands and managers for seamless gig management
+            Connect band leaders, band members, and booking managers for seamless gig management
           </p>
           <Button 
             size="lg" 
@@ -41,34 +41,46 @@ const Index = () => {
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 mb-16">
-          <div className="bg-card border border-border/50 rounded-xl p-6 shadow-lg">
+          <div className="bg-card border border-border/50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-              <Music className="h-6 w-6 text-primary" />
+              <Crown className="h-6 w-6 text-primary" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">For Bands</h3>
-            <p className="text-muted-foreground">
-              Create your profile, share your location, and connect with managers to book your next gig
+            <h3 className="text-xl font-semibold mb-2">Band Leaders</h3>
+            <p className="text-muted-foreground mb-4">
+              Lead your band, manage your group, and connect with booking managers to secure gigs
             </p>
+            <div className="flex items-center gap-2 text-sm text-primary">
+              <Star className="h-4 w-4" />
+              <span className="font-medium">Premium Role</span>
+            </div>
           </div>
 
-          <div className="bg-card border border-border/50 rounded-xl p-6 shadow-lg">
+          <div className="bg-card border border-border/50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
             <div className="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center mb-4">
-              <Briefcase className="h-6 w-6 text-secondary" />
+              <Music className="h-6 w-6 text-secondary" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">For Managers</h3>
-            <p className="text-muted-foreground">
+            <h3 className="text-xl font-semibold mb-2">Band Members</h3>
+            <p className="text-muted-foreground mb-4">
+              Share your location, showcase your instrument skills, and stay connected with your band
+            </p>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Users className="h-4 w-4" />
+              <span>Free Forever</span>
+            </div>
+          </div>
+
+          <div className="bg-card border border-border/50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+            <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mb-4">
+              <Briefcase className="h-6 w-6 text-accent" />
+            </div>
+            <h3 className="text-xl font-semibold mb-2">Booking Managers</h3>
+            <p className="text-muted-foreground mb-4">
               Discover talented bands, track their locations, and manage your roster all in one place
             </p>
-          </div>
-
-          <div className="bg-card border border-border/50 rounded-xl p-6 shadow-lg">
-            <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mb-4">
-              <MapPin className="h-6 w-6 text-accent" />
+            <div className="flex items-center gap-2 text-sm text-accent">
+              <Star className="h-4 w-4" />
+              <span className="font-medium">Premium Role</span>
             </div>
-            <h3 className="text-xl font-semibold mb-2">Real-Time Updates</h3>
-            <p className="text-muted-foreground">
-              Share locations in real-time and stay connected with instant messaging
-            </p>
           </div>
         </div>
 
@@ -76,7 +88,7 @@ const Index = () => {
           <Star className="h-12 w-12 mx-auto mb-4 text-primary" />
           <h2 className="text-2xl font-bold mb-4">Ready to transform your gig management?</h2>
           <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-            Join GigMe today and experience seamless connections between bands and managers
+            Join GigMe today and experience seamless connections between band leaders, band members, and booking managers
           </p>
           <Button size="lg" onClick={() => navigate("/auth")}>
             Sign Up Now

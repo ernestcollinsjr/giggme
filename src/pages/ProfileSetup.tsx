@@ -20,6 +20,9 @@ const ProfileSetup = () => {
   const [bio, setBio] = useState("");
   const [instrument, setInstrument] = useState("");
   const [riderNotes, setRiderNotes] = useState("");
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string>("");
+  const [photoUrl, setPhotoUrl] = useState<string>("");
 
   useEffect(() => {
     const getUser = async () => {
@@ -38,12 +41,54 @@ const ProfileSetup = () => {
           setBio(profile.bio || "");
           setInstrument(profile.instrument || "");
           setRiderNotes(profile.rider_notes || "");
+          setPhotoUrl(profile.photo_url || "");
+          setPhotoPreview(profile.photo_url || "");
         }
       }
     };
     
     getUser();
   }, []);
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setPhotoFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadPhoto = async (): Promise<string | null> => {
+    if (!photoFile || !user) return photoUrl;
+
+    try {
+      const fileExt = photoFile.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('profile-photos')
+        .upload(fileName, photoFile, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('profile-photos')
+        .getPublicUrl(fileName);
+
+      return data.publicUrl;
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Photo upload failed",
+        description: error.message,
+      });
+      return null;
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,11 +97,14 @@ const ProfileSetup = () => {
     try {
       if (!user) throw new Error("No user found");
 
+      const uploadedPhotoUrl = await uploadPhoto();
+
       const updates = {
         id: user.id,
         bio,
         instrument: (role === "band" ? instrument : null) as any,
         rider_notes: riderNotes,
+        photo_url: uploadedPhotoUrl || photoUrl,
         updated_at: new Date().toISOString(),
       };
 
@@ -98,6 +146,26 @@ const ProfileSetup = () => {
         
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="photo">Profile Photo</Label>
+              <div className="flex items-center gap-4">
+                {photoPreview && (
+                  <img 
+                    src={photoPreview} 
+                    alt="Profile preview" 
+                    className="w-20 h-20 rounded-full object-cover border-2 border-primary"
+                  />
+                )}
+                <Input
+                  id="photo"
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  onChange={handlePhotoChange}
+                  className="flex-1"
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="bio">Bio</Label>
               <Textarea

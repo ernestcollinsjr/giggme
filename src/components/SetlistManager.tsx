@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Music, Plus, Trash2, Upload, Link as LinkIcon } from "lucide-react";
+import { Music, Plus, Trash2, Upload, Link as LinkIcon, ChevronUp, ChevronDown } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -329,6 +329,77 @@ export const SetlistManager = () => {
     }
   };
 
+  const moveSongUp = async (setlistId: string, songId: string, currentSet: number, currentIndex: number) => {
+    const setlist = setlists.find(s => s.id === setlistId);
+    if (!setlist) return;
+
+    const setSongs = setlist.songs.filter(s => s.set_number === currentSet);
+    if (currentIndex === 0) return; // Already at top
+
+    const currentSong = setSongs[currentIndex];
+    const aboveSong = setSongs[currentIndex - 1];
+
+    try {
+      // Swap order_index values
+      await supabase.from("setlist_songs").update({ order_index: currentSong.order_index }).eq("id", aboveSong.id);
+      await supabase.from("setlist_songs").update({ order_index: aboveSong.order_index }).eq("id", currentSong.id);
+
+      toast({ title: "Song moved up" });
+      fetchSetlists();
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Error moving song", description: error.message });
+    }
+  };
+
+  const moveSongDown = async (setlistId: string, songId: string, currentSet: number, currentIndex: number) => {
+    const setlist = setlists.find(s => s.id === setlistId);
+    if (!setlist) return;
+
+    const setSongs = setlist.songs.filter(s => s.set_number === currentSet);
+    if (currentIndex === setSongs.length - 1) return; // Already at bottom
+
+    const currentSong = setSongs[currentIndex];
+    const belowSong = setSongs[currentIndex + 1];
+
+    try {
+      // Swap order_index values
+      await supabase.from("setlist_songs").update({ order_index: currentSong.order_index }).eq("id", belowSong.id);
+      await supabase.from("setlist_songs").update({ order_index: belowSong.order_index }).eq("id", currentSong.id);
+
+      toast({ title: "Song moved down" });
+      fetchSetlists();
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Error moving song", description: error.message });
+    }
+  };
+
+  const moveSongToSet = async (songId: string, targetSet: number) => {
+    try {
+      // Get all songs in the target set to determine the new order_index
+      const { data: targetSetSongs } = await supabase
+        .from("setlist_songs")
+        .select("order_index")
+        .eq("set_number", targetSet);
+
+      const maxOrderIndex = targetSetSongs && targetSetSongs.length > 0
+        ? Math.max(...targetSetSongs.map(s => s.order_index))
+        : -1;
+
+      await supabase
+        .from("setlist_songs")
+        .update({ 
+          set_number: targetSet,
+          order_index: maxOrderIndex + 1
+        })
+        .eq("id", songId);
+
+      toast({ title: "Song moved to set", description: `Song moved to Set ${targetSet}` });
+      fetchSetlists();
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Error moving song", description: error.message });
+    }
+  };
+
   if (loading) {
     return <div className="text-muted-foreground">Loading setlists...</div>;
   }
@@ -566,13 +637,49 @@ export const SetlistManager = () => {
                                 )}
                               </div>
                             </div>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => deleteSong(song.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            <div className="flex items-center gap-2">
+                              <div className="flex flex-col gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
+                                  onClick={() => moveSongUp(setlist.id, song.id, setNum, index)}
+                                  disabled={index === 0}
+                                >
+                                  <ChevronUp className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
+                                  onClick={() => moveSongDown(setlist.id, song.id, setNum, index)}
+                                  disabled={index === setSongs.length - 1}
+                                >
+                                  <ChevronDown className="h-3 w-3" />
+                                </Button>
+                              </div>
+                              <Select
+                                value={song.set_number.toString()}
+                                onValueChange={(value) => moveSongToSet(song.id, parseInt(value))}
+                              >
+                                <SelectTrigger className="w-24 h-8">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="1">Set 1</SelectItem>
+                                  <SelectItem value="2">Set 2</SelectItem>
+                                  <SelectItem value="3">Set 3</SelectItem>
+                                  <SelectItem value="4">Set 4</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => deleteSong(song.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
                         ))}
                       </div>

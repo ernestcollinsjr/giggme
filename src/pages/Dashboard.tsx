@@ -19,6 +19,23 @@ interface Profile {
   location_lng: number;
 }
 
+interface Rehearsal {
+  id: string;
+  date: string;
+  venue: string;
+  notes: string | null;
+  band_leader_id: string;
+}
+
+interface Gig {
+  id: string;
+  date: string;
+  venue: string;
+  notes: string | null;
+  status: string;
+  user_id: string;
+}
+
 type UserRole = "band_leader" | "band_member" | "booking_manager";
 
 const Dashboard = () => {
@@ -28,6 +45,8 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [rehearsals, setRehearsals] = useState<Rehearsal[]>([]);
+  const [gigs, setGigs] = useState<Gig[]>([]);
   const [loading, setLoading] = useState(true);
 
   const checkAuth = async () => {
@@ -57,6 +76,24 @@ const Dashboard = () => {
     if (profileData && roleData) {
       setProfile(profileData);
       setUserRole(roleData.role as UserRole);
+      
+      // Fetch rehearsals for band members and leaders
+      if (roleData.role === "band_member" || roleData.role === "band_leader") {
+        const { data: rehearsalData } = await supabase
+          .from("rehearsals")
+          .select("*")
+          .order("date", { ascending: true });
+        
+        setRehearsals(rehearsalData || []);
+        
+        // Fetch gigs
+        const { data: gigData } = await supabase
+          .from("gigs")
+          .select("*")
+          .order("date", { ascending: true });
+        
+        setGigs(gigData || []);
+      }
       
       // Booking managers see bands (leaders and members)
       // Band members/leaders see booking managers
@@ -206,6 +243,100 @@ const Dashboard = () => {
 
         {(userRole === "band_leader" || userRole === "band_member") && (
           <>
+            <Card className="border-border/50 shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-primary" />
+                  Upcoming Rehearsals
+                </CardTitle>
+                <CardDescription>
+                  Schedule and notes for band practice sessions
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {rehearsals.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-4">No rehearsals scheduled</p>
+                ) : (
+                  <div className="space-y-3">
+                    {rehearsals.slice(0, 3).map((rehearsal) => (
+                      <div key={rehearsal.id} className="p-3 border rounded-lg">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                              <Calendar className="h-4 w-4" />
+                              {new Date(rehearsal.date).toLocaleDateString('en-US', { 
+                                weekday: 'short', 
+                                year: 'numeric', 
+                                month: 'short', 
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </div>
+                            <h4 className="font-semibold">{rehearsal.venue}</h4>
+                            {rehearsal.notes && (
+                              <p className="text-sm text-muted-foreground mt-1">{rehearsal.notes}</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="border-border/50 shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Music className="h-5 w-5 text-primary" />
+                  Upcoming Gigs
+                </CardTitle>
+                <CardDescription>
+                  Performance dates, venues, and details
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {gigs.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-4">No gigs scheduled</p>
+                ) : (
+                  <div className="space-y-3">
+                    {gigs.slice(0, 3).map((gig) => (
+                      <div key={gig.id} className="p-3 border rounded-lg">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge variant={gig.status === 'confirmed' ? 'default' : 'secondary'}>
+                                {gig.status}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                              <Calendar className="h-4 w-4" />
+                              {new Date(gig.date).toLocaleDateString('en-US', { 
+                                weekday: 'short', 
+                                year: 'numeric', 
+                                month: 'short', 
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </div>
+                            <h4 className="font-semibold">{gig.venue}</h4>
+                            {gig.notes && (
+                              <p className="text-sm text-muted-foreground mt-1">{gig.notes}</p>
+                            )}
+                          </div>
+                          <Button size="sm" onClick={() => navigate("/bookings")}>
+                            View
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             <Card className="border-border/50 shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">

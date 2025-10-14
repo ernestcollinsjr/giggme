@@ -233,54 +233,18 @@ const Setlist = () => {
                                   )}
                                   {song.audio_url && (song.audio_url.includes('youtube.com') || song.audio_url.includes('youtu.be')) && (
                                     <div className="space-y-1">
-                                      <a
-                                        href={`/open?to=${encodeURIComponent(song.audio_url!)}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-xs text-primary hover:underline break-all inline-block"
-                                        onClick={(e) => e.stopPropagation()}
-                                      >
-                                        {song.audio_url}
-                                      </a>
-                                      <div className="flex items-center gap-2">
-                                  <Button
+                                      <Button
                                     variant="ghost"
                                     size="sm"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      const url = song.audio_url!;
-                                      const isEmbeddable =
-                                        url.includes('youtu.be/') ||
-                                        url.includes('youtube.com/watch?v=') ||
-                                        url.includes('youtube.com/shorts/') ||
-                                        url.includes('youtube.com/embed/');
-                                      console.log('[Setlist] Watch clicked', url, { isEmbeddable });
-                                      if (isEmbeddable) {
-                                        setYtUrl(url);
-                                        setYtOpen(true);
-                                      } else {
-                                        window.open(`/open?to=${encodeURIComponent(url)}`, '_blank', 'noopener');
-                                      }
+                                      console.log('[Setlist] Opening YouTube player for:', song.audio_url);
+                                      setYtUrl(song.audio_url!);
+                                      setYtOpen(true);
                                     }}
                                   >
-                                    Watch
+                                    Watch Video
                                   </Button>
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          onClick={async (e) => {
-                                            e.stopPropagation();
-                                            try {
-                                              await navigator.clipboard.writeText(song.audio_url!);
-                                              toast({ title: 'Link copied', description: 'YouTube URL copied to clipboard' });
-                                            } catch {
-                                              toast({ variant: 'destructive', title: 'Copy failed', description: 'Unable to copy link' });
-                                            }
-                                          }}
-                                        >
-                                          Copy link
-                                        </Button>
-                                      </div>
                                     </div>
                                   )}
                                 </div>

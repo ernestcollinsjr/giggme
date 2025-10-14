@@ -248,6 +248,7 @@ const Setlist = () => {
                                     size="sm"
                                     onClick={(e) => {
                                       e.stopPropagation();
+                                      console.log('[Setlist] Watch clicked', song.audio_url);
                                       setYtUrl(song.audio_url!);
                                       setYtOpen(true);
                                     }}
@@ -302,6 +303,7 @@ const Setlist = () => {
         )}
       </div>
       <YouTubePlayer
+        key={ytUrl || 'empty'}
         url={ytUrl || ""}
         open={ytOpen}
         onOpenChange={(o) => {

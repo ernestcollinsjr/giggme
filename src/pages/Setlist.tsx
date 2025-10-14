@@ -248,9 +248,19 @@ const Setlist = () => {
                                     size="sm"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      console.log('[Setlist] Watch clicked', song.audio_url);
-                                      setYtUrl(song.audio_url!);
-                                      setYtOpen(true);
+                                      const url = song.audio_url!;
+                                      const isEmbeddable =
+                                        url.includes('youtu.be/') ||
+                                        url.includes('youtube.com/watch?v=') ||
+                                        url.includes('youtube.com/shorts/') ||
+                                        url.includes('youtube.com/embed/');
+                                      console.log('[Setlist] Watch clicked', url, { isEmbeddable });
+                                      if (isEmbeddable) {
+                                        setYtUrl(url);
+                                        setYtOpen(true);
+                                      } else {
+                                        window.open(`/open?to=${encodeURIComponent(url)}`, '_blank', 'noopener');
+                                      }
                                     }}
                                   >
                                     Watch

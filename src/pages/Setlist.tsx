@@ -231,27 +231,27 @@ const Setlist = () => {
                                   {song.artist && (
                                     <p className="text-sm text-foreground">{song.artist}</p>
                                   )}
-                                  {song.audio_url && /(youtu\.be|youtube\.com|youtube-nocookie\.com)/i.test(song.audio_url) && (
-                                    <div className="space-y-1">
-                                      <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      console.log('[Setlist] Opening YouTube player for:', song.audio_url);
-                                      setYtUrl(song.audio_url!);
-                                      setYtOpen(true);
-                                      toast({ title: 'Opening video', description: 'Loading YouTube player...' });
-                                    }}
-                                  >
-                                    Watch Video
-                                  </Button>
-                                    </div>
-                                  )}
-                                </div>
+                                 </div>
+                                 {song.audio_url && /(youtu\.be|youtube\.com|youtube-nocookie\.com)/i.test(song.audio_url) && (
+                                   <Button
+                                     variant="ghost"
+                                     size="sm"
+                                     type="button"
+                                     className="mt-2"
+                                     onClick={(e) => {
+                                       e.stopPropagation();
+                                       console.log('[Setlist] Opening YouTube player for:', song.audio_url);
+                                       setYtUrl(song.audio_url!);
+                                       setYtOpen(true);
+                                       toast({ title: 'Opening video', description: 'Loading YouTube player...' });
+                                     }}
+                                   >
+                                     <Play className="h-4 w-4 mr-2" />
+                                     Watch Video
+                                   </Button>
+                                 )}
                               </div>
-                              {song.audio_url && (
+                              {song.audio_url && !/(youtu\.be|youtube\.com|youtube-nocookie\.com)/i.test(song.audio_url) && (
                                 <Button
                                   size="icon"
                                   variant={playingSongId === song.id ? "default" : "ghost"}

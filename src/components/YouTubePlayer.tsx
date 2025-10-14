@@ -49,7 +49,7 @@ function toYouTubeEmbed(url: string): string | null {
     params.set("rel", "0");
     params.set("modestbranding", "1");
 
-    return `https://www.youtube.com/embed/${id}?${params.toString()}`;
+    return `https://www.youtube-nocookie.com/embed/${id}?${params.toString()}`;
   } catch (error) {
     console.error('[YouTubePlayer] Error parsing URL:', url, error);
     return null;
@@ -69,7 +69,7 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ url, open, onOpenChange }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl p-0 overflow-hidden bg-background">
+      <DialogContent className="max-w-4xl p-0 overflow-hidden bg-background z-[1000]">
         {embed ? (
           <div className="w-full">
             <AspectRatio ratio={16 / 9}>
@@ -87,9 +87,19 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ url, open, onOpenChange }
             <p className="text-sm text-muted-foreground mb-2">
               Could not load this YouTube video
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground break-all mb-3">
               URL: {url}
             </p>
+            {url && (
+              <a
+                href={`/open?to=${encodeURIComponent(url)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary underline text-sm"
+              >
+                Open in YouTube
+              </a>
+            )}
           </div>
         )}
       </DialogContent>

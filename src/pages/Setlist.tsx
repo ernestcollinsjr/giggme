@@ -241,6 +241,7 @@ const Setlist = () => {
                                       console.log('[Setlist] Opening YouTube player for:', song.audio_url);
                                       setYtUrl(song.audio_url!);
                                       setYtOpen(true);
+                                      toast({ title: 'Opening video', description: 'Loading YouTube player...' });
                                     }}
                                   >
                                     Watch Video

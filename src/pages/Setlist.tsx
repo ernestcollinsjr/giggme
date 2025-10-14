@@ -231,11 +231,12 @@ const Setlist = () => {
                                   {song.artist && (
                                     <p className="text-sm text-foreground">{song.artist}</p>
                                   )}
-                                  {song.audio_url && (song.audio_url.includes('youtube.com') || song.audio_url.includes('youtu.be')) && (
+                                  {song.audio_url && /(youtu\.be|youtube\.com|youtube-nocookie\.com)/i.test(song.audio_url) && (
                                     <div className="space-y-1">
                                       <Button
                                     variant="ghost"
                                     size="sm"
+                                    type="button"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       console.log('[Setlist] Opening YouTube player for:', song.audio_url);

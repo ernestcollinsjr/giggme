@@ -218,53 +218,55 @@ const Setlist = () => {
                         <div key={setNum} className="space-y-2">
                           <h3 className="font-semibold">Set {setNum} ({setSongs.length} songs)</h3>
                           {setSongs.map((song, index) => (
-                            <div
-                              key={song.id}
-                              className="flex items-center justify-between p-3 rounded-lg bg-accent/50 hover:bg-accent transition-colors"
-                            >
-                              <div className="flex items-center gap-3 flex-1">
-                                <span className="text-sm text-muted-foreground font-medium w-6">
-                                  {index + 1}
-                                </span>
-                                <div className="flex-1">
-                                  <p className="font-medium">{song.title}</p>
-                                  {song.artist && (
-                                    <p className="text-sm text-foreground">{song.artist}</p>
+                              <div
+                                key={song.id}
+                                className="group relative flex items-center justify-between p-3 rounded-lg bg-accent/50 hover:bg-accent transition-colors"
+                              >
+                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                  <span className="text-sm text-muted-foreground font-medium w-6 shrink-0">
+                                    {index + 1}
+                                  </span>
+                                  <div className="flex-1">
+                                    <p className="font-medium truncate">{song.title}</p>
+                                    {song.artist && (
+                                      <p className="text-sm text-foreground">{song.artist}</p>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  {song.audio_url && /(youtu\.be|youtube\.com|youtube-nocookie\.com)/i.test(song.audio_url) && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      type="button"
+                                      className="relative z-10"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        console.log('[Setlist] Opening YouTube player for:', song.audio_url);
+                                        setYtUrl(song.audio_url!);
+                                        setYtOpen(true);
+                                        toast({ title: 'Opening video', description: 'Loading YouTube player...' });
+                                      }}
+                                    >
+                                      <Play className="h-4 w-4 mr-2" />
+                                      Watch
+                                    </Button>
                                   )}
-                                 </div>
-                                 {song.audio_url && /(youtu\.be|youtube\.com|youtube-nocookie\.com)/i.test(song.audio_url) && (
-                                   <Button
-                                     variant="ghost"
-                                     size="sm"
-                                     type="button"
-                                     className="mt-2"
-                                     onClick={(e) => {
-                                       e.stopPropagation();
-                                       console.log('[Setlist] Opening YouTube player for:', song.audio_url);
-                                       setYtUrl(song.audio_url!);
-                                       setYtOpen(true);
-                                       toast({ title: 'Opening video', description: 'Loading YouTube player...' });
-                                     }}
-                                   >
-                                     <Play className="h-4 w-4 mr-2" />
-                                     Watch Video
-                                   </Button>
-                                 )}
+                                  {song.audio_url && !/(youtu\.be|youtube\.com|youtube-nocookie\.com)/i.test(song.audio_url) && (
+                                    <Button
+                                      size="icon"
+                                      variant={playingSongId === song.id ? "default" : "ghost"}
+                                      onClick={() => handlePlayPause(song)}
+                                    >
+                                      {playingSongId === song.id ? (
+                                        <Pause className="h-4 w-4" />
+                                      ) : (
+                                        <Play className="h-4 w-4" />
+                                      )}
+                                    </Button>
+                                  )}
+                                </div>
                               </div>
-                              {song.audio_url && !/(youtu\.be|youtube\.com|youtube-nocookie\.com)/i.test(song.audio_url) && (
-                                <Button
-                                  size="icon"
-                                  variant={playingSongId === song.id ? "default" : "ghost"}
-                                  onClick={() => handlePlayPause(song)}
-                                >
-                                  {playingSongId === song.id ? (
-                                    <Pause className="h-4 w-4" />
-                                  ) : (
-                                    <Play className="h-4 w-4" />
-                                  )}
-                                </Button>
-                              )}
-                            </div>
                           ))}
                         </div>
                       );

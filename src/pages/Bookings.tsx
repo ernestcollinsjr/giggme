@@ -10,7 +10,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar as CalendarIcon, Clock, MapPin, Plus, Trash2, Music } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, MapPin, Plus, Trash2, Music, Navigation } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import BottomNav from "@/components/BottomNav";
@@ -298,12 +298,12 @@ const Bookings = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="venue">Venue</Label>
+                <Label htmlFor="venue">Venue Address</Label>
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
                   <Input
                     id="venue"
-                    placeholder="e.g., Blue Note Jazz Club, City Arena, etc."
+                    placeholder="e.g., 123 Main St, New York, NY 10001"
                     value={venue}
                     onChange={(e) => setVenue(e.target.value)}
                   />
@@ -417,6 +417,18 @@ const Bookings = () => {
                         <div className="flex items-center gap-2 mb-2">
                           <MapPin className="h-4 w-4 text-primary" />
                           <h4 className="font-semibold">{gig.venue}</h4>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => {
+                              const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(gig.venue)}`;
+                              window.open(mapsUrl, '_blank');
+                            }}
+                            title="Navigate to venue"
+                          >
+                            <Navigation className="h-4 w-4 text-primary" />
+                          </Button>
                         </div>
                         {gig.notes && (
                           <p className="text-sm text-muted-foreground mt-2">

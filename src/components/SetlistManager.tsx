@@ -19,6 +19,7 @@ interface Song {
   audio_url: string | null;
   order_index: number;
   set_number: number;
+  lyrics: string | null;
 }
 
 interface Setlist {
@@ -38,6 +39,7 @@ export const SetlistManager = () => {
   const [selectedSetlist, setSelectedSetlist] = useState<string | null>(null);
   const [songTitle, setSongTitle] = useState("");
   const [songArtist, setSongArtist] = useState("");
+  const [songLyrics, setSongLyrics] = useState("");
   const [youtubeLink, setYoutubeLink] = useState("");
   const [selectedSet, setSelectedSet] = useState(1);
   const [uploading, setUploading] = useState(false);
@@ -288,6 +290,7 @@ export const SetlistManager = () => {
         title: songTitle.trim(),
         artist: songArtist.trim() || null,
         audio_url: url,
+        lyrics: songLyrics.trim() || null,
         order_index: orderIndex,
         set_number: selectedSet,
       });
@@ -301,6 +304,7 @@ export const SetlistManager = () => {
 
       setSongTitle("");
       setSongArtist("");
+      setSongLyrics("");
       setYoutubeLink("");
       fetchSetlists();
     } catch (error: any) {
@@ -565,6 +569,20 @@ export const SetlistManager = () => {
                       onChange={(e) => setYoutubeLink(e.target.value)}
                       placeholder="https://youtube.com/watch?v=..."
                     />
+                  </div>
+                  <div>
+                    <Label htmlFor="song-lyrics">Lyrics (optional)</Label>
+                    <Textarea
+                      id="song-lyrics"
+                      value={songLyrics}
+                      onChange={(e) => setSongLyrics(e.target.value)}
+                      placeholder="Paste song lyrics here..."
+                      rows={8}
+                      className="font-mono text-sm"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Only add lyrics you have legal access to
+                    </p>
                   </div>
                   <Button onClick={addYoutubeLink} className="w-full">
                     Add Song

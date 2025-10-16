@@ -189,6 +189,7 @@ export type Database = {
           audio_url: string | null
           created_at: string
           id: string
+          lyrics: string | null
           order_index: number
           set_number: number
           setlist_id: string
@@ -199,6 +200,7 @@ export type Database = {
           audio_url?: string | null
           created_at?: string
           id?: string
+          lyrics?: string | null
           order_index?: number
           set_number?: number
           setlist_id: string
@@ -209,6 +211,7 @@ export type Database = {
           audio_url?: string | null
           created_at?: string
           id?: string
+          lyrics?: string | null
           order_index?: number
           set_number?: number
           setlist_id?: string

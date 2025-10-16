@@ -11,6 +11,7 @@ import Chat from "./pages/Chat";
 import Bookings from "./pages/Bookings";
 import Rehearsals from "./pages/Rehearsals";
 import Setlist from "./pages/Setlist";
+import SongLyrics from "./pages/SongLyrics";
 import NotFound from "./pages/NotFound";
 import OpenExternal from "./pages/OpenExternal";
 
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/bookings" element={<Bookings />} />
           <Route path="/rehearsals" element={<Rehearsals />} />
           <Route path="/setlist" element={<Setlist />} />
+          <Route path="/setlist/lyrics/:songId" element={<SongLyrics />} />
           <Route path="/open" element={<OpenExternal />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

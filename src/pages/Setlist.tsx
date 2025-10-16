@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Music, ArrowLeft, Play, Pause, X } from "lucide-react";
+import { Music, ArrowLeft, Play, Pause, X, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
 import { SetlistManager } from "@/components/SetlistManager";
@@ -310,20 +310,28 @@ const Setlist = () => {
                                        </>
                                      )}
                                    </Button>
-                                 )}
-                                   {song.audio_url && !/(youtu\.be|youtube\.com|youtube-nocookie\.com)/i.test(song.audio_url) && (
-                                     <Button
-                                       size="icon"
-                                       variant={playingSongId === song.id ? "default" : "ghost"}
-                                       onClick={() => handlePlayPause(song)}
-                                     >
-                                       {playingSongId === song.id ? (
-                                         <Pause className="h-4 w-4" />
-                                       ) : (
-                                         <Play className="h-4 w-4" />
-                                       )}
-                                     </Button>
-                                   )}
+                                  )}
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => navigate(`/setlist/lyrics/${song.id}`)}
+                                  >
+                                    <FileText className="h-4 w-4 mr-2" />
+                                    Lyrics
+                                  </Button>
+                                    {song.audio_url && !/(youtu\.be|youtube\.com|youtube-nocookie\.com)/i.test(song.audio_url) && (
+                                      <Button
+                                        size="icon"
+                                        variant={playingSongId === song.id ? "default" : "ghost"}
+                                        onClick={() => handlePlayPause(song)}
+                                      >
+                                        {playingSongId === song.id ? (
+                                          <Pause className="h-4 w-4" />
+                                        ) : (
+                                          <Play className="h-4 w-4" />
+                                        )}
+                                      </Button>
+                                    )}
                                  </div>
                                </div>
                                

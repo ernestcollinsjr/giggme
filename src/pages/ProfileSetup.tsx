@@ -23,8 +23,8 @@ const ProfileSetup = () => {
   const [bio, setBio] = useState("");
   const [instrument, setInstrument] = useState("");
   const [riderNotes, setRiderNotes] = useState("");
-  const [photoFiles, setPhotoFiles] = useState<(File | null)[]>([null, null, null]);
-  const [photoPreviews, setPhotoPreviews] = useState<string[]>(["", "", ""]);
+  const [photoFiles, setPhotoFiles] = useState<(File | null)[]>([null, null, null, null]);
+  const [photoPreviews, setPhotoPreviews] = useState<string[]>(["", "", "", ""]);
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   
   // Email sending state
@@ -59,7 +59,7 @@ const ProfileSetup = () => {
           setRiderNotes(profile.rider_notes || "");
           const urls = profile.photo_urls || [];
           setPhotoUrls(urls);
-          setPhotoPreviews(urls.length > 0 ? [...urls, "", ""].slice(0, 3) : ["", "", ""]);
+          setPhotoPreviews(urls.length > 0 ? [...urls, "", "", "", ""].slice(0, 4) : ["", "", "", ""]);
         }
         
         if (roleData) {
@@ -384,9 +384,9 @@ const ProfileSetup = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Additional Photos (Optional, 2 max)</Label>
-              <div className="grid grid-cols-2 gap-4">
-                {[1, 2].map((index) => (
+              <Label>Additional Photos (Optional, 3 max)</Label>
+              <div className="grid grid-cols-3 gap-4">
+                {[1, 2, 3].map((index) => (
                   <div key={index} className="space-y-2">
                     <div className="relative">
                       {photoPreviews[index] && (
@@ -409,7 +409,7 @@ const ProfileSetup = () => {
                       )}
                       {!photoPreviews[index] && (
                         <div className="w-full h-32 rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-muted/10">
-                          <span className="text-muted-foreground text-sm">Photo {index + 1}</span>
+                          <span className="text-muted-foreground text-sm">Photo {index}</span>
                         </div>
                       )}
                     </div>

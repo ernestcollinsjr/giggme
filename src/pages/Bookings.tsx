@@ -19,6 +19,7 @@ interface Gig {
   id: string;
   date: string;
   venue: string;
+  venue_name: string | null;
   notes: string | null;
   attire: string | null;
   food_provided: string | null;
@@ -44,6 +45,7 @@ const Bookings = () => {
   const [endTime, setEndTime] = useState("23:00");
   const [loadingTime, setLoadingTime] = useState("");
   const [soundCheckTime, setSoundCheckTime] = useState("");
+  const [venueName, setVenueName] = useState("");
   const [venue, setVenue] = useState("");
   const [notes, setNotes] = useState("");
   const [attire, setAttire] = useState("");
@@ -111,6 +113,7 @@ const Bookings = () => {
           end_time: endTime,
           loading_time: loadingTime.trim() || null,
           sound_check_time: soundCheckTime.trim() || null,
+          venue_name: venueName.trim() || null,
           venue: venue.trim(),
           notes: notes.trim() || null,
           attire: attire.trim() || null,
@@ -133,6 +136,7 @@ const Bookings = () => {
       setEndTime("23:00");
       setLoadingTime("");
       setSoundCheckTime("");
+      setVenueName("");
       setVenue("");
       setNotes("");
       setAttire("");
@@ -298,6 +302,16 @@ const Bookings = () => {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="venueName">Venue Name (Optional)</Label>
+                <Input
+                  id="venueName"
+                  placeholder="e.g., Blue Note Jazz Club, City Arena..."
+                  value={venueName}
+                  onChange={(e) => setVenueName(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="venue">Venue Address</Label>
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
@@ -413,6 +427,9 @@ const Bookings = () => {
                             <Clock className="h-4 w-4" />
                             <span className="font-medium">Sound Check:</span> {gig.sound_check_time}
                           </div>
+                        )}
+                        {gig.venue_name && (
+                          <h3 className="font-bold text-lg mb-2">{gig.venue_name}</h3>
                         )}
                         <div className="flex items-center gap-2 mb-2">
                           <MapPin className="h-4 w-4 text-primary" />

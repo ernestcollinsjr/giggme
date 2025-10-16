@@ -57,13 +57,16 @@ export type Database = {
           end_time: string | null
           food_provided: string | null
           id: string
+          loading_time: string | null
           notes: string | null
+          sound_check_time: string | null
           sound_man_info: string | null
           status: Database["public"]["Enums"]["gig_status"] | null
           updated_at: string | null
           user_id: string
           venue: string
           venue_contact_person: string | null
+          venue_name: string | null
         }
         Insert: {
           attire?: string | null
@@ -72,13 +75,16 @@ export type Database = {
           end_time?: string | null
           food_provided?: string | null
           id?: string
+          loading_time?: string | null
           notes?: string | null
+          sound_check_time?: string | null
           sound_man_info?: string | null
           status?: Database["public"]["Enums"]["gig_status"] | null
           updated_at?: string | null
           user_id: string
           venue: string
           venue_contact_person?: string | null
+          venue_name?: string | null
         }
         Update: {
           attire?: string | null
@@ -87,13 +93,16 @@ export type Database = {
           end_time?: string | null
           food_provided?: string | null
           id?: string
+          loading_time?: string | null
           notes?: string | null
+          sound_check_time?: string | null
           sound_man_info?: string | null
           status?: Database["public"]["Enums"]["gig_status"] | null
           updated_at?: string | null
           user_id?: string
           venue?: string
           venue_contact_person?: string | null
+          venue_name?: string | null
         }
         Relationships: [
           {

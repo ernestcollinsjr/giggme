@@ -277,7 +277,11 @@ const Setlist = () => {
                                    <Button
                                      variant="default"
                                      size="sm"
+                                     type="button"
+                                     className="pointer-events-auto z-10"
                                      onClick={() => {
+                                       console.log('[Setlist] Watch click', { title: song.title, url: song.audio_url });
+                                       toast({ title: 'Opening video', description: song.title });
                                        setExpandedVideoSongId(
                                          expandedVideoSongId === song.id ? null : song.id
                                        );
@@ -290,7 +294,7 @@ const Setlist = () => {
                                        </>
                                      ) : (
                                        <>
-                                       <Play className="h-4 w-4 mr-2" />
+                                         <Play className="h-4 w-4 mr-2" />
                                          Watch
                                        </>
                                      )}

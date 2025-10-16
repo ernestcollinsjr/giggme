@@ -401,36 +401,45 @@ const ProfileSetup = () => {
               <div className="grid grid-cols-3 gap-4">
                 {[1, 2, 3].map((index) => (
                   <div key={index} className="space-y-2">
-                    <div className="relative">
-                      {photoPreviews[index] && (
+                    <div 
+                      className="relative group cursor-pointer"
+                      onClick={() => document.getElementById(`photo-${index}`)?.click()}
+                    >
+                      {photoPreviews[index] ? (
                         <>
                           <img 
                             src={photoPreviews[index]} 
                             alt={`Additional photo ${index}`} 
                             className="w-full h-32 rounded-lg object-cover border-2 border-primary"
                           />
+                          <div className="absolute inset-0 bg-black/50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <span className="text-white text-xs font-medium">Change</span>
+                          </div>
                           <Button
                             type="button"
                             variant="destructive"
                             size="icon"
-                            className="absolute top-1 right-1 h-6 w-6"
-                            onClick={() => handleRemovePhoto(index)}
+                            className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemovePhoto(index);
+                            }}
                           >
                             ✕
                           </Button>
                         </>
-                      )}
-                      {!photoPreviews[index] && (
+                      ) : (
                         <div className="w-full h-32 rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-muted/10">
                           <span className="text-muted-foreground text-sm">Photo {index}</span>
                         </div>
                       )}
                     </div>
                     <Input
+                      id={`photo-${index}`}
                       type="file"
                       accept="image/jpeg,image/jpg,image/png,image/webp"
                       onChange={(e) => handlePhotoChange(e, index)}
-                      className="text-sm"
+                      className={photoPreviews[index] ? "hidden" : "text-sm"}
                     />
                   </div>
                 ))}

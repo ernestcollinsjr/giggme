@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Music, Briefcase, MapPin, Calendar, Crown, LogOut, ListMusic } from "lucide-react";
+import { Music, Briefcase, MapPin, Calendar, Crown, LogOut, ListMusic, User as UserIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
 import { SetlistManager } from "@/components/SetlistManager";
@@ -488,6 +488,23 @@ const Dashboard = () => {
               <CardContent>
                 <Button onClick={handleShareLocation} className="w-full">
                   Share My Location
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="border-border/50 shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <UserIcon className="h-5 w-5 text-primary" />
+                  My Profile
+                </CardTitle>
+                <CardDescription>
+                  View and edit your profile information
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button onClick={() => navigate("/profile-setup")} className="w-full">
+                  Go to Profile
                 </Button>
               </CardContent>
             </Card>

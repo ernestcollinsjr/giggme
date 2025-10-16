@@ -223,30 +223,32 @@ const Rehearsals = () => {
                   </Popover>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="startTime">Start Time</Label>
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="startTime"
-                      type="time"
-                      value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                    />
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="startTime">Start Time</Label>
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="startTime"
+                        type="time"
+                        value={startTime}
+                        onChange={(e) => setStartTime(e.target.value)}
+                      />
+                    </div>
                   </div>
-                </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="endTime">End Time</Label>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="endTime"
-                    type="time"
-                    value={endTime}
-                    onChange={(e) => setEndTime(e.target.value)}
-                  />
+                  <div className="space-y-2">
+                    <Label htmlFor="endTime">End Time</Label>
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="endTime"
+                        type="time"
+                        value={endTime}
+                        onChange={(e) => setEndTime(e.target.value)}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 

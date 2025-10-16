@@ -536,20 +536,6 @@ export const SetlistManager = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="upload-song-lyrics">Lyrics (optional)</Label>
-                    <Textarea
-                      id="upload-song-lyrics"
-                      value={songLyrics}
-                      onChange={(e) => setSongLyrics(e.target.value)}
-                      placeholder="Paste song lyrics here..."
-                      rows={6}
-                      className="font-mono text-sm"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Only add lyrics you have legal access to
-                    </p>
-                  </div>
-                  <div>
                     <Label htmlFor="audio-file">Audio Files (Select multiple)</Label>
                     <Input
                       id="audio-file"
@@ -560,7 +546,7 @@ export const SetlistManager = () => {
                       disabled={uploading}
                     />
                     <p className="text-sm text-muted-foreground mt-2">
-                      If uploading multiple files, the title/artist/lyrics above will apply to all. Leave empty to use filenames.
+                      If uploading multiple files, the title/artist above will apply to all. Leave empty to use filenames.
                     </p>
                   </div>
                 </TabsContent>
@@ -605,20 +591,6 @@ export const SetlistManager = () => {
                       onChange={(e) => setYoutubeLink(e.target.value)}
                       placeholder="https://youtube.com/watch?v=..."
                     />
-                  </div>
-                  <div>
-                    <Label htmlFor="song-lyrics">Lyrics (optional)</Label>
-                    <Textarea
-                      id="song-lyrics"
-                      value={songLyrics}
-                      onChange={(e) => setSongLyrics(e.target.value)}
-                      placeholder="Paste song lyrics here..."
-                      rows={8}
-                      className="font-mono text-sm"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Only add lyrics you have legal access to
-                    </p>
                   </div>
                   <Button onClick={addYoutubeLink} className="w-full">
                     Add Song

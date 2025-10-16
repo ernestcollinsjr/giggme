@@ -23,9 +23,9 @@ const ProfileSetup = () => {
   const [bio, setBio] = useState("");
   const [instrument, setInstrument] = useState("");
   const [riderNotes, setRiderNotes] = useState("");
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string>("");
-  const [photoUrl, setPhotoUrl] = useState<string>("");
+  const [photoFiles, setPhotoFiles] = useState<(File | null)[]>([null, null, null]);
+  const [photoPreviews, setPhotoPreviews] = useState<string[]>(["", "", ""]);
+  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   
   // Email sending state
   const [showEmailDialog, setShowEmailDialog] = useState(false);
@@ -57,8 +57,9 @@ const ProfileSetup = () => {
           setBio(profile.bio || "");
           setInstrument(profile.instrument || "");
           setRiderNotes(profile.rider_notes || "");
-          setPhotoUrl(profile.photo_url || "");
-          setPhotoPreview(profile.photo_url || "");
+          const urls = profile.photo_urls || [];
+          setPhotoUrls(urls);
+          setPhotoPreviews(urls.length > 0 ? [...urls, "", ""].slice(0, 3) : ["", "", ""]);
         }
         
         if (roleData) {
@@ -71,44 +72,68 @@ const ProfileSetup = () => {
     getUser();
   }, []);
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const file = e.target.files?.[0];
     if (file) {
-      setPhotoFile(file);
+      const newFiles = [...photoFiles];
+      newFiles[index] = file;
+      setPhotoFiles(newFiles);
+      
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPhotoPreview(reader.result as string);
+        const newPreviews = [...photoPreviews];
+        newPreviews[index] = reader.result as string;
+        setPhotoPreviews(newPreviews);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const uploadPhoto = async (): Promise<string | null> => {
-    if (!photoFile || !user) return photoUrl;
+  const handleRemovePhoto = (index: number) => {
+    const newFiles = [...photoFiles];
+    const newPreviews = [...photoPreviews];
+    newFiles[index] = null;
+    newPreviews[index] = "";
+    setPhotoFiles(newFiles);
+    setPhotoPreviews(newPreviews);
+  };
 
-    try {
-      const fileExt = photoFile.name.split('.').pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+  const uploadPhotos = async (): Promise<string[]> => {
+    if (!user) return photoUrls;
 
-      const { error: uploadError } = await supabase.storage
-        .from('profile-photos')
-        .upload(fileName, photoFile, { upsert: true });
+    const uploadedUrls = [...photoUrls];
 
-      if (uploadError) throw uploadError;
+    for (let i = 0; i < photoFiles.length; i++) {
+      const file = photoFiles[i];
+      if (file) {
+        try {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${user.id}/${Date.now()}-${i}.${fileExt}`;
 
-      const { data } = supabase.storage
-        .from('profile-photos')
-        .getPublicUrl(fileName);
+          const { error: uploadError } = await supabase.storage
+            .from('profile-photos')
+            .upload(fileName, file, { upsert: true });
 
-      return data.publicUrl;
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Photo upload failed",
-        description: error.message,
-      });
-      return null;
+          if (uploadError) throw uploadError;
+
+          const { data } = supabase.storage
+            .from('profile-photos')
+            .getPublicUrl(fileName);
+
+          uploadedUrls[i] = data.publicUrl;
+        } catch (error: any) {
+          toast({
+            variant: "destructive",
+            title: "Photo upload failed",
+            description: error.message,
+          });
+        }
+      } else if (photoPreviews[i] === "") {
+        uploadedUrls[i] = "";
+      }
     }
+
+    return uploadedUrls.filter(url => url !== "");
   };
 
   const handleLogout = async () => {
@@ -163,14 +188,14 @@ const ProfileSetup = () => {
     try {
       if (!user) throw new Error("No user found");
 
-      const uploadedPhotoUrl = await uploadPhoto();
+      const uploadedPhotoUrls = await uploadPhotos();
 
       const updates = {
         id: user.id,
         bio,
         instrument: (role === "band_leader" || role === "band_member" ? instrument : null) as any,
         rider_notes: riderNotes,
-        photo_url: uploadedPhotoUrl || photoUrl,
+        photo_urls: uploadedPhotoUrls,
         updated_at: new Date().toISOString(),
       };
 
@@ -339,22 +364,43 @@ const ProfileSetup = () => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="photo">Profile Photo</Label>
-              <div className="flex items-center gap-4">
-                {photoPreview && (
-                  <img 
-                    src={photoPreview} 
-                    alt="Profile preview" 
-                    className="w-20 h-20 rounded-full object-cover border-2 border-primary"
-                  />
-                )}
-                <Input
-                  id="photo"
-                  type="file"
-                  accept="image/jpeg,image/jpg,image/png,image/webp"
-                  onChange={handlePhotoChange}
-                  className="flex-1"
-                />
+              <Label>Profile Photos (Max 3)</Label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[0, 1, 2].map((index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="relative">
+                      {photoPreviews[index] && (
+                        <>
+                          <img 
+                            src={photoPreviews[index]} 
+                            alt={`Profile ${index + 1}`} 
+                            className="w-full h-32 rounded-lg object-cover border-2 border-primary"
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-1 right-1 h-6 w-6"
+                            onClick={() => handleRemovePhoto(index)}
+                          >
+                            ✕
+                          </Button>
+                        </>
+                      )}
+                      {!photoPreviews[index] && (
+                        <div className="w-full h-32 rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-muted/10">
+                          <span className="text-muted-foreground text-sm">Photo {index + 1}</span>
+                        </div>
+                      )}
+                    </div>
+                    <Input
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      onChange={(e) => handlePhotoChange(e, index)}
+                      className="text-sm"
+                    />
+                  </div>
+                ))}
               </div>
             </div>
 

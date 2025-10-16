@@ -16,7 +16,7 @@ interface Profile {
   name: string;
   bio: string;
   instrument: string;
-  photo_url: string | null;
+  photo_urls: string[];
   location_lat: number;
   location_lng: number;
 }
@@ -267,7 +267,7 @@ const Dashboard = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Avatar className="h-16 w-16 border-2 border-primary">
-              <AvatarImage src={profile?.photo_url || undefined} alt={profile?.name} />
+              <AvatarImage src={profile?.photo_urls?.[0] || undefined} alt={profile?.name} />
               <AvatarFallback className="text-lg font-semibold bg-primary/10">
                 {profile?.name?.charAt(0)?.toUpperCase() || "U"}
               </AvatarFallback>

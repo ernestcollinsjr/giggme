@@ -145,7 +145,7 @@ export type Database = {
           location_lat: number | null
           location_lng: number | null
           name: string
-          photo_url: string | null
+          photo_urls: string[] | null
           rider_notes: string | null
           updated_at: string | null
         }
@@ -158,7 +158,7 @@ export type Database = {
           location_lat?: number | null
           location_lng?: number | null
           name: string
-          photo_url?: string | null
+          photo_urls?: string[] | null
           rider_notes?: string | null
           updated_at?: string | null
         }
@@ -171,7 +171,7 @@ export type Database = {
           location_lat?: number | null
           location_lng?: number | null
           name?: string
-          photo_url?: string | null
+          photo_urls?: string[] | null
           rider_notes?: string | null
           updated_at?: string | null
         }

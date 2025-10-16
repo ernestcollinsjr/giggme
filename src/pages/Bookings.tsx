@@ -216,6 +216,16 @@ const Bookings = () => {
               <CardDescription>Add a new performance to your calendar</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="venueName">Venue Name (Optional)</Label>
+                <Input
+                  id="venueName"
+                  placeholder="e.g., Blue Note Jazz Club, City Arena..."
+                  value={venueName}
+                  onChange={(e) => setVenueName(e.target.value)}
+                />
+              </div>
+
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Date</Label>
@@ -299,16 +309,6 @@ const Bookings = () => {
                     />
                   </div>
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="venueName">Venue Name (Optional)</Label>
-                <Input
-                  id="venueName"
-                  placeholder="e.g., Blue Note Jazz Club, City Arena..."
-                  value={venueName}
-                  onChange={(e) => setVenueName(e.target.value)}
-                />
               </div>
 
               <div className="space-y-2">

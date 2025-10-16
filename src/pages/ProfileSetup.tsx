@@ -364,7 +364,6 @@ const ProfileSetup = () => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="main-photo">Main Profile Photo</Label>
               <div className="flex items-center gap-4">
                 <div className="relative group cursor-pointer" onClick={() => document.getElementById('main-photo')?.click()}>
                   {photoPreviews[0] ? (

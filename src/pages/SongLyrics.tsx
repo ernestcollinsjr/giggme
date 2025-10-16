@@ -3,9 +3,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Music } from "lucide-react";
+import { ArrowLeft, Music, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface Song {
   id: string;
@@ -20,6 +22,8 @@ const SongLyrics = () => {
   const { toast } = useToast();
   const [song, setSong] = useState<Song | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -28,6 +32,17 @@ const SongLyrics = () => {
       if (!user) {
         navigate("/auth");
         return;
+      }
+
+      // Fetch user role
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .single();
+
+      if (roleData) {
+        setUserRole(roleData.role);
       }
       
       fetchSong();
@@ -55,6 +70,52 @@ const SongLyrics = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleLyricsUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check file type
+    if (!file.name.endsWith('.txt') && !file.name.endsWith('.lrc')) {
+      toast({
+        variant: "destructive",
+        title: "Invalid file type",
+        description: "Please upload a .txt or .lrc file",
+      });
+      return;
+    }
+
+    setUploading(true);
+
+    try {
+      const text = await file.text();
+
+      const { error } = await supabase
+        .from("setlist_songs")
+        .update({ lyrics: text })
+        .eq("id", songId);
+
+      if (error) throw error;
+
+      setSong((prev) => prev ? { ...prev, lyrics: text } : null);
+
+      toast({
+        title: "Lyrics uploaded",
+        description: "The lyrics have been saved successfully",
+      });
+
+      // Reset file input
+      e.target.value = "";
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error uploading lyrics",
+        description: error.message,
+      });
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -96,10 +157,32 @@ const SongLyrics = () => {
 
         <Card className="border-border/50 shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Music className="h-5 w-5" />
-              Lyrics
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Music className="h-5 w-5" />
+                Lyrics
+              </CardTitle>
+              {userRole === "band_leader" && (
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="lyrics-upload" className="cursor-pointer">
+                    <Button variant="outline" size="sm" asChild disabled={uploading}>
+                      <span>
+                        <Upload className="h-4 w-4 mr-2" />
+                        {uploading ? "Uploading..." : "Upload Lyrics"}
+                      </span>
+                    </Button>
+                  </Label>
+                  <Input
+                    id="lyrics-upload"
+                    type="file"
+                    accept=".txt,.lrc"
+                    onChange={handleLyricsUpload}
+                    className="hidden"
+                    disabled={uploading}
+                  />
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             {song.lyrics ? (

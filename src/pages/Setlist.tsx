@@ -295,10 +295,11 @@ const Setlist = () => {
                                        size="sm"
                                        type="button"
                                        className="relative z-10"
-                                       onClick={(e) => {
-                                         e.stopPropagation();
-                                         handleYouTubeWatch(song);
-                                       }}
+                                        onClick={(e) => {
+                                          console.log('[Setlist] Watch button clicked!', song.title, song.audio_url);
+                                          e.stopPropagation();
+                                          handleYouTubeWatch(song);
+                                        }}
                                      >
                                        <Play className="h-4 w-4 mr-2" />
                                        Watch

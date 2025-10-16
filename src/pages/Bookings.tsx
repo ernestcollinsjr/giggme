@@ -20,6 +20,7 @@ interface Gig {
   date: string;
   venue: string;
   notes: string | null;
+  attire: string | null;
   status: string;
   user_id: string;
 }
@@ -36,6 +37,7 @@ const Bookings = () => {
   const [time, setTime] = useState("19:00");
   const [venue, setVenue] = useState("");
   const [notes, setNotes] = useState("");
+  const [attire, setAttire] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -96,6 +98,7 @@ const Bookings = () => {
           date: gigDateTime.toISOString(),
           venue: venue.trim(),
           notes: notes.trim() || null,
+          attire: attire.trim() || null,
           status: "pending",
         });
 
@@ -111,6 +114,7 @@ const Bookings = () => {
       setTime("19:00");
       setVenue("");
       setNotes("");
+      setAttire("");
       checkAuthAndFetchData();
     } catch (error: any) {
       toast({
@@ -250,6 +254,16 @@ const Bookings = () => {
                 />
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="attire">Attire (Optional)</Label>
+                <Input
+                  id="attire"
+                  placeholder="e.g., Black tie, Casual, Band uniform..."
+                  value={attire}
+                  onChange={(e) => setAttire(e.target.value)}
+                />
+              </div>
+
               <Button onClick={handleAddGig} disabled={isSubmitting} className="w-full">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Gig
@@ -293,6 +307,11 @@ const Bookings = () => {
                         {gig.notes && (
                           <p className="text-sm text-muted-foreground mt-2">
                             {gig.notes}
+                          </p>
+                        )}
+                        {gig.attire && (
+                          <p className="text-sm text-muted-foreground mt-2">
+                            <span className="font-medium">Attire:</span> {gig.attire}
                           </p>
                         )}
                       </div>

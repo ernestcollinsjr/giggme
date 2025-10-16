@@ -51,6 +51,7 @@ export type Database = {
       }
       gigs: {
         Row: {
+          attire: string | null
           created_at: string | null
           date: string
           id: string
@@ -61,6 +62,7 @@ export type Database = {
           venue: string
         }
         Insert: {
+          attire?: string | null
           created_at?: string | null
           date: string
           id?: string
@@ -71,6 +73,7 @@ export type Database = {
           venue: string
         }
         Update: {
+          attire?: string | null
           created_at?: string | null
           date?: string
           id?: string

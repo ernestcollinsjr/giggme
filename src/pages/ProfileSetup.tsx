@@ -364,16 +364,36 @@ const ProfileSetup = () => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label>Profile Photos (Max 3)</Label>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {[0, 1, 2].map((index) => (
+              <Label htmlFor="main-photo">Main Profile Photo</Label>
+              <div className="flex items-center gap-4">
+                {photoPreviews[0] && (
+                  <img 
+                    src={photoPreviews[0]} 
+                    alt="Main profile" 
+                    className="w-20 h-20 rounded-full object-cover border-2 border-primary"
+                  />
+                )}
+                <Input
+                  id="main-photo"
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  onChange={(e) => handlePhotoChange(e, 0)}
+                  className="flex-1"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Additional Photos (Optional, 2 max)</Label>
+              <div className="grid grid-cols-2 gap-4">
+                {[1, 2].map((index) => (
                   <div key={index} className="space-y-2">
                     <div className="relative">
                       {photoPreviews[index] && (
                         <>
                           <img 
                             src={photoPreviews[index]} 
-                            alt={`Profile ${index + 1}`} 
+                            alt={`Additional photo ${index}`} 
                             className="w-full h-32 rounded-lg object-cover border-2 border-primary"
                           />
                           <Button

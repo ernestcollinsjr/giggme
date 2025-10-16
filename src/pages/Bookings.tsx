@@ -21,6 +21,7 @@ interface Gig {
   venue: string;
   notes: string | null;
   attire: string | null;
+  food_provided: string | null;
   status: string;
   user_id: string;
 }
@@ -38,6 +39,7 @@ const Bookings = () => {
   const [venue, setVenue] = useState("");
   const [notes, setNotes] = useState("");
   const [attire, setAttire] = useState("");
+  const [foodProvided, setFoodProvided] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -99,6 +101,7 @@ const Bookings = () => {
           venue: venue.trim(),
           notes: notes.trim() || null,
           attire: attire.trim() || null,
+          food_provided: foodProvided.trim() || null,
           status: "pending",
         });
 
@@ -115,6 +118,7 @@ const Bookings = () => {
       setVenue("");
       setNotes("");
       setAttire("");
+      setFoodProvided("");
       checkAuthAndFetchData();
     } catch (error: any) {
       toast({
@@ -264,6 +268,16 @@ const Bookings = () => {
                 />
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="foodProvided">Food Provided (Optional)</Label>
+                <Input
+                  id="foodProvided"
+                  placeholder="e.g., Dinner included, Refreshments only..."
+                  value={foodProvided}
+                  onChange={(e) => setFoodProvided(e.target.value)}
+                />
+              </div>
+
               <Button onClick={handleAddGig} disabled={isSubmitting} className="w-full">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Gig
@@ -312,6 +326,11 @@ const Bookings = () => {
                         {gig.attire && (
                           <p className="text-sm text-muted-foreground mt-2">
                             <span className="font-medium">Attire:</span> {gig.attire}
+                          </p>
+                        )}
+                        {gig.food_provided && (
+                          <p className="text-sm text-muted-foreground mt-2">
+                            <span className="font-medium">Food Provided:</span> {gig.food_provided}
                           </p>
                         )}
                       </div>

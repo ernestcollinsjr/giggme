@@ -54,6 +54,7 @@ export type Database = {
           attire: string | null
           created_at: string | null
           date: string
+          food_provided: string | null
           id: string
           notes: string | null
           status: Database["public"]["Enums"]["gig_status"] | null
@@ -65,6 +66,7 @@ export type Database = {
           attire?: string | null
           created_at?: string | null
           date: string
+          food_provided?: string | null
           id?: string
           notes?: string | null
           status?: Database["public"]["Enums"]["gig_status"] | null
@@ -76,6 +78,7 @@ export type Database = {
           attire?: string | null
           created_at?: string | null
           date?: string
+          food_provided?: string | null
           id?: string
           notes?: string | null
           status?: Database["public"]["Enums"]["gig_status"] | null

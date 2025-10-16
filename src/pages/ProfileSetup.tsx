@@ -86,11 +86,32 @@ const ProfileSetup = () => {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setTempImageSrc(reader.result as string);
+        const imgSrc = reader.result as string;
+        setTempImageSrc(imgSrc);
         setCurrentEditIndex(index);
-        setImageScale(1);
-        setImagePosition({ x: 0, y: 0 });
-        setShowPositionModal(true);
+        
+        // Load image to calculate centered position
+        const img = new Image();
+        img.onload = () => {
+          const containerWidth = 768; // max-w-3xl container
+          const containerHeight = 384; // h-96
+          
+          // Calculate scale to fit image nicely in container
+          const scaleToFitWidth = containerWidth / img.width;
+          const scaleToFitHeight = containerHeight / img.height;
+          const initialScale = Math.min(scaleToFitWidth, scaleToFitHeight, 1.2); // Max 1.2x zoom
+          
+          // Calculate centered position
+          const scaledWidth = img.width * initialScale;
+          const scaledHeight = img.height * initialScale;
+          const centerX = (containerWidth - scaledWidth) / 2;
+          const centerY = (containerHeight - scaledHeight) / 2;
+          
+          setImageScale(initialScale);
+          setImagePosition({ x: centerX, y: centerY });
+          setShowPositionModal(true);
+        };
+        img.src = imgSrc;
       };
       reader.readAsDataURL(file);
       

@@ -23,6 +23,7 @@ interface Rehearsal {
   food_provided: string | null;
   venue_contact_person: string | null;
   sound_man_info: string | null;
+  end_time: string | null;
   band_leader_id: string;
 }
 
@@ -35,7 +36,8 @@ const Rehearsals = () => {
   
   // Form state
   const [date, setDate] = useState<Date>();
-  const [time, setTime] = useState("12:00");
+  const [startTime, setStartTime] = useState("12:00");
+  const [endTime, setEndTime] = useState("14:00");
   const [venue, setVenue] = useState("");
   const [notes, setNotes] = useState("");
   const [foodProvided, setFoodProvided] = useState("");
@@ -89,7 +91,7 @@ const Rehearsals = () => {
       if (!user) throw new Error("Not authenticated");
 
       // Combine date and time
-      const [hours, minutes] = time.split(":").map(Number);
+      const [hours, minutes] = startTime.split(":").map(Number);
       const rehearsalDateTime = new Date(date);
       rehearsalDateTime.setHours(hours, minutes, 0, 0);
 
@@ -98,6 +100,7 @@ const Rehearsals = () => {
         .insert({
           band_leader_id: user.id,
           date: rehearsalDateTime.toISOString(),
+          end_time: endTime,
           venue: venue.trim(),
           notes: notes.trim() || null,
           food_provided: foodProvided.trim() || null,
@@ -113,7 +116,8 @@ const Rehearsals = () => {
 
       // Reset form and refresh data
       setDate(undefined);
-      setTime("12:00");
+      setStartTime("12:00");
+      setEndTime("14:00");
       setVenue("");
       setNotes("");
       setFoodProvided("");
@@ -220,16 +224,29 @@ const Rehearsals = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="time">Time</Label>
+                  <Label htmlFor="startTime">Start Time</Label>
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4 text-muted-foreground" />
                     <Input
-                      id="time"
+                      id="startTime"
                       type="time"
-                      value={time}
-                      onChange={(e) => setTime(e.target.value)}
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
                     />
                   </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="endTime">End Time</Label>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="endTime"
+                    type="time"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                  />
                 </div>
               </div>
 
@@ -306,7 +323,12 @@ const Rehearsals = () => {
                       <div className="flex-1">
                         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                           <CalendarIcon className="h-4 w-4" />
-                          {format(new Date(rehearsal.date), "PPP 'at' p")}
+                          {format(new Date(rehearsal.date), "PPP")}
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                          <Clock className="h-4 w-4" />
+                          {format(new Date(rehearsal.date), "p")}
+                          {rehearsal.end_time && ` - ${rehearsal.end_time}`}
                         </div>
                         <div className="flex items-center gap-2 mb-2">
                           <MapPin className="h-4 w-4 text-primary" />

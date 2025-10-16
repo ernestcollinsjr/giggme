@@ -24,6 +24,7 @@ interface Gig {
   food_provided: string | null;
   venue_contact_person: string | null;
   sound_man_info: string | null;
+  end_time: string | null;
   status: string;
   user_id: string;
 }
@@ -37,7 +38,8 @@ const Bookings = () => {
   
   // Form state
   const [date, setDate] = useState<Date>();
-  const [time, setTime] = useState("19:00");
+  const [startTime, setStartTime] = useState("19:00");
+  const [endTime, setEndTime] = useState("23:00");
   const [venue, setVenue] = useState("");
   const [notes, setNotes] = useState("");
   const [attire, setAttire] = useState("");
@@ -93,7 +95,7 @@ const Bookings = () => {
       if (!user) throw new Error("Not authenticated");
 
       // Combine date and time
-      const [hours, minutes] = time.split(":").map(Number);
+      const [hours, minutes] = startTime.split(":").map(Number);
       const gigDateTime = new Date(date);
       gigDateTime.setHours(hours, minutes, 0, 0);
 
@@ -102,6 +104,7 @@ const Bookings = () => {
         .insert({
           user_id: user.id,
           date: gigDateTime.toISOString(),
+          end_time: endTime,
           venue: venue.trim(),
           notes: notes.trim() || null,
           attire: attire.trim() || null,
@@ -120,7 +123,8 @@ const Bookings = () => {
 
       // Reset form and refresh data
       setDate(undefined);
-      setTime("19:00");
+      setStartTime("19:00");
+      setEndTime("23:00");
       setVenue("");
       setNotes("");
       setAttire("");
@@ -229,16 +233,29 @@ const Bookings = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="time">Time</Label>
+                  <Label htmlFor="startTime">Start Time</Label>
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4 text-muted-foreground" />
                     <Input
-                      id="time"
+                      id="startTime"
                       type="time"
-                      value={time}
-                      onChange={(e) => setTime(e.target.value)}
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
                     />
                   </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="endTime">End Time</Label>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="endTime"
+                    type="time"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                  />
                 </div>
               </div>
 
@@ -340,7 +357,12 @@ const Bookings = () => {
                         </div>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                           <CalendarIcon className="h-4 w-4" />
-                          {format(new Date(gig.date), "PPP 'at' p")}
+                          {format(new Date(gig.date), "PPP")}
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                          <Clock className="h-4 w-4" />
+                          {format(new Date(gig.date), "p")}
+                          {gig.end_time && ` - ${gig.end_time}`}
                         </div>
                         <div className="flex items-center gap-2 mb-2">
                           <MapPin className="h-4 w-4 text-primary" />

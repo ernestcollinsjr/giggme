@@ -289,22 +289,22 @@ const Setlist = () => {
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2 shrink-0">
-                                   {song.audio_url && /(youtu\.be|youtube\.com|youtube-nocookie\.com)/i.test(song.audio_url) && (
-                                     <Button
-                                       variant="ghost"
-                                       size="sm"
-                                       type="button"
-                                       className="relative z-10"
-                                        onClick={(e) => {
-                                          console.log('[Setlist] Watch button clicked!', song.title, song.audio_url);
-                                          e.stopPropagation();
-                                          handleYouTubeWatch(song);
-                                        }}
-                                     >
-                                       <Play className="h-4 w-4 mr-2" />
-                                       Watch
-                                     </Button>
-                                   )}
+                                 {song.audio_url && /(youtu\.be|youtube\.com|youtube-nocookie\.com)/i.test(song.audio_url) && (
+                                   <Button
+                                     variant="default"
+                                     size="sm"
+                                     className="bg-red-500 hover:bg-red-600 text-white relative z-50"
+                                     onClick={() => {
+                                       console.log('[Setlist] BUTTON CLICKED!', song.title);
+                                       alert(`Clicked: ${song.title}`);
+                                       setYtUrl(song.audio_url!);
+                                       setYtOpen(true);
+                                     }}
+                                   >
+                                     <Play className="h-4 w-4 mr-2" />
+                                     WATCH NOW
+                                   </Button>
+                                 )}
                                   {song.audio_url && !/(youtu\.be|youtube\.com|youtube-nocookie\.com)/i.test(song.audio_url) && (
                                     <Button
                                       size="icon"

@@ -55,18 +55,42 @@ serve(async (req) => {
     }
 
     if (!videoId || videoId.length < 10) {
-      console.log('Could not extract video ID, returning original URL');
-      return new Response(
-        JSON.stringify({ 
-          error: 'Could not extract video ID',
-          originalUrl: url,
-          canonicalUrl: url 
-        }),
-        { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      // Attempt to resolve from YouTube search URLs like /results?search_query=...
+      try {
+        const urlObj = new URL(url);
+        const q = urlObj.searchParams.get('search_query') || urlObj.searchParams.get('q');
+        if (q) {
+          const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=1&q=${encodeURIComponent(q)}&key=${YOUTUBE_API_KEY}`;
+          console.log('Searching YouTube API for query:', q);
+          const sRes = await fetch(searchUrl);
+          if (!sRes.ok) {
+            console.error('YouTube Search API error:', sRes.status, await sRes.text());
+            throw new Error(`YouTube Search API error: ${sRes.status}`);
+          }
+          const sData = await sRes.json();
+          if (sData.items && sData.items.length > 0 && sData.items[0].id && sData.items[0].id.videoId) {
+            videoId = sData.items[0].id.videoId;
+            console.log('Resolved search to videoId:', videoId);
+          }
         }
-      );
+      } catch (e) {
+        console.error('Search resolution failed:', e);
+      }
+
+      if (!videoId || videoId.length < 10) {
+        console.log('Could not extract video ID, returning original URL');
+        return new Response(
+          JSON.stringify({ 
+            error: 'Could not extract video ID',
+            originalUrl: url,
+            canonicalUrl: url 
+          }),
+          { 
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
+      }
     }
 
     // Fetch video metadata from YouTube API

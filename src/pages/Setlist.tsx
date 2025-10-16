@@ -35,7 +35,7 @@ const Setlist = () => {
   const [playingSongId, setPlayingSongId] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [expandedVideoSongId, setExpandedVideoSongId] = useState<string | null>(null);
-
+  const [resolvedUrls, setResolvedUrls] = useState<Record<string, string>>({});
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -279,9 +279,20 @@ const Setlist = () => {
                                      size="sm"
                                      type="button"
                                      className="pointer-events-auto z-10"
-                                     onClick={() => {
+                                     onClick={async () => {
                                        console.log('[Setlist] Watch click', { title: song.title, url: song.audio_url });
-                                       toast({ title: 'Opening video', description: song.title });
+                                       toast({ title: 'Loading video', description: song.title });
+                                       try {
+                                         const { data, error } = await supabase.functions.invoke('youtube-proxy', {
+                                           body: { url: song.audio_url }
+                                         });
+                                         console.log('[Setlist] youtube-proxy result', { data, error });
+                                         const useUrl = (data && (data.embedUrl || data.canonicalUrl)) || song.audio_url;
+                                         setResolvedUrls((prev) => ({ ...prev, [song.id]: useUrl }));
+                                       } catch (err) {
+                                         console.error('[Setlist] youtube-proxy error', err);
+                                         setResolvedUrls((prev) => ({ ...prev, [song.id]: song.audio_url! }));
+                                       }
                                        setExpandedVideoSongId(
                                          expandedVideoSongId === song.id ? null : song.id
                                        );
@@ -320,9 +331,9 @@ const Setlist = () => {
                                {expandedVideoSongId === song.id && song.audio_url && (
                                  <div className="rounded-lg overflow-hidden bg-black">
                                    <AspectRatio ratio={16 / 9}>
-                                     {toYouTubeEmbed(song.audio_url) ? (
+                                     {toYouTubeEmbed(resolvedUrls[song.id] || song.audio_url) ? (
                                        <iframe
-                                         src={toYouTubeEmbed(song.audio_url)!}
+                                         src={toYouTubeEmbed(resolvedUrls[song.id] || song.audio_url) || (resolvedUrls[song.id] || song.audio_url)}
                                          title={`YouTube video player - ${song.title}`}
                                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                          allowFullScreen
@@ -330,7 +341,17 @@ const Setlist = () => {
                                        />
                                      ) : (
                                        <div className="flex items-center justify-center h-full bg-muted">
-                                         <p className="text-muted-foreground">Unable to load video</p>
+                                         <div className="text-center space-y-2">
+                                           <p className="text-muted-foreground">Unable to load video</p>
+                                           <a
+                                             href={resolvedUrls[song.id] || song.audio_url}
+                                             target="_blank"
+                                             rel="noopener noreferrer"
+                                             className="inline-block px-3 py-2 rounded bg-primary text-primary-foreground"
+                                           >
+                                             Open on YouTube
+                                           </a>
+                                         </div>
                                        </div>
                                      )}
                                    </AspectRatio>

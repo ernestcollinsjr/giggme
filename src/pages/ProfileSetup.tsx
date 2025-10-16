@@ -359,7 +359,12 @@ const ProfileSetup = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="bio">Bio</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="bio">Bio</Label>
+                <span className="text-sm text-muted-foreground">
+                  {bio.length}/350
+                </span>
+              </div>
               <Textarea
                 id="bio"
                 placeholder={
@@ -371,6 +376,7 @@ const ProfileSetup = () => {
                 }
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
+                maxLength={350}
                 rows={4}
                 required
               />

@@ -22,6 +22,8 @@ interface Gig {
   notes: string | null;
   attire: string | null;
   food_provided: string | null;
+  venue_contact_person: string | null;
+  sound_man_info: string | null;
   status: string;
   user_id: string;
 }
@@ -40,6 +42,8 @@ const Bookings = () => {
   const [notes, setNotes] = useState("");
   const [attire, setAttire] = useState("");
   const [foodProvided, setFoodProvided] = useState("");
+  const [venueContactPerson, setVenueContactPerson] = useState("");
+  const [soundManInfo, setSoundManInfo] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -102,6 +106,8 @@ const Bookings = () => {
           notes: notes.trim() || null,
           attire: attire.trim() || null,
           food_provided: foodProvided.trim() || null,
+          venue_contact_person: venueContactPerson.trim() || null,
+          sound_man_info: soundManInfo.trim() || null,
           status: "pending",
         });
 
@@ -119,6 +125,8 @@ const Bookings = () => {
       setNotes("");
       setAttire("");
       setFoodProvided("");
+      setVenueContactPerson("");
+      setSoundManInfo("");
       checkAuthAndFetchData();
     } catch (error: any) {
       toast({
@@ -278,6 +286,26 @@ const Bookings = () => {
                 />
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="venueContactPerson">Venue Contact Person (Optional)</Label>
+                <Input
+                  id="venueContactPerson"
+                  placeholder="e.g., John Smith, 555-1234..."
+                  value={venueContactPerson}
+                  onChange={(e) => setVenueContactPerson(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="soundManInfo">Sound Man Information (Optional)</Label>
+                <Input
+                  id="soundManInfo"
+                  placeholder="e.g., Mike Johnson, 555-5678..."
+                  value={soundManInfo}
+                  onChange={(e) => setSoundManInfo(e.target.value)}
+                />
+              </div>
+
               <Button onClick={handleAddGig} disabled={isSubmitting} className="w-full">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Gig
@@ -331,6 +359,16 @@ const Bookings = () => {
                         {gig.food_provided && (
                           <p className="text-sm text-muted-foreground mt-2">
                             <span className="font-medium">Food Provided:</span> {gig.food_provided}
+                          </p>
+                        )}
+                        {gig.venue_contact_person && (
+                          <p className="text-sm text-muted-foreground mt-2">
+                            <span className="font-medium">Venue Contact Person:</span> {gig.venue_contact_person}
+                          </p>
+                        )}
+                        {gig.sound_man_info && (
+                          <p className="text-sm text-muted-foreground mt-2">
+                            <span className="font-medium">Sound Man Information:</span> {gig.sound_man_info}
                           </p>
                         )}
                       </div>

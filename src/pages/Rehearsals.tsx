@@ -19,6 +19,10 @@ interface Rehearsal {
   date: string;
   venue: string;
   notes: string | null;
+  attire: string | null;
+  food_provided: string | null;
+  venue_contact_person: string | null;
+  sound_man_info: string | null;
   band_leader_id: string;
 }
 
@@ -34,6 +38,10 @@ const Rehearsals = () => {
   const [time, setTime] = useState("12:00");
   const [venue, setVenue] = useState("");
   const [notes, setNotes] = useState("");
+  const [attire, setAttire] = useState("");
+  const [foodProvided, setFoodProvided] = useState("");
+  const [venueContactPerson, setVenueContactPerson] = useState("");
+  const [soundManInfo, setSoundManInfo] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -94,6 +102,10 @@ const Rehearsals = () => {
           date: rehearsalDateTime.toISOString(),
           venue: venue.trim(),
           notes: notes.trim() || null,
+          attire: attire.trim() || null,
+          food_provided: foodProvided.trim() || null,
+          venue_contact_person: venueContactPerson.trim() || null,
+          sound_man_info: soundManInfo.trim() || null,
         });
 
       if (error) throw error;
@@ -108,6 +120,10 @@ const Rehearsals = () => {
       setTime("12:00");
       setVenue("");
       setNotes("");
+      setAttire("");
+      setFoodProvided("");
+      setVenueContactPerson("");
+      setSoundManInfo("");
       checkAuthAndFetchData();
     } catch (error: any) {
       toast({
@@ -247,6 +263,46 @@ const Rehearsals = () => {
                 />
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="attire">Attire (Optional)</Label>
+                <Input
+                  id="attire"
+                  placeholder="e.g., Black tie, Casual, Band uniform..."
+                  value={attire}
+                  onChange={(e) => setAttire(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="foodProvided">Food Provided (Optional)</Label>
+                <Input
+                  id="foodProvided"
+                  placeholder="e.g., Dinner included, Refreshments only..."
+                  value={foodProvided}
+                  onChange={(e) => setFoodProvided(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="venueContactPerson">Venue Contact Person (Optional)</Label>
+                <Input
+                  id="venueContactPerson"
+                  placeholder="e.g., John Smith, 555-1234..."
+                  value={venueContactPerson}
+                  onChange={(e) => setVenueContactPerson(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="soundManInfo">Sound Man Information (Optional)</Label>
+                <Input
+                  id="soundManInfo"
+                  placeholder="e.g., Mike Johnson, 555-5678..."
+                  value={soundManInfo}
+                  onChange={(e) => setSoundManInfo(e.target.value)}
+                />
+              </div>
+
               <Button onClick={handleAddRehearsal} disabled={isSubmitting} className="w-full">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Rehearsal
@@ -285,6 +341,26 @@ const Rehearsals = () => {
                         {rehearsal.notes && (
                           <p className="text-sm text-muted-foreground mt-2">
                             {rehearsal.notes}
+                          </p>
+                        )}
+                        {rehearsal.attire && (
+                          <p className="text-sm text-muted-foreground mt-2">
+                            <span className="font-medium">Attire:</span> {rehearsal.attire}
+                          </p>
+                        )}
+                        {rehearsal.food_provided && (
+                          <p className="text-sm text-muted-foreground mt-2">
+                            <span className="font-medium">Food Provided:</span> {rehearsal.food_provided}
+                          </p>
+                        )}
+                        {rehearsal.venue_contact_person && (
+                          <p className="text-sm text-muted-foreground mt-2">
+                            <span className="font-medium">Venue Contact Person:</span> {rehearsal.venue_contact_person}
+                          </p>
+                        )}
+                        {rehearsal.sound_man_info && (
+                          <p className="text-sm text-muted-foreground mt-2">
+                            <span className="font-medium">Sound Man Information:</span> {rehearsal.sound_man_info}
                           </p>
                         )}
                       </div>

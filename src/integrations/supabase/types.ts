@@ -167,31 +167,43 @@ export type Database = {
       }
       rehearsals: {
         Row: {
+          attire: string | null
           band_leader_id: string
           created_at: string
           date: string
+          food_provided: string | null
           id: string
           notes: string | null
+          sound_man_info: string | null
           updated_at: string
           venue: string
+          venue_contact_person: string | null
         }
         Insert: {
+          attire?: string | null
           band_leader_id: string
           created_at?: string
           date: string
+          food_provided?: string | null
           id?: string
           notes?: string | null
+          sound_man_info?: string | null
           updated_at?: string
           venue: string
+          venue_contact_person?: string | null
         }
         Update: {
+          attire?: string | null
           band_leader_id?: string
           created_at?: string
           date?: string
+          food_provided?: string | null
           id?: string
           notes?: string | null
+          sound_man_info?: string | null
           updated_at?: string
           venue?: string
+          venue_contact_person?: string | null
         }
         Relationships: []
       }

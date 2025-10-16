@@ -28,6 +28,7 @@ const ProfileSetup = () => {
   const [photoPreviews, setPhotoPreviews] = useState<string[]>(["", "", "", ""]);
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const [processingPhoto, setProcessingPhoto] = useState<number | null>(null);
+  const [memberSince, setMemberSince] = useState<string>("");
   
   // Email sending state
   const [showEmailDialog, setShowEmailDialog] = useState(false);
@@ -62,6 +63,16 @@ const ProfileSetup = () => {
           const urls = profile.photo_urls || [];
           setPhotoUrls(urls);
           setPhotoPreviews(urls.length > 0 ? [...urls, "", "", "", ""].slice(0, 4) : ["", "", "", ""]);
+          
+          // Format member since date
+          if (profile.created_at) {
+            const date = new Date(profile.created_at);
+            const formattedDate = date.toLocaleDateString('en-US', { 
+              month: 'short', 
+              year: 'numeric' 
+            });
+            setMemberSince(formattedDate);
+          }
         }
         
         if (roleData) {
@@ -395,42 +406,51 @@ const ProfileSetup = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <div className="flex items-center gap-4">
-                <div className="relative group cursor-pointer" onClick={() => !processingPhoto && document.getElementById('main-photo')?.click()}>
-                  {processingPhoto === 0 ? (
-                    <div className="w-20 h-20 rounded-full border-2 border-primary flex items-center justify-center bg-muted/10">
-                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                    </div>
-                  ) : photoPreviews[0] ? (
-                    <>
-                      <img 
-                        src={photoPreviews[0]} 
-                        alt="Main profile" 
-                        className="w-20 h-20 rounded-full object-cover border-2 border-primary"
-                      />
-                      <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <span className="text-white text-xs font-medium">Change</span>
+                <div className="flex flex-col gap-2">
+                  <div className="relative group cursor-pointer" onClick={() => !processingPhoto && document.getElementById('main-photo')?.click()}>
+                    {processingPhoto === 0 ? (
+                      <div className="w-20 h-20 rounded-full border-2 border-primary flex items-center justify-center bg-muted/10">
+                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
                       </div>
-                    </>
-                  ) : (
-                    <div className="w-20 h-20 rounded-full border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-muted/10">
-                      <span className="text-muted-foreground text-xs">Upload</span>
-                    </div>
+                    ) : photoPreviews[0] ? (
+                      <>
+                        <img 
+                          src={photoPreviews[0]} 
+                          alt="Main profile" 
+                          className="w-20 h-20 rounded-full object-cover border-2 border-primary"
+                        />
+                        <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <span className="text-white text-xs font-medium">Change</span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="w-20 h-20 rounded-full border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-muted/10">
+                        <span className="text-muted-foreground text-xs">Upload</span>
+                      </div>
+                    )}
+                  </div>
+                  {memberSince && (
+                    <span className="text-xs text-muted-foreground text-center">
+                      Member since {memberSince}
+                    </span>
                   )}
                 </div>
-                <Input
-                  id="main-photo"
-                  type="file"
-                  accept="image/jpeg,image/jpg,image/png,image/webp"
-                  onChange={(e) => handlePhotoChange(e, 0)}
-                  className={photoPreviews[0] ? "hidden" : "flex-1"}
-                  disabled={processingPhoto !== null}
-                />
-                {!photoPreviews[0] && processingPhoto !== 0 && (
-                  <span className="text-sm text-muted-foreground">AI will auto-center your face</span>
-                )}
-                {processingPhoto === 0 && (
-                  <span className="text-sm text-muted-foreground">Processing with AI...</span>
-                )}
+                <div className="flex-1">
+                  <Input
+                    id="main-photo"
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    onChange={(e) => handlePhotoChange(e, 0)}
+                    className={photoPreviews[0] ? "hidden" : ""}
+                    disabled={processingPhoto !== null}
+                  />
+                  {!photoPreviews[0] && processingPhoto !== 0 && (
+                    <span className="text-sm text-muted-foreground">AI will auto-center your face</span>
+                  )}
+                  {processingPhoto === 0 && (
+                    <span className="text-sm text-muted-foreground">Processing with AI...</span>
+                  )}
+                </div>
               </div>
             </div>
 

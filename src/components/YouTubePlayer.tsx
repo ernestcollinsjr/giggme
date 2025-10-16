@@ -91,14 +91,19 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ url, open, onOpenChange }
               URL: {url}
             </p>
             {url && (
-              <a
-                href={`/open?to=${encodeURIComponent(url)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary underline text-sm"
-              >
-                Open in YouTube
-              </a>
+              <div className="space-y-2">
+                <a
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block bg-primary text-primary-foreground px-4 py-2 rounded hover:bg-primary/90 transition-colors"
+                >
+                  Open in YouTube
+                </a>
+                <p className="text-xs text-muted-foreground">
+                  This link will open YouTube in a new tab
+                </p>
+              </div>
             )}
           </div>
         )}

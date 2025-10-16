@@ -105,21 +105,30 @@ const Setlist = () => {
   const handleYouTubeWatch = async (song: SetlistSong) => {
     if (!song.audio_url) return;
     
+    console.log('[Setlist] handleYouTubeWatch called with URL:', song.audio_url);
+    
     try {
       console.log('[Setlist] Calling YouTube proxy for:', song.audio_url);
+      
       const { data, error } = await supabase.functions.invoke('youtube-proxy', {
         body: { url: song.audio_url }
       });
+
+      console.log('[Setlist] YouTube proxy response:', { data, error });
 
       if (error) {
         console.error('[Setlist] YouTube proxy error:', error);
         // Fallback to original URL
         setYtUrl(song.audio_url);
         setYtOpen(true);
+        toast({ 
+          title: 'Opening video', 
+          description: 'Fallback to original URL' 
+        });
         return;
       }
 
-      if (data.success) {
+      if (data && data.success) {
         console.log('[Setlist] YouTube proxy success:', data.title);
         setYtUrl(data.canonicalUrl || song.audio_url);
         setYtOpen(true);
@@ -131,12 +140,20 @@ const Setlist = () => {
         console.log('[Setlist] YouTube proxy failed, using original URL');
         setYtUrl(song.audio_url);
         setYtOpen(true);
+        toast({ 
+          title: 'Opening video', 
+          description: 'Using original URL' 
+        });
       }
     } catch (error) {
       console.error('[Setlist] Error calling YouTube proxy:', error);
       // Fallback to original URL
       setYtUrl(song.audio_url);
       setYtOpen(true);
+      toast({ 
+        title: 'Opening video', 
+        description: 'Fallback mode' 
+      });
     }
   };
 

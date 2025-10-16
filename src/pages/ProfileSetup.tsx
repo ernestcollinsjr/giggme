@@ -9,7 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "@supabase/supabase-js";
-import { LogOut, Crown, Music, Briefcase } from "lucide-react";
+import { LogOut, Crown, Music, Briefcase, Mail } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const ProfileSetup = () => {
   const navigate = useNavigate();
@@ -25,6 +26,12 @@ const ProfileSetup = () => {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string>("");
   const [photoUrl, setPhotoUrl] = useState<string>("");
+  
+  // Email sending state
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [recipientEmail, setRecipientEmail] = useState("");
+  const [recipientName, setRecipientName] = useState("");
+  const [sendingEmail, setSendingEmail] = useState(false);
 
   useEffect(() => {
     const getUser = async () => {
@@ -191,6 +198,50 @@ const ProfileSetup = () => {
     }
   };
 
+  const handleSendRider = async () => {
+    if (!recipientEmail.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Email required",
+        description: "Please enter a recipient email address.",
+      });
+      return;
+    }
+
+    setSendingEmail(true);
+    try {
+      if (!user) throw new Error("No user found");
+
+      const { data, error } = await supabase.functions.invoke("send-rider", {
+        body: {
+          recipientEmail: recipientEmail.trim(),
+          recipientName: recipientName.trim() || undefined,
+          userId: user.id,
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Rider sent!",
+        description: `Your rider requirements have been sent to ${recipientEmail}`,
+      });
+
+      setShowEmailDialog(false);
+      setRecipientEmail("");
+      setRecipientName("");
+    } catch (error: any) {
+      console.error("Error sending rider:", error);
+      toast({
+        variant: "destructive",
+        title: "Failed to send rider",
+        description: error.message,
+      });
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
   // Show role selection if user hasn't selected a role yet
   if (!hasRole) {
     return (
@@ -347,9 +398,58 @@ const ProfileSetup = () => {
             )}
             
             <div className="space-y-2">
-              <Label htmlFor="rider">
-                {role === "band_leader" || role === "band_member" ? "Rider Requirements" : "Management Notes"}
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="rider">
+                  {role === "band_leader" || role === "band_member" ? "Rider Requirements" : "Management Notes"}
+                </Label>
+                {(role === "band_leader" || role === "band_member") && riderNotes && (
+                  <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" type="button">
+                        <Mail className="h-4 w-4 mr-2" />
+                        Send Rider
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Send Rider Requirements</DialogTitle>
+                        <DialogDescription>
+                          Send your rider requirements to a venue or booking manager
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 pt-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="recipientName">Recipient Name (Optional)</Label>
+                          <Input
+                            id="recipientName"
+                            placeholder="e.g., John Smith"
+                            value={recipientName}
+                            onChange={(e) => setRecipientName(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="recipientEmail">Recipient Email *</Label>
+                          <Input
+                            id="recipientEmail"
+                            type="email"
+                            placeholder="e.g., venue@example.com"
+                            value={recipientEmail}
+                            onChange={(e) => setRecipientEmail(e.target.value)}
+                            required
+                          />
+                        </div>
+                        <Button 
+                          onClick={handleSendRider} 
+                          disabled={sendingEmail || !recipientEmail.trim()}
+                          className="w-full"
+                        >
+                          {sendingEmail ? "Sending..." : "Send Rider Requirements"}
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                )}
+              </div>
               <Textarea
                 id="rider"
                 placeholder={

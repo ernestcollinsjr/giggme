@@ -27,15 +27,6 @@ const ProfileSetup = () => {
   const [photoPreviews, setPhotoPreviews] = useState<string[]>(["", "", "", ""]);
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   
-  // Image positioning state
-  const [showPositionModal, setShowPositionModal] = useState(false);
-  const [currentEditIndex, setCurrentEditIndex] = useState<number | null>(null);
-  const [tempImageSrc, setTempImageSrc] = useState("");
-  const [imageScale, setImageScale] = useState(1);
-  const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  
   // Email sending state
   const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [recipientEmail, setRecipientEmail] = useState("");
@@ -86,32 +77,9 @@ const ProfileSetup = () => {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        const imgSrc = reader.result as string;
-        setTempImageSrc(imgSrc);
-        setCurrentEditIndex(index);
-        
-        // Load image to calculate centered position
-        const img = new Image();
-        img.onload = () => {
-          const containerWidth = 768; // max-w-3xl container
-          const containerHeight = 384; // h-96
-          
-          // Calculate scale to fit image nicely in container
-          const scaleToFitWidth = containerWidth / img.width;
-          const scaleToFitHeight = containerHeight / img.height;
-          const initialScale = Math.min(scaleToFitWidth, scaleToFitHeight, 1.2); // Max 1.2x zoom
-          
-          // Calculate centered position
-          const scaledWidth = img.width * initialScale;
-          const scaledHeight = img.height * initialScale;
-          const centerX = (containerWidth - scaledWidth) / 2;
-          const centerY = (containerHeight - scaledHeight) / 2;
-          
-          setImageScale(initialScale);
-          setImagePosition({ x: centerX, y: centerY });
-          setShowPositionModal(true);
-        };
-        img.src = imgSrc;
+        const newPreviews = [...photoPreviews];
+        newPreviews[index] = reader.result as string;
+        setPhotoPreviews(newPreviews);
       };
       reader.readAsDataURL(file);
       
@@ -121,89 +89,6 @@ const ProfileSetup = () => {
     }
   };
 
-  const handleSavePosition = () => {
-    if (currentEditIndex === null || !tempImageSrc) return;
-    
-    // Create a canvas to crop the positioned image
-    const canvas = document.createElement('canvas');
-    const size = currentEditIndex === 0 ? 400 : 800;
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext('2d');
-    
-    if (ctx) {
-      const img = new Image();
-      img.onload = () => {
-        // Clear canvas with white background
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, 0, size, size);
-        
-        // The container dimensions
-        const containerWidth = 768;
-        const containerHeight = 384;
-        
-        // Calculate what part of the original image is visible
-        // If position is positive, we see less of the left/top of the image
-        const cropX = -imagePosition.x / imageScale;
-        const cropY = -imagePosition.y / imageScale;
-        const cropWidth = containerWidth / imageScale;
-        const cropHeight = containerHeight / imageScale;
-        
-        // Draw only the visible portion to fill the canvas
-        ctx.drawImage(
-          img,
-          cropX,
-          cropY,
-          cropWidth,
-          cropHeight,
-          0,
-          0,
-          size,
-          size
-        );
-        
-        // Convert canvas to blob and update preview
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              const newPreviews = [...photoPreviews];
-              newPreviews[currentEditIndex] = reader.result as string;
-              setPhotoPreviews(newPreviews);
-            };
-            reader.readAsDataURL(blob);
-            
-            // Update the file
-            const newFiles = [...photoFiles];
-            newFiles[currentEditIndex] = new File([blob], `photo-${currentEditIndex}.jpg`, { type: 'image/jpeg' });
-            setPhotoFiles(newFiles);
-          }
-        }, 'image/jpeg', 0.95);
-      };
-      img.src = tempImageSrc;
-    }
-    
-    setShowPositionModal(false);
-    setCurrentEditIndex(null);
-  };
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true);
-    setDragStart({ x: e.clientX - imagePosition.x, y: e.clientY - imagePosition.y });
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (isDragging) {
-      setImagePosition({
-        x: e.clientX - dragStart.x,
-        y: e.clientY - dragStart.y
-      });
-    }
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
 
   const handleRemovePhoto = (index: number) => {
     const newFiles = [...photoFiles];
@@ -679,70 +564,6 @@ const ProfileSetup = () => {
           </form>
         </CardContent>
       </Card>
-
-      {/* Image Positioning Modal */}
-      <Dialog open={showPositionModal} onOpenChange={setShowPositionModal}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Position Your Photo</DialogTitle>
-            <DialogDescription>
-              Drag to position and use the slider to zoom
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div 
-              className="relative w-full h-96 bg-muted rounded-lg overflow-hidden cursor-move"
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
-            >
-              {tempImageSrc && (
-                <img
-                  src={tempImageSrc}
-                  alt="Position preview"
-                  className="absolute select-none"
-                  draggable={false}
-                  style={{
-                    transform: `translate(${imagePosition.x}px, ${imagePosition.y}px) scale(${imageScale})`,
-                    transformOrigin: 'top left',
-                  }}
-                />
-              )}
-            </div>
-            
-            <div className="space-y-2">
-              <Label>Zoom: {Math.round(imageScale * 100)}%</Label>
-              <input
-                type="range"
-                min="0.5"
-                max="3"
-                step="0.1"
-                value={imageScale}
-                onChange={(e) => setImageScale(parseFloat(e.target.value))}
-                className="w-full"
-              />
-            </div>
-            
-            <div className="flex gap-2 justify-end">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => setShowPositionModal(false)}
-              >
-                Cancel
-              </Button>
-              <Button 
-                type="button" 
-                onClick={handleSavePosition}
-              >
-                Save Position
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

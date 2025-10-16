@@ -126,7 +126,7 @@ const ProfileSetup = () => {
     
     // Create a canvas to crop the positioned image
     const canvas = document.createElement('canvas');
-    const size = currentEditIndex === 0 ? 400 : 800; // Smaller for profile, larger for additional
+    const size = currentEditIndex === 0 ? 400 : 800;
     canvas.width = size;
     canvas.height = size;
     const ctx = canvas.getContext('2d');
@@ -134,20 +134,32 @@ const ProfileSetup = () => {
     if (ctx) {
       const img = new Image();
       img.onload = () => {
-        // Clear canvas
-        ctx.clearRect(0, 0, size, size);
+        // Clear canvas with white background
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, size, size);
         
-        // Calculate dimensions
-        const scaledWidth = img.width * imageScale;
-        const scaledHeight = img.height * imageScale;
+        // The container dimensions
+        const containerWidth = 768;
+        const containerHeight = 384;
         
-        // Draw the image with current position and scale
+        // Calculate what part of the original image is visible
+        // If position is positive, we see less of the left/top of the image
+        const cropX = -imagePosition.x / imageScale;
+        const cropY = -imagePosition.y / imageScale;
+        const cropWidth = containerWidth / imageScale;
+        const cropHeight = containerHeight / imageScale;
+        
+        // Draw only the visible portion to fill the canvas
         ctx.drawImage(
           img,
-          imagePosition.x,
-          imagePosition.y,
-          scaledWidth,
-          scaledHeight
+          cropX,
+          cropY,
+          cropWidth,
+          cropHeight,
+          0,
+          0,
+          size,
+          size
         );
         
         // Convert canvas to blob and update preview

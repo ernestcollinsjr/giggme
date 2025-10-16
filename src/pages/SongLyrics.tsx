@@ -3,11 +3,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Music, Upload } from "lucide-react";
+import { ArrowLeft, Music, Edit, Save, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Song {
   id: string;
@@ -23,7 +22,9 @@ const SongLyrics = () => {
   const [song, setSong] = useState<Song | null>(null);
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedLyrics, setEditedLyrics] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -62,6 +63,7 @@ const SongLyrics = () => {
       if (error) throw error;
 
       setSong(data);
+      setEditedLyrics(data.lyrics || "");
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -73,50 +75,38 @@ const SongLyrics = () => {
     }
   };
 
-  const handleLyricsUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Check file type
-    if (!file.name.endsWith('.txt') && !file.name.endsWith('.lrc')) {
-      toast({
-        variant: "destructive",
-        title: "Invalid file type",
-        description: "Please upload a .txt or .lrc file",
-      });
-      return;
-    }
-
-    setUploading(true);
+  const handleSaveLyrics = async () => {
+    setSaving(true);
 
     try {
-      const text = await file.text();
-
       const { error } = await supabase
         .from("setlist_songs")
-        .update({ lyrics: text })
+        .update({ lyrics: editedLyrics.trim() || null })
         .eq("id", songId);
 
       if (error) throw error;
 
-      setSong((prev) => prev ? { ...prev, lyrics: text } : null);
+      setSong((prev) => prev ? { ...prev, lyrics: editedLyrics.trim() || null } : null);
+      setIsEditing(false);
 
       toast({
-        title: "Lyrics uploaded",
-        description: "The lyrics have been saved successfully",
+        title: "Lyrics saved",
+        description: "The lyrics have been updated successfully",
       });
-
-      // Reset file input
-      e.target.value = "";
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Error uploading lyrics",
+        title: "Error saving lyrics",
         description: error.message,
       });
     } finally {
-      setUploading(false);
+      setSaving(false);
     }
+  };
+
+  const handleCancelEdit = () => {
+    setEditedLyrics(song?.lyrics || "");
+    setIsEditing(false);
   };
 
   if (loading) {
@@ -162,40 +152,55 @@ const SongLyrics = () => {
                 <Music className="h-5 w-5" />
                 Lyrics
               </CardTitle>
-              {userRole === "band_leader" && (
+              {userRole === "band_leader" && !isEditing && (
+                <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit Lyrics
+                </Button>
+              )}
+              {userRole === "band_leader" && isEditing && (
                 <div className="flex items-center gap-2">
-                  <Label htmlFor="lyrics-upload" className="cursor-pointer">
-                    <Button variant="outline" size="sm" asChild disabled={uploading}>
-                      <span>
-                        <Upload className="h-4 w-4 mr-2" />
-                        {uploading ? "Uploading..." : "Upload Lyrics"}
-                      </span>
-                    </Button>
-                  </Label>
-                  <Input
-                    id="lyrics-upload"
-                    type="file"
-                    accept=".txt,.lrc"
-                    onChange={handleLyricsUpload}
-                    className="hidden"
-                    disabled={uploading}
-                  />
+                  <Button variant="outline" size="sm" onClick={handleCancelEdit} disabled={saving}>
+                    <X className="h-4 w-4 mr-2" />
+                    Cancel
+                  </Button>
+                  <Button size="sm" onClick={handleSaveLyrics} disabled={saving}>
+                    <Save className="h-4 w-4 mr-2" />
+                    {saving ? "Saving..." : "Save"}
+                  </Button>
                 </div>
               )}
             </div>
           </CardHeader>
           <CardContent>
-            {song.lyrics ? (
-              <div className="whitespace-pre-wrap font-mono text-sm leading-relaxed">
-                {song.lyrics}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">
-                  No lyrics available yet. Your band leader can add them in the setlist manager.
+            {isEditing ? (
+              <div className="space-y-2">
+                <Textarea
+                  value={editedLyrics}
+                  onChange={(e) => setEditedLyrics(e.target.value)}
+                  placeholder="Paste or type lyrics here..."
+                  rows={20}
+                  className="font-mono text-sm"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Only add lyrics you have legal access to
                 </p>
               </div>
+            ) : (
+              <>
+                {song.lyrics ? (
+                  <div className="whitespace-pre-wrap font-mono text-sm leading-relaxed">
+                    {song.lyrics}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">
+                      No lyrics available yet. {userRole === "band_leader" ? "Click 'Edit Lyrics' to add them." : "Your band leader can add them."}
+                    </p>
+                  </div>
+                )}
+              </>
             )}
           </CardContent>
         </Card>

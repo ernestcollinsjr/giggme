@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Music, ArrowLeft, Play, Pause } from "lucide-react";
+import { Music, ArrowLeft, Play, Pause, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
 import { SetlistManager } from "@/components/SetlistManager";
-import YouTubePlayer from "@/components/YouTubePlayer";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 interface SetlistSong {
   id: string;
@@ -34,8 +34,7 @@ const Setlist = () => {
   const [playingAudio, setPlayingAudio] = useState<HTMLAudioElement | null>(null);
   const [playingSongId, setPlayingSongId] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
-  const [ytOpen, setYtOpen] = useState(false);
-  const [ytUrl, setYtUrl] = useState<string | null>(null);
+  const [expandedVideoSongId, setExpandedVideoSongId] = useState<string | null>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -102,58 +101,45 @@ const Setlist = () => {
     }
   };
 
-  const handleYouTubeWatch = async (song: SetlistSong) => {
-    if (!song.audio_url) return;
-    
-    console.log('[Setlist] handleYouTubeWatch called with URL:', song.audio_url);
+  const toYouTubeEmbed = (url: string): string | null => {
+    if (!url) return null;
     
     try {
-      console.log('[Setlist] Calling YouTube proxy for:', song.audio_url);
+      const cleanUrl = url.trim();
+      const u = new URL(cleanUrl);
+      const host = u.hostname.toLowerCase().replace('www.', '');
+      let id = "";
+
+      if (host === "youtu.be") {
+        id = u.pathname.substring(1).split('?')[0];
+      } else if (host.includes("youtube.com")) {
+        if (u.pathname === "/watch") {
+          id = u.searchParams.get("v") || "";
+        } else if (u.pathname.startsWith("/shorts/")) {
+          id = u.pathname.split("/")[2] || "";
+        } else if (u.pathname.startsWith("/embed/")) {
+          id = u.pathname.split("/")[2] || "";
+        } else if (u.pathname.startsWith("/v/")) {
+          id = u.pathname.split("/")[2] || "";
+        }
+      }
       
-      const { data, error } = await supabase.functions.invoke('youtube-proxy', {
-        body: { url: song.audio_url }
-      });
-
-      console.log('[Setlist] YouTube proxy response:', { data, error });
-
-      if (error) {
-        console.error('[Setlist] YouTube proxy error:', error);
-        // Fallback to original URL
-        setYtUrl(song.audio_url);
-        setYtOpen(true);
-        toast({ 
-          title: 'Opening video', 
-          description: 'Fallback to original URL' 
-        });
-        return;
+      id = id.split('&')[0].split('?')[0];
+      
+      if (!id || id.length < 10) {
+        return null;
       }
 
-      if (data && data.success) {
-        console.log('[Setlist] YouTube proxy success:', data.title);
-        setYtUrl(data.canonicalUrl || song.audio_url);
-        setYtOpen(true);
-        toast({ 
-          title: 'Loading video', 
-          description: `Playing: ${data.title}` 
-        });
-      } else {
-        console.log('[Setlist] YouTube proxy failed, using original URL');
-        setYtUrl(song.audio_url);
-        setYtOpen(true);
-        toast({ 
-          title: 'Opening video', 
-          description: 'Using original URL' 
-        });
-      }
+      const params = new URLSearchParams();
+      const start = u.searchParams.get("t") || u.searchParams.get("start");
+      if (start) params.set("start", start.replace(/[^0-9]/g, ""));
+      params.set("rel", "0");
+      params.set("modestbranding", "1");
+
+      return `https://www.youtube-nocookie.com/embed/${id}?${params.toString()}`;
     } catch (error) {
-      console.error('[Setlist] Error calling YouTube proxy:', error);
-      // Fallback to original URL
-      setYtUrl(song.audio_url);
-      setYtOpen(true);
-      toast({ 
-        title: 'Opening video', 
-        description: 'Fallback mode' 
-      });
+      console.error('[Setlist] Error parsing YouTube URL:', error);
+      return null;
     }
   };
 
@@ -270,13 +256,11 @@ const Setlist = () => {
                       if (setSongs.length === 0) return null;
                       
                       return (
-                        <div key={setNum} className="space-y-2">
+                         <div key={setNum} className="space-y-2">
                           <h3 className="font-semibold">Set {setNum} ({setSongs.length} songs)</h3>
                           {setSongs.map((song, index) => (
-                              <div
-                                key={song.id}
-                                className="group relative flex items-center justify-between p-3 rounded-lg bg-accent/50 hover:bg-accent transition-colors"
-                              >
+                            <div key={song.id} className="space-y-3">
+                              <div className="group relative flex items-center justify-between p-3 rounded-lg bg-accent/50 hover:bg-accent transition-colors">
                                 <div className="flex items-center gap-3 flex-1 min-w-0">
                                   <span className="text-sm text-muted-foreground font-medium w-6 shrink-0">
                                     {index + 1}
@@ -293,34 +277,63 @@ const Setlist = () => {
                                    <Button
                                      variant="default"
                                      size="sm"
-                                     className="bg-red-500 hover:bg-red-600 text-white relative z-50"
                                      onClick={() => {
-                                       console.log('[Setlist] BUTTON CLICKED!', song.title);
-                                       alert(`Clicked: ${song.title}`);
-                                       setYtUrl(song.audio_url!);
-                                       setYtOpen(true);
+                                       setExpandedVideoSongId(
+                                         expandedVideoSongId === song.id ? null : song.id
+                                       );
                                      }}
                                    >
-                                     <Play className="h-4 w-4 mr-2" />
-                                     WATCH NOW
+                                     {expandedVideoSongId === song.id ? (
+                                       <>
+                                         <X className="h-4 w-4 mr-2" />
+                                         Close Video
+                                       </>
+                                     ) : (
+                                       <>
+                                       <Play className="h-4 w-4 mr-2" />
+                                         Watch
+                                       </>
+                                     )}
                                    </Button>
                                  )}
-                                  {song.audio_url && !/(youtu\.be|youtube\.com|youtube-nocookie\.com)/i.test(song.audio_url) && (
-                                    <Button
-                                      size="icon"
-                                      variant={playingSongId === song.id ? "default" : "ghost"}
-                                      onClick={() => handlePlayPause(song)}
-                                    >
-                                      {playingSongId === song.id ? (
-                                        <Pause className="h-4 w-4" />
-                                      ) : (
-                                        <Play className="h-4 w-4" />
-                                      )}
-                                    </Button>
-                                  )}
-                                </div>
-                              </div>
-                          ))}
+                                   {song.audio_url && !/(youtu\.be|youtube\.com|youtube-nocookie\.com)/i.test(song.audio_url) && (
+                                     <Button
+                                       size="icon"
+                                       variant={playingSongId === song.id ? "default" : "ghost"}
+                                       onClick={() => handlePlayPause(song)}
+                                     >
+                                       {playingSongId === song.id ? (
+                                         <Pause className="h-4 w-4" />
+                                       ) : (
+                                         <Play className="h-4 w-4" />
+                                       )}
+                                     </Button>
+                                   )}
+                                 </div>
+                               </div>
+                               
+                               {/* Inline YouTube Player */}
+                               {expandedVideoSongId === song.id && song.audio_url && (
+                                 <div className="rounded-lg overflow-hidden bg-black">
+                                   <AspectRatio ratio={16 / 9}>
+                                     {toYouTubeEmbed(song.audio_url) ? (
+                                       <iframe
+                                         src={toYouTubeEmbed(song.audio_url)!}
+                                         title={`YouTube video player - ${song.title}`}
+                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                         allowFullScreen
+                                         className="w-full h-full border-0"
+                                       />
+                                     ) : (
+                                       <div className="flex items-center justify-center h-full bg-muted">
+                                         <p className="text-muted-foreground">Unable to load video</p>
+                                       </div>
+                                     )}
+                                   </AspectRatio>
+                                 </div>
+                               )}
+                            </div>
+                           ))}
                         </div>
                       );
                     })}
@@ -333,16 +346,6 @@ const Setlist = () => {
           </>
         )}
       </div>
-      <YouTubePlayer
-        key={ytUrl || 'empty'}
-        url={ytUrl || ""}
-        open={ytOpen}
-        onOpenChange={(o) => {
-          setYtOpen(o);
-          if (!o) setYtUrl(null);
-        }}
-      />
-
       <BottomNav />
     </div>
   );

@@ -366,20 +366,34 @@ const ProfileSetup = () => {
             <div className="space-y-2">
               <Label htmlFor="main-photo">Main Profile Photo</Label>
               <div className="flex items-center gap-4">
-                {photoPreviews[0] && (
-                  <img 
-                    src={photoPreviews[0]} 
-                    alt="Main profile" 
-                    className="w-20 h-20 rounded-full object-cover border-2 border-primary"
-                  />
-                )}
+                <div className="relative group cursor-pointer" onClick={() => document.getElementById('main-photo')?.click()}>
+                  {photoPreviews[0] ? (
+                    <>
+                      <img 
+                        src={photoPreviews[0]} 
+                        alt="Main profile" 
+                        className="w-20 h-20 rounded-full object-cover border-2 border-primary"
+                      />
+                      <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <span className="text-white text-xs font-medium">Change</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="w-20 h-20 rounded-full border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-muted/10">
+                      <span className="text-muted-foreground text-xs">Upload</span>
+                    </div>
+                  )}
+                </div>
                 <Input
                   id="main-photo"
                   type="file"
                   accept="image/jpeg,image/jpg,image/png,image/webp"
                   onChange={(e) => handlePhotoChange(e, 0)}
-                  className="flex-1"
+                  className={photoPreviews[0] ? "hidden" : "flex-1"}
                 />
+                {!photoPreviews[0] && (
+                  <span className="text-sm text-muted-foreground">Click the circle or choose a file</span>
+                )}
               </div>
             </div>
 

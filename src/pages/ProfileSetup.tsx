@@ -321,7 +321,7 @@ const ProfileSetup = () => {
         <CardHeader>
           <div className="flex items-start justify-between">
             <div>
-              <CardTitle className="text-2xl">Complete Your Profile</CardTitle>
+              <CardTitle className="text-2xl">Edit Profile</CardTitle>
               <CardDescription>
                 {role === "band_leader"
                   ? "Add your band details to help booking managers find you"

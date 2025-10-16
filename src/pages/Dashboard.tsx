@@ -287,7 +287,7 @@ const Dashboard = () => {
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => navigate("/profile-setup")}>
-              Edit Profile
+              Profile
             </Button>
             <Button variant="destructive" onClick={handleLogout} className="gap-2">
               <LogOut className="h-4 w-4" />
@@ -492,22 +492,6 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            <Card className="border-border/50 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <UserIcon className="h-5 w-5 text-primary" />
-                  My Profile
-                </CardTitle>
-                <CardDescription>
-                  View and edit your profile information
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button onClick={() => navigate("/profile-setup")} className="w-full">
-                  Go to Profile
-                </Button>
-              </CardContent>
-            </Card>
           </>
         )}
 

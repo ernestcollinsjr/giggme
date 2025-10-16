@@ -25,6 +25,8 @@ interface Gig {
   venue_contact_person: string | null;
   sound_man_info: string | null;
   end_time: string | null;
+  loading_time: string | null;
+  sound_check_time: string | null;
   status: string;
   user_id: string;
 }
@@ -40,6 +42,8 @@ const Bookings = () => {
   const [date, setDate] = useState<Date>();
   const [showTime, setShowTime] = useState("19:00");
   const [endTime, setEndTime] = useState("23:00");
+  const [loadingTime, setLoadingTime] = useState("");
+  const [soundCheckTime, setSoundCheckTime] = useState("");
   const [venue, setVenue] = useState("");
   const [notes, setNotes] = useState("");
   const [attire, setAttire] = useState("");
@@ -75,7 +79,7 @@ const Bookings = () => {
       .select("*")
       .order("date", { ascending: true });
 
-    setGigs(gigData || []);
+    setGigs((gigData as unknown as Gig[]) || []);
     setLoading(false);
   };
 
@@ -105,6 +109,8 @@ const Bookings = () => {
           user_id: user.id,
           date: gigDateTime.toISOString(),
           end_time: endTime,
+          loading_time: loadingTime.trim() || null,
+          sound_check_time: soundCheckTime.trim() || null,
           venue: venue.trim(),
           notes: notes.trim() || null,
           attire: attire.trim() || null,
@@ -125,6 +131,8 @@ const Bookings = () => {
       setDate(undefined);
       setShowTime("19:00");
       setEndTime("23:00");
+      setLoadingTime("");
+      setSoundCheckTime("");
       setVenue("");
       setNotes("");
       setAttire("");
@@ -261,6 +269,34 @@ const Bookings = () => {
                 </div>
               </div>
 
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="loadingTime">Load-in Time (Optional)</Label>
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="loadingTime"
+                      type="time"
+                      value={loadingTime}
+                      onChange={(e) => setLoadingTime(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="soundCheckTime">Sound Check Time (Optional)</Label>
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="soundCheckTime"
+                      type="time"
+                      value={soundCheckTime}
+                      onChange={(e) => setSoundCheckTime(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="venue">Venue</Label>
                 <div className="flex items-center gap-2">
@@ -366,6 +402,18 @@ const Bookings = () => {
                           {format(new Date(gig.date), "p")}
                           {gig.end_time && ` - ${gig.end_time}`}
                         </div>
+                        {gig.loading_time && (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                            <Clock className="h-4 w-4" />
+                            <span className="font-medium">Load-in:</span> {gig.loading_time}
+                          </div>
+                        )}
+                        {gig.sound_check_time && (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                            <Clock className="h-4 w-4" />
+                            <span className="font-medium">Sound Check:</span> {gig.sound_check_time}
+                          </div>
+                        )}
                         <div className="flex items-center gap-2 mb-2">
                           <MapPin className="h-4 w-4 text-primary" />
                           <h4 className="font-semibold">{gig.venue}</h4>

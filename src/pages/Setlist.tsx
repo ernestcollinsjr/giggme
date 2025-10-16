@@ -102,6 +102,44 @@ const Setlist = () => {
     }
   };
 
+  const handleYouTubeWatch = async (song: SetlistSong) => {
+    if (!song.audio_url) return;
+    
+    try {
+      console.log('[Setlist] Calling YouTube proxy for:', song.audio_url);
+      const { data, error } = await supabase.functions.invoke('youtube-proxy', {
+        body: { url: song.audio_url }
+      });
+
+      if (error) {
+        console.error('[Setlist] YouTube proxy error:', error);
+        // Fallback to original URL
+        setYtUrl(song.audio_url);
+        setYtOpen(true);
+        return;
+      }
+
+      if (data.success) {
+        console.log('[Setlist] YouTube proxy success:', data.title);
+        setYtUrl(data.canonicalUrl || song.audio_url);
+        setYtOpen(true);
+        toast({ 
+          title: 'Loading video', 
+          description: `Playing: ${data.title}` 
+        });
+      } else {
+        console.log('[Setlist] YouTube proxy failed, using original URL');
+        setYtUrl(song.audio_url);
+        setYtOpen(true);
+      }
+    } catch (error) {
+      console.error('[Setlist] Error calling YouTube proxy:', error);
+      // Fallback to original URL
+      setYtUrl(song.audio_url);
+      setYtOpen(true);
+    }
+  };
+
   const handlePlayPause = (song: SetlistSong) => {
     if (!song.audio_url) {
       toast({
@@ -234,24 +272,21 @@ const Setlist = () => {
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2 shrink-0">
-                                  {song.audio_url && /(youtu\.be|youtube\.com|youtube-nocookie\.com)/i.test(song.audio_url) && (
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      type="button"
-                                      className="relative z-10"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        console.log('[Setlist] Opening YouTube player for:', song.audio_url);
-                                        setYtUrl(song.audio_url!);
-                                        setYtOpen(true);
-                                        toast({ title: 'Opening video', description: 'Loading YouTube player...' });
-                                      }}
-                                    >
-                                      <Play className="h-4 w-4 mr-2" />
-                                      Watch
-                                    </Button>
-                                  )}
+                                   {song.audio_url && /(youtu\.be|youtube\.com|youtube-nocookie\.com)/i.test(song.audio_url) && (
+                                     <Button
+                                       variant="ghost"
+                                       size="sm"
+                                       type="button"
+                                       className="relative z-10"
+                                       onClick={(e) => {
+                                         e.stopPropagation();
+                                         handleYouTubeWatch(song);
+                                       }}
+                                     >
+                                       <Play className="h-4 w-4 mr-2" />
+                                       Watch
+                                     </Button>
+                                   )}
                                   {song.audio_url && !/(youtu\.be|youtube\.com|youtube-nocookie\.com)/i.test(song.audio_url) && (
                                     <Button
                                       size="icon"

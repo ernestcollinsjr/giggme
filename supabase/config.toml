@@ -1,1 +1,4 @@
 project_id = "pgvfeolxgufldpwyheqf"
+
+[functions.youtube-proxy]
+verify_jwt = false

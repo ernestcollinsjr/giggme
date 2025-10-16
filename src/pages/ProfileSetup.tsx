@@ -9,8 +9,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "@supabase/supabase-js";
-import { LogOut, Crown, Music, Briefcase, Mail } from "lucide-react";
+import { LogOut, Crown, Music, Briefcase, Mail, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { detectFaceAndCrop, loadImage } from "@/utils/imageCropping";
 
 const ProfileSetup = () => {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ const ProfileSetup = () => {
   const [photoFiles, setPhotoFiles] = useState<(File | null)[]>([null, null, null, null]);
   const [photoPreviews, setPhotoPreviews] = useState<string[]>(["", "", "", ""]);
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
+  const [processingPhoto, setProcessingPhoto] = useState<number | null>(null);
   
   // Email sending state
   const [showEmailDialog, setShowEmailDialog] = useState(false);
@@ -72,20 +74,47 @@ const ProfileSetup = () => {
     getUser();
   }, []);
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (!file) return;
+
+    setProcessingPhoto(index);
+    
+    try {
+      // Load the image
+      const img = await loadImage(file);
+      
+      // Detect face and crop
+      const targetSize = index === 0 ? 400 : 800;
+      const croppedBlob = await detectFaceAndCrop(img, targetSize);
+      
+      // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
         const newPreviews = [...photoPreviews];
         newPreviews[index] = reader.result as string;
         setPhotoPreviews(newPreviews);
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(croppedBlob);
       
+      // Store the cropped file
       const newFiles = [...photoFiles];
-      newFiles[index] = file;
+      newFiles[index] = new File([croppedBlob], `photo-${index}.jpg`, { type: 'image/jpeg' });
       setPhotoFiles(newFiles);
+      
+      toast({
+        title: "Photo processed!",
+        description: "Your photo has been automatically centered.",
+      });
+    } catch (error) {
+      console.error('Error processing photo:', error);
+      toast({
+        variant: "destructive",
+        title: "Processing failed",
+        description: "Could not process the photo. Please try another image.",
+      });
+    } finally {
+      setProcessingPhoto(null);
     }
   };
 
@@ -366,8 +395,12 @@ const ProfileSetup = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <div className="flex items-center gap-4">
-                <div className="relative group cursor-pointer" onClick={() => document.getElementById('main-photo')?.click()}>
-                  {photoPreviews[0] ? (
+                <div className="relative group cursor-pointer" onClick={() => !processingPhoto && document.getElementById('main-photo')?.click()}>
+                  {processingPhoto === 0 ? (
+                    <div className="w-20 h-20 rounded-full border-2 border-primary flex items-center justify-center bg-muted/10">
+                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    </div>
+                  ) : photoPreviews[0] ? (
                     <>
                       <img 
                         src={photoPreviews[0]} 
@@ -390,9 +423,13 @@ const ProfileSetup = () => {
                   accept="image/jpeg,image/jpg,image/png,image/webp"
                   onChange={(e) => handlePhotoChange(e, 0)}
                   className={photoPreviews[0] ? "hidden" : "flex-1"}
+                  disabled={processingPhoto !== null}
                 />
-                {!photoPreviews[0] && (
-                  <span className="text-sm text-muted-foreground">Click the circle or choose a file</span>
+                {!photoPreviews[0] && processingPhoto !== 0 && (
+                  <span className="text-sm text-muted-foreground">AI will auto-center your face</span>
+                )}
+                {processingPhoto === 0 && (
+                  <span className="text-sm text-muted-foreground">Processing with AI...</span>
                 )}
               </div>
             </div>
@@ -404,9 +441,13 @@ const ProfileSetup = () => {
                   <div key={index} className="space-y-2">
                     <div 
                       className="relative group cursor-pointer"
-                      onClick={() => document.getElementById(`photo-${index}`)?.click()}
+                      onClick={() => !processingPhoto && document.getElementById(`photo-${index}`)?.click()}
                     >
-                      {photoPreviews[index] ? (
+                      {processingPhoto === index ? (
+                        <div className="w-full h-32 rounded-lg border-2 border-primary flex items-center justify-center bg-muted/10">
+                          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                        </div>
+                      ) : photoPreviews[index] ? (
                         <>
                           <img 
                             src={photoPreviews[index]} 
@@ -441,6 +482,7 @@ const ProfileSetup = () => {
                       accept="image/jpeg,image/jpg,image/png,image/webp"
                       onChange={(e) => handlePhotoChange(e, index)}
                       className={photoPreviews[index] ? "hidden" : "text-sm"}
+                      disabled={processingPhoto !== null}
                     />
                   </div>
                 ))}

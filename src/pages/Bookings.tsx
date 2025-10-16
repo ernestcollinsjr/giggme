@@ -38,7 +38,7 @@ const Bookings = () => {
   
   // Form state
   const [date, setDate] = useState<Date>();
-  const [startTime, setStartTime] = useState("19:00");
+  const [showTime, setShowTime] = useState("19:00");
   const [endTime, setEndTime] = useState("23:00");
   const [venue, setVenue] = useState("");
   const [notes, setNotes] = useState("");
@@ -95,7 +95,7 @@ const Bookings = () => {
       if (!user) throw new Error("Not authenticated");
 
       // Combine date and time
-      const [hours, minutes] = startTime.split(":").map(Number);
+      const [hours, minutes] = showTime.split(":").map(Number);
       const gigDateTime = new Date(date);
       gigDateTime.setHours(hours, minutes, 0, 0);
 
@@ -123,7 +123,7 @@ const Bookings = () => {
 
       // Reset form and refresh data
       setDate(undefined);
-      setStartTime("19:00");
+      setShowTime("19:00");
       setEndTime("23:00");
       setVenue("");
       setNotes("");
@@ -234,14 +234,14 @@ const Bookings = () => {
 
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-2">
-                    <Label htmlFor="startTime">Start Time</Label>
+                    <Label htmlFor="showTime">Show Time</Label>
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-muted-foreground" />
                       <Input
-                        id="startTime"
+                        id="showTime"
                         type="time"
-                        value={startTime}
-                        onChange={(e) => setStartTime(e.target.value)}
+                        value={showTime}
+                        onChange={(e) => setShowTime(e.target.value)}
                       />
                     </div>
                   </div>

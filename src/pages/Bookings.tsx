@@ -226,6 +226,19 @@ const Bookings = () => {
                 />
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="venue">Venue Address</Label>
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="venue"
+                    placeholder="e.g., 123 Main St, New York, NY 10001"
+                    value={venue}
+                    onChange={(e) => setVenue(e.target.value)}
+                  />
+                </div>
+              </div>
+
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Date</Label>
@@ -308,19 +321,6 @@ const Bookings = () => {
                       onChange={(e) => setSoundCheckTime(e.target.value)}
                     />
                   </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="venue">Venue Address</Label>
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="venue"
-                    placeholder="e.g., 123 Main St, New York, NY 10001"
-                    value={venue}
-                    onChange={(e) => setVenue(e.target.value)}
-                  />
                 </div>
               </div>
 

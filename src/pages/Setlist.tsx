@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useBand } from "@/contexts/BandContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Music, ArrowLeft, Play, Pause, X, FileText } from "lucide-react";
@@ -29,6 +30,7 @@ interface Setlist {
 const Setlist = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { selectedBandId } = useBand();
   const [setlists, setSetlists] = useState<Setlist[]>([]);
   const [loading, setLoading] = useState(true);
   const [playingAudio, setPlayingAudio] = useState<HTMLAudioElement | null>(null);
@@ -64,11 +66,17 @@ const Setlist = () => {
 
   const fetchSetlists = async () => {
     try {
-      // Fetch setlists
-      const { data: setlistsData, error: setlistsError } = await supabase
+      // Fetch setlists filtered by selected band
+      let query = supabase
         .from("setlists")
         .select("*")
         .order("created_at", { ascending: false });
+      
+      if (selectedBandId) {
+        query = query.eq("band_id", selectedBandId);
+      }
+      
+      const { data: setlistsData, error: setlistsError } = await query;
 
       if (setlistsError) throw setlistsError;
 

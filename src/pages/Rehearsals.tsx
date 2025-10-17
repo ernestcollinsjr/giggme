@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useBand } from "@/contexts/BandContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +31,7 @@ interface Rehearsal {
 const Rehearsals = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { selectedBandId } = useBand();
   const [rehearsals, setRehearsals] = useState<Rehearsal[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -65,11 +67,17 @@ const Rehearsals = () => {
 
     setUserRole(roleData?.role || null);
 
-    // Fetch rehearsals
-    const { data: rehearsalData } = await supabase
+    // Fetch rehearsals filtered by selected band
+    let query = supabase
       .from("rehearsals")
       .select("*")
       .order("date", { ascending: true });
+    
+    if (selectedBandId) {
+      query = query.eq("band_id", selectedBandId);
+    }
+    
+    const { data: rehearsalData } = await query;
 
     setRehearsals(rehearsalData || []);
     setLoading(false);
@@ -95,10 +103,20 @@ const Rehearsals = () => {
       const rehearsalDateTime = new Date(date);
       rehearsalDateTime.setHours(hours, minutes, 0, 0);
 
+      if (!selectedBandId) {
+        toast({
+          variant: "destructive",
+          title: "No band selected",
+          description: "Please select a band from the dashboard first.",
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from("rehearsals")
         .insert({
           band_leader_id: user.id,
+          band_id: selectedBandId,
           date: rehearsalDateTime.toISOString(),
           end_time: endTime,
           venue: venue.trim(),

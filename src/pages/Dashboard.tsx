@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useBand } from "@/contexts/BandContext";
 import { User } from "@supabase/supabase-js";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -69,6 +70,7 @@ type UserRole = "band_leader" | "band_member" | "booking_manager";
 const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { selectedBandId, setSelectedBandId } = useBand();
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
@@ -77,7 +79,6 @@ const Dashboard = () => {
   const [gigs, setGigs] = useState<Gig[]>([]);
   const [gigInvites, setGigInvites] = useState<GigInvite[]>([]);
   const [bands, setBands] = useState<Band[]>([]);
-  const [selectedBandId, setSelectedBandId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [newBandName, setNewBandName] = useState("");
   const [newBandDescription, setNewBandDescription] = useState("");

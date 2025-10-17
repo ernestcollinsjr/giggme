@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useBand } from "@/contexts/BandContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +34,7 @@ interface Setlist {
 export const SetlistManager = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { selectedBandId } = useBand();
   const [setlists, setSetlists] = useState<Setlist[]>([]);
   const [loading, setLoading] = useState(true);
   const [newSetlistTitle, setNewSetlistTitle] = useState("");
@@ -103,6 +105,15 @@ export const SetlistManager = () => {
       return;
     }
 
+    if (!selectedBandId) {
+      toast({
+        variant: "destructive",
+        title: "No band selected",
+        description: "Please select a band from the dashboard first.",
+      });
+      return;
+    }
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -111,6 +122,7 @@ export const SetlistManager = () => {
         title: newSetlistTitle,
         description: newSetlistDescription || null,
         band_leader_id: user.id,
+        band_id: selectedBandId,
       });
 
       if (error) throw error;

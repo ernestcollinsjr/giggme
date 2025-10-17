@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useBand } from "@/contexts/BandContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +36,7 @@ interface Gig {
 const Bookings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { selectedBandId } = useBand();
   const [gigs, setGigs] = useState<Gig[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -75,11 +77,17 @@ const Bookings = () => {
 
     setUserRole(roleData?.role || null);
 
-    // Fetch gigs
-    const { data: gigData } = await supabase
+    // Fetch gigs filtered by selected band
+    let query = supabase
       .from("gigs")
       .select("*")
       .order("date", { ascending: true });
+    
+    if (selectedBandId) {
+      query = query.eq("band_id", selectedBandId);
+    }
+    
+    const { data: gigData } = await query;
 
     setGigs((gigData as unknown as Gig[]) || []);
     setLoading(false);
@@ -100,6 +108,15 @@ const Bookings = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      if (!selectedBandId) {
+        toast({
+          variant: "destructive",
+          title: "No band selected",
+          description: "Please select a band from the dashboard first.",
+        });
+        return;
+      }
+
       // Combine date and time
       const [hours, minutes] = showTime.split(":").map(Number);
       const gigDateTime = new Date(date);
@@ -109,6 +126,7 @@ const Bookings = () => {
         .from("gigs")
         .insert({
           user_id: user.id,
+          band_id: selectedBandId,
           date: gigDateTime.toISOString(),
           end_time: endTime,
           loading_time: loadingTime.trim() || null,

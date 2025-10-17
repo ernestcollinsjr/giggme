@@ -155,7 +155,7 @@ const SongLyrics = () => {
               {userRole === "band_leader" && !isEditing && (
                 <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
                   <Edit className="h-4 w-4 mr-2" />
-                  Edit Lyrics
+                  Import Lyrics
                 </Button>
               )}
               {userRole === "band_leader" && isEditing && (
@@ -196,7 +196,7 @@ const SongLyrics = () => {
                   <div className="text-center py-12">
                     <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <p className="text-muted-foreground">
-                      No lyrics available yet. {userRole === "band_leader" ? "Click 'Edit Lyrics' to add them." : "Your band leader can add them."}
+                      No lyrics available yet. {userRole === "band_leader" ? "Click 'Import Lyrics' to add them." : "Your band leader can add them."}
                     </p>
                   </div>
                 )}

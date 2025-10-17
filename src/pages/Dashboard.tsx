@@ -14,7 +14,6 @@ import { Label } from "@/components/ui/label";
 import { Music, Briefcase, MapPin, Calendar, Crown, LogOut, ListMusic, User as UserIcon, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
-import { SetlistManager } from "@/components/SetlistManager";
 
 interface Profile {
   id: string;
@@ -665,14 +664,6 @@ const Dashboard = () => {
             </Card>
 
           </>
-        )}
-
-        {userRole === "band_leader" && (
-          <Card className="border-border/50 shadow-lg">
-            <CardContent className="pt-6">
-              <SetlistManager />
-            </CardContent>
-          </Card>
         )}
 
         {userRole === "booking_manager" && (

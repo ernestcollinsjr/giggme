@@ -14,6 +14,7 @@ import { Calendar as CalendarIcon, Clock, MapPin, Plus, Trash2 } from "lucide-re
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import BottomNav from "@/components/BottomNav";
+import { PlaceAutocomplete } from "@/components/PlaceAutocomplete";
 
 interface Rehearsal {
   id: string;
@@ -274,11 +275,10 @@ const Rehearsals = () => {
                 <Label htmlFor="venue">Venue</Label>
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="venue"
-                    placeholder="e.g., Studio A, Main Hall, etc."
+                  <PlaceAutocomplete
                     value={venue}
-                    onChange={(e) => setVenue(e.target.value)}
+                    onChange={(value) => setVenue(value)}
+                    placeholder="Start typing a venue name or address..."
                   />
                 </div>
               </div>

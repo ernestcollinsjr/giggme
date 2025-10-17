@@ -1,0 +1,99 @@
+import { useEffect, useRef, useState } from "react";
+import { Input } from "@/components/ui/input";
+import { useLoadScript } from "@react-google-maps/api";
+
+const libraries: ("places")[] = ["places"];
+
+interface PlaceAutocompleteProps {
+  value: string;
+  onChange: (value: string, placeDetails?: google.maps.places.PlaceResult) => void;
+  placeholder?: string;
+  className?: string;
+}
+
+export const PlaceAutocomplete = ({
+  value,
+  onChange,
+  placeholder,
+  className,
+}: PlaceAutocompleteProps) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const [inputValue, setInputValue] = useState(value);
+
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "",
+    libraries,
+  });
+
+  useEffect(() => {
+    setInputValue(value);
+  }, [value]);
+
+  useEffect(() => {
+    if (!isLoaded || !inputRef.current) return;
+
+    // Initialize autocomplete
+    autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, {
+      types: ["establishment", "geocode"],
+      fields: ["name", "formatted_address", "place_id", "geometry"],
+    });
+
+    // Listen for place selection
+    const listener = autocompleteRef.current.addListener("place_changed", () => {
+      const place = autocompleteRef.current?.getPlace();
+      if (place && place.name) {
+        const placeName = place.name;
+        const address = place.formatted_address;
+        const fullText = address ? `${placeName}, ${address}` : placeName;
+        
+        setInputValue(placeName);
+        onChange(placeName, place);
+      }
+    });
+
+    return () => {
+      if (listener) {
+        google.maps.event.removeListener(listener);
+      }
+    };
+  }, [isLoaded, onChange]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setInputValue(newValue);
+    onChange(newValue);
+  };
+
+  if (loadError) {
+    return (
+      <Input
+        ref={inputRef}
+        value={inputValue}
+        onChange={handleInputChange}
+        placeholder={placeholder}
+        className={className}
+      />
+    );
+  }
+
+  if (!isLoaded) {
+    return (
+      <Input
+        disabled
+        placeholder="Loading maps..."
+        className={className}
+      />
+    );
+  }
+
+  return (
+    <Input
+      ref={inputRef}
+      value={inputValue}
+      onChange={handleInputChange}
+      placeholder={placeholder}
+      className={className}
+    />
+  );
+};

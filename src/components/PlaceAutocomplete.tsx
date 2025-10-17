@@ -22,7 +22,7 @@ export const PlaceAutocomplete = ({
   const [inputValue, setInputValue] = useState(value);
 
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "",
+    googleMapsApiKey: "AIzaSyApWGqqVFHkQ3KJNzaRAmG1WBwtZlOFO6Y",
     libraries,
   });
 

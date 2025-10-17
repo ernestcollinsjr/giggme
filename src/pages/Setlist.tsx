@@ -62,7 +62,7 @@ const Setlist = () => {
     };
 
     checkAuth();
-  }, [navigate]);
+  }, [navigate, selectedBandId]);
 
   const fetchSetlists = async () => {
     try {

@@ -71,6 +71,7 @@ export const SetlistManager = () => {
   const fetchBands = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      console.log('[SetlistManager] Current user:', user?.id);
       if (!user) return;
 
       const { data: bandsData, error } = await supabase
@@ -78,6 +79,8 @@ export const SetlistManager = () => {
         .select("*")
         .eq("band_leader_id", user.id)
         .order("created_at", { ascending: false });
+
+      console.log('[SetlistManager] Bands fetched:', { bandsData, error, userId: user.id });
 
       if (error) throw error;
 
@@ -88,6 +91,7 @@ export const SetlistManager = () => {
         setSelectedBandId(bandsData[0].id);
       }
     } catch (error: any) {
+      console.error('[SetlistManager] Error fetching bands:', error);
       toast({
         variant: "destructive",
         title: "Error loading bands",
@@ -481,33 +485,47 @@ export const SetlistManager = () => {
   return (
     <div className="space-y-6">
       {/* Band Selection */}
-      {bands.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Select Band</CardTitle>
-            <CardDescription>Choose which band's setlist you want to manage</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-2">
-              {bands.map((band) => (
-                <Button
-                  key={band.id}
-                  variant={selectedBandId === band.id ? "default" : "outline"}
-                  className="justify-start"
-                  onClick={() => setSelectedBandId(band.id)}
-                >
-                  <Music className="h-4 w-4 mr-2" />
-                  {band.name}
-                  {band.description && (
-                    <span className="ml-2 text-sm text-muted-foreground">
-                      - {band.description}
-                    </span>
-                  )}
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+      {!loading && (
+        <>
+          {bands.length > 0 ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Select Band</CardTitle>
+                <CardDescription>Choose which band's setlist you want to manage</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-2">
+                  {bands.map((band) => (
+                    <Button
+                      key={band.id}
+                      variant={selectedBandId === band.id ? "default" : "outline"}
+                      className="justify-start"
+                      onClick={() => setSelectedBandId(band.id)}
+                    >
+                      <Music className="h-4 w-4 mr-2" />
+                      {band.name}
+                      {band.description && (
+                        <span className="ml-2 text-sm text-muted-foreground">
+                          - {band.description}
+                        </span>
+                      )}
+                    </Button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center py-8">
+                  <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground mb-2">No bands found</p>
+                  <p className="text-sm text-muted-foreground">Create a band from the Dashboard first to manage setlists.</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </>
       )}
 
       <div className="flex items-center justify-between">

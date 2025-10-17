@@ -6,7 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Music, Briefcase, MapPin, Calendar, Crown, LogOut, ListMusic, User as UserIcon } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Music, Briefcase, MapPin, Calendar, Crown, LogOut, ListMusic, User as UserIcon, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
 import { SetlistManager } from "@/components/SetlistManager";
@@ -27,6 +31,7 @@ interface Rehearsal {
   venue: string;
   notes: string | null;
   band_leader_id: string;
+  band_id: string | null;
 }
 
 interface Gig {
@@ -36,6 +41,7 @@ interface Gig {
   notes: string | null;
   status: string;
   user_id: string;
+  band_id: string | null;
 }
 
 interface GigInvite {
@@ -51,6 +57,13 @@ interface GigInvite {
   };
 }
 
+interface Band {
+  id: string;
+  name: string;
+  description: string | null;
+  band_leader_id: string;
+}
+
 type UserRole = "band_leader" | "band_member" | "booking_manager";
 
 const Dashboard = () => {
@@ -63,7 +76,13 @@ const Dashboard = () => {
   const [rehearsals, setRehearsals] = useState<Rehearsal[]>([]);
   const [gigs, setGigs] = useState<Gig[]>([]);
   const [gigInvites, setGigInvites] = useState<GigInvite[]>([]);
+  const [bands, setBands] = useState<Band[]>([]);
+  const [selectedBandId, setSelectedBandId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [newBandName, setNewBandName] = useState("");
+  const [newBandDescription, setNewBandDescription] = useState("");
+  const [isCreatingBand, setIsCreatingBand] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -92,6 +111,20 @@ const Dashboard = () => {
     if (profileData && roleData) {
       setProfile(profileData);
       setUserRole(roleData.role as UserRole);
+      
+      // Fetch bands for band leaders
+      if (roleData.role === "band_leader") {
+        const { data: bandsData } = await supabase
+          .from("bands")
+          .select("*")
+          .eq("band_leader_id", user.id)
+          .order("created_at", { ascending: true });
+        
+        setBands(bandsData || []);
+        if (bandsData && bandsData.length > 0) {
+          setSelectedBandId(bandsData[0].id);
+        }
+      }
       
       // Fetch rehearsals for band members and leaders
       if (roleData.role === "band_member" || roleData.role === "band_leader") {
@@ -253,6 +286,60 @@ const Dashboard = () => {
     }
   };
 
+  const handleCreateBand = async () => {
+    if (!newBandName.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Band name required",
+        description: "Please enter a band name.",
+      });
+      return;
+    }
+
+    setIsCreatingBand(true);
+    try {
+      const { data, error } = await supabase
+        .from("bands")
+        .insert({
+          band_leader_id: user?.id,
+          name: newBandName,
+          description: newBandDescription || null,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setBands([...bands, data]);
+      setSelectedBandId(data.id);
+      setNewBandName("");
+      setNewBandDescription("");
+      setDialogOpen(false);
+
+      toast({
+        title: "Band created!",
+        description: `${newBandName} has been created successfully.`,
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Failed to create band",
+        description: error.message,
+      });
+    } finally {
+      setIsCreatingBand(false);
+    }
+  };
+
+  // Filter data by selected band
+  const filteredRehearsals = selectedBandId
+    ? rehearsals.filter(r => r.band_id === selectedBandId)
+    : rehearsals;
+
+  const filteredGigs = selectedBandId
+    ? gigs.filter(g => g.band_id === selectedBandId)
+    : gigs;
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -295,6 +382,90 @@ const Dashboard = () => {
             </Button>
           </div>
         </div>
+
+        {userRole === "band_leader" && (
+          <div className="space-y-4">
+            <Tabs value={selectedBandId || undefined} onValueChange={setSelectedBandId}>
+              <div className="flex items-center gap-2">
+                <TabsList className="flex-1 justify-start">
+                  {bands.map((band) => (
+                    <TabsTrigger key={band.id} value={band.id}>
+                      {band.name}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" variant="outline" className="gap-2">
+                      <Plus className="h-4 w-4" />
+                      New Band
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Create New Band</DialogTitle>
+                      <DialogDescription>
+                        Add a new band to manage separately
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="band-name">Band Name</Label>
+                        <Input
+                          id="band-name"
+                          value={newBandName}
+                          onChange={(e) => setNewBandName(e.target.value)}
+                          placeholder="Enter band name"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="band-description">Description (Optional)</Label>
+                        <Input
+                          id="band-description"
+                          value={newBandDescription}
+                          onChange={(e) => setNewBandDescription(e.target.value)}
+                          placeholder="Brief description"
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button
+                        onClick={handleCreateBand}
+                        disabled={isCreatingBand}
+                      >
+                        {isCreatingBand ? "Creating..." : "Create Band"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              {bands.length === 0 ? (
+                <Card className="border-border/50 shadow-lg bg-gradient-to-br from-primary/5 to-accent/5 mt-4">
+                  <CardContent className="pt-6 text-center">
+                    <Music className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="font-semibold mb-2">No Bands Yet</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Create your first band to start managing rehearsals, gigs, and setlists
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                bands.map((band) => (
+                  <TabsContent key={band.id} value={band.id} className="space-y-6 mt-4">
+                    {band.description && (
+                      <Card className="border-border/50 shadow-lg">
+                        <CardContent className="pt-6">
+                          <p className="text-sm text-muted-foreground">{band.description}</p>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </TabsContent>
+                ))
+              )}
+            </Tabs>
+          </div>
+        )}
 
         {userRole === "band_member" && gigInvites.length > 0 && (
           <Card className="border-border/50 shadow-lg bg-gradient-to-br from-primary/5 to-accent/5">
@@ -369,11 +540,11 @@ const Dashboard = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {rehearsals.length === 0 ? (
+                {filteredRehearsals.length === 0 ? (
                   <p className="text-center text-muted-foreground py-4">No rehearsals scheduled</p>
                 ) : (
                   <div className="space-y-3">
-                    {rehearsals.slice(0, 3).map((rehearsal) => (
+                    {filteredRehearsals.slice(0, 3).map((rehearsal) => (
                       <div key={rehearsal.id} className="p-3 border rounded-lg">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
@@ -418,11 +589,11 @@ const Dashboard = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {gigs.length === 0 ? (
+                {filteredGigs.length === 0 ? (
                   <p className="text-center text-muted-foreground py-4">No gigs scheduled</p>
                 ) : (
                   <div className="space-y-3">
-                    {gigs.slice(0, 3).map((gig) => (
+                    {filteredGigs.slice(0, 3).map((gig) => (
                       <div key={gig.id} className="p-3 border rounded-lg">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">

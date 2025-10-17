@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      bands: {
+        Row: {
+          band_leader_id: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          band_leader_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          band_leader_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       gig_members: {
         Row: {
           created_at: string
@@ -52,6 +79,7 @@ export type Database = {
       gigs: {
         Row: {
           attire: string | null
+          band_id: string | null
           created_at: string | null
           date: string
           end_time: string | null
@@ -70,6 +98,7 @@ export type Database = {
         }
         Insert: {
           attire?: string | null
+          band_id?: string | null
           created_at?: string | null
           date: string
           end_time?: string | null
@@ -88,6 +117,7 @@ export type Database = {
         }
         Update: {
           attire?: string | null
+          band_id?: string | null
           created_at?: string | null
           date?: string
           end_time?: string | null
@@ -105,6 +135,13 @@ export type Database = {
           venue_name?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "gigs_band_id_fkey"
+            columns: ["band_id"]
+            isOneToOne: false
+            referencedRelation: "gigs"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "gigs_user_id_fkey"
             columns: ["user_id"]
@@ -180,6 +217,7 @@ export type Database = {
       rehearsals: {
         Row: {
           attire: string | null
+          band_id: string | null
           band_leader_id: string
           created_at: string
           date: string
@@ -194,6 +232,7 @@ export type Database = {
         }
         Insert: {
           attire?: string | null
+          band_id?: string | null
           band_leader_id: string
           created_at?: string
           date: string
@@ -208,6 +247,7 @@ export type Database = {
         }
         Update: {
           attire?: string | null
+          band_id?: string | null
           band_leader_id?: string
           created_at?: string
           date?: string
@@ -220,7 +260,15 @@ export type Database = {
           venue?: string
           venue_contact_person?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "rehearsals_band_id_fkey"
+            columns: ["band_id"]
+            isOneToOne: false
+            referencedRelation: "bands"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       setlist_songs: {
         Row: {
@@ -268,6 +316,7 @@ export type Database = {
       }
       setlists: {
         Row: {
+          band_id: string | null
           band_leader_id: string
           created_at: string
           description: string | null
@@ -276,6 +325,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          band_id?: string | null
           band_leader_id: string
           created_at?: string
           description?: string | null
@@ -284,6 +334,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          band_id?: string | null
           band_leader_id?: string
           created_at?: string
           description?: string | null
@@ -291,7 +342,15 @@ export type Database = {
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "setlists_band_id_fkey"
+            columns: ["band_id"]
+            isOneToOne: false
+            referencedRelation: "bands"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

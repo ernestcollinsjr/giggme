@@ -46,6 +46,7 @@ export const SetlistManager = () => {
   const [loading, setLoading] = useState(true);
   const [newSetlistTitle, setNewSetlistTitle] = useState("");
   const [newSetlistDescription, setNewSetlistDescription] = useState("");
+  const [newSetlistBandId, setNewSetlistBandId] = useState<string>("");
   const [showNewSetlistDialog, setShowNewSetlistDialog] = useState(false);
   const [selectedSetlist, setSelectedSetlist] = useState<string | null>(null);
   const [songTitle, setSongTitle] = useState("");
@@ -154,11 +155,11 @@ export const SetlistManager = () => {
       return;
     }
 
-    if (!selectedBandId) {
+    if (!newSetlistBandId) {
       toast({
         variant: "destructive",
         title: "No band selected",
-        description: "Please select a band from the dashboard first.",
+        description: "Please select a band for this setlist.",
       });
       return;
     }
@@ -171,7 +172,7 @@ export const SetlistManager = () => {
         title: newSetlistTitle,
         description: newSetlistDescription || null,
         band_leader_id: user.id,
-        band_id: selectedBandId,
+        band_id: newSetlistBandId,
       });
 
       if (error) throw error;
@@ -183,6 +184,7 @@ export const SetlistManager = () => {
 
       setNewSetlistTitle("");
       setNewSetlistDescription("");
+      setNewSetlistBandId("");
       setShowNewSetlistDialog(false);
       fetchSetlists();
     } catch (error: any) {
@@ -525,6 +527,21 @@ export const SetlistManager = () => {
               <DialogDescription>Add a new setlist for your band members to access</DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
+              <div>
+                <Label htmlFor="band">Select Band</Label>
+                <Select value={newSetlistBandId} onValueChange={setNewSetlistBandId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose a band..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {bands.map((band) => (
+                      <SelectItem key={band.id} value={band.id}>
+                        {band.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <div>
                 <Label htmlFor="title">Setlist for Gig below</Label>
                 <Input

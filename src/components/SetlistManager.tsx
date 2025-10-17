@@ -31,10 +31,17 @@ interface Setlist {
   songs: Song[];
 }
 
+interface Band {
+  id: string;
+  name: string;
+  description: string | null;
+}
+
 export const SetlistManager = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { selectedBandId } = useBand();
+  const { selectedBandId, setSelectedBandId } = useBand();
+  const [bands, setBands] = useState<Band[]>([]);
   const [setlists, setSetlists] = useState<Setlist[]>([]);
   const [loading, setLoading] = useState(true);
   const [newSetlistTitle, setNewSetlistTitle] = useState("");
@@ -51,10 +58,51 @@ export const SetlistManager = () => {
   const [ytUrl, setYtUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchSetlists();
+    fetchBands();
   }, []);
 
+  useEffect(() => {
+    if (selectedBandId) {
+      fetchSetlists();
+    }
+  }, [selectedBandId]);
+
+  const fetchBands = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: bandsData, error } = await supabase
+        .from("bands")
+        .select("*")
+        .eq("band_leader_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      setBands(bandsData || []);
+      
+      // Auto-select first band if none selected
+      if (bandsData && bandsData.length > 0 && !selectedBandId) {
+        setSelectedBandId(bandsData[0].id);
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error loading bands",
+        description: error.message,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fetchSetlists = async () => {
+    if (!selectedBandId) {
+      setSetlists([]);
+      return;
+    }
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -63,6 +111,7 @@ export const SetlistManager = () => {
         .from("setlists")
         .select("*")
         .eq("band_leader_id", user.id)
+        .eq("band_id", selectedBandId)
         .order("created_at", { ascending: false });
 
       if (setlistsError) throw setlistsError;
@@ -429,8 +478,40 @@ export const SetlistManager = () => {
 
   return (
     <div className="space-y-6">
+      {/* Band Selection */}
+      {bands.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Select Band</CardTitle>
+            <CardDescription>Choose which band's setlist you want to manage</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-2">
+              {bands.map((band) => (
+                <Button
+                  key={band.id}
+                  variant={selectedBandId === band.id ? "default" : "outline"}
+                  className="justify-start"
+                  onClick={() => setSelectedBandId(band.id)}
+                >
+                  <Music className="h-4 w-4 mr-2" />
+                  {band.name}
+                  {band.description && (
+                    <span className="ml-2 text-sm text-muted-foreground">
+                      - {band.description}
+                    </span>
+                  )}
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Manage Setlists</h2>
+        <h2 className="text-2xl font-bold">
+          {selectedBandId ? "Manage Setlists" : "Select a Band"}
+        </h2>
         <Dialog open={showNewSetlistDialog} onOpenChange={setShowNewSetlistDialog}>
           <DialogTrigger asChild>
             <Button>

@@ -68,6 +68,13 @@ export const SetlistManager = () => {
     }
   }, [selectedBandId]);
 
+  // Default the dialog's band selector to the current band (or first band)
+  useEffect(() => {
+    if (showNewSetlistDialog) {
+      setNewSetlistBandId(selectedBandId || (bands[0]?.id ?? ""));
+    }
+  }, [showNewSetlistDialog, selectedBandId, bands]);
+
   const fetchBands = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -190,6 +197,7 @@ export const SetlistManager = () => {
       setNewSetlistDescription("");
       setNewSetlistBandId("");
       setShowNewSetlistDialog(false);
+      setSelectedBandId(newSetlistBandId);
       fetchSetlists();
     } catch (error: any) {
       toast({
@@ -551,7 +559,7 @@ export const SetlistManager = () => {
                   <SelectTrigger>
                     <SelectValue placeholder="Choose a band..." />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-50 bg-background">
                     {bands.map((band) => (
                       <SelectItem key={band.id} value={band.id}>
                         {band.name}

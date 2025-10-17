@@ -492,54 +492,8 @@ export const SetlistManager = () => {
 
   return (
     <div className="space-y-6">
-      {/* Band Selection */}
-      {!loading && (
-        <>
-          {bands.length > 0 ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>Select Band</CardTitle>
-                <CardDescription>Choose which band's setlist you want to manage</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-2">
-                  {bands.map((band) => (
-                    <Button
-                      key={band.id}
-                      variant={selectedBandId === band.id ? "default" : "outline"}
-                      className="justify-start"
-                      onClick={() => setSelectedBandId(band.id)}
-                    >
-                      <Music className="h-4 w-4 mr-2" />
-                      {band.name}
-                      {band.description && (
-                        <span className="ml-2 text-sm text-muted-foreground">
-                          - {band.description}
-                        </span>
-                      )}
-                    </Button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center py-8">
-                  <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground mb-2">No bands found</p>
-                  <p className="text-sm text-muted-foreground">Create a band from the Dashboard first to manage setlists.</p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </>
-      )}
-
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">
-          {selectedBandId ? "Manage Setlists" : "Select a Band"}
-        </h2>
+        <h2 className="text-2xl font-bold">Manage Setlists</h2>
         <Dialog open={showNewSetlistDialog} onOpenChange={setShowNewSetlistDialog}>
           <DialogTrigger asChild>
             <Button>

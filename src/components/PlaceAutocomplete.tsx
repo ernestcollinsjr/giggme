@@ -19,7 +19,12 @@ export const PlaceAutocomplete = ({
 }: PlaceAutocompleteProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const onChangeRef = useRef(onChange);
   const [inputValue, setInputValue] = useState(value);
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: "AIzaSyApWGqqVFHkQ3KJNzaRAmG1WBwtZlOFO6Y",
@@ -48,7 +53,7 @@ export const PlaceAutocomplete = ({
         const fullText = address ? `${placeName}, ${address}` : placeName;
         
         setInputValue(placeName);
-        onChange(placeName, place);
+        onChangeRef.current(placeName, place);
       }
     });
 
@@ -57,12 +62,12 @@ export const PlaceAutocomplete = ({
         google.maps.event.removeListener(listener);
       }
     };
-  }, [isLoaded, onChange]);
+  }, [isLoaded]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setInputValue(newValue);
-    onChange(newValue);
+    onChangeRef.current(newValue);
   };
 
   if (loadError) {

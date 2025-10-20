@@ -70,37 +70,15 @@ export const PlaceAutocomplete = ({
     onChangeRef.current(newValue);
   };
 
-  if (loadError) {
-    return (
-      <Input
-        ref={inputRef}
-        value={inputValue}
-        onChange={handleInputChange}
-        placeholder={placeholder}
-        className={className}
-      />
-    );
-  }
-
-  if (!isLoaded) {
-    return (
-      <Input
-        // Keep input editable while maps loads to avoid stalling after first keystroke
-        placeholder="Loading maps..."
-        className={className}
-        value={inputValue}
-        onChange={handleInputChange}
-      />
-    );
-  }
-
+  // Always render a single input to preserve focus while Maps loads/errors
   return (
     <Input
       ref={inputRef}
       value={inputValue}
       onChange={handleInputChange}
-      placeholder={placeholder}
+      placeholder={isLoaded ? placeholder : loadError ? placeholder : "Loading venue..."}
       className={className}
+      autoComplete="off"
     />
   );
 };

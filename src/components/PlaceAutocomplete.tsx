@@ -85,9 +85,11 @@ export const PlaceAutocomplete = ({
   if (!isLoaded) {
     return (
       <Input
-        disabled
+        // Keep input editable while maps loads to avoid stalling after first keystroke
         placeholder="Loading maps..."
         className={className}
+        value={inputValue}
+        onChange={handleInputChange}
       />
     );
   }

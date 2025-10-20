@@ -279,6 +279,7 @@ const Rehearsals = () => {
                     value={venue}
                     onChange={(value) => setVenue(value)}
                     placeholder="Start typing a venue name or address..."
+                    disableAutocomplete
                   />
                 </div>
               </div>

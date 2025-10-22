@@ -290,17 +290,17 @@ const Setlist = () => {
                                      onClick={async () => {
                                        console.log('[Setlist] Watch click', { title: song.title, url: song.audio_url });
                                        toast({ title: 'Loading video', description: song.title });
-                                       try {
-                                         const { data, error } = await supabase.functions.invoke('youtube-proxy', {
-                                           body: { url: song.audio_url }
-                                         });
-                                         console.log('[Setlist] youtube-proxy result', { data, error });
+                        try {
+                          const { data, error } = await supabase.functions.invoke('fetch-youtube', {
+                            body: { url: song.audio_url }
+                          });
+                          console.log('[Setlist] fetch-youtube result', { data, error });
                                          const useUrl = (data && (data.embedUrl || data.canonicalUrl)) || song.audio_url;
                                          setResolvedUrls((prev) => ({ ...prev, [song.id]: useUrl }));
-                                       } catch (err) {
-                                         console.error('[Setlist] youtube-proxy error', err);
-                                         setResolvedUrls((prev) => ({ ...prev, [song.id]: song.audio_url! }));
-                                       }
+                        } catch (err) {
+                          console.error('[Setlist] fetch-youtube error', err);
+                          setResolvedUrls((prev) => ({ ...prev, [song.id]: song.audio_url! }));
+                        }
                                        setExpandedVideoSongId(
                                          expandedVideoSongId === song.id ? null : song.id
                                        );

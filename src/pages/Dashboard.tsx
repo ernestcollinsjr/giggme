@@ -232,6 +232,16 @@ const Dashboard = () => {
       });
       return;
     }
+    // Detect embedded preview/iframe which can block geolocation
+    try {
+      if (window.self !== window.top) {
+        toast({
+          title: "Open in a new tab",
+          description: "Location access may be blocked in embedded previews. Open the app in a new tab or enter your address manually.",
+        });
+        return;
+      }
+    } catch {}
 
     setIsSharingLocation(true);
 

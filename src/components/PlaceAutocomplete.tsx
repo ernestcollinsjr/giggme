@@ -28,8 +28,12 @@ export const PlaceAutocomplete = ({
     onChangeRef.current = onChange;
   }, [onChange]);
 
+  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+  
+  console.log("Google Maps API Key status:", apiKey ? "Loaded" : "Missing");
+  
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: (import.meta as any).env.VITE_GOOGLE_MAPS_API_KEY as string,
+    googleMapsApiKey: apiKey || "",
     libraries,
   });
 

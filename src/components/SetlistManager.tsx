@@ -57,6 +57,8 @@ export const SetlistManager = () => {
   const [uploading, setUploading] = useState(false);
   const [ytOpen, setYtOpen] = useState(false);
   const [ytUrl, setYtUrl] = useState<string | null>(null);
+  const [ytVideoId, setYtVideoId] = useState<string | null>(null);
+  const [ytTitle, setYtTitle] = useState<string>("");
 
   useEffect(() => {
     fetchBands();
@@ -486,6 +488,32 @@ export const SetlistManager = () => {
     }
   };
 
+  const extractVideoId = (url: string): string | null => {
+    if (!url) return null;
+    try {
+      const u = new URL(url.trim());
+      const host = u.hostname.toLowerCase().replace('www.', '');
+      let id = '';
+      if (host === 'youtu.be') {
+        id = u.pathname.substring(1).split('?')[0];
+      } else if (host.includes('youtube.com')) {
+        if (u.pathname === '/watch') {
+          id = u.searchParams.get('v') || '';
+        } else if (u.pathname.startsWith('/shorts/')) {
+          id = u.pathname.split('/')[2] || '';
+        } else if (u.pathname.startsWith('/embed/')) {
+          id = u.pathname.split('/')[2] || '';
+        } else if (u.pathname.startsWith('/v/')) {
+          id = u.pathname.split('/')[2] || '';
+        }
+      }
+      id = id.split('&')[0].split('?')[0];
+      return id && id.length >= 10 ? id : null;
+    } catch {
+      return null;
+    }
+  };
+
   if (loading) {
     return <div className="text-muted-foreground">Loading setlists...</div>;
   }
@@ -818,6 +846,15 @@ export const SetlistManager = () => {
             </CardContent>
           </Card>
         ))
+      )}
+
+      {ytOpen && ytVideoId && (
+        <YouTubePlayer
+          videoId={ytVideoId}
+          title={ytTitle || 'YouTube Video'}
+          isOpen={ytOpen}
+          onClose={() => { setYtOpen(false); setYtVideoId(null); setYtUrl(null); }}
+        />
       )}
     </div>
   );

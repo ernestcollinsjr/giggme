@@ -17,6 +17,9 @@ import BottomNav from "@/components/BottomNav";
 import { BandAssistant } from "@/components/BandAssistant";
 import { LivePresence } from "@/components/LivePresence";
 import { PlaceAutocomplete } from "@/components/PlaceAutocomplete";
+import { AutoLocationTracker } from "@/components/AutoLocationTracker";
+import { MemberLocationsMap } from "@/components/MemberLocationsMap";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface Profile {
   id: string;
@@ -90,6 +93,9 @@ const Dashboard = () => {
   const [manualLocation, setManualLocation] = useState("");
   const [selectedPlace, setSelectedPlace] = useState<google.maps.places.PlaceResult | null>(null);
   const [isSavingManualLocation, setIsSavingManualLocation] = useState(false);
+  const [acceptInviteDialog, setAcceptInviteDialog] = useState<{open: boolean, inviteId: string | null}>({open: false, inviteId: null});
+  const [locationSharingConsent, setLocationSharingConsent] = useState(true);
+  const [activeGigsWithSharing, setActiveGigsWithSharing] = useState<string[]>([]);
 
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -172,6 +178,28 @@ const Dashboard = () => {
           .order("created_at", { ascending: false });
         
         setGigInvites(inviteData || []);
+        
+        // Check for active gigs with location sharing enabled
+        const { data: activeGigs } = await supabase
+          .from("gig_members")
+          .select(`
+            gig_id,
+            location_sharing_enabled,
+            gigs!inner (
+              id,
+              date,
+              loading_time,
+              sound_check_time
+            )
+          `)
+          .eq("member_id", user.id)
+          .eq("status", "accepted")
+          .eq("location_sharing_enabled", true);
+        
+        if (activeGigs) {
+          const activeGigIds = activeGigs.map((g: any) => g.gig_id);
+          setActiveGigsWithSharing(activeGigIds);
+        }
       }
       
       // Booking managers see bands (leaders and members)
@@ -364,22 +392,34 @@ const Dashboard = () => {
     }
   };
 
-  const handleInviteResponse = async (inviteId: string, newStatus: string) => {
+  const handleInviteResponse = async (inviteId: string, newStatus: string, enableLocationSharing: boolean = false) => {
     try {
       const { error } = await supabase
         .from("gig_members")
-        .update({ status: newStatus })
+        .update({ 
+          status: newStatus,
+          location_sharing_enabled: newStatus === "accepted" ? enableLocationSharing : false
+        })
         .eq("id", inviteId);
 
       if (error) throw error;
 
-      toast({
-        title: newStatus === "accepted" ? "Invite accepted!" : "Invite declined",
-        description: `You have ${newStatus} the gig invite.`,
-      });
+      if (newStatus === "accepted" && enableLocationSharing) {
+        toast({
+          title: "Gig accepted! 📅",
+          description: "You'll automatically share your location 1 hour before the event.",
+        });
+      } else {
+        toast({
+          title: newStatus === "accepted" ? "Invite accepted!" : "Invite declined",
+          description: `You have ${newStatus} the gig invite.`,
+        });
+      }
 
       // Refresh invites
       setGigInvites(gigInvites.filter(invite => invite.id !== inviteId));
+      checkAuth();
+      setAcceptInviteDialog({open: false, inviteId: null});
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -609,7 +649,7 @@ const Dashboard = () => {
                       <div className="flex gap-2">
                         <Button 
                           size="sm" 
-                          onClick={() => handleInviteResponse(invite.id, "accepted")}
+                          onClick={() => setAcceptInviteDialog({open: true, inviteId: invite.id})}
                           className="bg-green-600 hover:bg-green-700"
                         >
                           Accept
@@ -617,7 +657,7 @@ const Dashboard = () => {
                         <Button 
                           size="sm" 
                           variant="destructive"
-                          onClick={() => handleInviteResponse(invite.id, "declined")}
+                          onClick={() => handleInviteResponse(invite.id, "declined", false)}
                         >
                           Decline
                         </Button>
@@ -734,6 +774,11 @@ const Dashboard = () => {
                 </Button>
               </CardContent>
             </Card>
+
+            {/* Show member locations for upcoming gigs */}
+            {filteredGigs.length > 0 && filteredGigs[0] && (
+              <MemberLocationsMap gigId={filteredGigs[0].id} />
+            )}
 
             <Card className="border-border/50 shadow-lg">
               <CardHeader>
@@ -909,6 +954,61 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Location Sharing Accept Dialog */}
+      <Dialog open={acceptInviteDialog.open} onOpenChange={(open) => setAcceptInviteDialog({open, inviteId: null})}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Accept Gig Invitation</DialogTitle>
+            <DialogDescription>
+              Share your location with the band leader to help coordinate arrival times.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex items-start space-x-2">
+              <Checkbox 
+                id="location-sharing" 
+                checked={locationSharingConsent}
+                onCheckedChange={(checked) => setLocationSharingConsent(checked as boolean)}
+              />
+              <div className="grid gap-1.5 leading-none">
+                <label
+                  htmlFor="location-sharing"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Share my location automatically
+                </label>
+                <p className="text-sm text-muted-foreground">
+                  Your location will be shared with the band leader starting 1 hour before the earliest event time (loading, sound check, or gig start).
+                </p>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setAcceptInviteDialog({open: false, inviteId: null})}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => {
+                if (acceptInviteDialog.inviteId) {
+                  handleInviteResponse(acceptInviteDialog.inviteId, "accepted", locationSharingConsent);
+                }
+              }}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              Accept Gig
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Auto Location Tracker for active gigs */}
+      {user && activeGigsWithSharing.length > 0 && (
+        <AutoLocationTracker userId={user.id} isEnabled={true} />
+      )}
 
       <BottomNav />
     </div>

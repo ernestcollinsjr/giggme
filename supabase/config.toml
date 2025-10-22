@@ -6,5 +6,8 @@ verify_jwt = false
 [functions.fetch-youtube]
 verify_jwt = true
 
+[functions.gmaps-key]
+verify_jwt = false
+
 [functions.send-rider]
 verify_jwt = false

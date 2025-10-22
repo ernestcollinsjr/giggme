@@ -145,7 +145,7 @@ export type Database = {
             foreignKeyName: "gigs_band_id_fkey"
             columns: ["band_id"]
             isOneToOne: false
-            referencedRelation: "gigs"
+            referencedRelation: "bands"
             referencedColumns: ["id"]
           },
           {

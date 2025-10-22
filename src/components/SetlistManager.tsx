@@ -55,10 +55,7 @@ export const SetlistManager = () => {
   const [youtubeLink, setYoutubeLink] = useState("");
   const [selectedSet, setSelectedSet] = useState(1);
   const [uploading, setUploading] = useState(false);
-  const [ytOpen, setYtOpen] = useState(false);
-  const [ytUrl, setYtUrl] = useState<string | null>(null);
-  const [ytVideoId, setYtVideoId] = useState<string | null>(null);
-  const [ytTitle, setYtTitle] = useState<string>("");
+  const [playingVideo, setPlayingVideo] = useState<{ videoId: string; title: string } | null>(null);
 
   useEffect(() => {
     fetchBands();
@@ -749,34 +746,51 @@ export const SetlistManager = () => {
                                       onClick={(e) => e.stopPropagation()}
                                     >
                                       {song.audio_url}
-                                    </a>
-                                    <div className="flex items-center gap-2">
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setYtUrl(song.audio_url);
-                                          setYtOpen(true);
-                                        }}
-                                      >
-                                        Watch
-                                      </Button>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={async (e) => {
-                                          e.stopPropagation();
-                                          try {
-                                            await navigator.clipboard.writeText(song.audio_url);
-                                            toast({ title: 'Link copied', description: 'YouTube URL copied to clipboard' });
-                                          } catch {
-                                            toast({ variant: 'destructive', title: 'Copy failed', description: 'Unable to copy link' });
-                                          }
-                                        }}
-                                      >
-                                        Copy link
-                                      </Button>
+                                     </a>
+                                     <div className="flex items-center gap-2">
+                                       <Button
+                                         variant="ghost"
+                                         size="sm"
+                                         onClick={async () => {
+                                           // Try local extraction first
+                                           const localVideoId = song.audio_url ? extractVideoId(song.audio_url) : null;
+                                           if (localVideoId) {
+                                             setPlayingVideo({ videoId: localVideoId, title: song.title });
+                                             return;
+                                           }
+
+                                           // Fallback to backend for search URLs
+                                           try {
+                                             const { data } = await supabase.functions.invoke('fetch-youtube', {
+                                               body: { url: song.audio_url }
+                                             });
+                                             if (data?.videoId) {
+                                               setPlayingVideo({ videoId: data.videoId, title: song.title });
+                                             } else {
+                                               toast({ variant: 'destructive', title: 'Could not load video' });
+                                             }
+                                           } catch {
+                                             toast({ variant: 'destructive', title: 'Could not load video' });
+                                           }
+                                         }}
+                                       >
+                                         Watch
+                                       </Button>
+                                       <Button
+                                         variant="ghost"
+                                         size="sm"
+                                         onClick={async (e) => {
+                                           e.stopPropagation();
+                                           try {
+                                             await navigator.clipboard.writeText(song.audio_url);
+                                             toast({ title: 'Link copied', description: 'YouTube URL copied to clipboard' });
+                                           } catch {
+                                             toast({ variant: 'destructive', title: 'Copy failed', description: 'Unable to copy link' });
+                                           }
+                                         }}
+                                       >
+                                         Copy link
+                                       </Button>
                                       <Button
                                         variant="ghost"
                                         size="sm"
@@ -848,12 +862,12 @@ export const SetlistManager = () => {
         ))
       )}
 
-      {ytOpen && ytVideoId && (
+      {playingVideo && (
         <YouTubePlayer
-          videoId={ytVideoId}
-          title={ytTitle || 'YouTube Video'}
-          isOpen={ytOpen}
-          onClose={() => { setYtOpen(false); setYtVideoId(null); setYtUrl(null); }}
+          videoId={playingVideo.videoId}
+          title={playingVideo.title}
+          isOpen={!!playingVideo}
+          onClose={() => setPlayingVideo(null)}
         />
       )}
     </div>

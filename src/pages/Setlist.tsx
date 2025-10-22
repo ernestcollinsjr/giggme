@@ -278,31 +278,26 @@ const Setlist = () => {
                                      <Button
                                        variant="default"
                                        size="sm"
-                                       type="button"
-                                       onClick={async (e) => {
-                                         e.stopPropagation();
-                                         
+                                       onClick={async () => {
+                                         // Try local extraction first
+                                         const localVideoId = extractVideoId(song.audio_url!);
+                                         if (localVideoId) {
+                                           setPlayingVideo({ videoId: localVideoId, title: song.title });
+                                           return;
+                                         }
+
+                                         // Fallback to backend for search URLs
                                          try {
                                            const { data } = await supabase.functions.invoke('fetch-youtube', {
                                              body: { url: song.audio_url }
                                            });
-                                           
-                                           const videoId = data?.videoId || extractVideoId(song.audio_url);
-                                           
-                                           if (videoId) {
-                                             setPlayingVideo({ videoId, title: song.title });
+                                           if (data?.videoId) {
+                                             setPlayingVideo({ videoId: data.videoId, title: song.title });
                                            } else {
-                                             toast({ 
-                                               variant: 'destructive',
-                                               title: 'Could not extract video ID', 
-                                               description: 'Unable to play this video' 
-                                             });
+                                             toast({ variant: 'destructive', title: 'Could not load video' });
                                            }
-                                         } catch (err) {
-                                           const videoId = extractVideoId(song.audio_url!);
-                                           if (videoId) {
-                                             setPlayingVideo({ videoId, title: song.title });
-                                           }
+                                         } catch {
+                                           toast({ variant: 'destructive', title: 'Could not load video' });
                                          }
                                        }}
                                      >
@@ -347,7 +342,7 @@ const Setlist = () => {
           </>
         )}
       </div>
-      
+
       {playingVideo && (
         <YouTubePlayer
           videoId={playingVideo.videoId}
@@ -356,7 +351,7 @@ const Setlist = () => {
           onClose={() => setPlayingVideo(null)}
         />
       )}
-      
+
       <BottomNav />
     </div>
   );

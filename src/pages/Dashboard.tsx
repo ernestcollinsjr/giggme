@@ -14,6 +14,8 @@ import { Label } from "@/components/ui/label";
 import { Music, Briefcase, MapPin, Calendar, Crown, LogOut, ListMusic, User as UserIcon, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
+import { BandAssistant } from "@/components/BandAssistant";
+import { LivePresence } from "@/components/LivePresence";
 
 interface Profile {
   id: string;
@@ -372,7 +374,8 @@ const Dashboard = () => {
               </Badge>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-4">
+            <LivePresence />
             <Button variant="outline" onClick={() => navigate("/profile-setup")}>
               Profile
             </Button>
@@ -382,6 +385,8 @@ const Dashboard = () => {
             </Button>
           </div>
         </div>
+
+        <BandAssistant />
 
         {userRole === "band_leader" && (
           <div className="space-y-4">

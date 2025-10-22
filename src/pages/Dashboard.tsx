@@ -11,7 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Music, Briefcase, MapPin, Calendar, Crown, LogOut, ListMusic, User as UserIcon, Plus } from "lucide-react";
+import { Music, Briefcase, MapPin, Calendar, Crown, LogOut, ListMusic, User as UserIcon, Plus, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
 import { BandAssistant } from "@/components/BandAssistant";
@@ -85,6 +85,7 @@ const Dashboard = () => {
   const [newBandDescription, setNewBandDescription] = useState("");
   const [isCreatingBand, setIsCreatingBand] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [isSharingLocation, setIsSharingLocation] = useState(false);
 
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -228,6 +229,25 @@ const Dashboard = () => {
       return;
     }
 
+    setIsSharingLocation(true);
+
+    // Request permission explicitly with better error handling
+    try {
+      const permission = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
+      
+      if (permission.state === 'denied') {
+        toast({
+          variant: "destructive",
+          title: "Location permission denied",
+          description: "Please enable location access in your browser settings to share your location.",
+        });
+        setIsSharingLocation(false);
+        return;
+      }
+    } catch (permError) {
+      console.log("Permission API not supported, continuing with geolocation request");
+    }
+
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         try {
@@ -242,23 +262,49 @@ const Dashboard = () => {
           if (error) throw error;
 
           toast({
-            title: "Location shared!",
+            title: "Location shared! 📍",
             description: "Your location has been updated successfully.",
           });
+          
+          // Refresh profile to show updated location
+          checkAuth();
         } catch (error: any) {
           toast({
             variant: "destructive",
             title: "Update failed",
             description: error.message,
           });
+        } finally {
+          setIsSharingLocation(false);
         }
       },
       (error) => {
+        console.error("Geolocation error:", error);
+        let errorMessage = "Failed to get your location.";
+        
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = "Location permission denied. Please enable location access in your browser settings.";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = "Location information unavailable. Please try again.";
+            break;
+          case error.TIMEOUT:
+            errorMessage = "Location request timed out. Please try again.";
+            break;
+        }
+        
         toast({
           variant: "destructive",
           title: "Location error",
-          description: "Failed to get your location. Please check permissions.",
+          description: errorMessage,
         });
+        setIsSharingLocation(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
       }
     );
   };
@@ -658,13 +704,32 @@ const Dashboard = () => {
                   Location Sharing
                 </CardTitle>
                 <CardDescription>
-                  Let managers know where you are for on-time arrivals
+                  Share your real-time location with band leaders for on-time arrivals at gigs and rehearsals
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button onClick={handleShareLocation} className="w-full">
-                  Share My Location
+                <Button 
+                  onClick={handleShareLocation} 
+                  className="w-full"
+                  disabled={isSharingLocation}
+                >
+                  {isSharingLocation ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Getting location...
+                    </>
+                  ) : (
+                    <>
+                      <MapPin className="h-4 w-4 mr-2" />
+                      Share My Location
+                    </>
+                  )}
                 </Button>
+                {profile?.location_lat && profile?.location_lng && (
+                  <p className="text-xs text-muted-foreground text-center mt-2">
+                    ✓ Location shared
+                  </p>
+                )}
               </CardContent>
             </Card>
 

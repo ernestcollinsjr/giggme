@@ -46,6 +46,7 @@ export type Database = {
           created_at: string
           gig_id: string
           id: string
+          location_sharing_enabled: boolean | null
           member_id: string
           status: string
           updated_at: string
@@ -54,6 +55,7 @@ export type Database = {
           created_at?: string
           gig_id: string
           id?: string
+          location_sharing_enabled?: boolean | null
           member_id: string
           status?: string
           updated_at?: string
@@ -62,6 +64,7 @@ export type Database = {
           created_at?: string
           gig_id?: string
           id?: string
+          location_sharing_enabled?: boolean | null
           member_id?: string
           status?: string
           updated_at?: string
@@ -450,7 +453,28 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      active_member_locations: {
+        Row: {
+          earliest_time: string | null
+          gig_date: string | null
+          gig_id: string | null
+          last_location_update: string | null
+          location_lat: number | null
+          location_lng: number | null
+          member_id: string | null
+          name: string | null
+          venue: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gig_members_gig_id_fkey"
+            columns: ["gig_id"]
+            isOneToOne: false
+            referencedRelation: "gigs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       get_user_role: {
@@ -462,6 +486,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_in_sharing_window: {
+        Args: { earliest_time: string; gig_date: string }
         Returns: boolean
       }
     }

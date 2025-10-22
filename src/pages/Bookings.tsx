@@ -12,12 +12,14 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar as CalendarIcon, Clock, MapPin, Plus, Trash2, Music, Navigation } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, MapPin, Plus, Trash2, Music, Navigation, Users, Send } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import BottomNav from "@/components/BottomNav";
 import { PlaceAutocomplete } from "@/components/PlaceAutocomplete";
 import { GigTemplateSelector } from "@/components/GigTemplateSelector";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface Gig {
   id: string;
@@ -38,6 +40,13 @@ interface Gig {
   user_id: string;
 }
 
+interface BandMember {
+  id: string;
+  name: string;
+  email: string;
+  instrument: string | null;
+}
+
 const Bookings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -46,6 +55,10 @@ const Bookings = () => {
   const [bands, setBands] = useState<{ id: string; name: string }[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [bandMembers, setBandMembers] = useState<BandMember[]>([]);
+  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [currentGigForInvite, setCurrentGigForInvite] = useState<string | null>(null);
   
   // Form state
   const [date, setDate] = useState<Date>();
@@ -122,6 +135,17 @@ const Bookings = () => {
     const { data: gigData } = await query;
 
     setGigs((gigData as unknown as Gig[]) || []);
+    
+    // Fetch band members if a band is selected
+    if (selectedBandId && roleData?.role === "band_leader") {
+      const { data: membersData } = await supabase
+        .from("profiles")
+        .select("id, name, email, instrument")
+        .neq("id", user.id); // Exclude the band leader
+      
+      setBandMembers((membersData as BandMember[]) || []);
+    }
+    
     setLoading(false);
   };
 
@@ -206,6 +230,46 @@ const Bookings = () => {
       });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleInviteMembers = async () => {
+    if (!currentGigForInvite || selectedMembers.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "No members selected",
+        description: "Please select at least one band member to invite.",
+      });
+      return;
+    }
+
+    try {
+      const invites = selectedMembers.map(memberId => ({
+        gig_id: currentGigForInvite,
+        member_id: memberId,
+        status: 'pending',
+      }));
+
+      const { error } = await supabase
+        .from("gig_members")
+        .insert(invites);
+
+      if (error) throw error;
+
+      toast({
+        title: "Invitations sent",
+        description: `Successfully invited ${selectedMembers.length} member(s) to the gig.`,
+      });
+
+      setInviteDialogOpen(false);
+      setSelectedMembers([]);
+      setCurrentGigForInvite(null);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Failed to send invitations",
+        description: error.message,
+      });
     }
   };
 
@@ -618,13 +682,85 @@ const Bookings = () => {
                         )}
                       </div>
                       {isBandLeader && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteGig(gig.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
+                        <div className="flex flex-col gap-2">
+                          <Dialog open={inviteDialogOpen && currentGigForInvite === gig.id} onOpenChange={(open) => {
+                            setInviteDialogOpen(open);
+                            if (!open) {
+                              setCurrentGigForInvite(null);
+                              setSelectedMembers([]);
+                            }
+                          }}>
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setCurrentGigForInvite(gig.id);
+                                  setInviteDialogOpen(true);
+                                }}
+                              >
+                                <Users className="h-4 w-4 mr-2" />
+                                Invite Members
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Invite Band Members</DialogTitle>
+                                <DialogDescription>
+                                  Select band members to invite to this gig
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="space-y-4 py-4">
+                                {bandMembers.length === 0 ? (
+                                  <p className="text-sm text-muted-foreground text-center py-4">
+                                    No other band members found. Members need to sign up first.
+                                  </p>
+                                ) : (
+                                  bandMembers.map((member) => (
+                                    <div key={member.id} className="flex items-center space-x-3">
+                                      <Checkbox
+                                        id={member.id}
+                                        checked={selectedMembers.includes(member.id)}
+                                        onCheckedChange={(checked) => {
+                                          if (checked) {
+                                            setSelectedMembers([...selectedMembers, member.id]);
+                                          } else {
+                                            setSelectedMembers(selectedMembers.filter(id => id !== member.id));
+                                          }
+                                        }}
+                                      />
+                                      <label
+                                        htmlFor={member.id}
+                                        className="flex-1 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                                      >
+                                        <div>
+                                          <p className="font-semibold">{member.name}</p>
+                                          <p className="text-xs text-muted-foreground">{member.email}</p>
+                                          {member.instrument && (
+                                            <p className="text-xs text-muted-foreground">{member.instrument}</p>
+                                          )}
+                                        </div>
+                                      </label>
+                                    </div>
+                                  ))
+                                )}
+                              </div>
+                              {bandMembers.length > 0 && (
+                                <Button onClick={handleInviteMembers} className="w-full">
+                                  <Send className="h-4 w-4 mr-2" />
+                                  Send Invitations ({selectedMembers.length})
+                                </Button>
+                              )}
+                            </DialogContent>
+                          </Dialog>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteGig(gig.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
                       )}
                     </div>
                   </div>

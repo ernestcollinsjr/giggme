@@ -59,8 +59,8 @@ useEffect(() => {
           const address = place.formatted_address;
           const fullText = address ? `${placeName}, ${address}` : placeName;
           
-          setInputValue(placeName);
-          onChangeRef.current(placeName, place);
+          setInputValue(fullText);
+          onChangeRef.current(fullText, place);
         }
       });
 

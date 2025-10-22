@@ -15,12 +15,15 @@ import { Calendar as CalendarIcon, Clock, MapPin, Plus, Trash2, Music, Navigatio
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import BottomNav from "@/components/BottomNav";
+import { PlaceAutocomplete } from "@/components/PlaceAutocomplete";
 
 interface Gig {
   id: string;
   date: string;
   venue: string;
   venue_name: string | null;
+  venue_lat: number | null;
+  venue_lng: number | null;
   notes: string | null;
   attire: string | null;
   food_provided: string | null;
@@ -49,6 +52,8 @@ const Bookings = () => {
   const [soundCheckTime, setSoundCheckTime] = useState("");
   const [venueName, setVenueName] = useState("");
   const [venue, setVenue] = useState("");
+  const [venueLat, setVenueLat] = useState<number | null>(null);
+  const [venueLng, setVenueLng] = useState<number | null>(null);
   const [notes, setNotes] = useState("");
   const [attire, setAttire] = useState("");
   const [foodProvided, setFoodProvided] = useState("");
@@ -133,6 +138,8 @@ const Bookings = () => {
           sound_check_time: soundCheckTime.trim() || null,
           venue_name: venueName.trim() || null,
           venue: venue.trim(),
+          venue_lat: venueLat,
+          venue_lng: venueLng,
           notes: notes.trim() || null,
           attire: attire.trim() || null,
           food_provided: foodProvided.trim() || null,
@@ -156,6 +163,8 @@ const Bookings = () => {
       setSoundCheckTime("");
       setVenueName("");
       setVenue("");
+      setVenueLat(null);
+      setVenueLng(null);
       setNotes("");
       setAttire("");
       setFoodProvided("");
@@ -248,11 +257,16 @@ const Bookings = () => {
                 <Label htmlFor="venue">Venue Address</Label>
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="venue"
-                    placeholder="e.g., 123 Main St, New York, NY 10001"
+                  <PlaceAutocomplete
                     value={venue}
-                    onChange={(e) => setVenue(e.target.value)}
+                    onChange={(value, placeDetails) => {
+                      setVenue(value);
+                      if (placeDetails?.geometry?.location) {
+                        setVenueLat(placeDetails.geometry.location.lat());
+                        setVenueLng(placeDetails.geometry.location.lng());
+                      }
+                    }}
+                    placeholder="Start typing a venue address..."
                   />
                 </div>
               </div>
@@ -452,18 +466,31 @@ const Bookings = () => {
                         <div className="flex items-center gap-2 mb-2">
                           <MapPin className="h-4 w-4 text-primary" />
                           <h4 className="font-semibold">{gig.venue}</h4>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => {
-                              const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(gig.venue)}`;
-                              window.open(mapsUrl, '_blank');
-                            }}
-                            title="Navigate to venue"
-                          >
-                            <Navigation className="h-4 w-4 text-primary" />
-                          </Button>
+                          {(gig.venue_lat && gig.venue_lng) ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${gig.venue_lat},${gig.venue_lng}`;
+                                window.open(mapsUrl, '_blank');
+                              }}
+                            >
+                              <Navigation className="h-4 w-4 mr-1" />
+                              Navigate
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(gig.venue)}`;
+                                window.open(mapsUrl, '_blank');
+                              }}
+                            >
+                              <Navigation className="h-4 w-4 mr-1" />
+                              Search
+                            </Button>
+                          )}
                         </div>
                         {gig.notes && (
                           <p className="text-sm text-muted-foreground mt-2">

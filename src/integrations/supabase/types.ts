@@ -94,6 +94,8 @@ export type Database = {
           user_id: string
           venue: string
           venue_contact_person: string | null
+          venue_lat: number | null
+          venue_lng: number | null
           venue_name: string | null
         }
         Insert: {
@@ -113,6 +115,8 @@ export type Database = {
           user_id: string
           venue: string
           venue_contact_person?: string | null
+          venue_lat?: number | null
+          venue_lng?: number | null
           venue_name?: string | null
         }
         Update: {
@@ -132,6 +136,8 @@ export type Database = {
           user_id?: string
           venue?: string
           venue_contact_person?: string | null
+          venue_lat?: number | null
+          venue_lng?: number | null
           venue_name?: string | null
         }
         Relationships: [
@@ -229,6 +235,8 @@ export type Database = {
           updated_at: string
           venue: string
           venue_contact_person: string | null
+          venue_lat: number | null
+          venue_lng: number | null
         }
         Insert: {
           attire?: string | null
@@ -244,6 +252,8 @@ export type Database = {
           updated_at?: string
           venue: string
           venue_contact_person?: string | null
+          venue_lat?: number | null
+          venue_lng?: number | null
         }
         Update: {
           attire?: string | null
@@ -259,6 +269,8 @@ export type Database = {
           updated_at?: string
           venue?: string
           venue_contact_person?: string | null
+          venue_lat?: number | null
+          venue_lng?: number | null
         }
         Relationships: [
           {

@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar as CalendarIcon, Clock, MapPin, Plus, Trash2 } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, MapPin, Plus, Trash2, Navigation } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import BottomNav from "@/components/BottomNav";
@@ -27,6 +27,8 @@ interface Rehearsal {
   sound_man_info: string | null;
   end_time: string | null;
   band_leader_id: string;
+  venue_lat: number | null;
+  venue_lng: number | null;
 }
 
 const Rehearsals = () => {
@@ -42,6 +44,8 @@ const Rehearsals = () => {
   const [startTime, setStartTime] = useState("12:00");
   const [endTime, setEndTime] = useState("14:00");
   const [venue, setVenue] = useState("");
+  const [venueLat, setVenueLat] = useState<number | null>(null);
+  const [venueLng, setVenueLng] = useState<number | null>(null);
   const [notes, setNotes] = useState("");
   const [foodProvided, setFoodProvided] = useState("");
   const [venueContactPerson, setVenueContactPerson] = useState("");
@@ -121,6 +125,8 @@ const Rehearsals = () => {
           date: rehearsalDateTime.toISOString(),
           end_time: endTime,
           venue: venue.trim(),
+          venue_lat: venueLat,
+          venue_lng: venueLng,
           notes: notes.trim() || null,
           food_provided: foodProvided.trim() || null,
           venue_contact_person: venueContactPerson.trim() || null,
@@ -138,6 +144,8 @@ const Rehearsals = () => {
       setStartTime("12:00");
       setEndTime("14:00");
       setVenue("");
+      setVenueLat(null);
+      setVenueLng(null);
       setNotes("");
       setFoodProvided("");
       setVenueContactPerson("");
@@ -277,9 +285,14 @@ const Rehearsals = () => {
                   <MapPin className="h-4 w-4 text-muted-foreground" />
                   <PlaceAutocomplete
                     value={venue}
-                    onChange={(value) => setVenue(value)}
+                    onChange={(value, placeDetails) => {
+                      setVenue(value);
+                      if (placeDetails?.geometry?.location) {
+                        setVenueLat(placeDetails.geometry.location.lat());
+                        setVenueLng(placeDetails.geometry.location.lng());
+                      }
+                    }}
                     placeholder="Start typing a venue name or address..."
-                    disableAutocomplete
                   />
                 </div>
               </div>
@@ -354,6 +367,19 @@ const Rehearsals = () => {
                         <div className="flex items-center gap-2 mb-2">
                           <MapPin className="h-4 w-4 text-primary" />
                           <h4 className="font-semibold">{rehearsal.venue}</h4>
+                          {rehearsal.venue_lat && rehearsal.venue_lng && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${rehearsal.venue_lat},${rehearsal.venue_lng}`;
+                                window.open(mapsUrl, '_blank');
+                              }}
+                            >
+                              <Navigation className="h-4 w-4 mr-1" />
+                              Navigate
+                            </Button>
+                          )}
                         </div>
                         {rehearsal.notes && (
                           <p className="text-sm text-muted-foreground mt-2">

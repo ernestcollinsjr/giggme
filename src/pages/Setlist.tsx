@@ -4,11 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useBand } from "@/contexts/BandContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Music, ArrowLeft, Play, Pause, X, FileText } from "lucide-react";
+import { Music, ArrowLeft, Play, Pause, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
 import { SetlistManager } from "@/components/SetlistManager";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { YouTubePlayer } from "@/components/YouTubePlayer";
 
 interface SetlistSong {
   id: string;
@@ -36,8 +36,7 @@ const Setlist = () => {
   const [playingAudio, setPlayingAudio] = useState<HTMLAudioElement | null>(null);
   const [playingSongId, setPlayingSongId] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
-  const [expandedVideoSongId, setExpandedVideoSongId] = useState<string | null>(null);
-  const [resolvedUrls, setResolvedUrls] = useState<Record<string, string>>({});
+  const [playingVideo, setPlayingVideo] = useState<{ videoId: string; title: string } | null>(null);
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -109,7 +108,7 @@ const Setlist = () => {
     }
   };
 
-  const toYouTubeEmbed = (url: string): string | null => {
+  const extractVideoId = (url: string): string | null => {
     if (!url) return null;
     
     try {
@@ -138,13 +137,7 @@ const Setlist = () => {
         return null;
       }
 
-      const params = new URLSearchParams();
-      const start = u.searchParams.get("t") || u.searchParams.get("start");
-      if (start) params.set("start", start.replace(/[^0-9]/g, ""));
-      params.set("rel", "0");
-      params.set("modestbranding", "1");
-
-      return `https://www.youtube-nocookie.com/embed/${id}?${params.toString()}`;
+      return id;
     } catch (error) {
       console.error('[Setlist] Error parsing YouTube URL:', error);
       return null;
@@ -281,70 +274,42 @@ const Setlist = () => {
                                   </div>
                                 </div>
                                  <div className="flex items-center gap-2 shrink-0">
-                                  {song.audio_url && /(youtu\.be|youtube\.com|youtube-nocookie\.com)/i.test(song.audio_url) && (
-                                    <Button
-                                      variant="default"
-                                      size="sm"
-                                      type="button"
-                                      onClick={async (e) => {
-                                        e.stopPropagation();
-                                        console.log('[Setlist] Watch button clicked!', { 
-                                          title: song.title, 
-                                          url: song.audio_url,
-                                          expandedId: expandedVideoSongId,
-                                          songId: song.id
-                                        });
-                                        
-                                        // Toggle video immediately
-                                        const newExpandedId = expandedVideoSongId === song.id ? null : song.id;
-                                        setExpandedVideoSongId(newExpandedId);
-                                        
-                                        if (newExpandedId) {
-                                          toast({ title: 'Loading video...', description: song.title });
-                                          
-                                          try {
-                                            console.log('[Setlist] Calling fetch-youtube...');
-                                            const { data, error } = await supabase.functions.invoke('fetch-youtube', {
-                                              body: { url: song.audio_url }
-                                            });
-                                            console.log('[Setlist] fetch-youtube result:', { data, error });
-                                            
-                                            if (error) {
-                                              console.error('[Setlist] fetch-youtube error:', error);
-                                              toast({ 
-                                                variant: 'destructive',
-                                                title: 'Video loading error', 
-                                                description: error.message 
-                                              });
-                                            }
-                                            
-                                            const useUrl = (data && (data.embedUrl || data.canonicalUrl)) || song.audio_url;
-                                            setResolvedUrls((prev) => ({ ...prev, [song.id]: useUrl }));
-                                          } catch (err) {
-                                            console.error('[Setlist] fetch-youtube exception:', err);
-                                            setResolvedUrls((prev) => ({ ...prev, [song.id]: song.audio_url! }));
-                                            toast({ 
-                                              variant: 'destructive',
-                                              title: 'Failed to load video', 
-                                              description: 'Using direct URL instead' 
-                                            });
-                                          }
-                                        }
-                                      }}
-                                    >
-                                     {expandedVideoSongId === song.id ? (
-                                       <>
-                                         <X className="h-4 w-4 mr-2" />
-                                         Close Video
-                                       </>
-                                     ) : (
-                                       <>
-                                         <Play className="h-4 w-4 mr-2" />
-                                         Watch
-                                       </>
-                                     )}
-                                   </Button>
-                                  )}
+                                   {song.audio_url && /(youtu\.be|youtube\.com|youtube-nocookie\.com)/i.test(song.audio_url) && (
+                                     <Button
+                                       variant="default"
+                                       size="sm"
+                                       type="button"
+                                       onClick={async (e) => {
+                                         e.stopPropagation();
+                                         
+                                         try {
+                                           const { data } = await supabase.functions.invoke('fetch-youtube', {
+                                             body: { url: song.audio_url }
+                                           });
+                                           
+                                           const videoId = data?.videoId || extractVideoId(song.audio_url);
+                                           
+                                           if (videoId) {
+                                             setPlayingVideo({ videoId, title: song.title });
+                                           } else {
+                                             toast({ 
+                                               variant: 'destructive',
+                                               title: 'Could not extract video ID', 
+                                               description: 'Unable to play this video' 
+                                             });
+                                           }
+                                         } catch (err) {
+                                           const videoId = extractVideoId(song.audio_url!);
+                                           if (videoId) {
+                                             setPlayingVideo({ videoId, title: song.title });
+                                           }
+                                         }
+                                       }}
+                                     >
+                                       <Play className="h-4 w-4 mr-2" />
+                                       Watch
+                                    </Button>
+                                   )}
                                   <Button
                                     variant="ghost"
                                     size="sm"
@@ -365,40 +330,9 @@ const Setlist = () => {
                                           <Play className="h-4 w-4" />
                                         )}
                                       </Button>
-                                    )}
-                                 </div>
-                               </div>
-                               
-                               {/* Inline YouTube Player */}
-                               {expandedVideoSongId === song.id && song.audio_url && (
-                                 <div className="rounded-lg overflow-hidden bg-black">
-                                   <AspectRatio ratio={16 / 9}>
-                                     {toYouTubeEmbed(resolvedUrls[song.id] || song.audio_url) ? (
-                                       <iframe
-                                         src={toYouTubeEmbed(resolvedUrls[song.id] || song.audio_url) || (resolvedUrls[song.id] || song.audio_url)}
-                                         title={`YouTube video player - ${song.title}`}
-                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                         allowFullScreen
-                                         className="w-full h-full border-0"
-                                       />
-                                     ) : (
-                                       <div className="flex items-center justify-center h-full bg-muted">
-                                         <div className="text-center space-y-2">
-                                           <p className="text-muted-foreground">Unable to load video</p>
-                                           <a
-                                             href={resolvedUrls[song.id] || song.audio_url}
-                                             target="_blank"
-                                             rel="noopener noreferrer"
-                                             className="inline-block px-3 py-2 rounded bg-primary text-primary-foreground"
-                                           >
-                                             Open on YouTube
-                                           </a>
-                                         </div>
-                                       </div>
                                      )}
-                                   </AspectRatio>
-                                 </div>
-                               )}
+                                  </div>
+                               </div>
                             </div>
                            ))}
                         </div>
@@ -413,6 +347,16 @@ const Setlist = () => {
           </>
         )}
       </div>
+      
+      {playingVideo && (
+        <YouTubePlayer
+          videoId={playingVideo.videoId}
+          title={playingVideo.title}
+          isOpen={!!playingVideo}
+          onClose={() => setPlayingVideo(null)}
+        />
+      )}
+      
       <BottomNav />
     </div>
   );

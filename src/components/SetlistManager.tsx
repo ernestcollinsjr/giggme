@@ -12,7 +12,7 @@ import { Music, Plus, Trash2, Upload, Link as LinkIcon, ChevronUp, ChevronDown, 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import YouTubePlayer from "@/components/YouTubePlayer";
+import { YouTubePlayer } from "@/components/YouTubePlayer";
 
 interface Song {
   id: string;

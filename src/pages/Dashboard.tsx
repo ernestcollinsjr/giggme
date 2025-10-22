@@ -725,7 +725,7 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            <Card className="border-border/50 shadow-lg cursor-pointer hover:shadow-xl transition-shadow" onClick={handleShareLocation}>
+            <Card className="border-border/50 shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <ListMusic className="h-5 w-5 text-primary" />
@@ -743,7 +743,7 @@ const Dashboard = () => {
             </Card>
 
             <Card className="border-border/50 shadow-lg">
-              <CardHeader>
+              <CardHeader onClick={handleShareLocation} className="cursor-pointer hover:opacity-90 transition-opacity" role="button" aria-label="Share location">
                 <CardTitle className="flex items-center gap-2">
                   <MapPin className="h-5 w-5 text-primary" />
                   Location Sharing

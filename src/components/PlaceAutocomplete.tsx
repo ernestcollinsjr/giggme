@@ -29,7 +29,7 @@ export const PlaceAutocomplete = ({
   }, [onChange]);
 
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: "AIzaSyApWGqqVFHkQ3KJNzaRAmG1WBwtZlOFO6Y",
+    googleMapsApiKey: (import.meta as any).env.VITE_GOOGLE_MAPS_API_KEY as string,
     libraries,
   });
 

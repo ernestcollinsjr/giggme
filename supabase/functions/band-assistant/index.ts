@@ -20,26 +20,75 @@ serve(async (req) => {
     // Initialize Supabase client with service role for data access
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-    // Fetch user context: gigs, rehearsals, setlists, band info
-    const [gigsRes, rehearsalsRes, setlistsRes, profileRes, bandsRes] = await Promise.all([
-      supabase.from("gigs").select("*").eq("user_id", userId).order("date", { ascending: true }).limit(10),
-      supabase.from("rehearsals").select("*").eq("band_leader_id", userId).order("date", { ascending: true }).limit(5),
-      supabase.from("setlists").select("*, setlist_songs(*)").eq("band_leader_id", userId).limit(5),
-      supabase.from("profiles").select("*").eq("id", userId).single(),
-      supabase.from("bands").select("*").eq("band_leader_id", userId)
+    // Get user role
+    const { data: roleData } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .single();
+
+    const userRole = roleData?.role;
+
+    // Fetch user context based on role
+    let gigsRes, rehearsalsRes, setlistsRes, bandsRes;
+    
+    if (userRole === "band_leader") {
+      [gigsRes, rehearsalsRes, setlistsRes, bandsRes] = await Promise.all([
+        supabase.from("gigs").select("*").eq("user_id", userId).order("date", { ascending: true }).limit(10),
+        supabase.from("rehearsals").select("*").eq("band_leader_id", userId).order("date", { ascending: true }).limit(5),
+        supabase.from("setlists").select("*, setlist_songs(*)").eq("band_leader_id", userId).limit(5),
+        supabase.from("bands").select("*").eq("band_leader_id", userId)
+      ]);
+    } else if (userRole === "band_member") {
+      // For band members, fetch gig invites and general gigs/rehearsals
+      const gigInvitesRes = await supabase
+        .from("gig_members")
+        .select("gig_id")
+        .eq("member_id", userId);
+      
+      const gigIds = gigInvitesRes.data?.map(g => g.gig_id) || [];
+      
+      [gigsRes, rehearsalsRes, setlistsRes] = await Promise.all([
+        gigIds.length > 0 
+          ? supabase.from("gigs").select("*").in("id", gigIds).order("date", { ascending: true }).limit(10)
+          : { data: [] },
+        supabase.from("rehearsals").select("*").order("date", { ascending: true }).limit(5),
+        supabase.from("setlists").select("*, setlist_songs(*)").limit(5)
+      ]);
+      bandsRes = { data: [] };
+    } else {
+      // Booking managers see all gigs
+      [gigsRes, rehearsalsRes, setlistsRes] = await Promise.all([
+        supabase.from("gigs").select("*").order("date", { ascending: true }).limit(10),
+        supabase.from("rehearsals").select("*").order("date", { ascending: true }).limit(5),
+        supabase.from("setlists").select("*, setlist_songs(*)").limit(5)
+      ]);
+      bandsRes = { data: [] };
+    }
+
+    const [profileRes] = await Promise.all([
+      supabase.from("profiles").select("*").eq("id", userId).single()
     ]);
 
-    const upcomingGigs = gigsRes.data || [];
-    const upcomingRehearsals = rehearsalsRes.data || [];
-    const setlists = setlistsRes.data || [];
-    const profile = profileRes.data;
-    const bands = bandsRes.data || [];
+    const upcomingGigs = gigsRes?.data || [];
+    const upcomingRehearsals = rehearsalsRes?.data || [];
+    const setlists = setlistsRes?.data || [];
+    const profile = profileRes?.data;
+    const bands = bandsRes?.data || [];
 
     // Build context for AI
+    const roleLabel = 
+      userRole === "band_leader" ? "band leader" :
+      userRole === "band_member" ? "band member" :
+      "booking manager";
+
     const contextParts = [
-      `You are a helpful band management assistant for ${profile?.name || "the user"}.`,
-      `\nCURRENT BANDS:\n${bands.map(b => `- ${b.name}${b.description ? `: ${b.description}` : ""}`).join("\n") || "No bands yet"}`,
+      `You are a helpful band management assistant for ${profile?.name || "the user"} (${roleLabel}).`,
     ];
+
+    if (bands.length > 0) {
+      contextParts.push(`\nYOUR BANDS:\n${bands.map(b => `- ${b.name}${b.description ? `: ${b.description}` : ""}`).join("\n")}`);
+    }
 
     if (upcomingGigs.length > 0) {
       contextParts.push(`\nUPCOMING GIGS (${upcomingGigs.length}):\n${upcomingGigs.map(g => 

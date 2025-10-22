@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { useLoadScript } from "@react-google-maps/api";
-
+import { supabase } from "@/integrations/supabase/client";
 const libraries: ("places")[] = ["places"];
 
 interface PlaceAutocompleteProps {
@@ -28,12 +28,29 @@ export const PlaceAutocomplete = ({
     onChangeRef.current = onChange;
   }, [onChange]);
 
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-  
-  console.log("Google Maps API Key status:", apiKey ? "Loaded" : "Missing");
+  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
+  const [effectiveKey, setEffectiveKey] = useState<string>(apiKey || "");
+
+  useEffect(() => {
+    if (!apiKey) {
+      supabase.functions
+        .invoke("gmaps-key")
+        .then(({ data, error }) => {
+          if (error) {
+            console.warn("[PlaceAutocomplete] Failed to fetch Maps API key from backend", error);
+            return;
+          }
+          if (data?.apiKey) {
+            setEffectiveKey(data.apiKey as string);
+            console.log("Google Maps API Key status:", "Loaded (via backend)");
+          }
+        })
+        .catch((e) => console.warn("[PlaceAutocomplete] Key fetch error", e));
+    }
+  }, [apiKey]);
   
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: apiKey || "",
+    googleMapsApiKey: effectiveKey || "",
     libraries,
   });
 

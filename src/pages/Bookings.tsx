@@ -17,6 +17,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import BottomNav from "@/components/BottomNav";
 import { PlaceAutocomplete } from "@/components/PlaceAutocomplete";
+import { GigTemplateSelector } from "@/components/GigTemplateSelector";
 
 interface Gig {
   id: string;
@@ -308,6 +309,39 @@ const Bookings = () => {
               <CardDescription>Add a new performance to your calendar</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <GigTemplateSelector
+                currentValues={{
+                  venueName,
+                  venue,
+                  venueLat,
+                  venueLng,
+                  showTime,
+                  endTime,
+                  loadingTime,
+                  soundCheckTime,
+                  attire,
+                  foodProvided,
+                  venueContactPerson,
+                  soundManInfo,
+                  notes,
+                }}
+                onSelectTemplate={(values) => {
+                  setVenueName(values.venueName);
+                  setVenue(values.venue);
+                  setVenueLat(values.venueLat);
+                  setVenueLng(values.venueLng);
+                  setShowTime(values.showTime);
+                  setEndTime(values.endTime);
+                  setLoadingTime(values.loadingTime);
+                  setSoundCheckTime(values.soundCheckTime);
+                  setAttire(values.attire);
+                  setFoodProvided(values.foodProvided);
+                  setVenueContactPerson(values.venueContactPerson);
+                  setSoundManInfo(values.soundManInfo);
+                  setNotes(values.notes);
+                }}
+              />
+              
               <div className="space-y-2">
                 <Label htmlFor="venueName">Venue Name (Optional)</Label>
                 <Input

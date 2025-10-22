@@ -76,6 +76,69 @@ export type Database = {
           },
         ]
       }
+      gig_templates: {
+        Row: {
+          attire: string | null
+          created_at: string
+          default_end_time: string | null
+          default_loading_time: string | null
+          default_sound_check_time: string | null
+          default_start_time: string | null
+          food_provided: string | null
+          id: string
+          name: string
+          notes: string | null
+          sound_man_info: string | null
+          updated_at: string
+          user_id: string
+          venue: string
+          venue_contact_person: string | null
+          venue_lat: number | null
+          venue_lng: number | null
+          venue_name: string | null
+        }
+        Insert: {
+          attire?: string | null
+          created_at?: string
+          default_end_time?: string | null
+          default_loading_time?: string | null
+          default_sound_check_time?: string | null
+          default_start_time?: string | null
+          food_provided?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          sound_man_info?: string | null
+          updated_at?: string
+          user_id: string
+          venue: string
+          venue_contact_person?: string | null
+          venue_lat?: number | null
+          venue_lng?: number | null
+          venue_name?: string | null
+        }
+        Update: {
+          attire?: string | null
+          created_at?: string
+          default_end_time?: string | null
+          default_loading_time?: string | null
+          default_sound_check_time?: string | null
+          default_start_time?: string | null
+          food_provided?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          sound_man_info?: string | null
+          updated_at?: string
+          user_id?: string
+          venue?: string
+          venue_contact_person?: string | null
+          venue_lat?: number | null
+          venue_lng?: number | null
+          venue_name?: string | null
+        }
+        Relationships: []
+      }
       gigs: {
         Row: {
           attire: string | null

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 interface BandContextType {
   selectedBandId: string | null;
@@ -7,8 +7,23 @@ interface BandContextType {
 
 const BandContext = createContext<BandContextType | undefined>(undefined);
 
+const STORAGE_KEY = "selectedBandId";
+
 export const BandProvider = ({ children }: { children: ReactNode }) => {
-  const [selectedBandId, setSelectedBandId] = useState<string | null>(null);
+  const [selectedBandId, setSelectedBandId] = useState<string | null>(() => {
+    // Initialize from localStorage if available
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored || null;
+  });
+
+  // Persist to localStorage whenever it changes
+  useEffect(() => {
+    if (selectedBandId) {
+      localStorage.setItem(STORAGE_KEY, selectedBandId);
+    } else {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  }, [selectedBandId]);
 
   return (
     <BandContext.Provider value={{ selectedBandId, setSelectedBandId }}>

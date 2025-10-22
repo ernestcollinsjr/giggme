@@ -39,7 +39,7 @@ interface Gig {
 const Bookings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { selectedBandId } = useBand();
+  const { selectedBandId, setSelectedBandId } = useBand();
   const [gigs, setGigs] = useState<Gig[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -81,6 +81,21 @@ const Bookings = () => {
       .single();
 
     setUserRole(roleData?.role || null);
+
+    // Validate selected band exists for band leaders
+    if (roleData?.role === "band_leader" && selectedBandId) {
+      const { data: bandCheck } = await supabase
+        .from("bands")
+        .select("id")
+        .eq("id", selectedBandId)
+        .eq("band_leader_id", user.id)
+        .maybeSingle();
+      
+      if (!bandCheck) {
+        // Clear invalid band selection
+        setSelectedBandId(null);
+      }
+    }
 
     // Fetch gigs filtered by selected band
     let query = supabase

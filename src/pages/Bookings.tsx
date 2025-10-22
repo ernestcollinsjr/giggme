@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Calendar as CalendarIcon, Clock, MapPin, Plus, Trash2, Music, Navigation } from "lucide-react";
@@ -41,6 +42,7 @@ const Bookings = () => {
   const { toast } = useToast();
   const { selectedBandId, setSelectedBandId } = useBand();
   const [gigs, setGigs] = useState<Gig[]>([]);
+  const [bands, setBands] = useState<{ id: string; name: string }[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   
@@ -82,18 +84,27 @@ const Bookings = () => {
 
     setUserRole(roleData?.role || null);
 
-    // Validate selected band exists for band leaders
-    if (roleData?.role === "band_leader" && selectedBandId) {
-      const { data: bandCheck } = await supabase
+    // Fetch bands for band leaders
+    if (roleData?.role === "band_leader") {
+      const { data: bandsData } = await supabase
         .from("bands")
-        .select("id")
-        .eq("id", selectedBandId)
+        .select("id, name")
         .eq("band_leader_id", user.id)
-        .maybeSingle();
+        .order("created_at", { ascending: true });
       
-      if (!bandCheck) {
-        // Clear invalid band selection
-        setSelectedBandId(null);
+      setBands(bandsData || []);
+      
+      // Auto-select first band if none selected
+      if (bandsData && bandsData.length > 0 && !selectedBandId) {
+        setSelectedBandId(bandsData[0].id);
+      }
+      
+      // Validate selected band exists
+      if (selectedBandId) {
+        const bandExists = bandsData?.some(b => b.id === selectedBandId);
+        if (!bandExists) {
+          setSelectedBandId(bandsData?.[0]?.id || null);
+        }
       }
     }
 
@@ -248,7 +259,46 @@ const Bookings = () => {
           </Button>
         </div>
 
-        {isBandLeader && (
+        {isBandLeader && bands.length > 0 && (
+          <Card className="border-border/50 shadow-sm">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                <Label htmlFor="band-select" className="text-sm font-medium whitespace-nowrap">
+                  Current Band:
+                </Label>
+                <Select value={selectedBandId || undefined} onValueChange={setSelectedBandId}>
+                  <SelectTrigger id="band-select" className="w-full max-w-sm">
+                    <SelectValue placeholder="Select a band" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {bands.map((band) => (
+                      <SelectItem key={band.id} value={band.id}>
+                        {band.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {isBandLeader && bands.length === 0 && (
+          <Card className="border-border/50 shadow-lg bg-gradient-to-br from-destructive/5 to-destructive/10">
+            <CardContent className="pt-6 text-center">
+              <Music className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <h3 className="font-semibold mb-2">No Bands Created</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                You need to create a band first before you can add gigs.
+              </p>
+              <Button onClick={() => navigate("/dashboard")}>
+                Go to Dashboard to Create Band
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {isBandLeader && selectedBandId && (
           <Card className="border-border/50 shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">

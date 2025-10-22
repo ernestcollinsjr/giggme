@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
 import { BandAssistant } from "@/components/BandAssistant";
 import { LivePresence } from "@/components/LivePresence";
+import { PlaceAutocomplete } from "@/components/PlaceAutocomplete";
 
 interface Profile {
   id: string;
@@ -86,6 +87,9 @@ const Dashboard = () => {
   const [isCreatingBand, setIsCreatingBand] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isSharingLocation, setIsSharingLocation] = useState(false);
+  const [manualLocation, setManualLocation] = useState("");
+  const [selectedPlace, setSelectedPlace] = useState<google.maps.places.PlaceResult | null>(null);
+  const [isSavingManualLocation, setIsSavingManualLocation] = useState(false);
 
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -307,6 +311,47 @@ const Dashboard = () => {
         maximumAge: 0
       }
     );
+  };
+
+  const handleManualLocationSave = async () => {
+    if (!selectedPlace || !selectedPlace.geometry || !selectedPlace.geometry.location) {
+      toast({
+        variant: "destructive",
+        title: "Select a place",
+        description: "Please choose a suggested place to capture coordinates.",
+      });
+      return;
+    }
+
+    try {
+      setIsSavingManualLocation(true);
+      const lat = selectedPlace.geometry.location.lat();
+      const lng = selectedPlace.geometry.location.lng();
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          location_lat: lat,
+          location_lng: lng,
+        })
+        .eq("id", user?.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Location saved 📍",
+        description: "We'll use this address as your location.",
+      });
+      checkAuth();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Update failed",
+        description: error.message,
+      });
+    } finally {
+      setIsSavingManualLocation(false);
+    }
   };
 
   const handleInviteResponse = async (inviteId: string, newStatus: string) => {
@@ -725,6 +770,39 @@ const Dashboard = () => {
                     </>
                   )}
                 </Button>
+
+                <div className="mt-4 space-y-2">
+                  <p className="text-xs text-muted-foreground text-center">
+                    Can't use GPS? Enter location manually
+                  </p>
+                  <PlaceAutocomplete
+                    value={manualLocation}
+                    onChange={(val, place) => {
+                      setManualLocation(val);
+                      setSelectedPlace(place || null);
+                    }}
+                    placeholder="Search address or place"
+                    className="w-full"
+                  />
+                  <Button 
+                    onClick={handleManualLocationSave} 
+                    variant="outline" 
+                    className="w-full"
+                    disabled={
+                      isSavingManualLocation || !(selectedPlace && selectedPlace.geometry && selectedPlace.geometry.location)
+                    }
+                  >
+                    {isSavingManualLocation ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      "Save Manual Location"
+                    )}
+                  </Button>
+                </div>
+
                 {profile?.location_lat && profile?.location_lng && (
                   <p className="text-xs text-muted-foreground text-center mt-2">
                     ✓ Location shared

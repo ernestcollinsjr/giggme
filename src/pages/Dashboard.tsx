@@ -743,71 +743,85 @@ const Dashboard = () => {
             </Card>
 
             <Card className="border-border/50 shadow-lg">
-              <CardHeader onClick={handleShareLocation} className="cursor-pointer hover:opacity-90 transition-opacity" role="button" aria-label="Share location">
+              <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <MapPin className="h-5 w-5 text-primary" />
                   Location Sharing
                 </CardTitle>
                 <CardDescription>
-                  Share your real-time location with band leaders for on-time arrivals at gigs and rehearsals
+                  Share your location with band leaders for on-time arrivals at gigs and rehearsals
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button 
-                  onClick={handleShareLocation} 
-                  className="w-full"
-                  disabled={isSharingLocation}
-                >
-                  {isSharingLocation ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Getting location...
-                    </>
-                  ) : (
-                    <>
-                      <MapPin className="h-4 w-4 mr-2" />
-                      Share My Location
-                    </>
-                  )}
-                </Button>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Enter your location</Label>
+                    <PlaceAutocomplete
+                      value={manualLocation}
+                      onChange={(val, place) => {
+                        setManualLocation(val);
+                        setSelectedPlace(place || null);
+                      }}
+                      placeholder="Search address or place"
+                      className="w-full"
+                    />
+                    <Button 
+                      onClick={handleManualLocationSave} 
+                      className="w-full"
+                      disabled={
+                        isSavingManualLocation || !(selectedPlace && selectedPlace.geometry && selectedPlace.geometry.location)
+                      }
+                    >
+                      {isSavingManualLocation ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <MapPin className="h-4 w-4 mr-2" />
+                          Save Location
+                        </>
+                      )}
+                    </Button>
+                  </div>
 
-                <div className="mt-4 space-y-2">
-                  <p className="text-xs text-muted-foreground text-center">
-                    Can't use GPS? Enter location manually
-                  </p>
-                  <PlaceAutocomplete
-                    value={manualLocation}
-                    onChange={(val, place) => {
-                      setManualLocation(val);
-                      setSelectedPlace(place || null);
-                    }}
-                    placeholder="Search address or place"
-                    className="w-full"
-                  />
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">
+                        Or use GPS
+                      </span>
+                    </div>
+                  </div>
+
                   <Button 
-                    onClick={handleManualLocationSave} 
-                    variant="outline" 
+                    onClick={handleShareLocation} 
+                    variant="outline"
                     className="w-full"
-                    disabled={
-                      isSavingManualLocation || !(selectedPlace && selectedPlace.geometry && selectedPlace.geometry.location)
-                    }
+                    disabled={isSharingLocation}
                   >
-                    {isSavingManualLocation ? (
+                    {isSharingLocation ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Saving...
+                        Getting location...
                       </>
                     ) : (
-                      "Save Manual Location"
+                      <>
+                        <MapPin className="h-4 w-4 mr-2" />
+                        Use My Current Location
+                      </>
                     )}
                   </Button>
-                </div>
 
-                {profile?.location_lat && profile?.location_lng && (
-                  <p className="text-xs text-muted-foreground text-center mt-2">
-                    ✓ Location shared
-                  </p>
-                )}
+                  {profile?.location_lat && profile?.location_lng && (
+                    <p className="text-xs text-muted-foreground text-center mt-2">
+                      ✓ Location shared
+                    </p>
+                  )}
+                </div>
               </CardContent>
             </Card>
 

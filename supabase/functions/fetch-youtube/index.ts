@@ -36,7 +36,24 @@ serve(async (req) => {
       const urlObj = new URL(url);
       const host = urlObj.hostname.toLowerCase().replace('www.', '');
       
-      if (host === 'youtu.be') {
+      console.log('[fetch-youtube] Parsing URL:', { url, host, pathname: urlObj.pathname });
+      
+      // Check if this is a search query URL
+      if (urlObj.pathname === '/results' && urlObj.searchParams.get('search_query')) {
+        const searchQuery = urlObj.searchParams.get('search_query');
+        console.log('[fetch-youtube] Detected search query:', searchQuery);
+        const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=1&q=${encodeURIComponent(searchQuery!)}&key=${apiKey}`;
+        
+        const searchRes = await fetch(searchUrl);
+        const searchData = await searchRes.json();
+        
+        console.log('[fetch-youtube] Search results:', searchData);
+        
+        if (searchData.items && searchData.items.length > 0) {
+          videoId = searchData.items[0].id.videoId;
+          console.log('[fetch-youtube] Found video from search:', videoId);
+        }
+      } else if (host === 'youtu.be') {
         videoId = urlObj.pathname.substring(1).split('?')[0];
       } else if (host.includes('youtube.com')) {
         if (urlObj.pathname === '/watch') {
@@ -45,19 +62,6 @@ serve(async (req) => {
           videoId = urlObj.pathname.split('/')[2] || '';
         } else if (urlObj.pathname.startsWith('/embed/')) {
           videoId = urlObj.pathname.split('/')[2] || '';
-        }
-      }
-
-      // If we couldn't extract a video ID, try search
-      if (!videoId && urlObj.searchParams.get('search_query')) {
-        const searchQuery = urlObj.searchParams.get('search_query');
-        const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=1&q=${encodeURIComponent(searchQuery!)}&key=${apiKey}`;
-        
-        const searchRes = await fetch(searchUrl);
-        const searchData = await searchRes.json();
-        
-        if (searchData.items && searchData.items.length > 0) {
-          videoId = searchData.items[0].id.videoId;
         }
       }
     } catch (e) {

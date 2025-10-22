@@ -280,32 +280,58 @@ const Setlist = () => {
                                     )}
                                   </div>
                                 </div>
-                                <div className="flex items-center gap-2 shrink-0">
-                                 {song.audio_url && /(youtu\.be|youtube\.com|youtube-nocookie\.com)/i.test(song.audio_url) && (
-                                   <Button
-                                     variant="default"
-                                     size="sm"
-                                     type="button"
-                                     className="pointer-events-auto z-10"
-                                     onClick={async () => {
-                                       console.log('[Setlist] Watch click', { title: song.title, url: song.audio_url });
-                                       toast({ title: 'Loading video', description: song.title });
-                        try {
-                          const { data, error } = await supabase.functions.invoke('fetch-youtube', {
-                            body: { url: song.audio_url }
-                          });
-                          console.log('[Setlist] fetch-youtube result', { data, error });
-                                         const useUrl = (data && (data.embedUrl || data.canonicalUrl)) || song.audio_url;
-                                         setResolvedUrls((prev) => ({ ...prev, [song.id]: useUrl }));
-                        } catch (err) {
-                          console.error('[Setlist] fetch-youtube error', err);
-                          setResolvedUrls((prev) => ({ ...prev, [song.id]: song.audio_url! }));
-                        }
-                                       setExpandedVideoSongId(
-                                         expandedVideoSongId === song.id ? null : song.id
-                                       );
-                                     }}
-                                   >
+                                 <div className="flex items-center gap-2 shrink-0">
+                                  {song.audio_url && /(youtu\.be|youtube\.com|youtube-nocookie\.com)/i.test(song.audio_url) && (
+                                    <Button
+                                      variant="default"
+                                      size="sm"
+                                      type="button"
+                                      onClick={async (e) => {
+                                        e.stopPropagation();
+                                        console.log('[Setlist] Watch button clicked!', { 
+                                          title: song.title, 
+                                          url: song.audio_url,
+                                          expandedId: expandedVideoSongId,
+                                          songId: song.id
+                                        });
+                                        
+                                        // Toggle video immediately
+                                        const newExpandedId = expandedVideoSongId === song.id ? null : song.id;
+                                        setExpandedVideoSongId(newExpandedId);
+                                        
+                                        if (newExpandedId) {
+                                          toast({ title: 'Loading video...', description: song.title });
+                                          
+                                          try {
+                                            console.log('[Setlist] Calling fetch-youtube...');
+                                            const { data, error } = await supabase.functions.invoke('fetch-youtube', {
+                                              body: { url: song.audio_url }
+                                            });
+                                            console.log('[Setlist] fetch-youtube result:', { data, error });
+                                            
+                                            if (error) {
+                                              console.error('[Setlist] fetch-youtube error:', error);
+                                              toast({ 
+                                                variant: 'destructive',
+                                                title: 'Video loading error', 
+                                                description: error.message 
+                                              });
+                                            }
+                                            
+                                            const useUrl = (data && (data.embedUrl || data.canonicalUrl)) || song.audio_url;
+                                            setResolvedUrls((prev) => ({ ...prev, [song.id]: useUrl }));
+                                          } catch (err) {
+                                            console.error('[Setlist] fetch-youtube exception:', err);
+                                            setResolvedUrls((prev) => ({ ...prev, [song.id]: song.audio_url! }));
+                                            toast({ 
+                                              variant: 'destructive',
+                                              title: 'Failed to load video', 
+                                              description: 'Using direct URL instead' 
+                                            });
+                                          }
+                                        }
+                                      }}
+                                    >
                                      {expandedVideoSongId === song.id ? (
                                        <>
                                          <X className="h-4 w-4 mr-2" />

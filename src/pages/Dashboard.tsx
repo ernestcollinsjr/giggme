@@ -725,7 +725,7 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            <Card className="border-border/50 shadow-lg">
+            <Card className="border-border/50 shadow-lg cursor-pointer hover:shadow-xl transition-shadow" onClick={handleShareLocation}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <ListMusic className="h-5 w-5 text-primary" />

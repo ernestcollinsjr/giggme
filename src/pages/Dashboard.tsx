@@ -38,6 +38,7 @@ interface Profile {
   location_lat: number;
   location_lng: number;
   phone_number: string | null;
+  isAvailable?: boolean;
 }
 
 interface Rehearsal {
@@ -247,7 +248,7 @@ const Dashboard = () => {
         const { data: bandLeaders } = await supabase
           .from("user_roles")
           .select("user_id")
-          .in("role", ["band_leader", "band_member"]);
+          .in("role", ["band_leader", "band_member", "artist"]);
         
         if (bandLeaders && bandLeaders.length > 0) {
           const userIds = bandLeaders.map(r => r.user_id);
@@ -256,7 +257,22 @@ const Dashboard = () => {
             .select("*")
             .in("id", userIds);
           
-          setProfiles(bandProfiles || []);
+          // Get artists who have accepted gigs in the future
+          const { data: bookedArtists } = await supabase
+            .from("gig_members")
+            .select("member_id, gigs!inner(date)")
+            .eq("status", "accepted")
+            .gte("gigs.date", new Date().toISOString());
+          
+          const bookedArtistIds = new Set(bookedArtists?.map(g => g.member_id) || []);
+          
+          // Mark artists as available or booked
+          const profilesWithAvailability = bandProfiles?.map(profile => ({
+            ...profile,
+            isAvailable: !bookedArtistIds.has(profile.id)
+          })) || [];
+          
+          setProfiles(profilesWithAvailability);
         }
       }
     }
@@ -662,7 +678,7 @@ const Dashboard = () => {
 
       const recipients = type === 'individual' && selectedRecipient
         ? [selectedRecipient.id]
-        : profiles.map(p => p.id);
+        : profiles.filter(p => p.isAvailable !== false).map(p => p.id);
 
       const { data, error } = await supabase.functions.invoke('send-manager-sms', {
         body: {
@@ -1159,12 +1175,25 @@ const Dashboard = () => {
                     size="sm"
                     variant="outline"
                     onClick={() => {
-                      if (profiles.some(p => !p.phone_number)) {
+                      const availableArtists = profiles.filter(p => p.isAvailable !== false && p.phone_number);
+                      const bookedArtists = profiles.filter(p => p.isAvailable === false);
+                      
+                      if (availableArtists.length === 0) {
                         toast({
-                          title: "Some artists missing phone numbers",
-                          description: "Only artists with phone numbers will receive the message.",
+                          variant: "destructive",
+                          title: "No available artists",
+                          description: "All artists are currently booked for upcoming gigs.",
+                        });
+                        return;
+                      }
+                      
+                      if (bookedArtists.length > 0) {
+                        toast({
+                          title: "Sending to available artists only",
+                          description: `${bookedArtists.length} artist(s) excluded (already booked)`,
                         });
                       }
+                      
                       setSmsMessage("");
                       setGroupSmsDialogOpen(true);
                     }}
@@ -1423,7 +1452,7 @@ const Dashboard = () => {
           <DialogHeader>
             <DialogTitle>Send Group Text</DialogTitle>
             <DialogDescription>
-              Send a text message to all {profiles.filter(p => p.phone_number).length} artists with phone numbers
+              Send a text message to {profiles.filter(p => p.isAvailable !== false && p.phone_number).length} available artists (excluding those with upcoming gigs)
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">

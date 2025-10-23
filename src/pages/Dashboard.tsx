@@ -687,108 +687,106 @@ const Dashboard = () => {
 
         {(userRole === "band_leader" || userRole === "band_member") && (
           <>
-            <Card
-              className="border-border/50 shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
-              onClick={() => navigate("/rehearsals")}
-            >
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-primary" />
-                  Upcoming Rehearsals
-                </CardTitle>
-                <CardDescription>
-                  Schedule and notes for band practice sessions
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {filteredRehearsals.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-4">No rehearsals scheduled</p>
-                ) : (
-                  <div className="space-y-3">
-                    {filteredRehearsals.slice(0, 3).map((rehearsal) => (
-                      <div key={rehearsal.id} className="p-3 border rounded-lg">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                              <Calendar className="h-4 w-4" />
-                              {new Date(rehearsal.date).toLocaleDateString('en-US', { 
-                                weekday: 'short', 
-                                year: 'numeric', 
-                                month: 'short', 
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
+            <div className="grid md:grid-cols-2 gap-4">
+              <Card
+                className="border-border/50 shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
+                onClick={() => navigate("/rehearsals")}
+              >
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Calendar className="h-4 w-4 text-primary" />
+                    Upcoming Rehearsals
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    Band practice sessions
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pb-4">
+                  {filteredRehearsals.length === 0 ? (
+                    <p className="text-center text-muted-foreground text-sm py-3">No rehearsals scheduled</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {filteredRehearsals.slice(0, 2).map((rehearsal) => (
+                        <div key={rehearsal.id} className="p-2 border rounded-lg">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
+                                <Calendar className="h-3 w-3" />
+                                {new Date(rehearsal.date).toLocaleDateString('en-US', { 
+                                  month: 'short', 
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </div>
+                              <h4 className="font-semibold text-sm truncate">{rehearsal.venue}</h4>
+                              {rehearsal.notes && (
+                                <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{rehearsal.notes}</p>
+                              )}
                             </div>
-                            <h4 className="font-semibold">{rehearsal.venue}</h4>
-                            {rehearsal.notes && (
-                              <p className="text-sm text-muted-foreground mt-1">{rehearsal.notes}</p>
-                            )}
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <Button variant="outline" className="w-full mt-4">
-                  View All Rehearsals
-                </Button>
-              </CardContent>
-            </Card>
+                      ))}
+                    </div>
+                  )}
+                  <Button variant="outline" size="sm" className="w-full mt-3">
+                    View All
+                  </Button>
+                </CardContent>
+              </Card>
 
-            <Card 
-              className="border-border/50 shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
-              onClick={() => navigate("/bookings")}
-            >
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Music className="h-5 w-5 text-primary" />
-                  Upcoming Gigs
-                </CardTitle>
-                <CardDescription>
-                  Performance dates, venues, and details
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {filteredGigs.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-4">No gigs scheduled</p>
-                ) : (
-                  <div className="space-y-3">
-                    {filteredGigs.slice(0, 3).map((gig) => (
-                      <div key={gig.id} className="p-3 border rounded-lg">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Badge variant={gig.status === 'confirmed' ? 'default' : 'secondary'}>
-                                {gig.status}
-                              </Badge>
+              <Card 
+                className="border-border/50 shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
+                onClick={() => navigate("/bookings")}
+              >
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Music className="h-4 w-4 text-primary" />
+                    Upcoming Gigs
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    Performance dates and venues
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pb-4">
+                  {filteredGigs.length === 0 ? (
+                    <p className="text-center text-muted-foreground text-sm py-3">No gigs scheduled</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {filteredGigs.slice(0, 2).map((gig) => (
+                        <div key={gig.id} className="p-2 border rounded-lg">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1 mb-1">
+                                <Badge variant={gig.status === 'confirmed' ? 'default' : 'secondary'} className="text-xs px-1.5 py-0">
+                                  {gig.status}
+                                </Badge>
+                              </div>
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
+                                <Calendar className="h-3 w-3" />
+                                {new Date(gig.date).toLocaleDateString('en-US', { 
+                                  month: 'short', 
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </div>
+                              <h4 className="font-semibold text-sm truncate">{gig.venue}</h4>
+                              {gig.notes && (
+                                <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{gig.notes}</p>
+                              )}
                             </div>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                              <Calendar className="h-4 w-4" />
-                              {new Date(gig.date).toLocaleDateString('en-US', { 
-                                weekday: 'short', 
-                                year: 'numeric', 
-                                month: 'short', 
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
-                            </div>
-                            <h4 className="font-semibold">{gig.venue}</h4>
-                            {gig.notes && (
-                              <p className="text-sm text-muted-foreground mt-1">{gig.notes}</p>
-                            )}
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <Button variant="outline" className="w-full mt-4">
-                  View All Gigs
-                </Button>
-              </CardContent>
-            </Card>
+                      ))}
+                    </div>
+                  )}
+                  <Button variant="outline" size="sm" className="w-full mt-3">
+                    View All
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
 
             {/* Compact grid layout for Member Locations and Setlist */}
             <div className="grid md:grid-cols-2 gap-4">

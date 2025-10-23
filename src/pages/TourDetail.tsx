@@ -463,7 +463,13 @@ export default function TourDetail() {
                         {typeMembers.map((member) => (
                           <div key={member.id} className="p-3 border rounded-lg space-y-2">
                             <div className="flex items-center justify-between">
-                              <div>
+                              <div 
+                                className="cursor-pointer hover:underline flex-1"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/artist-profile/${member.crew_member_id}`);
+                                }}
+                              >
                                 <p className="font-medium">{member.profiles.name}</p>
                                 <p className="text-sm text-muted-foreground">{member.profiles.email}</p>
                                 {member.role_title && (

@@ -1086,9 +1086,9 @@ const Dashboard = () => {
                     {profiles.map((bandProfile) => (
                       <div
                         key={bandProfile.id}
-                        className="flex flex-col items-center p-2 border border-border rounded-md hover:shadow-sm transition-all bg-card"
+                        className="flex flex-col items-center p-2 border-[0.5px] border-border rounded-md hover:shadow-sm transition-all bg-card"
                       >
-                        <Avatar className="h-10 w-10 mb-1 border border-primary">
+                        <Avatar className="h-10 w-10 mb-1 border-[0.5px] border-primary">
                           <AvatarImage src={bandProfile.photo_urls?.[0]} alt={bandProfile.name} />
                           <AvatarFallback className="bg-primary/10 text-primary text-xs">
                             {bandProfile.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}

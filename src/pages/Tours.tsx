@@ -547,7 +547,10 @@ export default function Tours() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card
+                className="cursor-pointer hover:shadow-lg transition-shadow"
+                onClick={() => handleTourClick(tour.id)}
+              >
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Users className="h-5 w-5" />

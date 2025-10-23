@@ -771,28 +771,6 @@ const Dashboard = () => {
               </Card>
             </div>
 
-            {selectedBandId && (
-              <Card
-                className="border-border/50 shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
-                onClick={() => navigate("/setlist")}
-              >
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <ListMusic className="h-4 w-4 text-primary" />
-                    Setlists
-                  </CardTitle>
-                  <CardDescription className="text-xs">
-                    Manage your band's setlists
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    View and manage setlists for this band
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-
             {userRole === "band_member" && (
               <Card className="border-border/50 shadow-lg">
                 <CardHeader className="pb-3">

@@ -593,27 +593,33 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-6">
+              <Tabs value={selectedBandId || bands[0]?.id} onValueChange={setSelectedBandId}>
+                <TabsList className="bg-transparent border-0 p-0 h-auto gap-2">
+                  {bands.map((band) => (
+                    <TabsTrigger key={band.id} value={band.id}>
+                      {band.name}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
                 {bands.map((band) => (
-                  <Card key={band.id} className="border-border/50 shadow-lg">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Music className="h-5 w-5 text-primary" />
-                        {band.name}
-                      </CardTitle>
-                      {band.description && (
-                        <CardDescription>{band.description}</CardDescription>
-                      )}
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="mb-4">
-                        <h3 className="text-sm font-semibold text-muted-foreground mb-2">Band Members</h3>
+                  <TabsContent key={band.id} value={band.id}>
+                    <Card className="border-border/50 shadow-lg">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Music className="h-5 w-5 text-primary" />
+                          {band.name}
+                        </CardTitle>
+                        {band.description && (
+                          <CardDescription>{band.description}</CardDescription>
+                        )}
+                      </CardHeader>
+                      <CardContent>
                         <BandMemberRoster bandId={band.id} />
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
                 ))}
-              </div>
+              </Tabs>
             )}
           </div>
         )}

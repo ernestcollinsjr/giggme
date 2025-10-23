@@ -987,26 +987,28 @@ export default function TourDetail() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label>Venue Location * <MapPin className="inline h-3 w-3" /></Label>
-              <PlaceAutocomplete
-                value={dateFormData.venue}
-                onChange={handleDatePlaceSelect}
-                placeholder="Search for venue..."
-              />
-              {dateFormData.venue && (
-                <p className="text-xs text-muted-foreground mt-1">{dateFormData.venue}</p>
-              )}
-            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="dateVenueName">Venue Name</Label>
+                <Input
+                  id="dateVenueName"
+                  value={dateFormData.venue_name}
+                  onChange={(e) => setDateFormData(prev => ({ ...prev, venue_name: e.target.value }))}
+                  placeholder="e.g., The Blue Note"
+                />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="dateVenueName">Venue Name</Label>
-              <Input
-                id="dateVenueName"
-                value={dateFormData.venue_name}
-                onChange={(e) => setDateFormData(prev => ({ ...prev, venue_name: e.target.value }))}
-                placeholder="e.g., The Blue Note"
-              />
+              <div className="space-y-2">
+                <Label>Venue Location * <MapPin className="inline h-3 w-3" /></Label>
+                <PlaceAutocomplete
+                  value={dateFormData.venue}
+                  onChange={handleDatePlaceSelect}
+                  placeholder="Search for venue..."
+                />
+                {dateFormData.venue && (
+                  <p className="text-xs text-muted-foreground mt-1">{dateFormData.venue}</p>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

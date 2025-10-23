@@ -1,33 +1,23 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface ReminderRequest {
-  event_type: 'gig' | 'rehearsal';
-  reminder_type: 'check'; // Will check which reminders need to be sent
-}
-
-interface Gig {
+interface EventReminder {
   id: string;
   date: string;
   venue: string;
-  venue_name: string;
-  loading_time: string;
+  venue_name?: string;
+  loading_time?: string;
+  end_time?: string;
+  sound_check_time?: string;
 }
 
-interface Rehearsal {
+interface Profile {
   id: string;
-  date: string;
-  venue: string;
-  end_time: string;
-}
-
-interface Member {
-  member_id: string;
   name: string;
   phone_number: string;
 }
@@ -38,249 +28,202 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    const { event_type, reminder_type } = await req.json();
+    
+    console.log(`Processing ${event_type} reminders of type ${reminder_type}`);
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { event_type, reminder_type }: ReminderRequest = await req.json();
+    const twilioAccountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
+    const twilioAuthToken = Deno.env.get('TWILIO_AUTH_TOKEN');
+    const twilioPhoneNumber = Deno.env.get('TWILIO_PHONE_NUMBER');
 
-    console.log(`Checking ${event_type} reminders...`);
+    if (!twilioAccountSid || !twilioAuthToken || !twilioPhoneNumber) {
+      console.error('Twilio credentials not configured');
+      return new Response(
+        JSON.stringify({ error: 'Twilio credentials not configured' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     const now = new Date();
     const oneDayFromNow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
     const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000);
+    const fifteenMinutesFromNow = new Date(now.getTime() + 15 * 60 * 1000);
 
-    // Calculate time windows (with 15-minute buffer since cron runs every 15 minutes)
-    const oneDayWindowStart = new Date(oneDayFromNow.getTime() - 7.5 * 60 * 1000);
-    const oneDayWindowEnd = new Date(oneDayFromNow.getTime() + 7.5 * 60 * 1000);
-    const oneHourWindowStart = new Date(oneHourFromNow.getTime() - 7.5 * 60 * 1000);
-    const oneHourWindowEnd = new Date(oneHourFromNow.getTime() + 7.5 * 60 * 1000);
-
-    let events: any[] = [];
-
-    if (event_type === 'gig') {
-      // Fetch gigs needing reminders
-      const { data: oneDayGigs } = await supabase
-        .from('gigs')
-        .select('id, date, venue, venue_name, loading_time')
-        .gte('date', oneDayWindowStart.toISOString())
-        .lte('date', oneDayWindowEnd.toISOString());
-
-      const { data: oneHourGigs } = await supabase
-        .from('gigs')
-        .select('id, date, venue, venue_name, loading_time')
-        .gte('date', oneHourWindowStart.toISOString())
-        .lte('date', oneHourWindowEnd.toISOString());
-
-      if (oneDayGigs) {
-        for (const gig of oneDayGigs) {
-          await sendGigReminders(supabase, gig, '1 day');
-        }
+    if (reminder_type === 'check') {
+      const oneDayEvents = await fetchEvents(supabase, event_type, oneDayFromNow, fifteenMinutesFromNow, 24);
+      const oneHourEvents = await fetchEvents(supabase, event_type, oneHourFromNow, fifteenMinutesFromNow, 1);
+      
+      for (const event of oneDayEvents) {
+        await sendReminders(supabase, event, event_type, '1 day', twilioAccountSid, twilioAuthToken, twilioPhoneNumber);
+      }
+      
+      for (const event of oneHourEvents) {
+        await sendReminders(supabase, event, event_type, '1 hour', twilioAccountSid, twilioAuthToken, twilioPhoneNumber);
       }
 
-      if (oneHourGigs) {
-        for (const gig of oneHourGigs) {
-          await sendGigReminders(supabase, gig, '1 hour');
-        }
-      }
-
-      events = [...(oneDayGigs || []), ...(oneHourGigs || [])];
-    } else {
-      // Fetch rehearsals needing reminders
-      const { data: oneDayRehearsals } = await supabase
-        .from('rehearsals')
-        .select('id, date, venue, end_time')
-        .gte('date', oneDayWindowStart.toISOString())
-        .lte('date', oneDayWindowEnd.toISOString());
-
-      const { data: oneHourRehearsals } = await supabase
-        .from('rehearsals')
-        .select('id, date, venue, end_time')
-        .gte('date', oneHourWindowStart.toISOString())
-        .lte('date', oneHourWindowEnd.toISOString());
-
-      if (oneDayRehearsals) {
-        for (const rehearsal of oneDayRehearsals) {
-          await sendRehearsalReminders(supabase, rehearsal, '1 day');
-        }
-      }
-
-      if (oneHourRehearsals) {
-        for (const rehearsal of oneHourRehearsals) {
-          await sendRehearsalReminders(supabase, rehearsal, '1 hour');
-        }
-      }
-
-      events = [...(oneDayRehearsals || []), ...(oneHourRehearsals || [])];
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          one_day_reminders: oneDayEvents.length,
+          one_hour_reminders: oneHourEvents.length
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    console.log(`Processed ${events.length} ${event_type}(s)`);
-
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        processed: events.length,
-        event_type 
-      }),
-      { 
-        status: 200, 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        } 
-      }
+      JSON.stringify({ success: true, message: 'No reminders to send' }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
+
   } catch (error: any) {
-    console.error('Error processing reminders:', error);
+    console.error('Error in send-sms-reminders function:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      { 
-        status: 500, 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        } 
-      }
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 };
 
-async function sendGigReminders(supabase: any, gig: Gig, timeframe: string) {
-  console.log(`Sending ${timeframe} reminder for gig ${gig.id}`);
+async function fetchEvents(
+  supabase: any,
+  eventType: string,
+  targetTime: Date,
+  buffer: Date,
+  hoursAhead: number
+): Promise<EventReminder[]> {
+  const table = eventType === 'gig' ? 'gigs' : 'rehearsals';
+  const startTime = new Date(targetTime.getTime() - buffer.getTime());
+  const endTime = new Date(targetTime.getTime() + buffer.getTime());
+  
+  console.log(`Fetching ${table} between ${startTime.toISOString()} and ${endTime.toISOString()}`);
+  
+  const { data, error } = await supabase
+    .from(table)
+    .select('id, date, venue, venue_name, loading_time, end_time, sound_check_time')
+    .gte('date', startTime.toISOString())
+    .lte('date', endTime.toISOString());
 
-  // Get all members invited to this gig who have accepted
-  const { data: members } = await supabase
-    .from('gig_members')
-    .select(`
-      member_id,
-      profiles!gig_members_member_id_fkey (
-        name,
-        phone_number
-      )
-    `)
-    .eq('gig_id', gig.id)
-    .eq('status', 'accepted');
-
-  if (!members || members.length === 0) {
-    console.log('No accepted members for this gig');
-    return;
+  if (error) {
+    console.error(`Error fetching ${table}:`, error);
+    return [];
   }
 
-  const formattedDate = new Date(gig.date).toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric'
-  });
+  console.log(`Found ${data?.length || 0} ${table} needing ${hoursAhead}hr reminders`);
+  return data || [];
+}
 
-  for (const member of members) {
-    const profile = member.profiles;
-    if (!profile?.phone_number) {
-      console.log(`Member ${member.member_id} has no phone number`);
-      continue;
+async function sendReminders(
+  supabase: any,
+  event: EventReminder,
+  eventType: string,
+  timeframe: string,
+  accountSid: string,
+  authToken: string,
+  fromNumber: string
+) {
+  console.log(`Sending ${timeframe} reminders for ${eventType} ${event.id}`);
+  
+  let members: Profile[] = [];
+  
+  if (eventType === 'gig') {
+    const { data: gigMembers, error: gigError } = await supabase
+      .from('gig_members')
+      .select('member_id, profiles!gig_members_member_id_fkey(id, name, phone_number)')
+      .eq('gig_id', event.id)
+      .eq('status', 'accepted');
+
+    if (gigError) {
+      console.error('Error fetching gig members:', gigError);
+      return;
     }
 
-    const venueName = gig.venue_name || gig.venue;
-    const timeInfo = gig.loading_time ? ` Load-in: ${gig.loading_time}` : '';
-    
-    const message = `🎸 Gig Reminder: ${timeframe} until your gig at ${venueName} on ${formattedDate}.${timeInfo} Break a leg!`;
+    members = gigMembers
+      ?.map((gm: any) => gm.profiles)
+      .filter((p: any) => p && p.phone_number) || [];
+  } else {
+    const { data: profiles, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, name, phone_number, user_roles!inner(role)')
+      .eq('user_roles.role', 'band_member')
+      .not('phone_number', 'is', null);
 
-    await sendSMS(profile.phone_number, message);
+    if (profileError) {
+      console.error('Error fetching profiles:', profileError);
+      return;
+    }
+
+    members = profiles || [];
+  }
+
+  console.log(`Found ${members.length} members to notify`);
+
+  const eventDate = new Date(event.date).toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  
+  const venueName = event.venue_name || event.venue;
+  const timeInfo = event.loading_time || event.sound_check_time || event.end_time || '';
+  const timeText = timeInfo ? ` at ${timeInfo}` : '';
+  
+  const message = `🎵 Reminder: ${eventType === 'gig' ? 'Gig' : 'Rehearsal'} in ${timeframe}!\n\n` +
+    `📅 ${eventDate}\n` +
+    `📍 ${venueName}${timeText}\n\n` +
+    `See you there!`;
+
+  for (const member of members) {
+    try {
+      await sendTwilioSMS(
+        member.phone_number,
+        message,
+        accountSid,
+        authToken,
+        fromNumber
+      );
+      console.log(`SMS sent to ${member.name} (${member.phone_number})`);
+    } catch (error) {
+      console.error(`Failed to send SMS to ${member.name}:`, error);
+    }
   }
 }
 
-async function sendRehearsalReminders(supabase: any, rehearsal: Rehearsal, timeframe: string) {
-  console.log(`Sending ${timeframe} reminder for rehearsal ${rehearsal.id}`);
+async function sendTwilioSMS(
+  to: string,
+  body: string,
+  accountSid: string,
+  authToken: string,
+  from: string
+): Promise<void> {
+  const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
+  
+  const formData = new URLSearchParams();
+  formData.append('To', to);
+  formData.append('From', from);
+  formData.append('Body', body);
 
-  // Get all band members (using band_leader_id from rehearsals)
-  const { data: rehearsalData } = await supabase
-    .from('rehearsals')
-    .select('band_id, band_leader_id')
-    .eq('id', rehearsal.id)
-    .single();
-
-  if (!rehearsalData) {
-    console.log('Rehearsal not found');
-    return;
-  }
-
-  // Get all profiles with band_member or band_leader role
-  const { data: members } = await supabase
-    .from('user_roles')
-    .select(`
-      user_id,
-      profiles!user_roles_user_id_fkey (
-        name,
-        phone_number
-      )
-    `)
-    .in('role', ['band_member', 'band_leader']);
-
-  if (!members || members.length === 0) {
-    console.log('No band members found');
-    return;
-  }
-
-  const formattedDate = new Date(rehearsal.date).toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric'
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Basic ' + btoa(`${accountSid}:${authToken}`),
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: formData.toString(),
   });
 
-  for (const member of members) {
-    const profile = member.profiles;
-    if (!profile?.phone_number) {
-      console.log(`Member ${member.user_id} has no phone number`);
-      continue;
-    }
-
-    const timeInfo = rehearsal.end_time ? ` Ends at: ${rehearsal.end_time}` : '';
-    
-    const message = `🎵 Rehearsal Reminder: ${timeframe} until rehearsal at ${rehearsal.venue} on ${formattedDate}.${timeInfo} See you there!`;
-
-    await sendSMS(profile.phone_number, message);
-  }
-}
-
-async function sendSMS(phoneNumber: string, message: string) {
-  const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
-  const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
-  const twilioPhone = Deno.env.get('TWILIO_PHONE_NUMBER');
-
-  if (!accountSid || !authToken || !twilioPhone) {
-    console.error('Twilio credentials not configured');
-    return;
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Twilio API error: ${response.status} - ${errorText}`);
   }
 
-  try {
-    const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
-    
-    const formData = new URLSearchParams();
-    formData.append('To', phoneNumber);
-    formData.append('From', twilioPhone);
-    formData.append('Body', message);
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Basic ' + btoa(`${accountSid}:${authToken}`),
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: formData.toString(),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.text();
-      console.error('Twilio API error:', errorData);
-      throw new Error(`Twilio API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    console.log(`SMS sent successfully to ${phoneNumber}:`, data.sid);
-  } catch (error) {
-    console.error('Error sending SMS:', error);
-  }
+  const result = await response.json();
+  console.log('Twilio response:', result);
 }
 
 serve(handler);

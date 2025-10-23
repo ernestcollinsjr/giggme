@@ -183,6 +183,42 @@ export default function TourDetail() {
     });
   };
 
+  const resendInvitation = async (invitation: Invitation) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !tour) return;
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("name")
+        .eq("id", user.id)
+        .single();
+
+      const { error } = await supabase.functions.invoke("send-tour-invite", {
+        body: {
+          recipientEmail: invitation.email,
+          tourName: tour.name,
+          inviteToken: invitation.invite_token,
+          tourManagerName: profile?.name || "Tour Manager"
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Email Resent",
+        description: `Invitation email resent to ${invitation.email}`
+      });
+    } catch (error) {
+      console.error("Error resending invitation:", error);
+      toast({
+        title: "Error",
+        description: "Failed to resend invitation email",
+        variant: "destructive"
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -314,24 +350,35 @@ export default function TourDetail() {
                         Pending
                       </span>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => copyInviteLink(invite.invite_token)}
-                    >
-                      {copiedToken === invite.invite_token ? (
-                        <>
-                          <Check className="mr-2 h-3 w-3" />
-                          Copied!
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="mr-2 h-3 w-3" />
-                          Copy Invite Link
-                        </>
-                      )}
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => copyInviteLink(invite.invite_token)}
+                      >
+                        {copiedToken === invite.invite_token ? (
+                          <>
+                            <Check className="mr-2 h-3 w-3" />
+                            Copied!
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="mr-2 h-3 w-3" />
+                            Copy Link
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="default"
+                        className="flex-1"
+                        onClick={() => resendInvitation(invite)}
+                      >
+                        <Mail className="mr-2 h-3 w-3" />
+                        Resend Email
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>

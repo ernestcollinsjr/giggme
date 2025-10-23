@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Music, Briefcase, MapPin, Star, Users, Crown } from "lucide-react";
+import { Music, Briefcase, MapPin, Star, Users, Crown, Mic } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -49,7 +49,7 @@ const Index = () => {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
+        <div className="grid md:grid-cols-4 gap-6 mb-16">
           <div 
             className="bg-card border border-border/50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105"
             onClick={() => navigate("/pricing")}
@@ -88,10 +88,27 @@ const Index = () => {
             className="bg-card border border-border/50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105"
             onClick={() => navigate("/pricing")}
           >
+            <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center mb-4">
+              <Mic className="h-6 w-6 text-purple-500" />
+            </div>
+            <h3 className="text-xl font-semibold mb-2">Artist</h3>
+            <p className="text-muted-foreground mb-4">
+              Showcase your talent, build your portfolio, and connect with bands and venues
+            </p>
+            <div className="flex items-center gap-2 text-sm text-purple-500">
+              <Star className="h-4 w-4" />
+              <span className="font-medium">Premium Role</span>
+            </div>
+          </div>
+
+          <div 
+            className="bg-card border border-border/50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105"
+            onClick={() => navigate("/pricing")}
+          >
             <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mb-4">
               <Briefcase className="h-6 w-6 text-accent" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">Booking Managers</h3>
+            <h3 className="text-xl font-semibold mb-2">Booking Manager</h3>
             <p className="text-muted-foreground mb-4">
               Discover talented bands, track their locations, and manage your roster all in one place
             </p>

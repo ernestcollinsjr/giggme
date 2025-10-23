@@ -102,7 +102,7 @@ const Pricing = () => {
       priceId: "price_1SLNaaEPiAZgF8MeGXnGeydt",
     },
     {
-      name: "Premium Plan",
+      name: "Booking Manager",
       price: "Free",
       description: "For booking managers - free up to 5 bands",
       icon: Briefcase,

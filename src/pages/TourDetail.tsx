@@ -46,6 +46,9 @@ interface TourDate {
   per_diem: number | null;
   ground_transportation: string | null;
   transportation_not_provided: boolean | null;
+  hotel_name: string | null;
+  hotel_address: string | null;
+  hotel_check_in_time: string | null;
 }
 
 interface CrewMember {
@@ -117,7 +120,10 @@ export default function TourDetail() {
     payment_amount: "",
     per_diem: "",
     ground_transportation: "",
-    transportation_not_provided: false
+    transportation_not_provided: false,
+    hotel_name: "",
+    hotel_address: "",
+    hotel_check_in_time: ""
   });
 
   useEffect(() => {
@@ -371,7 +377,10 @@ export default function TourDetail() {
         payment_amount: date.payment_amount?.toString() || "",
         per_diem: date.per_diem?.toString() || "",
         ground_transportation: date.ground_transportation || "",
-        transportation_not_provided: date.transportation_not_provided || false
+        transportation_not_provided: date.transportation_not_provided || false,
+        hotel_name: date.hotel_name || "",
+        hotel_address: date.hotel_address || "",
+        hotel_check_in_time: date.hotel_check_in_time || ""
       });
     } else {
       setEditingDate(null);
@@ -393,7 +402,10 @@ export default function TourDetail() {
         payment_amount: "",
         per_diem: "",
         ground_transportation: "",
-        transportation_not_provided: false
+        transportation_not_provided: false,
+        hotel_name: "",
+        hotel_address: "",
+        hotel_check_in_time: ""
       });
     }
     setDateDialogOpen(true);
@@ -427,7 +439,10 @@ export default function TourDetail() {
         payment_amount: dateFormData.payment_amount ? parseFloat(dateFormData.payment_amount) : null,
         per_diem: dateFormData.per_diem ? parseFloat(dateFormData.per_diem) : null,
         ground_transportation: dateFormData.ground_transportation.trim() || null,
-        transportation_not_provided: dateFormData.transportation_not_provided
+        transportation_not_provided: dateFormData.transportation_not_provided,
+        hotel_name: dateFormData.hotel_name.trim() || null,
+        hotel_address: dateFormData.hotel_address.trim() || null,
+        hotel_check_in_time: dateFormData.hotel_check_in_time.trim() || null
       };
 
       let error;
@@ -1045,6 +1060,38 @@ export default function TourDetail() {
                   </Label>
                 </div>
               </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="hotelName">Hotel Name</Label>
+                <Input
+                  id="hotelName"
+                  value={dateFormData.hotel_name}
+                  onChange={(e) => setDateFormData(prev => ({ ...prev, hotel_name: e.target.value }))}
+                  placeholder="e.g., Marriott Downtown"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="hotelCheckInTime">Hotel Check-in Time</Label>
+                <Input
+                  id="hotelCheckInTime"
+                  type="time"
+                  value={dateFormData.hotel_check_in_time}
+                  onChange={(e) => setDateFormData(prev => ({ ...prev, hotel_check_in_time: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="hotelAddress">Hotel Address</Label>
+              <Input
+                id="hotelAddress"
+                value={dateFormData.hotel_address}
+                onChange={(e) => setDateFormData(prev => ({ ...prev, hotel_address: e.target.value }))}
+                placeholder="Full hotel address"
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-4">

@@ -608,6 +608,9 @@ export type Database = {
           end_time: string | null
           food_provided: string | null
           ground_transportation: string | null
+          hotel_address: string | null
+          hotel_check_in_time: string | null
+          hotel_name: string | null
           id: string
           loading_time: string | null
           notes: string | null
@@ -632,6 +635,9 @@ export type Database = {
           end_time?: string | null
           food_provided?: string | null
           ground_transportation?: string | null
+          hotel_address?: string | null
+          hotel_check_in_time?: string | null
+          hotel_name?: string | null
           id?: string
           loading_time?: string | null
           notes?: string | null
@@ -656,6 +662,9 @@ export type Database = {
           end_time?: string | null
           food_provided?: string | null
           ground_transportation?: string | null
+          hotel_address?: string | null
+          hotel_check_in_time?: string | null
+          hotel_name?: string | null
           id?: string
           loading_time?: string | null
           notes?: string | null

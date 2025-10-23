@@ -1223,7 +1223,12 @@ const Dashboard = () => {
                       <Music className="h-5 w-5 text-primary" />
                       Available Artists/Musicians
                     </CardTitle>
-                    <CardDescription>Browse and connect with artists/musicians</CardDescription>
+                    <CardDescription>
+                      Browse and connect with artists/musicians
+                      <span className="block text-xs mt-1 text-primary/70">
+                        💡 Tip: Hover over any artist card to see the "Text Member" button
+                      </span>
+                    </CardDescription>
                   </div>
                   <div className="flex gap-2">
                     <div className="flex flex-col items-center">

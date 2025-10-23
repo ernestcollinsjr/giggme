@@ -789,72 +789,74 @@ const Dashboard = () => {
               </Card>
             )}
 
-            <Card className="border-border/50 shadow-lg">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <MapPin className="h-4 w-4 text-primary" />
-                  Location Sharing
-                </CardTitle>
-                <CardDescription className="text-xs">
-                  Share your location with band members
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <AutoLocationTracker
-                    userId={user?.id || ""}
-                    isEnabled={activeGigsWithSharing.length > 0}
-                  />
+            {userRole === "band_member" && (
+              <Card className="border-border/50 shadow-lg">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <MapPin className="h-4 w-4 text-primary" />
+                    Location Sharing
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    Share your location with band members
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <AutoLocationTracker
+                      userId={user?.id || ""}
+                      isEnabled={activeGigsWithSharing.length > 0}
+                    />
 
-                  <div>
-                    <Label htmlFor="location" className="text-sm">Use GPS Location</Label>
-                    <Button
-                      onClick={handleShareLocation}
-                      disabled={isSharingLocation}
-                      className="w-full mt-2"
-                      size="sm"
-                    >
-                      {isSharingLocation ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Getting location...
-                        </>
-                      ) : (
-                        <>
-                          <MapPin className="h-4 w-4 mr-2" />
-                          Share My Location
-                        </>
-                      )}
-                    </Button>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="manual-location" className="text-sm">Or Enter Address Manually</Label>
-                    <div className="flex gap-2 mt-2">
-                      <PlaceAutocomplete
-                        value={manualLocation}
-                        onChange={(value, place) => {
-                          setManualLocation(value);
-                          setSelectedPlace(place || null);
-                        }}
-                        placeholder="Enter your address..."
-                      />
+                    <div>
+                      <Label htmlFor="location" className="text-sm">Use GPS Location</Label>
                       <Button
-                        onClick={handleManualLocationSave}
-                        disabled={isSavingManualLocation || !selectedPlace}
+                        onClick={handleShareLocation}
+                        disabled={isSharingLocation}
+                        className="w-full mt-2"
                         size="sm"
                       >
-                        {isSavingManualLocation ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
+                        {isSharingLocation ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Getting location...
+                          </>
                         ) : (
-                          "Save"
+                          <>
+                            <MapPin className="h-4 w-4 mr-2" />
+                            Share My Location
+                          </>
                         )}
                       </Button>
                     </div>
+
+                    <div>
+                      <Label htmlFor="manual-location" className="text-sm">Or Enter Address Manually</Label>
+                      <div className="flex gap-2 mt-2">
+                        <PlaceAutocomplete
+                          value={manualLocation}
+                          onChange={(value, place) => {
+                            setManualLocation(value);
+                            setSelectedPlace(place || null);
+                          }}
+                          placeholder="Enter your address..."
+                        />
+                        <Button
+                          onClick={handleManualLocationSave}
+                          disabled={isSavingManualLocation || !selectedPlace}
+                          size="sm"
+                        >
+                          {isSavingManualLocation ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            "Save"
+                          )}
+                        </Button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
           </>
         )}
 

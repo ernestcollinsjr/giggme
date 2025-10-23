@@ -1052,28 +1052,30 @@ export default function TourDetail() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="datePaymentAmount">Payment Amount ($)</Label>
-              <Input
-                id="datePaymentAmount"
-                type="number"
-                step="0.01"
-                value={dateFormData.payment_amount}
-                onChange={(e) => setDateFormData(prev => ({ ...prev, payment_amount: e.target.value }))}
-                placeholder="0.00"
-              />
-            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="datePaymentAmount">Payment Amount ($)</Label>
+                <Input
+                  id="datePaymentAmount"
+                  type="number"
+                  step="0.01"
+                  value={dateFormData.payment_amount}
+                  onChange={(e) => setDateFormData(prev => ({ ...prev, payment_amount: e.target.value }))}
+                  placeholder="0.00"
+                />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="perDiem">Per Diem ($)</Label>
-              <Input
-                id="perDiem"
-                type="number"
-                step="0.01"
-                value={dateFormData.per_diem}
-                onChange={(e) => setDateFormData(prev => ({ ...prev, per_diem: e.target.value }))}
-                placeholder="0.00"
-              />
+              <div className="space-y-2">
+                <Label htmlFor="perDiem">Per Diem ($)</Label>
+                <Input
+                  id="perDiem"
+                  type="number"
+                  step="0.01"
+                  value={dateFormData.per_diem}
+                  onChange={(e) => setDateFormData(prev => ({ ...prev, per_diem: e.target.value }))}
+                  placeholder="0.00"
+                />
+              </div>
             </div>
 
             <div className="space-y-2">

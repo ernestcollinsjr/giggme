@@ -1082,22 +1082,27 @@ const Dashboard = () => {
                     No artists/musicians available at the moment
                   </p>
                 ) : (
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
                     {profiles.map((bandProfile) => (
-                      <Card key={bandProfile.id} className="p-4">
-                        <div className="flex items-center gap-3">
-                          <Avatar>
-                            <AvatarImage src={bandProfile.photo_urls?.[0]} alt={bandProfile.name} />
-                            <AvatarFallback>{bandProfile.name.charAt(0)}</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <h4 className="font-semibold">{bandProfile.name}</h4>
-                            {bandProfile.instrument && (
-                              <p className="text-sm text-muted-foreground">{bandProfile.instrument}</p>
-                            )}
-                          </div>
-                        </div>
-                      </Card>
+                      <div
+                        key={bandProfile.id}
+                        className="flex flex-col items-center p-2 border border-border rounded-md hover:shadow-sm transition-all bg-card"
+                      >
+                        <Avatar className="h-10 w-10 mb-1 border border-primary">
+                          <AvatarImage src={bandProfile.photo_urls?.[0]} alt={bandProfile.name} />
+                          <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                            {bandProfile.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <h4 className="font-medium text-xs text-center line-clamp-1 w-full px-1">
+                          {bandProfile.name}
+                        </h4>
+                        {bandProfile.instrument && (
+                          <p className="text-[10px] text-muted-foreground mt-0.5 truncate w-full text-center">
+                            {bandProfile.instrument}
+                          </p>
+                        )}
+                      </div>
                     ))}
                   </div>
                 )}

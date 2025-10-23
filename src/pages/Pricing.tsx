@@ -79,7 +79,7 @@ const Pricing = () => {
       priceId: "price_1SLNn8EPiAZgF8MeCFVMdvWR",
     },
     {
-      name: "Pro Plan",
+      name: "Band Leaders",
       price: "$19.99",
       description: "All features for professional bands",
       icon: Crown,

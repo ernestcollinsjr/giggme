@@ -1672,17 +1672,17 @@ const Dashboard = () => {
                   <Button
                     variant="default"
                     onClick={() => navigate("/tours")}
-                    className="h-20 text-lg"
+                    className="h-12 text-sm"
                   >
-                    <CalendarIcon className="mr-2 h-5 w-5" />
+                    <CalendarIcon className="mr-2 h-4 w-4" />
                     Manage Tours
                   </Button>
                   <Button
                     variant="outline"
                     onClick={() => navigate("/profile-setup")}
-                    className="h-20 text-lg"
+                    className="h-12 text-sm"
                   >
-                    <UserIcon className="mr-2 h-5 w-5" />
+                    <UserIcon className="mr-2 h-4 w-4" />
                     Edit Profile
                   </Button>
                 </div>

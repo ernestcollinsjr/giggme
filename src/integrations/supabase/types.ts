@@ -612,6 +612,7 @@ export type Database = {
           loading_time: string | null
           notes: string | null
           payment_amount: number | null
+          per_diem: number | null
           show_time: string | null
           sound_check_time: string | null
           sound_man_info: string | null
@@ -635,6 +636,7 @@ export type Database = {
           loading_time?: string | null
           notes?: string | null
           payment_amount?: number | null
+          per_diem?: number | null
           show_time?: string | null
           sound_check_time?: string | null
           sound_man_info?: string | null
@@ -658,6 +660,7 @@ export type Database = {
           loading_time?: string | null
           notes?: string | null
           payment_amount?: number | null
+          per_diem?: number | null
           show_time?: string | null
           sound_check_time?: string | null
           sound_man_info?: string | null

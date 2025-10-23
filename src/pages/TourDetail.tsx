@@ -43,6 +43,7 @@ interface TourDate {
   sound_man_info: string | null;
   notes: string | null;
   payment_amount: number | null;
+  per_diem: number | null;
   ground_transportation: string | null;
   transportation_not_provided: boolean | null;
 }
@@ -114,6 +115,7 @@ export default function TourDetail() {
     sound_man_info: "",
     notes: "",
     payment_amount: "",
+    per_diem: "",
     ground_transportation: "",
     transportation_not_provided: false
   });
@@ -367,6 +369,7 @@ export default function TourDetail() {
         sound_man_info: date.sound_man_info || "",
         notes: date.notes || "",
         payment_amount: date.payment_amount?.toString() || "",
+        per_diem: date.per_diem?.toString() || "",
         ground_transportation: date.ground_transportation || "",
         transportation_not_provided: date.transportation_not_provided || false
       });
@@ -388,6 +391,7 @@ export default function TourDetail() {
         sound_man_info: "",
         notes: "",
         payment_amount: "",
+        per_diem: "",
         ground_transportation: "",
         transportation_not_provided: false
       });
@@ -421,6 +425,7 @@ export default function TourDetail() {
         sound_man_info: dateFormData.sound_man_info.trim() || null,
         notes: dateFormData.notes.trim() || null,
         payment_amount: dateFormData.payment_amount ? parseFloat(dateFormData.payment_amount) : null,
+        per_diem: dateFormData.per_diem ? parseFloat(dateFormData.per_diem) : null,
         ground_transportation: dateFormData.ground_transportation.trim() || null,
         transportation_not_provided: dateFormData.transportation_not_provided
       };
@@ -1055,6 +1060,18 @@ export default function TourDetail() {
                 step="0.01"
                 value={dateFormData.payment_amount}
                 onChange={(e) => setDateFormData(prev => ({ ...prev, payment_amount: e.target.value }))}
+                placeholder="0.00"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="perDiem">Per Diem ($)</Label>
+              <Input
+                id="perDiem"
+                type="number"
+                step="0.01"
+                value={dateFormData.per_diem}
+                onChange={(e) => setDateFormData(prev => ({ ...prev, per_diem: e.target.value }))}
                 placeholder="0.00"
               />
             </div>

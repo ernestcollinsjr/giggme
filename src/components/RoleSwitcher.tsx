@@ -118,7 +118,7 @@ const RoleSwitcher = ({ currentRole, onRoleChange }: RoleSwitcherProps) => {
         </CardHeader>
       </Card>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         {roles.map((role) => {
           const Icon = role.icon;
           const BadgeIcon = role.badge.icon;
@@ -127,26 +127,26 @@ const RoleSwitcher = ({ currentRole, onRoleChange }: RoleSwitcherProps) => {
           return (
             <Card 
               key={role.value}
-              className={`border-border/50 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105 ${
+              className={`border-border/50 shadow hover:shadow-lg transition-all cursor-pointer hover:scale-[1.02] ${
                 isCurrentRole ? "ring-2 ring-primary" : ""
               }`}
               onClick={() => !loading && !isCurrentRole && handleRoleChange(role.value)}
             >
-              <CardContent className="pt-6">
-                <div className={`w-12 h-12 rounded-full ${role.iconBg} flex items-center justify-center mb-4`}>
-                  <Icon className={`h-6 w-6 ${role.iconColor}`} />
+              <CardContent className="pt-4 pb-3 px-3">
+                <div className={`w-10 h-10 rounded-full ${role.iconBg} flex items-center justify-center mb-3`}>
+                  <Icon className={`h-5 w-5 ${role.iconColor}`} />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">{role.label}</h3>
-                <p className="text-muted-foreground mb-4 text-sm">
+                <h3 className="text-sm font-semibold mb-1.5 leading-tight">{role.label}</h3>
+                <p className="text-muted-foreground mb-3 text-xs leading-tight line-clamp-2">
                   {role.description}
                 </p>
-                <div className={`flex items-center gap-2 text-sm ${role.badge.color}`}>
-                  <BadgeIcon className="h-4 w-4" />
-                  <span className="font-medium">{role.badge.text}</span>
+                <div className={`flex items-center gap-1.5 text-xs ${role.badge.color}`}>
+                  <BadgeIcon className="h-3 w-3 flex-shrink-0" />
+                  <span className="font-medium truncate">{role.badge.text}</span>
                 </div>
                 {isCurrentRole && (
-                  <div className="mt-4 text-center">
-                    <span className="text-xs font-semibold text-primary">Current Role</span>
+                  <div className="mt-2 text-center">
+                    <span className="text-xs font-semibold text-primary">Current</span>
                   </div>
                 )}
               </CardContent>

@@ -112,53 +112,47 @@ export const BandMemberRoster = ({ bandId }: BandMemberRosterProps) => {
   return (
     <div>
       {members.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground">
-          <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
-          <p>Invite band members to gigs to build your roster</p>
+        <div className="text-center py-4 text-muted-foreground">
+          <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
+          <p className="text-xs">Invite band members to gigs to build your roster</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
           {members.map((member) => (
             <div
               key={member.id}
-              className={`flex flex-col items-center p-3 border-2 rounded-lg hover:shadow-md transition-all bg-card ${
+              className={`flex flex-col items-center p-2 border rounded-md hover:shadow-sm transition-all ${
                 member.hasAcceptedGigs
-                  ? "border-green-500 bg-green-50/50 dark:bg-green-950/20"
-                  : "border-red-500 bg-red-50/50 dark:bg-red-950/20"
+                  ? "border-green-500/50 bg-green-50/30 dark:bg-green-950/10"
+                  : "border-red-500/50 bg-red-50/30 dark:bg-red-950/10"
               }`}
             >
-              <Avatar className={`h-16 w-16 mb-2 border-2 ${
+              <Avatar className={`h-10 w-10 mb-1 border ${
                 member.hasAcceptedGigs ? "border-green-500" : "border-red-500"
               }`}>
                 <AvatarImage
                   src={member.photo_urls?.[0] || ""}
                   alt={member.name}
                 />
-                <AvatarFallback className="bg-primary/10 text-primary">
+                <AvatarFallback className="bg-primary/10 text-primary text-xs">
                   {member.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
                 </AvatarFallback>
               </Avatar>
-              <h4 className="font-semibold text-sm text-center mb-1 line-clamp-1">
+              <h4 className="font-medium text-xs text-center line-clamp-1 w-full px-1">
                 {member.name}
               </h4>
               {member.hasAcceptedGigs ? (
-                <Badge className="bg-green-600 hover:bg-green-700 text-xs mb-1">
-                  Accepted
+                <Badge className="bg-green-600 hover:bg-green-700 text-[10px] h-4 px-1.5 mt-1">
+                  ✓
                 </Badge>
               ) : (
-                <Badge className="bg-red-600 hover:bg-red-700 text-xs mb-1">
-                  Pending
+                <Badge className="bg-red-600 hover:bg-red-700 text-[10px] h-4 px-1.5 mt-1">
+                  ?
                 </Badge>
               )}
               {member.instrument && (
-                <Badge variant="secondary" className="text-xs">
-                  <Music className="h-3 w-3 mr-1" />
+                <p className="text-[10px] text-muted-foreground mt-0.5 truncate w-full text-center">
                   {member.instrument}
-                </Badge>
-              )}
-              {member.phone_number && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  {member.phone_number}
                 </p>
               )}
             </div>

@@ -48,17 +48,36 @@ export default function TourDetail() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
+  const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
-    if (tourId) {
+    let mounted = true;
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
+      setAuthReady(!!session);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthReady(!!session);
+      if (session && tourId) {
+        fetchTourData();
+      }
+    });
+    return () => {
+      mounted = false;
+      subscription?.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (tourId && authReady) {
       fetchTourData();
     }
-  }, [tourId]);
+  }, [tourId, authReady]);
 
   const fetchTourData = async () => {
     try {
       const [tourResult, crewResult, invitesResult] = await Promise.all([
-        supabase.from("tours").select("*").eq("id", tourId).single(),
+        supabase.from("tours").select("*").eq("id", tourId).maybeSingle(),
         supabase
           .from("tour_crew_members")
           .select(`

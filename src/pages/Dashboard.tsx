@@ -1082,23 +1082,23 @@ const Dashboard = () => {
                     No artists/musicians available at the moment
                   </p>
                 ) : (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                  <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-1.5">
                     {profiles.map((bandProfile) => (
                       <div
                         key={bandProfile.id}
-                        className="flex flex-col items-center p-2 border-[0.5px] border-border rounded-md hover:shadow-sm transition-all bg-card"
+                        className="flex flex-col items-center p-1.5 border-[0.5px] border-border rounded-md hover:shadow-sm transition-all bg-card"
                       >
-                        <Avatar className="h-10 w-10 mb-1 border-[0.5px] border-primary">
+                        <Avatar className="h-8 w-8 mb-1 border-[0.5px] border-primary">
                           <AvatarImage src={bandProfile.photo_urls?.[0]} alt={bandProfile.name} />
-                          <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                          <AvatarFallback className="bg-primary/10 text-primary text-[10px]">
                             {bandProfile.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
                           </AvatarFallback>
                         </Avatar>
-                        <h4 className="font-medium text-xs text-center line-clamp-1 w-full px-1">
+                        <h4 className="font-medium text-[10px] text-center line-clamp-1 w-full px-0.5">
                           {bandProfile.name}
                         </h4>
                         {bandProfile.instrument && (
-                          <p className="text-[10px] text-muted-foreground mt-0.5 truncate w-full text-center">
+                          <p className="text-[8px] text-muted-foreground mt-0.5 truncate w-full text-center">
                             {bandProfile.instrument}
                           </p>
                         )}

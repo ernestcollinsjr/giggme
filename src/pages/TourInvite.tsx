@@ -9,6 +9,7 @@ import { CheckCircle, XCircle } from "lucide-react";
 interface InviteData {
   tour_id: string;
   email: string;
+  crew_type: 'band_members' | 'singer' | 'sound_crew' | 'lighting_crew';
   tours: {
     name: string;
     description: string | null;
@@ -31,7 +32,7 @@ export default function TourInvite() {
     try {
       const { data, error } = await supabase
         .from("tour_invitations")
-        .select("tour_id, email, tours(name, description)")
+        .select("tour_id, email, crew_type, tours(name, description)")
         .eq("invite_token", token)
         .eq("status", "pending")
         .single();
@@ -83,7 +84,8 @@ export default function TourInvite() {
         .insert({
           tour_id: invite.tour_id,
           crew_member_id: user.id,
-          status: "accepted"
+          status: "accepted",
+          crew_type: invite.crew_type
         });
 
       if (crewError) throw crewError;

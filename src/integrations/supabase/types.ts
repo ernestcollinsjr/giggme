@@ -576,6 +576,7 @@ export type Database = {
       tour_invitations: {
         Row: {
           created_at: string
+          crew_type: Database["public"]["Enums"]["crew_type"]
           email: string
           expires_at: string
           id: string
@@ -586,6 +587,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          crew_type?: Database["public"]["Enums"]["crew_type"]
           email: string
           expires_at?: string
           id?: string
@@ -596,6 +598,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          crew_type?: Database["public"]["Enums"]["crew_type"]
           email?: string
           expires_at?: string
           id?: string

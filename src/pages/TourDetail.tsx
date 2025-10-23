@@ -126,7 +126,8 @@ export default function TourDetail() {
           tour_id: tourId,
           tour_manager_id: user.id,
           email: inviteEmail,
-          invite_token: inviteToken
+          invite_token: inviteToken,
+          crew_type: inviteCrewType
         });
 
       if (error) throw error;
@@ -164,6 +165,7 @@ export default function TourDetail() {
 
       setDialogOpen(false);
       setInviteEmail("");
+      setInviteCrewType('band_members');
       fetchTourData();
     } catch (error) {
       console.error("Error sending invite:", error);

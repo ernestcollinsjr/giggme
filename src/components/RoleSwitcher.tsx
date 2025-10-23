@@ -19,15 +19,6 @@ const RoleSwitcher = ({ currentRole, onRoleChange }: RoleSwitcherProps) => {
 
   const roles = [
     { 
-      value: "band_leader" as UserRole, 
-      label: "Band Leaders", 
-      description: "Lead your band, manage your group, and connect with booking managers to secure gigs",
-      icon: Crown,
-      iconBg: "bg-primary/10",
-      iconColor: "text-primary",
-      badge: { icon: Star, text: "Premium Role", color: "text-primary" }
-    },
-    { 
       value: "band_member" as UserRole, 
       label: "Band Members", 
       description: "Share your location, showcase your instrument skills, and stay connected with your band",
@@ -35,6 +26,15 @@ const RoleSwitcher = ({ currentRole, onRoleChange }: RoleSwitcherProps) => {
       iconBg: "bg-secondary/10",
       iconColor: "text-secondary",
       badge: { icon: Users, text: "Free Forever", color: "text-muted-foreground" }
+    },
+    { 
+      value: "band_leader" as UserRole, 
+      label: "Band Leaders", 
+      description: "Lead your band, manage your group, and connect with booking managers to secure gigs",
+      icon: Crown,
+      iconBg: "bg-primary/10",
+      iconColor: "text-primary",
+      badge: { icon: Star, text: "Premium Role", color: "text-primary" }
     },
     { 
       value: "booking_manager" as UserRole, 

@@ -85,7 +85,6 @@ const Pricing = () => {
       icon: Crown,
       color: "text-primary",
       bgColor: "bg-primary/10",
-      featured: true,
       features: [
         "Everything in Basic +",
         "Real-time location sharing",
@@ -139,19 +138,8 @@ const Pricing = () => {
             return (
               <Card
                 key={tier.name}
-                className={`relative ${
-                  tier.featured
-                    ? "border-primary shadow-xl scale-105"
-                    : "border-border/50"
-                }`}
+                className="relative border-border/50"
               >
-                {tier.featured && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <span className="bg-gradient-to-r from-primary to-secondary text-white px-4 py-1 rounded-full text-sm font-semibold">
-                      Most Popular
-                    </span>
-                  </div>
-                )}
                 <CardHeader>
                   <div className={`w-12 h-12 rounded-full ${tier.bgColor} flex items-center justify-center mb-4`}>
                     <Icon className={`h-6 w-6 ${tier.color}`} />
@@ -178,7 +166,7 @@ const Pricing = () => {
                 <CardFooter>
                   <Button
                     className="w-full"
-                    variant={tier.featured ? "default" : "outline"}
+                    variant="outline"
                     onClick={() => tier.price === "Free" ? navigate("/auth") : handleCheckout(tier.priceId, tier.name)}
                     disabled={loading === tier.priceId}
                   >

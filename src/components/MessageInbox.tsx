@@ -204,9 +204,10 @@ export const MessageInbox = ({ userId, onUnreadCountChange }: MessageInboxProps)
                     variant="ghost"
                     size="sm"
                     onClick={() => markAsRead(message.id)}
-                    className="shrink-0"
+                    className="shrink-0 gap-1"
                   >
                     <Eye className="h-4 w-4" />
+                    Read
                   </Button>
                 </div>
               </div>

@@ -832,10 +832,15 @@ export default function TourDetail() {
               <CalendarIconLucide className="h-5 w-5" />
               Tour Dates ({tourDates.length})
             </CardTitle>
-            <Button onClick={() => openDateDialog()}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Date
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => {/* TODO: Navigate to travel itinerary */}}>
+                Travel Itinerary
+              </Button>
+              <Button onClick={() => openDateDialog()}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Date
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>

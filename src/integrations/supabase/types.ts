@@ -603,6 +603,7 @@ export type Database = {
       tour_dates: {
         Row: {
           attire: string | null
+          bus_call_time: string | null
           created_at: string
           date: string
           end_time: string | null
@@ -635,6 +636,7 @@ export type Database = {
         }
         Insert: {
           attire?: string | null
+          bus_call_time?: string | null
           created_at?: string
           date: string
           end_time?: string | null
@@ -667,6 +669,7 @@ export type Database = {
         }
         Update: {
           attire?: string | null
+          bus_call_time?: string | null
           created_at?: string
           date?: string
           end_time?: string | null

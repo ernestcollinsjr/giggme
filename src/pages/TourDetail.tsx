@@ -36,6 +36,7 @@ interface TourDate {
   show_time: string | null;
   loading_time: string | null;
   lobby_time: string | null;
+  bus_call_time: string | null;
   sound_check_time: string | null;
   end_time: string | null;
   attire: string | null;
@@ -112,6 +113,7 @@ export default function TourDetail() {
     show_time: "19:00",
     loading_time: "",
     lobby_time: "",
+    bus_call_time: "",
     sound_check_time: "",
     end_time: "23:00",
     venue: "",
@@ -374,6 +376,7 @@ export default function TourDetail() {
         show_time: date.show_time || "19:00",
         loading_time: date.loading_time || "",
         lobby_time: date.lobby_time || "",
+        bus_call_time: date.bus_call_time || "",
         sound_check_time: date.sound_check_time || "",
         end_time: date.end_time || "23:00",
         venue: date.venue,
@@ -404,6 +407,7 @@ export default function TourDetail() {
         show_time: "19:00",
         loading_time: "",
         lobby_time: "",
+        bus_call_time: "",
         sound_check_time: "",
         end_time: "23:00",
         venue: "",
@@ -450,6 +454,7 @@ export default function TourDetail() {
         show_time: dateFormData.show_time,
         loading_time: dateFormData.loading_time.trim() || null,
         lobby_time: dateFormData.lobby_time.trim() || null,
+        bus_call_time: dateFormData.bus_call_time.trim() || null,
         sound_check_time: dateFormData.sound_check_time.trim() || null,
         end_time: dateFormData.end_time || null,
         attire: dateFormData.attire.trim() || null,
@@ -997,7 +1002,7 @@ export default function TourDetail() {
               </div>
             </div>
 
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-5 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="dateLoadingTime">Loading Time</Label>
                 <Input
@@ -1017,7 +1022,16 @@ export default function TourDetail() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="dateSoundCheckTime">Sound Check Time</Label>
+                <Label htmlFor="busCallTime">Bus Call</Label>
+                <Input
+                  id="busCallTime"
+                  type="time"
+                  value={dateFormData.bus_call_time}
+                  onChange={(e) => setDateFormData(prev => ({ ...prev, bus_call_time: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="dateSoundCheckTime">Sound Check</Label>
                 <Input
                   id="dateSoundCheckTime"
                   type="time"

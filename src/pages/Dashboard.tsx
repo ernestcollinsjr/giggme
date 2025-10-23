@@ -534,87 +534,84 @@ const Dashboard = () => {
 
         {userRole === "band_leader" && (
           <div className="space-y-4">
-            <Tabs value={selectedBandId || undefined} onValueChange={setSelectedBandId}>
-              <div className="flex items-center gap-2">
-                <TabsList className="flex-1 justify-start">
-                  {bands.map((band) => (
-                    <TabsTrigger key={band.id} value={band.id}>
-                      {band.name}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button size="sm" variant="outline" className="gap-2">
-                      <Plus className="h-4 w-4" />
-                      New Band
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Create New Band</DialogTitle>
-                      <DialogDescription>
-                        Add a new band to manage separately
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="band-name">Band Name</Label>
-                        <Input
-                          id="band-name"
-                          value={newBandName}
-                          onChange={(e) => setNewBandName(e.target.value)}
-                          placeholder="Enter band name"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="band-description">Description (Optional)</Label>
-                        <Input
-                          id="band-description"
-                          value={newBandDescription}
-                          onChange={(e) => setNewBandDescription(e.target.value)}
-                          placeholder="Brief description"
-                        />
-                      </div>
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="text-xl font-semibold">My Bands</h2>
+              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="outline" className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    New Band
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create New Band</DialogTitle>
+                    <DialogDescription>
+                      Add a new band to manage separately
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="band-name">Band Name</Label>
+                      <Input
+                        id="band-name"
+                        value={newBandName}
+                        onChange={(e) => setNewBandName(e.target.value)}
+                        placeholder="Enter band name"
+                      />
                     </div>
-                    <DialogFooter>
-                      <Button
-                        onClick={handleCreateBand}
-                        disabled={isCreatingBand}
-                      >
-                        {isCreatingBand ? "Creating..." : "Create Band"}
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="band-description">Description (Optional)</Label>
+                      <Input
+                        id="band-description"
+                        value={newBandDescription}
+                        onChange={(e) => setNewBandDescription(e.target.value)}
+                        placeholder="Brief description"
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      onClick={handleCreateBand}
+                      disabled={isCreatingBand}
+                    >
+                      {isCreatingBand ? "Creating..." : "Create Band"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
 
-              {bands.length === 0 ? (
-                <Card className="border-border/50 shadow-lg bg-gradient-to-br from-primary/5 to-accent/5 mt-4">
-                  <CardContent className="pt-6 text-center">
-                    <Music className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="font-semibold mb-2">No Bands Yet</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Create your first band to start managing rehearsals, gigs, and setlists
-                    </p>
-                  </CardContent>
-                </Card>
-              ) : (
-                bands.map((band) => (
-                  <TabsContent key={band.id} value={band.id} className="space-y-6 mt-4">
-                    {band.description && (
-                      <Card className="border-border/50 shadow-lg">
-                        <CardContent className="pt-6">
-                          <p className="text-sm text-muted-foreground">{band.description}</p>
-                        </CardContent>
-                      </Card>
-                    )}
-                    
-                    <BandMemberRoster bandId={band.id} />
-                  </TabsContent>
-                ))
-              )}
-            </Tabs>
+            {bands.length === 0 ? (
+              <Card className="border-border/50 shadow-lg bg-gradient-to-br from-primary/5 to-accent/5">
+                <CardContent className="pt-6 text-center">
+                  <Music className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="font-semibold mb-2">No Bands Yet</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Create your first band to start managing rehearsals, gigs, and setlists
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-6">
+                {bands.map((band) => (
+                  <Card key={band.id} className="border-border/50 shadow-lg">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Music className="h-5 w-5 text-primary" />
+                        {band.name}
+                      </CardTitle>
+                      {band.description && (
+                        <CardDescription>{band.description}</CardDescription>
+                      )}
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <BandMemberRoster bandId={band.id} />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

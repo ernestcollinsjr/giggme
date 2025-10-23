@@ -62,6 +62,8 @@ interface Gig {
   loading_time?: string | null;
   sound_check_time?: string | null;
   end_time?: string | null;
+  payment_amount?: number | null;
+  payment_status?: string | null;
 }
 
 interface GigInvite {
@@ -792,6 +794,71 @@ const Dashboard = () => {
     setGroupSmsDialogOpen(true);
   };
 
+  const handlePaymentStatusToggle = async (gigId: string, currentStatus: string) => {
+    try {
+      const newStatus = currentStatus === 'paid' ? 'unpaid' : 'paid';
+      const { error } = await supabase
+        .from('gigs')
+        .update({ payment_status: newStatus })
+        .eq('id', gigId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Payment status updated",
+        description: `Marked as ${newStatus}`,
+      });
+
+      // Refresh the gigs list
+      if (selectedArtist) {
+        openArtistProfile(selectedArtist);
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Update failed",
+        description: error.message,
+      });
+    }
+  };
+
+  const handlePaymentAmountUpdate = async (gigId: string, amount: string) => {
+    try {
+      const numAmount = parseFloat(amount);
+      if (isNaN(numAmount) || numAmount < 0) {
+        toast({
+          variant: "destructive",
+          title: "Invalid amount",
+          description: "Please enter a valid positive number",
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('gigs')
+        .update({ payment_amount: numAmount })
+        .eq('id', gigId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Payment amount updated",
+        description: `Set to $${numAmount.toFixed(2)}`,
+      });
+
+      // Refresh the gigs list
+      if (selectedArtist) {
+        openArtistProfile(selectedArtist);
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Update failed",
+        description: error.message,
+      });
+    }
+  };
+
   const openArtistProfile = async (artist: Profile) => {
     setSelectedArtist(artist);
     setArtistProfileDialogOpen(true);
@@ -812,7 +879,9 @@ const Dashboard = () => {
             notes,
             loading_time,
             sound_check_time,
-            end_time
+            end_time,
+            payment_amount,
+            payment_status
           )
         `)
         .eq('member_id', artist.id)
@@ -1667,8 +1736,8 @@ const Dashboard = () => {
                 ) : (
                   <div className="space-y-2">
                     {artistGigs.map((gig) => (
-                      <Card key={gig.id} className="p-3 border-border/50">
-                        <div className="space-y-1">
+                      <Card key={gig.id} className="p-4 border-border/50">
+                        <div className="space-y-3">
                           <div className="flex items-center justify-between">
                             <span className="font-medium text-sm">
                               {new Date(gig.date).toLocaleDateString('en-US', {
@@ -1688,6 +1757,40 @@ const Dashboard = () => {
                           {gig.notes && (
                             <p className="text-xs text-muted-foreground mt-1">{gig.notes}</p>
                           )}
+                          
+                          {/* Payment Section */}
+                          <div className="pt-3 border-t space-y-2">
+                            <div className="flex items-center gap-2">
+                              <Label htmlFor={`payment-${gig.id}`} className="text-xs font-medium">
+                                Payment Amount
+                              </Label>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-muted-foreground">$</span>
+                              <Input
+                                id={`payment-${gig.id}`}
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                placeholder="0.00"
+                                defaultValue={gig.payment_amount || ''}
+                                onBlur={(e) => {
+                                  if (e.target.value) {
+                                    handlePaymentAmountUpdate(gig.id, e.target.value);
+                                  }
+                                }}
+                                className="h-8 text-sm flex-1"
+                              />
+                              <Button
+                                size="sm"
+                                variant={gig.payment_status === 'paid' ? 'default' : 'outline'}
+                                onClick={() => handlePaymentStatusToggle(gig.id, gig.payment_status || 'unpaid')}
+                                className={gig.payment_status === 'paid' ? 'bg-green-600 hover:bg-green-700' : ''}
+                              >
+                                {gig.payment_status === 'paid' ? '✓ Paid' : 'Unpaid'}
+                              </Button>
+                            </div>
+                          </div>
                         </div>
                       </Card>
                     ))}

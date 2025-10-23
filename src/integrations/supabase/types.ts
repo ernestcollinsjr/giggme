@@ -227,6 +227,8 @@ export type Database = {
           id: string
           loading_time: string | null
           notes: string | null
+          payment_amount: number | null
+          payment_status: string | null
           sound_check_time: string | null
           sound_man_info: string | null
           status: Database["public"]["Enums"]["gig_status"] | null
@@ -248,6 +250,8 @@ export type Database = {
           id?: string
           loading_time?: string | null
           notes?: string | null
+          payment_amount?: number | null
+          payment_status?: string | null
           sound_check_time?: string | null
           sound_man_info?: string | null
           status?: Database["public"]["Enums"]["gig_status"] | null
@@ -269,6 +273,8 @@ export type Database = {
           id?: string
           loading_time?: string | null
           notes?: string | null
+          payment_amount?: number | null
+          payment_status?: string | null
           sound_check_time?: string | null
           sound_man_info?: string | null
           status?: Database["public"]["Enums"]["gig_status"] | null

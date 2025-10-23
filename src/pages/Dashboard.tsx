@@ -606,7 +606,10 @@ const Dashboard = () => {
                       )}
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <BandMemberRoster bandId={band.id} />
+                      <div className="mb-4">
+                        <h3 className="text-sm font-semibold text-muted-foreground mb-2">Band Members</h3>
+                        <BandMemberRoster bandId={band.id} />
+                      </div>
                     </CardContent>
                   </Card>
                 ))}

@@ -525,6 +525,118 @@ export type Database = {
           },
         ]
       }
+      tour_crew_members: {
+        Row: {
+          created_at: string
+          crew_member_id: string
+          id: string
+          role_title: string | null
+          status: string
+          tour_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          crew_member_id: string
+          id?: string
+          role_title?: string | null
+          status?: string
+          tour_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          crew_member_id?: string
+          id?: string
+          role_title?: string | null
+          status?: string
+          tour_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tour_crew_members_tour_id_fkey"
+            columns: ["tour_id"]
+            isOneToOne: false
+            referencedRelation: "tours"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tour_invitations: {
+        Row: {
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invite_token: string
+          status: string
+          tour_id: string
+          tour_manager_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invite_token: string
+          status?: string
+          tour_id: string
+          tour_manager_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invite_token?: string
+          status?: string
+          tour_id?: string
+          tour_manager_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tour_invitations_tour_id_fkey"
+            columns: ["tour_id"]
+            isOneToOne: false
+            referencedRelation: "tours"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tours: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_date: string | null
+          id: string
+          name: string
+          start_date: string | null
+          tour_manager_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name: string
+          start_date?: string | null
+          tour_manager_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name?: string
+          start_date?: string | null
+          tour_manager_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -574,7 +686,12 @@ export type Database = {
       send_rehearsal_reminders: { Args: never; Returns: undefined }
     }
     Enums: {
-      app_role: "band_leader" | "band_member" | "booking_manager" | "artist"
+      app_role:
+        | "band_leader"
+        | "band_member"
+        | "booking_manager"
+        | "artist"
+        | "tour_manager"
       gig_status: "pending" | "confirmed" | "completed" | "cancelled"
       instrument_type:
         | "guitar"
@@ -712,7 +829,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["band_leader", "band_member", "booking_manager", "artist"],
+      app_role: [
+        "band_leader",
+        "band_member",
+        "booking_manager",
+        "artist",
+        "tour_manager",
+      ],
       gig_status: ["pending", "confirmed", "completed", "cancelled"],
       instrument_type: [
         "guitar",

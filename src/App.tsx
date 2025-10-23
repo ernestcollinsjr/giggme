@@ -17,6 +17,9 @@ import ArtistProfile from "./pages/ArtistProfile";
 import ArtistsDiscovery from "./pages/ArtistsDiscovery";
 import NotFound from "./pages/NotFound";
 import OpenExternal from "./pages/OpenExternal";
+import Tours from "./pages/Tours";
+import TourDetail from "./pages/TourDetail";
+import TourInvite from "./pages/TourInvite";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +42,9 @@ const App = () => (
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/artist-profile" element={<ArtistProfile />} />
           <Route path="/artists" element={<ArtistsDiscovery />} />
+          <Route path="/tours" element={<Tours />} />
+          <Route path="/tours/:tourId" element={<TourDetail />} />
+          <Route path="/tour-invite/:token" element={<TourInvite />} />
           <Route path="/open" element={<OpenExternal />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Music, Briefcase, Crown, Star, Users, RefreshCw } from "lucide-react";
+import { Music, Briefcase, Crown, Star, Users, RefreshCw, Calendar } from "lucide-react";
 
-type UserRole = "band_leader" | "band_member" | "booking_manager" | "artist";
+type UserRole = "band_leader" | "band_member" | "booking_manager" | "artist" | "tour_manager";
 
 interface RoleSwitcherProps {
   currentRole: UserRole | null;
@@ -44,6 +44,15 @@ const RoleSwitcher = ({ currentRole, onRoleChange }: RoleSwitcherProps) => {
       iconBg: "bg-accent/10",
       iconColor: "text-accent",
       badge: { icon: Star, text: "Premium Role", color: "text-accent" }
+    },
+    { 
+      value: "tour_manager" as UserRole, 
+      label: "Tour/Road Managers", 
+      description: "Manage tours and coordinate with tour crew members efficiently",
+      icon: Calendar,
+      iconBg: "bg-orange-100",
+      iconColor: "text-orange-600",
+      badge: { icon: Star, text: "Premium Role", color: "text-orange-600" }
     },
     { 
       value: "artist" as UserRole, 

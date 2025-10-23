@@ -58,6 +58,10 @@ interface Gig {
   status: string;
   user_id: string;
   band_id: string | null;
+  venue_name?: string | null;
+  loading_time?: string | null;
+  sound_check_time?: string | null;
+  end_time?: string | null;
 }
 
 interface GigInvite {
@@ -136,6 +140,12 @@ const Dashboard = () => {
   const [selectedRecipient, setSelectedRecipient] = useState<Profile | null>(null);
   const [sendingSms, setSendingSms] = useState(false);
   const [smsType, setSmsType] = useState<'individual' | 'group' | 'gig-request'>('individual');
+  
+  // Artist profile dialog state
+  const [artistProfileDialogOpen, setArtistProfileDialogOpen] = useState(false);
+  const [selectedArtist, setSelectedArtist] = useState<Profile | null>(null);
+  const [artistGigs, setArtistGigs] = useState<Gig[]>([]);
+  const [loadingArtistGigs, setLoadingArtistGigs] = useState(false);
 
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -782,6 +792,49 @@ const Dashboard = () => {
     setGroupSmsDialogOpen(true);
   };
 
+  const openArtistProfile = async (artist: Profile) => {
+    setSelectedArtist(artist);
+    setArtistProfileDialogOpen(true);
+    setLoadingArtistGigs(true);
+    
+    try {
+      // Fetch artist's accepted gigs
+      const { data: gigMembersData, error } = await supabase
+        .from('gig_members')
+        .select(`
+          gig_id,
+          status,
+          gigs!inner (
+            id,
+            date,
+            venue,
+            venue_name,
+            notes,
+            loading_time,
+            sound_check_time,
+            end_time
+          )
+        `)
+        .eq('member_id', artist.id)
+        .eq('status', 'accepted')
+        .order('gigs(date)', { ascending: true });
+
+      if (error) throw error;
+
+      const gigs = gigMembersData?.map((gm: any) => gm.gigs) || [];
+      setArtistGigs(gigs);
+    } catch (error: any) {
+      console.error('Error fetching artist gigs:', error);
+      toast({
+        variant: "destructive",
+        title: "Failed to load gigs",
+        description: error.message,
+      });
+    } finally {
+      setLoadingArtistGigs(false);
+    }
+  };
+
   // Filter data by selected band
   const filteredRehearsals = selectedBandId
     ? rehearsals.filter(r => r.band_id === selectedBandId)
@@ -1278,7 +1331,7 @@ const Dashboard = () => {
                           <MessageSquare className="h-3 w-3" />
                         </button>
                         <div
-                          onClick={() => navigate(`/bookings?artistId=${bandProfile.id}&artistName=${encodeURIComponent(bandProfile.name)}`)}
+                          onClick={() => openArtistProfile(bandProfile)}
                           className="cursor-pointer flex flex-col items-center w-full"
                         >
                           <Avatar className="h-8 w-8 mb-1 border-[0.5px] border-primary">
@@ -1546,6 +1599,130 @@ const Dashboard = () => {
               Send to All
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Artist Profile Dialog */}
+      <Dialog open={artistProfileDialogOpen} onOpenChange={setArtistProfileDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">Artist Profile</DialogTitle>
+          </DialogHeader>
+          
+          {selectedArtist && (
+            <div className="space-y-6">
+              {/* Profile Section */}
+              <div className="flex items-start gap-4">
+                <Avatar className="h-20 w-20 border-2 border-primary">
+                  <AvatarImage src={selectedArtist.photo_urls?.[0]} alt={selectedArtist.name} />
+                  <AvatarFallback className="bg-primary/10 text-primary text-xl">
+                    {selectedArtist.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold">{selectedArtist.name}</h3>
+                  {selectedArtist.instrument && (
+                    <Badge variant="secondary" className="mt-1">
+                      {selectedArtist.instrument}
+                    </Badge>
+                  )}
+                  {selectedArtist.bio && (
+                    <p className="text-sm text-muted-foreground mt-2">{selectedArtist.bio}</p>
+                  )}
+                  {selectedArtist.phone_number && (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      📞 {selectedArtist.phone_number}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Availability Badge */}
+              <div>
+                {selectedArtist.isAvailable === false ? (
+                  <Badge variant="destructive" className="text-sm">
+                    Currently Booked
+                  </Badge>
+                ) : (
+                  <Badge className="bg-green-600 hover:bg-green-700 text-sm">
+                    Available for Booking
+                  </Badge>
+                )}
+              </div>
+
+              {/* Gigs Section */}
+              <div className="space-y-3">
+                <h4 className="font-semibold flex items-center gap-2">
+                  <CalendarIcon className="h-4 w-4" />
+                  Upcoming Gigs
+                </h4>
+                {loadingArtistGigs ? (
+                  <div className="text-center py-4 text-muted-foreground">
+                    <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+                  </div>
+                ) : artistGigs.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-4 text-center">
+                    No upcoming gigs scheduled
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {artistGigs.map((gig) => (
+                      <Card key={gig.id} className="p-3 border-border/50">
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium text-sm">
+                              {new Date(gig.date).toLocaleDateString('en-US', {
+                                weekday: 'short',
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric'
+                              })}
+                            </span>
+                            <Badge variant="outline" className="text-xs">
+                              {gig.loading_time || gig.sound_check_time || gig.end_time || 'TBD'}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            📍 {gig.venue_name || gig.venue}
+                          </p>
+                          {gig.notes && (
+                            <p className="text-xs text-muted-foreground mt-1">{gig.notes}</p>
+                          )}
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-2 pt-4 border-t">
+                <Button
+                  onClick={() => {
+                    setArtistProfileDialogOpen(false);
+                    navigate(`/bookings?artistId=${selectedArtist.id}&artistName=${encodeURIComponent(selectedArtist.name)}`);
+                  }}
+                  className="flex-1 gap-2"
+                >
+                  <CalendarIcon className="h-4 w-4" />
+                  Book This Artist
+                </Button>
+                {selectedArtist.phone_number && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setArtistProfileDialogOpen(false);
+                      openIndividualSms(selectedArtist, new MouseEvent('click') as any);
+                    }}
+                    className="gap-2"
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                    Send Text
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 

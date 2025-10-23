@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Check, Crown, Music, Briefcase } from "lucide-react";
+import { Check, Crown, Music, Briefcase, Mic } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Pricing = () => {
@@ -22,6 +22,23 @@ const Pricing = () => {
         "Up to 5 band members",
       ],
       priceId: "price_1SLN7wEPiAZgF8MeBiPM6fj1",
+    },
+    {
+      name: "Artist/Musician Plan",
+      price: "$10.99",
+      description: "Showcase your talent and get discovered",
+      icon: Mic,
+      color: "text-purple-500",
+      bgColor: "bg-purple-500/10",
+      features: [
+        "Professional artist profile",
+        "Upload performance videos",
+        "Photo gallery",
+        "Availability calendar",
+        "Connect with booking managers",
+        "Showcase your portfolio",
+      ],
+      priceId: "price_1SLNn8EPiAZgF8MeCFVMdvWR",
     },
     {
       name: "Pro Plan",
@@ -73,7 +90,7 @@ const Pricing = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 mb-12">
+        <div className="grid md:grid-cols-4 gap-6 mb-12">
           {tiers.map((tier) => {
             const Icon = tier.icon;
             return (

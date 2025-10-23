@@ -672,7 +672,7 @@ const Dashboard = () => {
                   : userRole === "band_leader"
                   ? "Band Leader"
                   : userRole === "artist"
-                  ? "Artist"
+                  ? "Artist/Musician"
                   : "Band Member"}
               </Badge>
             </div>
@@ -681,7 +681,7 @@ const Dashboard = () => {
             <LivePresence />
             {userRole === "artist" && (
               <Button variant="outline" onClick={() => navigate("/artist-profile")}>
-                Edit Artist Profile
+                Edit Profile
               </Button>
             )}
             <Button variant="outline" onClick={() => navigate("/profile-setup")}>
@@ -1111,10 +1111,10 @@ const Dashboard = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Music className="h-5 w-5 text-primary" />
-                  Artist Dashboard
+                  Artist/Musician Dashboard
                 </CardTitle>
                 <CardDescription>
-                  Manage your artist profile and get discovered by booking managers
+                  Manage your profile and get discovered by booking managers
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -1125,7 +1125,7 @@ const Dashboard = () => {
                     className="h-20 text-lg"
                   >
                     <UserIcon className="mr-2 h-5 w-5" />
-                    Edit Artist Profile
+                    Edit Profile
                   </Button>
                   <Button
                     variant="outline"
@@ -1133,7 +1133,7 @@ const Dashboard = () => {
                     className="h-20 text-lg"
                   >
                     <Music className="mr-2 h-5 w-5" />
-                    Browse Other Artists
+                    Browse Artists
                   </Button>
                 </div>
                 <p className="text-sm text-muted-foreground text-center mt-4">

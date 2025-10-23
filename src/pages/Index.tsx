@@ -91,7 +91,7 @@ const Index = () => {
             <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center mb-4">
               <Mic className="h-6 w-6 text-purple-500" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">Artist</h3>
+            <h3 className="text-xl font-semibold mb-2">Artist/Musician</h3>
             <p className="text-muted-foreground mb-4">
               Showcase your talent, build your portfolio, and connect with bands and venues
             </p>

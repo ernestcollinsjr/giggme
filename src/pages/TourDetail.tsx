@@ -1065,7 +1065,7 @@ export default function TourDetail() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="groundTransportation">Ground Transportation</Label>
+              <Label htmlFor="groundTransportation">Ground Transportation (Provided by Management)</Label>
               <Select
                 value={dateFormData.ground_transportation}
                 onValueChange={(value) => setDateFormData(prev => ({ ...prev, ground_transportation: value }))}

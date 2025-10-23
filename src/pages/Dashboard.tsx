@@ -1072,14 +1072,14 @@ const Dashboard = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Music className="h-5 w-5 text-primary" />
-                  Available Bands
+                  Available Artists/Musicians
                 </CardTitle>
-                <CardDescription>Browse and connect with bands</CardDescription>
+                <CardDescription>Browse and connect with artists/musicians</CardDescription>
               </CardHeader>
               <CardContent>
                 {profiles.length === 0 ? (
                   <p className="text-center text-muted-foreground py-8">
-                    No bands available at the moment
+                    No artists/musicians available at the moment
                   </p>
                 ) : (
                   <div className="grid md:grid-cols-2 gap-4">

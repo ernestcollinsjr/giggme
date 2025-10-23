@@ -92,7 +92,7 @@ interface Setlist {
   songs: SetlistSong[];
 }
 
-type UserRole = "band_leader" | "band_member" | "booking_manager";
+type UserRole = "band_leader" | "band_member" | "booking_manager" | "artist";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -671,12 +671,19 @@ const Dashboard = () => {
                   ? "Booking Manager" 
                   : userRole === "band_leader"
                   ? "Band Leader"
+                  : userRole === "artist"
+                  ? "Artist"
                   : "Band Member"}
               </Badge>
             </div>
           </div>
           <div className="flex items-center gap-4">
             <LivePresence />
+            {userRole === "artist" && (
+              <Button variant="outline" onClick={() => navigate("/artist-profile")}>
+                Edit Artist Profile
+              </Button>
+            )}
             <Button variant="outline" onClick={() => navigate("/profile-setup")}>
               Profile
             </Button>
@@ -1096,6 +1103,71 @@ const Dashboard = () => {
 
             <BookingManagerClientLocations />
           </>
+        )}
+
+        {userRole === "artist" && (
+          <div className="space-y-6">
+            <Card className="border-border/50 shadow-lg bg-gradient-to-br from-primary/5 to-secondary/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Music className="h-5 w-5 text-primary" />
+                  Artist Dashboard
+                </CardTitle>
+                <CardDescription>
+                  Manage your artist profile and get discovered by booking managers
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Button
+                    variant="default"
+                    onClick={() => navigate("/artist-profile")}
+                    className="h-20 text-lg"
+                  >
+                    <UserIcon className="mr-2 h-5 w-5" />
+                    Edit Artist Profile
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate("/artists")}
+                    className="h-20 text-lg"
+                  >
+                    <Music className="mr-2 h-5 w-5" />
+                    Browse Other Artists
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground text-center mt-4">
+                  Keep your profile up to date with videos, bio, and availability to get more opportunities!
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-border/50 shadow-lg">
+              <CardHeader>
+                <CardTitle>Quick Tips</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-start gap-2">
+                    <Badge variant="secondary">1</Badge>
+                    <span>Upload high-quality photos to make a great first impression</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Badge variant="secondary">2</Badge>
+                    <span>Add YouTube videos of your best performances</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Badge variant="secondary">3</Badge>
+                    <span>Keep your availability and rate range updated</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Badge variant="secondary">4</Badge>
+                    <span>Write a compelling bio that showcases your unique style</span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
         )}
 
         <Card className="border-border/50 shadow-lg bg-gradient-to-br from-primary/5 to-accent/5">

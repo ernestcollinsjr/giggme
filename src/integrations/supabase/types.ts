@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      artist_profiles: {
+        Row: {
+          achievements: string[] | null
+          availability: string | null
+          created_at: string | null
+          genre: string | null
+          id: string
+          rate_range: string | null
+          social_links: Json | null
+          stage_name: string | null
+          updated_at: string | null
+          user_id: string
+          years_experience: number | null
+          youtube_videos: Json | null
+        }
+        Insert: {
+          achievements?: string[] | null
+          availability?: string | null
+          created_at?: string | null
+          genre?: string | null
+          id?: string
+          rate_range?: string | null
+          social_links?: Json | null
+          stage_name?: string | null
+          updated_at?: string | null
+          user_id: string
+          years_experience?: number | null
+          youtube_videos?: Json | null
+        }
+        Update: {
+          achievements?: string[] | null
+          availability?: string | null
+          created_at?: string | null
+          genre?: string | null
+          id?: string
+          rate_range?: string | null
+          social_links?: Json | null
+          stage_name?: string | null
+          updated_at?: string | null
+          user_id?: string
+          years_experience?: number | null
+          youtube_videos?: Json | null
+        }
+        Relationships: []
+      }
       bands: {
         Row: {
           band_leader_id: string
@@ -520,7 +565,7 @@ export type Database = {
       send_rehearsal_reminders: { Args: never; Returns: undefined }
     }
     Enums: {
-      app_role: "band_leader" | "band_member" | "booking_manager"
+      app_role: "band_leader" | "band_member" | "booking_manager" | "artist"
       gig_status: "pending" | "confirmed" | "completed" | "cancelled"
       instrument_type:
         | "guitar"
@@ -658,7 +703,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["band_leader", "band_member", "booking_manager"],
+      app_role: ["band_leader", "band_member", "booking_manager", "artist"],
       gig_status: ["pending", "confirmed", "completed", "cancelled"],
       instrument_type: [
         "guitar",

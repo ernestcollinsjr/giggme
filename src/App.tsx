@@ -13,6 +13,8 @@ import Rehearsals from "./pages/Rehearsals";
 import Setlist from "./pages/Setlist";
 import SongLyrics from "./pages/SongLyrics";
 import Pricing from "./pages/Pricing";
+import ArtistProfile from "./pages/ArtistProfile";
+import ArtistsDiscovery from "./pages/ArtistsDiscovery";
 import NotFound from "./pages/NotFound";
 import OpenExternal from "./pages/OpenExternal";
 
@@ -35,6 +37,8 @@ const App = () => (
           <Route path="/setlist" element={<Setlist />} />
           <Route path="/setlist/lyrics/:songId" element={<SongLyrics />} />
           <Route path="/pricing" element={<Pricing />} />
+          <Route path="/artist-profile" element={<ArtistProfile />} />
+          <Route path="/artists" element={<ArtistsDiscovery />} />
           <Route path="/open" element={<OpenExternal />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

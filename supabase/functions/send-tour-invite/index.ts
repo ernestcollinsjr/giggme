@@ -30,7 +30,7 @@ const handler = async (req: Request): Promise<Response> => {
     const inviteUrl = `${req.headers.get("origin") || "https://your-app-url.com"}/tour-invite/${inviteToken}`;
 
     const emailResponse = await resend.emails.send({
-      from: "Gig Manager <onboarding@resend.dev>",
+      from: "Gig Manager <invites@giggme.com>",
       to: [recipientEmail],
       subject: `You're invited to join ${tourName}`,
       html: `

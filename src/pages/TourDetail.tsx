@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Mail, Users, Copy, Check } from "lucide-react";
 import { format } from "date-fns";
@@ -23,6 +24,7 @@ interface CrewMember {
   crew_member_id: string;
   status: string;
   role_title: string | null;
+  crew_type: 'band_members' | 'singer' | 'sound_crew' | 'lighting_crew';
   profiles: {
     name: string;
     email: string;
@@ -47,6 +49,7 @@ export default function TourDetail() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteCrewType, setInviteCrewType] = useState<'band_members' | 'singer' | 'sound_crew' | 'lighting_crew'>('band_members');
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [authReady, setAuthReady] = useState(false);
 
@@ -281,6 +284,20 @@ export default function TourDetail() {
                   required
                 />
               </div>
+              <div>
+                <Label htmlFor="crewType">Crew Type *</Label>
+                <Select value={inviteCrewType} onValueChange={(value: any) => setInviteCrewType(value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="band_members">Band Members</SelectItem>
+                    <SelectItem value="singer">Singer</SelectItem>
+                    <SelectItem value="sound_crew">Sound Crew</SelectItem>
+                    <SelectItem value="lighting_crew">Lighting Crew</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancel
@@ -306,23 +323,44 @@ export default function TourDetail() {
                 No crew members yet. Send invitations to get started.
               </p>
             ) : (
-              <div className="space-y-3">
-                {crewMembers.map((member) => (
-                  <div key={member.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <p className="font-medium">{member.profiles.name}</p>
-                      <p className="text-sm text-muted-foreground">{member.profiles.email}</p>
-                      {member.role_title && (
-                        <p className="text-xs text-muted-foreground mt-1">{member.role_title}</p>
-                      )}
+              <div className="space-y-6">
+                {['band_members', 'singer', 'sound_crew', 'lighting_crew'].map((type) => {
+                  const typeMembers = crewMembers.filter(m => m.crew_type === type);
+                  if (typeMembers.length === 0) return null;
+                  
+                  const typeLabels = {
+                    band_members: 'Band Members',
+                    singer: 'Singer',
+                    sound_crew: 'Sound Crew',
+                    lighting_crew: 'Lighting Crew'
+                  };
+                  
+                  return (
+                    <div key={type}>
+                      <h3 className="font-semibold mb-3 text-sm uppercase tracking-wide text-muted-foreground">
+                        {typeLabels[type as keyof typeof typeLabels]} ({typeMembers.length})
+                      </h3>
+                      <div className="space-y-2">
+                        {typeMembers.map((member) => (
+                          <div key={member.id} className="flex items-center justify-between p-3 border rounded-lg">
+                            <div>
+                              <p className="font-medium">{member.profiles.name}</p>
+                              <p className="text-sm text-muted-foreground">{member.profiles.email}</p>
+                              {member.role_title && (
+                                <p className="text-xs text-muted-foreground mt-1">{member.role_title}</p>
+                              )}
+                            </div>
+                            <span className={`px-2 py-1 rounded text-xs ${
+                              member.status === 'accepted' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {member.status}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      member.status === 'accepted' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {member.status}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </CardContent>

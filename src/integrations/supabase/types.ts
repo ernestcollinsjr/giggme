@@ -529,6 +529,7 @@ export type Database = {
         Row: {
           created_at: string
           crew_member_id: string
+          crew_type: Database["public"]["Enums"]["crew_type"]
           id: string
           role_title: string | null
           status: string
@@ -538,6 +539,7 @@ export type Database = {
         Insert: {
           created_at?: string
           crew_member_id: string
+          crew_type?: Database["public"]["Enums"]["crew_type"]
           id?: string
           role_title?: string | null
           status?: string
@@ -547,6 +549,7 @@ export type Database = {
         Update: {
           created_at?: string
           crew_member_id?: string
+          crew_type?: Database["public"]["Enums"]["crew_type"]
           id?: string
           role_title?: string | null
           status?: string
@@ -707,6 +710,7 @@ export type Database = {
         | "booking_manager"
         | "artist"
         | "tour_manager"
+      crew_type: "band_members" | "singer" | "sound_crew" | "lighting_crew"
       gig_status: "pending" | "confirmed" | "completed" | "cancelled"
       instrument_type:
         | "guitar"
@@ -851,6 +855,7 @@ export const Constants = {
         "artist",
         "tour_manager",
       ],
+      crew_type: ["band_members", "singer", "sound_crew", "lighting_crew"],
       gig_status: ["pending", "confirmed", "completed", "cancelled"],
       instrument_type: [
         "guitar",

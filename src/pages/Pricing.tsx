@@ -2,9 +2,47 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Check, Crown, Music, Briefcase, Mic } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 const Pricing = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState<string | null>(null);
+
+  const handleCheckout = async (priceId: string, planName: string) => {
+    try {
+      setLoading(priceId);
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        navigate("/auth");
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { priceId },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to start checkout",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(null);
+    }
+  };
 
   const tiers = [
     {
@@ -43,18 +81,23 @@ const Pricing = () => {
     {
       name: "Pro Plan",
       price: "$19.99",
-      description: "Advanced features for professional bands",
+      description: "All features for professional bands",
       icon: Crown,
       color: "text-primary",
       bgColor: "bg-primary/10",
       featured: true,
       features: [
-        "Everything in Basic",
+        "Everything in Basic +",
+        "Real-time location sharing",
+        "SMS/Push notifications for gigs",
+        "Auto location tracking 1hr before gigs",
         "Unlimited band members",
-        "Advanced scheduling",
+        "Custom setlists with audio/video",
+        "AI band assistant",
+        "Advanced scheduling calendar",
+        "Gig templates",
+        "Message inbox & chat",
         "Priority support",
-        "Custom setlists",
-        "Analytics dashboard",
       ],
       priceId: "price_1SLNaaEPiAZgF8MeGXnGeydt",
     },
@@ -136,9 +179,10 @@ const Pricing = () => {
                   <Button
                     className="w-full"
                     variant={tier.featured ? "default" : "outline"}
-                    onClick={() => navigate("/auth")}
+                    onClick={() => tier.price === "Free" ? navigate("/auth") : handleCheckout(tier.priceId, tier.name)}
+                    disabled={loading === tier.priceId}
                   >
-                    Get Started
+                    {loading === tier.priceId ? "Loading..." : tier.price === "Free" ? "Get Started Free" : "Subscribe Now"}
                   </Button>
                 </CardFooter>
               </Card>

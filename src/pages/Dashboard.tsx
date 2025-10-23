@@ -19,6 +19,7 @@ import { LivePresence } from "@/components/LivePresence";
 import { PlaceAutocomplete } from "@/components/PlaceAutocomplete";
 import { AutoLocationTracker } from "@/components/AutoLocationTracker";
 import { MemberLocationsMap } from "@/components/MemberLocationsMap";
+import { AcceptedGigsCard } from "@/components/AcceptedGigsCard";
 import { Checkbox } from "@/components/ui/checkbox";
 
 interface Profile {
@@ -668,6 +669,10 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {userRole === "band_member" && (
+          <AcceptedGigsCard userId={user?.id || ""} />
         )}
 
         {(userRole === "band_leader" || userRole === "band_member") && (

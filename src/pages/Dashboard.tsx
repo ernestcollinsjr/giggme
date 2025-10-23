@@ -148,6 +148,9 @@ const Dashboard = () => {
   const [selectedArtist, setSelectedArtist] = useState<Profile | null>(null);
   const [artistGigs, setArtistGigs] = useState<Gig[]>([]);
   const [loadingArtistGigs, setLoadingArtistGigs] = useState(false);
+  const [newBookingDate, setNewBookingDate] = useState("");
+  const [newBookingVenue, setNewBookingVenue] = useState("");
+  const [isBookingArtist, setIsBookingArtist] = useState(false);
 
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -865,7 +868,7 @@ const Dashboard = () => {
     setLoadingArtistGigs(true);
     
     try {
-      // Fetch artist's accepted gigs
+      // Fetch all artist's accepted gigs (past and future)
       const { data: gigMembersData, error } = await supabase
         .from('gig_members')
         .select(`
@@ -886,7 +889,7 @@ const Dashboard = () => {
         `)
         .eq('member_id', artist.id)
         .eq('status', 'accepted')
-        .order('gigs(date)', { ascending: true });
+        .order('gigs(date)', { ascending: false });
 
       if (error) throw error;
 
@@ -901,6 +904,66 @@ const Dashboard = () => {
       });
     } finally {
       setLoadingArtistGigs(false);
+    }
+  };
+
+  const handleBookArtist = async () => {
+    if (!selectedArtist || !newBookingDate || !newBookingVenue) {
+      toast({
+        variant: "destructive",
+        title: "Missing information",
+        description: "Please provide both date and venue.",
+      });
+      return;
+    }
+
+    setIsBookingArtist(true);
+    try {
+      // Create the gig
+      const { data: gigData, error: gigError } = await supabase
+        .from('gigs')
+        .insert({
+          date: newBookingDate,
+          venue: newBookingVenue,
+          venue_name: newBookingVenue,
+          status: 'confirmed',
+          user_id: user?.id,
+        })
+        .select()
+        .single();
+
+      if (gigError) throw gigError;
+
+      // Add the artist as a gig member with accepted status
+      const { error: memberError } = await supabase
+        .from('gig_members')
+        .insert({
+          gig_id: gigData.id,
+          member_id: selectedArtist.id,
+          status: 'accepted',
+        });
+
+      if (memberError) throw memberError;
+
+      toast({
+        title: "Artist booked!",
+        description: `${selectedArtist.name} has been booked for ${new Date(newBookingDate).toLocaleDateString()}`,
+      });
+
+      // Clear form
+      setNewBookingDate("");
+      setNewBookingVenue("");
+
+      // Refresh the artist's gigs
+      openArtistProfile(selectedArtist);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Booking failed",
+        description: error.message,
+      });
+    } finally {
+      setIsBookingArtist(false);
     }
   };
 
@@ -1719,11 +1782,54 @@ const Dashboard = () => {
                 )}
               </div>
 
-              {/* Gigs Section */}
-              <div className="space-y-3">
+              {/* Book New Dates Section */}
+              <div className="space-y-3 pt-4 border-t">
+                <h4 className="font-semibold flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Book New Date
+                </h4>
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="booking-date" className="text-sm">Date</Label>
+                    <Input
+                      id="booking-date"
+                      type="date"
+                      value={newBookingDate}
+                      onChange={(e) => setNewBookingDate(e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="booking-venue" className="text-sm">Venue</Label>
+                    <Input
+                      id="booking-venue"
+                      type="text"
+                      placeholder="Venue name"
+                      value={newBookingVenue}
+                      onChange={(e) => setNewBookingVenue(e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+                  <Button
+                    onClick={handleBookArtist}
+                    disabled={isBookingArtist || !newBookingDate || !newBookingVenue}
+                    className="w-full gap-2"
+                  >
+                    {isBookingArtist ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <CalendarIcon className="h-4 w-4" />
+                    )}
+                    Add Booking
+                  </Button>
+                </div>
+              </div>
+
+              {/* All Booked Dates Section */}
+              <div className="space-y-3 pt-4 border-t">
                 <h4 className="font-semibold flex items-center gap-2">
                   <CalendarIcon className="h-4 w-4" />
-                  Upcoming Gigs
+                  All Bookings ({artistGigs.length})
                 </h4>
                 {loadingArtistGigs ? (
                   <div className="text-center py-4 text-muted-foreground">
@@ -1731,85 +1837,83 @@ const Dashboard = () => {
                   </div>
                 ) : artistGigs.length === 0 ? (
                   <p className="text-sm text-muted-foreground py-4 text-center">
-                    No upcoming gigs scheduled
+                    No bookings yet
                   </p>
                 ) : (
-                  <div className="space-y-2">
-                    {artistGigs.map((gig) => (
-                      <Card key={gig.id} className="p-4 border-border/50">
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <span className="font-medium text-sm">
-                              {new Date(gig.date).toLocaleDateString('en-US', {
-                                weekday: 'short',
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric'
-                              })}
-                            </span>
-                            <Badge variant="outline" className="text-xs">
-                              {gig.loading_time || gig.sound_check_time || gig.end_time || 'TBD'}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            📍 {gig.venue_name || gig.venue}
-                          </p>
-                          {gig.notes && (
-                            <p className="text-xs text-muted-foreground mt-1">{gig.notes}</p>
-                          )}
-                          
-                          {/* Payment Section */}
-                          <div className="pt-3 border-t space-y-2">
-                            <div className="flex items-center gap-2">
-                              <Label htmlFor={`payment-${gig.id}`} className="text-xs font-medium">
-                                Payment Amount
-                              </Label>
+                  <div className="space-y-2 max-h-96 overflow-y-auto">
+                    {artistGigs.map((gig) => {
+                      const isPast = new Date(gig.date) < new Date();
+                      return (
+                        <Card key={gig.id} className={`p-4 border-border/50 ${isPast ? 'opacity-60' : ''}`}>
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium text-sm">
+                                  {new Date(gig.date).toLocaleDateString('en-US', {
+                                    weekday: 'short',
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric'
+                                  })}
+                                </span>
+                                {isPast && (
+                                  <Badge variant="secondary" className="text-xs">Past</Badge>
+                                )}
+                              </div>
+                              <Badge variant="outline" className="text-xs">
+                                {gig.loading_time || gig.sound_check_time || gig.end_time || 'TBD'}
+                              </Badge>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-muted-foreground">$</span>
-                              <Input
-                                id={`payment-${gig.id}`}
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                placeholder="0.00"
-                                defaultValue={gig.payment_amount || ''}
-                                onBlur={(e) => {
-                                  if (e.target.value) {
-                                    handlePaymentAmountUpdate(gig.id, e.target.value);
-                                  }
-                                }}
-                                className="h-8 text-sm flex-1"
-                              />
-                              <Button
-                                size="sm"
-                                variant={gig.payment_status === 'paid' ? 'default' : 'outline'}
-                                onClick={() => handlePaymentStatusToggle(gig.id, gig.payment_status || 'unpaid')}
-                                className={gig.payment_status === 'paid' ? 'bg-green-600 hover:bg-green-700' : ''}
-                              >
-                                {gig.payment_status === 'paid' ? '✓ Paid' : 'Unpaid'}
-                              </Button>
+                            <p className="text-sm text-muted-foreground">
+                              📍 {gig.venue_name || gig.venue}
+                            </p>
+                            {gig.notes && (
+                              <p className="text-xs text-muted-foreground mt-1">{gig.notes}</p>
+                            )}
+                            
+                            {/* Payment Section */}
+                            <div className="pt-3 border-t space-y-2">
+                              <div className="flex items-center gap-2">
+                                <Label htmlFor={`payment-${gig.id}`} className="text-xs font-medium">
+                                  Payment Amount
+                                </Label>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground">$</span>
+                                <Input
+                                  id={`payment-${gig.id}`}
+                                  type="number"
+                                  min="0"
+                                  step="0.01"
+                                  placeholder="0.00"
+                                  defaultValue={gig.payment_amount || ''}
+                                  onBlur={(e) => {
+                                    if (e.target.value) {
+                                      handlePaymentAmountUpdate(gig.id, e.target.value);
+                                    }
+                                  }}
+                                  className="h-8 text-sm flex-1"
+                                />
+                                <Button
+                                  size="sm"
+                                  variant={gig.payment_status === 'paid' ? 'default' : 'outline'}
+                                  onClick={() => handlePaymentStatusToggle(gig.id, gig.payment_status || 'unpaid')}
+                                  className={gig.payment_status === 'paid' ? 'bg-green-600 hover:bg-green-700' : ''}
+                                >
+                                  {gig.payment_status === 'paid' ? '✓ Paid' : 'Unpaid'}
+                                </Button>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </Card>
-                    ))}
+                        </Card>
+                      );
+                    })}
                   </div>
                 )}
               </div>
 
               {/* Action Buttons */}
               <div className="flex gap-2 pt-4 border-t">
-                <Button
-                  onClick={() => {
-                    setArtistProfileDialogOpen(false);
-                    navigate(`/bookings?artistId=${selectedArtist.id}&artistName=${encodeURIComponent(selectedArtist.name)}`);
-                  }}
-                  className="flex-1 gap-2"
-                >
-                  <CalendarIcon className="h-4 w-4" />
-                  Book This Artist
-                </Button>
                 {selectedArtist.phone_number && (
                   <Button
                     variant="outline"
@@ -1817,7 +1921,7 @@ const Dashboard = () => {
                       setArtistProfileDialogOpen(false);
                       openIndividualSms(selectedArtist, new MouseEvent('click') as any);
                     }}
-                    className="gap-2"
+                    className="flex-1 gap-2"
                   >
                     <MessageSquare className="h-4 w-4" />
                     Send Text

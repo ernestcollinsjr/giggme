@@ -781,43 +781,44 @@ export const SetlistManager = () => {
               </Tabs>
 
               {setlist.songs.length > 0 && (
-                <div className="space-y-6 mt-6">
+                <div className="space-y-3 mt-4">
                   {[1, 2, 3, 4].map((setNum) => {
                     const setSongs = setlist.songs.filter(song => song.set_number === setNum);
                     if (setSongs.length === 0) return null;
                     
                     return (
-                      <div key={setNum} className="space-y-2">
-                        <h3 className="font-semibold">Set {setNum} ({setSongs.length} songs)</h3>
+                      <div key={setNum} className="space-y-1">
+                        <h3 className="text-xs font-semibold text-muted-foreground/70 mb-0.5">Set {setNum} ({setSongs.length} songs)</h3>
                         {setSongs.map((song, index) => (
                           <div
                             key={song.id}
-                            className="flex items-center justify-between p-3 rounded-lg bg-accent/50"
+                            className="flex items-center justify-between py-1.5 px-2 rounded bg-muted/30"
                           >
-                            <div className="flex items-center gap-3 flex-1">
-                              <span className="text-sm text-muted-foreground font-medium w-6">
+                            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                              <span className="text-xs text-muted-foreground font-medium w-4 shrink-0">
                                 {index + 1}
                               </span>
-                              <div className="flex-1">
-                                <p className="font-medium">{song.title}</p>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium truncate leading-tight">{song.title}</p>
                                 {song.artist && (
-                                  <p className="text-sm text-foreground">{song.artist}</p>
+                                  <p className="text-[10px] text-muted-foreground truncate leading-tight">{song.artist}</p>
                                 )}
                                 {song.audio_url && (song.audio_url.includes('youtube.com') || song.audio_url.includes('youtu.be')) && (
-                                  <div className="space-y-1">
+                                  <div className="space-y-0.5 mt-0.5">
                                     <a 
                                       href={`/open?to=${encodeURIComponent(song.audio_url)}`}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="text-xs text-primary hover:underline break-all inline-block"
+                                      className="text-[10px] text-primary hover:underline break-all inline-block leading-tight"
                                       onClick={(e) => e.stopPropagation()}
                                     >
                                       {song.audio_url}
                                      </a>
-                                     <div className="flex items-center gap-2">
+                                     <div className="flex items-center gap-1">
                                        <Button
                                          variant="ghost"
                                          size="sm"
+                                         className="h-6 text-[10px] px-1.5 py-0"
                                          onClick={async () => {
                                            // Try local extraction first
                                            const localVideoId = song.audio_url ? extractVideoId(song.audio_url) : null;
@@ -846,6 +847,7 @@ export const SetlistManager = () => {
                                        <Button
                                          variant="ghost"
                                          size="sm"
+                                         className="h-6 text-[10px] px-1.5 py-0"
                                          onClick={async (e) => {
                                            e.stopPropagation();
                                            try {
@@ -861,12 +863,13 @@ export const SetlistManager = () => {
                                       <Button
                                         variant="ghost"
                                         size="sm"
+                                        className="h-6 text-[10px] px-1.5 py-0"
                                         onClick={(e) => {
                                           e.stopPropagation();
                                           navigate(`/setlist/lyrics/${song.id}`);
                                         }}
                                       >
-                                        <FileText className="h-4 w-4 mr-2" />
+                                        <FileText className="h-2.5 w-2.5 mr-0.5" />
                                         Lyrics
                                       </Button>
                                     </div>
@@ -874,32 +877,32 @@ export const SetlistManager = () => {
                                 )}
                               </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-1 shrink-0">
+                              <div className="flex flex-col gap-0.5">
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-6 w-6"
+                                  className="h-5 w-5"
                                   onClick={() => moveSongUp(setlist.id, song.id, setNum, index)}
                                   disabled={index === 0}
                                 >
-                                  <ChevronUp className="h-3 w-3" />
+                                  <ChevronUp className="h-2.5 w-2.5" />
                                 </Button>
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-6 w-6"
+                                  className="h-5 w-5"
                                   onClick={() => moveSongDown(setlist.id, song.id, setNum, index)}
                                   disabled={index === setSongs.length - 1}
                                 >
-                                  <ChevronDown className="h-3 w-3" />
+                                  <ChevronDown className="h-2.5 w-2.5" />
                                 </Button>
                               </div>
                               <Select
                                 value={song.set_number.toString()}
                                 onValueChange={(value) => moveSongToSet(song.id, parseInt(value))}
                               >
-                                <SelectTrigger className="w-24 h-8">
+                                <SelectTrigger className="w-16 h-6 text-[10px]">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -912,9 +915,10 @@ export const SetlistManager = () => {
                               <Button
                                 variant="ghost"
                                 size="icon"
+                                className="h-6 w-6"
                                 onClick={() => deleteSong(song.id)}
                               >
-                                <Trash2 className="h-4 w-4" />
+                                <Trash2 className="h-2.5 w-2.5" />
                               </Button>
                             </div>
                           </div>

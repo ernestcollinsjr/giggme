@@ -178,7 +178,7 @@ const Bookings = () => {
       const gigDateTime = new Date(date);
       gigDateTime.setHours(hours, minutes, 0, 0);
 
-      const { error } = await supabase
+      const { data: newGig, error } = await supabase
         .from("gigs")
         .insert({
           user_id: user.id,
@@ -197,14 +197,36 @@ const Bookings = () => {
           venue_contact_person: venueContactPerson.trim() || null,
           sound_man_info: soundManInfo.trim() || null,
           status: "pending",
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
 
-      toast({
-        title: "Gig added",
-        description: "The gig has been scheduled successfully.",
-      });
+      // Auto-invite selected members
+      if (selectedMembers.length > 0 && newGig) {
+        const invites = selectedMembers.map(memberId => ({
+          gig_id: newGig.id,
+          member_id: memberId,
+          status: 'pending',
+        }));
+
+        const { error: inviteError } = await supabase
+          .from("gig_members")
+          .insert(invites);
+
+        if (inviteError) throw inviteError;
+
+        toast({
+          title: "Gig added & invites sent",
+          description: `Successfully scheduled gig and invited ${selectedMembers.length} member(s).`,
+        });
+      } else {
+        toast({
+          title: "Gig added",
+          description: "The gig has been scheduled successfully.",
+        });
+      }
 
       // Reset form and refresh data
       setDate(undefined);
@@ -221,6 +243,7 @@ const Bookings = () => {
       setFoodProvided("");
       setVenueContactPerson("");
       setSoundManInfo("");
+      setSelectedMembers([]);
       checkAuthAndFetchData();
     } catch (error: any) {
       toast({
@@ -570,9 +593,48 @@ const Bookings = () => {
                 />
               </div>
 
+              <div className="space-y-3 pt-4 border-t">
+                <Label className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Invite Band Members (Optional)
+                </Label>
+                {bandMembers.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">No band members available to invite</p>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2 border rounded-md">
+                    {bandMembers.map((member) => (
+                      <div key={member.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`invite-${member.id}`}
+                          checked={selectedMembers.includes(member.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedMembers([...selectedMembers, member.id]);
+                            } else {
+                              setSelectedMembers(selectedMembers.filter(id => id !== member.id));
+                            }
+                          }}
+                        />
+                        <label
+                          htmlFor={`invite-${member.id}`}
+                          className="text-sm flex-1 cursor-pointer"
+                        >
+                          {member.name}
+                          {member.instrument && (
+                            <span className="text-xs text-muted-foreground ml-1">
+                              ({member.instrument})
+                            </span>
+                          )}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <Button onClick={handleAddGig} disabled={isSubmitting} className="w-full">
                 <Plus className="h-4 w-4 mr-2" />
-                Add Gig
+                Add Gig {selectedMembers.length > 0 && `& Invite ${selectedMembers.length}`}
               </Button>
             </CardContent>
           </Card>

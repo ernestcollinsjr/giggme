@@ -131,9 +131,11 @@ const Dashboard = () => {
   // SMS state
   const [smsDialogOpen, setSmsDialogOpen] = useState(false);
   const [groupSmsDialogOpen, setGroupSmsDialogOpen] = useState(false);
+  const [gigRequestDialogOpen, setGigRequestDialogOpen] = useState(false);
   const [smsMessage, setSmsMessage] = useState("");
   const [selectedRecipient, setSelectedRecipient] = useState<Profile | null>(null);
   const [sendingSms, setSendingSms] = useState(false);
+  const [smsType, setSmsType] = useState<'individual' | 'group' | 'gig-request'>('individual');
 
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -661,7 +663,7 @@ const Dashboard = () => {
     }
   };
 
-  const handleSendSMS = async (type: 'individual' | 'group') => {
+  const handleSendSMS = async () => {
     if (!smsMessage.trim()) {
       toast({
         variant: "destructive",
@@ -676,15 +678,23 @@ const Dashboard = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Not authenticated");
 
-      const recipients = type === 'individual' && selectedRecipient
-        ? [selectedRecipient.id]
-        : profiles.filter(p => p.isAvailable !== false).map(p => p.id);
+      let recipients: string[];
+      
+      if (smsType === 'individual' && selectedRecipient) {
+        recipients = [selectedRecipient.id];
+      } else if (smsType === 'gig-request') {
+        // Only available (unbooked) artists
+        recipients = profiles.filter(p => p.isAvailable !== false).map(p => p.id);
+      } else {
+        // All artists
+        recipients = profiles.map(p => p.id);
+      }
 
       const { data, error } = await supabase.functions.invoke('send-manager-sms', {
         body: {
           recipients,
           message: smsMessage,
-          type
+          type: smsType === 'individual' ? 'individual' : 'group'
         },
         headers: {
           Authorization: `Bearer ${session.access_token}`
@@ -701,6 +711,7 @@ const Dashboard = () => {
       setSmsMessage("");
       setSmsDialogOpen(false);
       setGroupSmsDialogOpen(false);
+      setGigRequestDialogOpen(false);
       setSelectedRecipient(null);
     } catch (error: any) {
       toast({
@@ -725,7 +736,50 @@ const Dashboard = () => {
     }
     setSelectedRecipient(profile);
     setSmsMessage("");
+    setSmsType('individual');
     setSmsDialogOpen(true);
+  };
+
+  const openGigRequest = () => {
+    const availableArtists = profiles.filter(p => p.isAvailable !== false && p.phone_number);
+    const bookedArtists = profiles.filter(p => p.isAvailable === false);
+    
+    if (availableArtists.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "No available artists",
+        description: "All artists are currently booked for upcoming gigs.",
+      });
+      return;
+    }
+    
+    if (bookedArtists.length > 0) {
+      toast({
+        title: "Sending to available artists only",
+        description: `${bookedArtists.length} artist(s) excluded (already booked)`,
+      });
+    }
+    
+    setSmsMessage("");
+    setSmsType('gig-request');
+    setGigRequestDialogOpen(true);
+  };
+
+  const openGroupText = () => {
+    const artistsWithPhone = profiles.filter(p => p.phone_number);
+    
+    if (artistsWithPhone.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "No phone numbers",
+        description: "No artists have phone numbers on file.",
+      });
+      return;
+    }
+    
+    setSmsMessage("");
+    setSmsType('group');
+    setGroupSmsDialogOpen(true);
   };
 
   // Filter data by selected band
@@ -1171,37 +1225,26 @@ const Dashboard = () => {
                     </CardTitle>
                     <CardDescription>Browse and connect with artists/musicians</CardDescription>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      const availableArtists = profiles.filter(p => p.isAvailable !== false && p.phone_number);
-                      const bookedArtists = profiles.filter(p => p.isAvailable === false);
-                      
-                      if (availableArtists.length === 0) {
-                        toast({
-                          variant: "destructive",
-                          title: "No available artists",
-                          description: "All artists are currently booked for upcoming gigs.",
-                        });
-                        return;
-                      }
-                      
-                      if (bookedArtists.length > 0) {
-                        toast({
-                          title: "Sending to available artists only",
-                          description: `${bookedArtists.length} artist(s) excluded (already booked)`,
-                        });
-                      }
-                      
-                      setSmsMessage("");
-                      setGroupSmsDialogOpen(true);
-                    }}
-                    className="gap-2"
-                  >
-                    <UsersIcon className="h-4 w-4" />
-                    Group Text
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={openGigRequest}
+                      className="gap-2"
+                    >
+                      <CalendarIcon className="h-4 w-4" />
+                      Group Gig Request
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={openGroupText}
+                      className="gap-2"
+                    >
+                      <UsersIcon className="h-4 w-4" />
+                      Group Text
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -1219,7 +1262,7 @@ const Dashboard = () => {
                         <button
                           onClick={(e) => openIndividualSms(bandProfile, e)}
                           className="absolute top-0.5 right-0.5 opacity-0 group-hover:opacity-100 transition-opacity p-0.5 bg-primary text-primary-foreground rounded-sm hover:bg-primary/90 z-10"
-                          title="Send text message"
+                          title="Text Member"
                         >
                           <MessageSquare className="h-3 w-3" />
                         </button>
@@ -1431,7 +1474,7 @@ const Dashboard = () => {
               Cancel
             </Button>
             <Button
-              onClick={() => handleSendSMS('individual')}
+              onClick={handleSendSMS}
               disabled={sendingSms || !smsMessage.trim()}
               className="gap-2"
             >
@@ -1450,9 +1493,9 @@ const Dashboard = () => {
       <Dialog open={groupSmsDialogOpen} onOpenChange={setGroupSmsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Send Group Text</DialogTitle>
+            <DialogTitle>Group Text</DialogTitle>
             <DialogDescription>
-              Send a text message to {profiles.filter(p => p.isAvailable !== false && p.phone_number).length} available artists (excluding those with upcoming gigs)
+              Send a general message to all {profiles.filter(p => p.phone_number).length} artists (including those with bookings)
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -1462,7 +1505,7 @@ const Dashboard = () => {
                 id="group-sms-message"
                 value={smsMessage}
                 onChange={(e) => setSmsMessage(e.target.value)}
-                placeholder="Example: Hi! I have a gig opportunity on [date]. Are you available? Reply if interested!"
+                placeholder="Example: Reminder - Practice session this Sunday at 3pm. See you there!"
                 rows={6}
                 maxLength={160}
               />
@@ -1480,7 +1523,7 @@ const Dashboard = () => {
               Cancel
             </Button>
             <Button
-              onClick={() => handleSendSMS('group')}
+              onClick={handleSendSMS}
               disabled={sendingSms || !smsMessage.trim()}
               className="gap-2"
             >

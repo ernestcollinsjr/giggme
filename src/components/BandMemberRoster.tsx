@@ -141,11 +141,11 @@ export const BandMemberRoster = ({ bandId }: BandMemberRosterProps) => {
                 className={`flex flex-col items-center p-3 border-2 rounded-lg hover:shadow-md transition-all bg-card ${
                   member.hasAcceptedGigs
                     ? "border-green-500 bg-green-50/50 dark:bg-green-950/20"
-                    : "border-border"
+                    : "border-red-500 bg-red-50/50 dark:bg-red-950/20"
                 }`}
               >
                 <Avatar className={`h-16 w-16 mb-2 border-2 ${
-                  member.hasAcceptedGigs ? "border-green-500" : "border-primary"
+                  member.hasAcceptedGigs ? "border-green-500" : "border-red-500"
                 }`}>
                   <AvatarImage
                     src={member.photo_urls?.[0] || ""}
@@ -158,9 +158,13 @@ export const BandMemberRoster = ({ bandId }: BandMemberRosterProps) => {
                 <h4 className="font-semibold text-sm text-center mb-1 line-clamp-1">
                   {member.name}
                 </h4>
-                {member.hasAcceptedGigs && (
+                {member.hasAcceptedGigs ? (
                   <Badge className="bg-green-600 hover:bg-green-700 text-xs mb-1">
                     Accepted
+                  </Badge>
+                ) : (
+                  <Badge className="bg-red-600 hover:bg-red-700 text-xs mb-1">
+                    Pending
                   </Badge>
                 )}
                 {member.instrument && (

@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Mail, Users, Copy, Check, Edit, UserPlus, Calendar as CalendarIconLucide, MapPin, Plus, Trash } from "lucide-react";
 import { format } from "date-fns";
@@ -43,6 +44,7 @@ interface TourDate {
   notes: string | null;
   payment_amount: number | null;
   ground_transportation: string | null;
+  transportation_not_provided: boolean | null;
 }
 
 interface CrewMember {
@@ -112,7 +114,8 @@ export default function TourDetail() {
     sound_man_info: "",
     notes: "",
     payment_amount: "",
-    ground_transportation: ""
+    ground_transportation: "",
+    transportation_not_provided: false
   });
 
   useEffect(() => {
@@ -364,7 +367,8 @@ export default function TourDetail() {
         sound_man_info: date.sound_man_info || "",
         notes: date.notes || "",
         payment_amount: date.payment_amount?.toString() || "",
-        ground_transportation: date.ground_transportation || ""
+        ground_transportation: date.ground_transportation || "",
+        transportation_not_provided: date.transportation_not_provided || false
       });
     } else {
       setEditingDate(null);
@@ -384,7 +388,8 @@ export default function TourDetail() {
         sound_man_info: "",
         notes: "",
         payment_amount: "",
-        ground_transportation: ""
+        ground_transportation: "",
+        transportation_not_provided: false
       });
     }
     setDateDialogOpen(true);
@@ -416,7 +421,8 @@ export default function TourDetail() {
         sound_man_info: dateFormData.sound_man_info.trim() || null,
         notes: dateFormData.notes.trim() || null,
         payment_amount: dateFormData.payment_amount ? parseFloat(dateFormData.payment_amount) : null,
-        ground_transportation: dateFormData.ground_transportation.trim() || null
+        ground_transportation: dateFormData.ground_transportation.trim() || null,
+        transportation_not_provided: dateFormData.transportation_not_provided
       };
 
       let error;
@@ -1081,6 +1087,19 @@ export default function TourDetail() {
                   <SelectItem value="SUV">SUV</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="transportationNotProvided"
+                checked={dateFormData.transportation_not_provided}
+                onCheckedChange={(checked) => 
+                  setDateFormData(prev => ({ ...prev, transportation_not_provided: checked as boolean }))
+                }
+              />
+              <Label htmlFor="transportationNotProvided" className="cursor-pointer">
+                Transportation not provided
+              </Label>
             </div>
 
             <div className="flex justify-end gap-2">

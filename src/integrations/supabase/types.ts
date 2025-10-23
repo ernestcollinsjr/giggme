@@ -616,6 +616,7 @@ export type Database = {
           sound_check_time: string | null
           sound_man_info: string | null
           tour_id: string
+          transportation_not_provided: boolean | null
           updated_at: string
           venue: string
           venue_contact_person: string | null
@@ -638,6 +639,7 @@ export type Database = {
           sound_check_time?: string | null
           sound_man_info?: string | null
           tour_id: string
+          transportation_not_provided?: boolean | null
           updated_at?: string
           venue: string
           venue_contact_person?: string | null
@@ -660,6 +662,7 @@ export type Database = {
           sound_check_time?: string | null
           sound_man_info?: string | null
           tour_id?: string
+          transportation_not_provided?: boolean | null
           updated_at?: string
           venue?: string
           venue_contact_person?: string | null

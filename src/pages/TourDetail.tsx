@@ -957,7 +957,7 @@ export default function TourDetail() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="dateLoadingTime">Loading Time</Label>
                 <Input
@@ -976,16 +976,15 @@ export default function TourDetail() {
                   onChange={(e) => setDateFormData(prev => ({ ...prev, sound_check_time: e.target.value }))}
                 />
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="dateEndTime">End Time</Label>
-              <Input
-                id="dateEndTime"
-                type="time"
-                value={dateFormData.end_time}
-                onChange={(e) => setDateFormData(prev => ({ ...prev, end_time: e.target.value }))}
-              />
+              <div className="space-y-2">
+                <Label htmlFor="dateEndTime">End Time</Label>
+                <Input
+                  id="dateEndTime"
+                  type="time"
+                  value={dateFormData.end_time}
+                  onChange={(e) => setDateFormData(prev => ({ ...prev, end_time: e.target.value }))}
+                />
+              </div>
             </div>
 
             <div className="space-y-2">

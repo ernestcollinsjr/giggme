@@ -25,7 +25,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [role, setRole] = useState<"band_leader" | "band_member" | "booking_manager">("band_member");
+  const [role, setRole] = useState<"band_leader" | "band_member" | "booking_manager" | "artist">("band_member");
   
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -184,7 +184,7 @@ const Auth = () => {
               <form onSubmit={handleSignup} className="space-y-4">
                 <div className="space-y-2">
                   <Label>I am a...</Label>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 gap-3">
                     <Button
                       type="button"
                       variant={role === "band_leader" ? "default" : "outline"}
@@ -211,6 +211,15 @@ const Auth = () => {
                     >
                       <Briefcase className="h-6 w-6" />
                       <span className="text-xs text-center">Booking Manager</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={role === "artist" ? "default" : "outline"}
+                      onClick={() => setRole("artist")}
+                      className="h-20 flex flex-col gap-2"
+                    >
+                      <Music className="h-6 w-6" />
+                      <span className="text-xs text-center">Artist/Musician</span>
                     </Button>
                   </div>
                 </div>

@@ -1226,24 +1226,30 @@ const Dashboard = () => {
                     <CardDescription>Browse and connect with artists/musicians</CardDescription>
                   </div>
                   <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={openGigRequest}
-                      className="gap-2"
-                    >
-                      <CalendarIcon className="h-4 w-4" />
-                      Group Gig Request
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={openGroupText}
-                      className="gap-2"
-                    >
-                      <UsersIcon className="h-4 w-4" />
-                      Group Text
-                    </Button>
+                    <div className="flex flex-col items-center">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={openGigRequest}
+                        className="gap-2"
+                      >
+                        <CalendarIcon className="h-4 w-4" />
+                        Group Gig Request
+                      </Button>
+                      <span className="text-[10px] text-muted-foreground mt-0.5">only to unbooked members</span>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={openGroupText}
+                        className="gap-2"
+                      >
+                        <UsersIcon className="h-4 w-4" />
+                        Group Text
+                      </Button>
+                      <span className="text-[10px] text-muted-foreground mt-0.5">to everyone</span>
+                    </div>
                   </div>
                 </div>
               </CardHeader>

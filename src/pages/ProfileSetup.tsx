@@ -21,6 +21,7 @@ const ProfileSetup = () => {
   const [role, setRole] = useState<string>("");
   const [hasRole, setHasRole] = useState(false);
   
+  const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [instrument, setInstrument] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -58,6 +59,7 @@ const ProfileSetup = () => {
           .single();
         
         if (profile) {
+          setName(profile.name || "");
           setBio(profile.bio || "");
           setInstrument(profile.instrument || "");
           setPhoneNumber(profile.phone_number || "");
@@ -235,6 +237,7 @@ const ProfileSetup = () => {
 
       const updates = {
         id: user.id,
+        name,
         bio,
         instrument: (role === "band_leader" || role === "band_member" ? instrument : null) as any,
         phone_number: phoneNumber || null,
@@ -510,6 +513,18 @@ const ProfileSetup = () => {
                   </div>
                 ))}
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="name">Name *</Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Your full name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
             </div>
 
             <div className="space-y-2">

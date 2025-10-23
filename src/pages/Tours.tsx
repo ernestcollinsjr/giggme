@@ -22,6 +22,10 @@ interface Tour {
   start_date: string | null;
   end_date: string | null;
   created_at: string;
+  tour_crew_members?: Array<{
+    crew_type: 'band_members' | 'singer' | 'sound_crew' | 'lighting_crew';
+    status: string;
+  }>;
 }
 
 export default function Tours() {
@@ -88,7 +92,10 @@ export default function Tours() {
     try {
       const { data, error } = await supabase
         .from("tours")
-        .select("*")
+        .select(`
+          *,
+          tour_crew_members(crew_type, status)
+        `)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -528,16 +535,43 @@ export default function Tours() {
                 )}
               </CardHeader>
               <CardContent>
-                <div className="space-y-2 text-sm">
-                {tour.start_date && (
-                  <div className="flex items-center gap-2">
-                    <CalendarIconLucide className="h-4 w-4 text-muted-foreground" />
-                    <span>
-                      {format(new Date(tour.start_date), "MMM d, yyyy")}
-                      {tour.end_date && ` - ${format(new Date(tour.end_date), "MMM d, yyyy")}`}
-                    </span>
-                  </div>
-                )}
+                <div className="space-y-3 text-sm">
+                  {tour.start_date && (
+                    <div className="flex items-center gap-2">
+                      <CalendarIconLucide className="h-4 w-4 text-muted-foreground" />
+                      <span>
+                        {format(new Date(tour.start_date), "MMM d, yyyy")}
+                        {tour.end_date && ` - ${format(new Date(tour.end_date), "MMM d, yyyy")}`}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {tour.tour_crew_members && tour.tour_crew_members.length > 0 && (
+                    <div className="pt-2 border-t space-y-2">
+                      <div className="flex items-center gap-2 font-medium">
+                        <Users className="h-4 w-4 text-muted-foreground" />
+                        <span>Crew Members</span>
+                      </div>
+                      {['band_members', 'singer', 'sound_crew', 'lighting_crew'].map((type) => {
+                        const typeMembers = tour.tour_crew_members?.filter(m => m.crew_type === type) || [];
+                        if (typeMembers.length === 0) return null;
+                        
+                        const typeLabels: Record<string, string> = {
+                          band_members: 'Band Members',
+                          singer: 'Singer',
+                          sound_crew: 'Sound Crew',
+                          lighting_crew: 'Lighting Crew'
+                        };
+                        
+                        return (
+                          <div key={type} className="flex items-center justify-between text-xs">
+                            <span className="text-muted-foreground">{typeLabels[type]}</span>
+                            <span className="font-medium">{typeMembers.length}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

@@ -50,7 +50,10 @@ const Index = () => {
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 mb-16">
-          <div className="bg-card border border-border/50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+          <div 
+            className="bg-card border border-border/50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105"
+            onClick={() => navigate("/pricing")}
+          >
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
               <Crown className="h-6 w-6 text-primary" />
             </div>
@@ -64,7 +67,10 @@ const Index = () => {
             </div>
           </div>
 
-          <div className="bg-card border border-border/50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+          <div 
+            className="bg-card border border-border/50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105"
+            onClick={() => navigate("/pricing")}
+          >
             <div className="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center mb-4">
               <Music className="h-6 w-6 text-secondary" />
             </div>
@@ -78,7 +84,10 @@ const Index = () => {
             </div>
           </div>
 
-          <div className="bg-card border border-border/50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+          <div 
+            className="bg-card border border-border/50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105"
+            onClick={() => navigate("/pricing")}
+          >
             <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mb-4">
               <Briefcase className="h-6 w-6 text-accent" />
             </div>

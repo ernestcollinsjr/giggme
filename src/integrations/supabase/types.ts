@@ -600,6 +600,80 @@ export type Database = {
           },
         ]
       }
+      tour_dates: {
+        Row: {
+          attire: string | null
+          created_at: string
+          date: string
+          end_time: string | null
+          food_provided: string | null
+          id: string
+          loading_time: string | null
+          notes: string | null
+          payment_amount: number | null
+          show_time: string | null
+          sound_check_time: string | null
+          sound_man_info: string | null
+          tour_id: string
+          updated_at: string
+          venue: string
+          venue_contact_person: string | null
+          venue_lat: number | null
+          venue_lng: number | null
+          venue_name: string | null
+        }
+        Insert: {
+          attire?: string | null
+          created_at?: string
+          date: string
+          end_time?: string | null
+          food_provided?: string | null
+          id?: string
+          loading_time?: string | null
+          notes?: string | null
+          payment_amount?: number | null
+          show_time?: string | null
+          sound_check_time?: string | null
+          sound_man_info?: string | null
+          tour_id: string
+          updated_at?: string
+          venue: string
+          venue_contact_person?: string | null
+          venue_lat?: number | null
+          venue_lng?: number | null
+          venue_name?: string | null
+        }
+        Update: {
+          attire?: string | null
+          created_at?: string
+          date?: string
+          end_time?: string | null
+          food_provided?: string | null
+          id?: string
+          loading_time?: string | null
+          notes?: string | null
+          payment_amount?: number | null
+          show_time?: string | null
+          sound_check_time?: string | null
+          sound_man_info?: string | null
+          tour_id?: string
+          updated_at?: string
+          venue?: string
+          venue_contact_person?: string | null
+          venue_lat?: number | null
+          venue_lng?: number | null
+          venue_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tour_dates_tour_id_fkey"
+            columns: ["tour_id"]
+            isOneToOne: false
+            referencedRelation: "tours"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tour_invitations: {
         Row: {
           created_at: string

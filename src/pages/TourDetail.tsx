@@ -8,9 +8,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Mail, Users, Copy, Check, Edit, UserPlus } from "lucide-react";
+import { ArrowLeft, Mail, Users, Copy, Check, Edit, UserPlus, Calendar as CalendarIconLucide, MapPin, Plus, Trash } from "lucide-react";
 import { format } from "date-fns";
 import CrewMemberDetailsDialog from "@/components/CrewMemberDetailsDialog";
+import { PlaceAutocomplete } from "@/components/PlaceAutocomplete";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
 interface Tour {
   id: string;
@@ -18,6 +23,25 @@ interface Tour {
   description: string | null;
   start_date: string | null;
   end_date: string | null;
+}
+
+interface TourDate {
+  id: string;
+  date: string;
+  venue: string;
+  venue_name: string | null;
+  venue_lat: number | null;
+  venue_lng: number | null;
+  show_time: string | null;
+  loading_time: string | null;
+  sound_check_time: string | null;
+  end_time: string | null;
+  attire: string | null;
+  food_provided: string | null;
+  venue_contact_person: string | null;
+  sound_man_info: string | null;
+  notes: string | null;
+  payment_amount: number | null;
 }
 
 interface CrewMember {
@@ -68,6 +92,26 @@ export default function TourDetail() {
   const [availableProfiles, setAvailableProfiles] = useState<Array<{ id: string; name: string; email: string }>>([]);
   const [selectedProfileId, setSelectedProfileId] = useState("");
   const [selectedCrewType, setSelectedCrewType] = useState<'band_members' | 'singer' | 'sound_crew' | 'lighting_crew'>('band_members');
+  const [tourDates, setTourDates] = useState<TourDate[]>([]);
+  const [dateDialogOpen, setDateDialogOpen] = useState(false);
+  const [editingDate, setEditingDate] = useState<TourDate | null>(null);
+  const [dateFormData, setDateFormData] = useState({
+    date: new Date(),
+    show_time: "19:00",
+    loading_time: "",
+    sound_check_time: "",
+    end_time: "23:00",
+    venue: "",
+    venue_name: "",
+    venue_lat: null as number | null,
+    venue_lng: null as number | null,
+    attire: "",
+    food_provided: "",
+    venue_contact_person: "",
+    sound_man_info: "",
+    notes: "",
+    payment_amount: ""
+  });
 
   useEffect(() => {
     let mounted = true;
@@ -95,7 +139,7 @@ export default function TourDetail() {
 
   const fetchTourData = async () => {
     try {
-      const [tourResult, crewResult, invitesResult, profilesResult] = await Promise.all([
+      const [tourResult, crewResult, invitesResult, profilesResult, datesResult] = await Promise.all([
         supabase.from("tours").select("*").eq("id", tourId).maybeSingle(),
         supabase
           .from("tour_crew_members")
@@ -112,7 +156,12 @@ export default function TourDetail() {
         supabase
           .from("profiles")
           .select("id, name, email")
-          .limit(100)
+          .limit(100),
+        supabase
+          .from("tour_dates")
+          .select("*")
+          .eq("tour_id", tourId)
+          .order("date", { ascending: true })
       ]);
 
       if (tourResult.error) throw tourResult.error;
@@ -124,6 +173,7 @@ export default function TourDetail() {
       
       setCrewMembers((crewResult.data || []) as any);
       setInvitations(invitesResult.data || []);
+      setTourDates((datesResult.data || []) as TourDate[]);
     } catch (error) {
       console.error("Error fetching tour data:", error);
       toast({
@@ -278,6 +328,145 @@ export default function TourDetail() {
       toast({
         title: "Error",
         description: "Failed to add crew member",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDatePlaceSelect = (address: string, place?: google.maps.places.PlaceResult) => {
+    setDateFormData(prev => ({
+      ...prev,
+      venue: address,
+      venue_name: place?.name || "",
+      venue_lat: place?.geometry?.location?.lat() ?? null,
+      venue_lng: place?.geometry?.location?.lng() ?? null
+    }));
+  };
+
+  const openDateDialog = (date?: TourDate) => {
+    if (date) {
+      setEditingDate(date);
+      setDateFormData({
+        date: new Date(date.date),
+        show_time: date.show_time || "19:00",
+        loading_time: date.loading_time || "",
+        sound_check_time: date.sound_check_time || "",
+        end_time: date.end_time || "23:00",
+        venue: date.venue,
+        venue_name: date.venue_name || "",
+        venue_lat: date.venue_lat,
+        venue_lng: date.venue_lng,
+        attire: date.attire || "",
+        food_provided: date.food_provided || "",
+        venue_contact_person: date.venue_contact_person || "",
+        sound_man_info: date.sound_man_info || "",
+        notes: date.notes || "",
+        payment_amount: date.payment_amount?.toString() || ""
+      });
+    } else {
+      setEditingDate(null);
+      setDateFormData({
+        date: new Date(),
+        show_time: "19:00",
+        loading_time: "",
+        sound_check_time: "",
+        end_time: "23:00",
+        venue: "",
+        venue_name: "",
+        venue_lat: null,
+        venue_lng: null,
+        attire: "",
+        food_provided: "",
+        venue_contact_person: "",
+        sound_man_info: "",
+        notes: "",
+        payment_amount: ""
+      });
+    }
+    setDateDialogOpen(true);
+  };
+
+  const handleSaveTourDate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!tourId || !dateFormData.venue.trim()) return;
+
+    try {
+      const [hours, minutes] = dateFormData.show_time.split(":").map(Number);
+      const dateTime = new Date(dateFormData.date);
+      dateTime.setHours(hours, minutes, 0, 0);
+
+      const dateData = {
+        tour_id: tourId,
+        date: dateTime.toISOString(),
+        venue: dateFormData.venue.trim(),
+        venue_name: dateFormData.venue_name.trim() || null,
+        venue_lat: dateFormData.venue_lat,
+        venue_lng: dateFormData.venue_lng,
+        show_time: dateFormData.show_time,
+        loading_time: dateFormData.loading_time.trim() || null,
+        sound_check_time: dateFormData.sound_check_time.trim() || null,
+        end_time: dateFormData.end_time || null,
+        attire: dateFormData.attire.trim() || null,
+        food_provided: dateFormData.food_provided.trim() || null,
+        venue_contact_person: dateFormData.venue_contact_person.trim() || null,
+        sound_man_info: dateFormData.sound_man_info.trim() || null,
+        notes: dateFormData.notes.trim() || null,
+        payment_amount: dateFormData.payment_amount ? parseFloat(dateFormData.payment_amount) : null
+      };
+
+      let error;
+      if (editingDate) {
+        ({ error } = await supabase
+          .from("tour_dates")
+          .update(dateData)
+          .eq("id", editingDate.id));
+      } else {
+        ({ error } = await supabase
+          .from("tour_dates")
+          .insert(dateData));
+      }
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: editingDate ? "Tour date updated" : "Tour date added"
+      });
+
+      setDateDialogOpen(false);
+      fetchTourData();
+    } catch (error) {
+      console.error("Error saving tour date:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save tour date",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeleteTourDate = async (dateId: string) => {
+    if (!confirm("Are you sure you want to delete this tour date?")) return;
+
+    try {
+      const { error } = await supabase
+        .from("tour_dates")
+        .delete()
+        .eq("id", dateId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Tour date deleted"
+      });
+
+      fetchTourData();
+    } catch (error) {
+      console.error("Error deleting tour date:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete tour date",
         variant: "destructive"
       });
     }
@@ -574,6 +763,313 @@ export default function TourDetail() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <CalendarIconLucide className="h-5 w-5" />
+              Tour Dates ({tourDates.length})
+            </CardTitle>
+            <Button onClick={() => openDateDialog()}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Date
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {tourDates.length === 0 ? (
+            <p className="text-muted-foreground text-center py-4">
+              No tour dates scheduled yet
+            </p>
+          ) : (
+            <div className="space-y-4">
+              {tourDates.map((tourDate) => (
+                <div key={tourDate.id} className="p-4 border rounded-lg">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <h3 className="font-semibold text-lg">
+                        {format(new Date(tourDate.date), "EEEE, MMMM d, yyyy")}
+                      </h3>
+                      {tourDate.show_time && (
+                        <p className="text-sm text-muted-foreground">
+                          Show Time: {tourDate.show_time}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openDateDialog(tourDate)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleDeleteTourDate(tourDate.id)}
+                      >
+                        <Trash className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <p className="text-muted-foreground flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        Venue
+                      </p>
+                      <p className="font-medium">{tourDate.venue_name || tourDate.venue}</p>
+                    </div>
+                    
+                    {tourDate.loading_time && (
+                      <div>
+                        <p className="text-muted-foreground">Loading Time</p>
+                        <p>{tourDate.loading_time}</p>
+                      </div>
+                    )}
+                    
+                    {tourDate.sound_check_time && (
+                      <div>
+                        <p className="text-muted-foreground">Sound Check</p>
+                        <p>{tourDate.sound_check_time}</p>
+                      </div>
+                    )}
+                    
+                    {tourDate.end_time && (
+                      <div>
+                        <p className="text-muted-foreground">End Time</p>
+                        <p>{tourDate.end_time}</p>
+                      </div>
+                    )}
+                    
+                    {tourDate.attire && (
+                      <div>
+                        <p className="text-muted-foreground">Attire</p>
+                        <p>{tourDate.attire}</p>
+                      </div>
+                    )}
+                    
+                    {tourDate.food_provided && (
+                      <div>
+                        <p className="text-muted-foreground">Food</p>
+                        <p>{tourDate.food_provided}</p>
+                      </div>
+                    )}
+                    
+                    {tourDate.venue_contact_person && (
+                      <div>
+                        <p className="text-muted-foreground">Venue Contact</p>
+                        <p>{tourDate.venue_contact_person}</p>
+                      </div>
+                    )}
+                    
+                    {tourDate.sound_man_info && (
+                      <div>
+                        <p className="text-muted-foreground">Sound Engineer</p>
+                        <p>{tourDate.sound_man_info}</p>
+                      </div>
+                    )}
+                    
+                    {tourDate.payment_amount && (
+                      <div>
+                        <p className="text-muted-foreground">Payment</p>
+                        <p>${tourDate.payment_amount.toFixed(2)}</p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {tourDate.notes && (
+                    <div className="mt-3 pt-3 border-t">
+                      <p className="text-muted-foreground text-sm">Notes</p>
+                      <p className="text-sm whitespace-pre-wrap">{tourDate.notes}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Dialog open={dateDialogOpen} onOpenChange={setDateDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingDate ? "Edit Tour Date" : "Add Tour Date"}</DialogTitle>
+            <DialogDescription>
+              Schedule a date for this tour
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSaveTourDate} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Date *</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !dateFormData.date && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIconLucide className="mr-2 h-4 w-4" />
+                      {dateFormData.date ? format(dateFormData.date, "PPP") : "Pick a date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={dateFormData.date}
+                      onSelect={(date) => date && setDateFormData(prev => ({ ...prev, date }))}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="dateShowTime">Show Time *</Label>
+                <Input
+                  id="dateShowTime"
+                  type="time"
+                  value={dateFormData.show_time}
+                  onChange={(e) => setDateFormData(prev => ({ ...prev, show_time: e.target.value }))}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="dateLoadingTime">Loading Time</Label>
+                <Input
+                  id="dateLoadingTime"
+                  type="time"
+                  value={dateFormData.loading_time}
+                  onChange={(e) => setDateFormData(prev => ({ ...prev, loading_time: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="dateSoundCheckTime">Sound Check Time</Label>
+                <Input
+                  id="dateSoundCheckTime"
+                  type="time"
+                  value={dateFormData.sound_check_time}
+                  onChange={(e) => setDateFormData(prev => ({ ...prev, sound_check_time: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="dateEndTime">End Time</Label>
+              <Input
+                id="dateEndTime"
+                type="time"
+                value={dateFormData.end_time}
+                onChange={(e) => setDateFormData(prev => ({ ...prev, end_time: e.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Venue Location * <MapPin className="inline h-3 w-3" /></Label>
+              <PlaceAutocomplete
+                value={dateFormData.venue}
+                onChange={handleDatePlaceSelect}
+                placeholder="Search for venue..."
+              />
+              {dateFormData.venue && (
+                <p className="text-xs text-muted-foreground mt-1">{dateFormData.venue}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="dateVenueName">Venue Name</Label>
+              <Input
+                id="dateVenueName"
+                value={dateFormData.venue_name}
+                onChange={(e) => setDateFormData(prev => ({ ...prev, venue_name: e.target.value }))}
+                placeholder="e.g., The Blue Note"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="dateAttire">Attire</Label>
+                <Input
+                  id="dateAttire"
+                  value={dateFormData.attire}
+                  onChange={(e) => setDateFormData(prev => ({ ...prev, attire: e.target.value }))}
+                  placeholder="e.g., Black attire"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="dateFoodProvided">Food Provided</Label>
+                <Input
+                  id="dateFoodProvided"
+                  value={dateFormData.food_provided}
+                  onChange={(e) => setDateFormData(prev => ({ ...prev, food_provided: e.target.value }))}
+                  placeholder="e.g., Dinner included"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="dateVenueContact">Venue Contact</Label>
+                <Input
+                  id="dateVenueContact"
+                  value={dateFormData.venue_contact_person}
+                  onChange={(e) => setDateFormData(prev => ({ ...prev, venue_contact_person: e.target.value }))}
+                  placeholder="Contact person"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="dateSoundMan">Sound Man Info</Label>
+                <Input
+                  id="dateSoundMan"
+                  value={dateFormData.sound_man_info}
+                  onChange={(e) => setDateFormData(prev => ({ ...prev, sound_man_info: e.target.value }))}
+                  placeholder="Sound engineer details"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="datePaymentAmount">Payment Amount ($)</Label>
+              <Input
+                id="datePaymentAmount"
+                type="number"
+                step="0.01"
+                value={dateFormData.payment_amount}
+                onChange={(e) => setDateFormData(prev => ({ ...prev, payment_amount: e.target.value }))}
+                placeholder="0.00"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="dateNotes">Notes</Label>
+              <Textarea
+                id="dateNotes"
+                value={dateFormData.notes}
+                onChange={(e) => setDateFormData(prev => ({ ...prev, notes: e.target.value }))}
+                placeholder="Additional details..."
+                rows={3}
+              />
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setDateDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">
+                {editingDate ? "Update Date" : "Add Date"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <CrewMemberDetailsDialog
         member={selectedMember}

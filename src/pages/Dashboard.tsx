@@ -20,6 +20,7 @@ import { PlaceAutocomplete } from "@/components/PlaceAutocomplete";
 import { AutoLocationTracker } from "@/components/AutoLocationTracker";
 import { MemberLocationsMap } from "@/components/MemberLocationsMap";
 import { AcceptedGigsCard } from "@/components/AcceptedGigsCard";
+import { MessageInbox } from "@/components/MessageInbox";
 import { Checkbox } from "@/components/ui/checkbox";
 import { BookingManagerClientLocations } from "@/components/BookingManagerClientLocations";
 import { BandMemberRoster } from "@/components/BandMemberRoster";
@@ -631,6 +632,8 @@ const Dashboard = () => {
             )}
             
             <BandAssistant />
+
+            <MessageInbox userId={user?.id || ""} />
           </div>
         )}
 
@@ -696,6 +699,8 @@ const Dashboard = () => {
             <BandAssistant />
             
             <AcceptedGigsCard userId={user?.id || ""} />
+
+            <MessageInbox userId={user?.id || ""} />
 
             {userRole === "band_member" && (
               <AutoLocationTracker

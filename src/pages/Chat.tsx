@@ -19,6 +19,7 @@ interface Message {
   is_group_message: boolean | null;
   content: string;
   created_at: string;
+  read_by: string[] | null;
 }
 
 interface Profile {
@@ -53,9 +54,23 @@ const Chat = () => {
       // Load existing messages visible to this user
       const { data: msgs, error: msgErr } = await supabase
         .from("messages")
-        .select("id, sender_id, recipient_id, is_group_message, content, created_at")
+        .select("id, sender_id, recipient_id, is_group_message, content, created_at, read_by")
         .order("created_at", { ascending: true });
-      if (!msgErr) setMessages((msgs as Message[]) || []);
+      if (!msgErr) {
+        setMessages((msgs as Message[]) || []);
+        
+        // Mark all visible messages as read
+        const unreadMessages = (msgs as Message[])?.filter(
+          m => m.sender_id !== user.id && !m.read_by?.includes(user.id)
+        );
+        
+        for (const msg of unreadMessages || []) {
+          await supabase.rpc("mark_message_as_read", {
+            message_id: msg.id,
+            user_id: user.id,
+          });
+        }
+      }
 
       // Realtime subscription
       const channel = supabase

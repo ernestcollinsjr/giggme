@@ -258,6 +258,7 @@ export type Database = {
           created_at: string
           id: string
           is_group_message: boolean | null
+          read_by: string[] | null
           recipient_id: string | null
           sender_id: string
         }
@@ -266,6 +267,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_group_message?: boolean | null
+          read_by?: string[] | null
           recipient_id?: string | null
           sender_id: string
         }
@@ -274,6 +276,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_group_message?: boolean | null
+          read_by?: string[] | null
           recipient_id?: string | null
           sender_id?: string
         }
@@ -508,6 +511,10 @@ export type Database = {
       is_in_sharing_window: {
         Args: { earliest_time: string; gig_date: string }
         Returns: boolean
+      }
+      mark_message_as_read: {
+        Args: { message_id: string; user_id: string }
+        Returns: undefined
       }
       send_gig_reminders: { Args: never; Returns: undefined }
       send_rehearsal_reminders: { Args: never; Returns: undefined }

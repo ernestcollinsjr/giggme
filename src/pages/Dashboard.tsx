@@ -528,6 +528,65 @@ const Dashboard = () => {
     setPlayingSongId(song.id);
   };
 
+  const extractVideoId = (url: string): string | null => {
+    if (!url) return null;
+    
+    try {
+      const cleanUrl = url.trim();
+      const u = new URL(cleanUrl);
+      const host = u.hostname.toLowerCase().replace('www.', '');
+      let id = "";
+
+      if (host === "youtu.be") {
+        id = u.pathname.substring(1).split('?')[0];
+      } else if (host.includes("youtube.com")) {
+        if (u.pathname === "/watch") {
+          id = u.searchParams.get("v") || "";
+        } else if (u.pathname.startsWith("/shorts/")) {
+          id = u.pathname.split("/")[2] || "";
+        } else if (u.pathname.startsWith("/embed/")) {
+          id = u.pathname.split("/")[2] || "";
+        } else if (u.pathname.startsWith("/v/")) {
+          id = u.pathname.split("/")[2] || "";
+        }
+      }
+      
+      id = id.split('&')[0].split('?')[0];
+      
+      if (!id || id.length < 10) {
+        return null;
+      }
+
+      return id;
+    } catch (error) {
+      console.error('Error parsing YouTube URL:', error);
+      return null;
+    }
+  };
+
+  const handleWatchVideo = async (song: SetlistSong) => {
+    if (!song.audio_url) return;
+
+    const localVideoId = extractVideoId(song.audio_url);
+    if (localVideoId) {
+      window.open(`https://www.youtube.com/watch?v=${localVideoId}`, '_blank');
+      return;
+    }
+
+    try {
+      const { data } = await supabase.functions.invoke('fetch-youtube', {
+        body: { url: song.audio_url }
+      });
+      if (data?.videoId) {
+        window.open(`https://www.youtube.com/watch?v=${data.videoId}`, '_blank');
+      } else {
+        toast({ variant: 'destructive', title: 'Could not load video' });
+      }
+    } catch {
+      toast({ variant: 'destructive', title: 'Could not load video' });
+    }
+  };
+
   const handleCreateBand = async () => {
     if (!newBandName.trim()) {
       toast({
@@ -866,11 +925,21 @@ const Dashboard = () => {
                                       <div className="flex-1">
                                         <p className="font-medium truncate">{song.title}</p>
                                         {song.artist && (
-                                          <p className="text-sm text-muted-foreground">{song.artist}</p>
+                                          <p className="text-sm text-foreground">{song.artist}</p>
                                         )}
                                       </div>
                                     </div>
                                     <div className="flex items-center gap-2 shrink-0">
+                                      {song.audio_url && /(youtu\.be|youtube\.com|youtube-nocookie\.com)/i.test(song.audio_url) && (
+                                        <Button
+                                          variant="default"
+                                          size="sm"
+                                          onClick={() => handleWatchVideo(song)}
+                                        >
+                                          <Play className="h-4 w-4 mr-1" />
+                                          Watch
+                                        </Button>
+                                      )}
                                       <Button
                                         variant="ghost"
                                         size="sm"

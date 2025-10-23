@@ -1052,6 +1052,7 @@ export default function TourDetail() {
                     <SelectItem value="Limo">Limo</SelectItem>
                     <SelectItem value="Van">Van</SelectItem>
                     <SelectItem value="SUV">SUV</SelectItem>
+                    <SelectItem value="Tour Bus">Tour Bus</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

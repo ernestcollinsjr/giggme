@@ -26,6 +26,8 @@ import { BookingManagerClientLocations } from "@/components/BookingManagerClient
 import { BandMemberRoster } from "@/components/BandMemberRoster";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
 import RoleSwitcher from "@/components/RoleSwitcher";
+import { MessageSquare, Send, Users as UsersIcon } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Profile {
   id: string;
@@ -35,6 +37,7 @@ interface Profile {
   photo_urls: string[];
   location_lat: number;
   location_lng: number;
+  phone_number: string | null;
 }
 
 interface Rehearsal {
@@ -123,6 +126,13 @@ const Dashboard = () => {
   const [playingAudio, setPlayingAudio] = useState<HTMLAudioElement | null>(null);
   const [playingSongId, setPlayingSongId] = useState<string | null>(null);
   const [playingVideo, setPlayingVideo] = useState<{ videoId: string; title: string } | null>(null);
+  
+  // SMS state
+  const [smsDialogOpen, setSmsDialogOpen] = useState(false);
+  const [groupSmsDialogOpen, setGroupSmsDialogOpen] = useState(false);
+  const [smsMessage, setSmsMessage] = useState("");
+  const [selectedRecipient, setSelectedRecipient] = useState<Profile | null>(null);
+  const [sendingSms, setSendingSms] = useState(false);
 
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -635,6 +645,73 @@ const Dashboard = () => {
     }
   };
 
+  const handleSendSMS = async (type: 'individual' | 'group') => {
+    if (!smsMessage.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Message required",
+        description: "Please enter a message to send.",
+      });
+      return;
+    }
+
+    setSendingSms(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+
+      const recipients = type === 'individual' && selectedRecipient
+        ? [selectedRecipient.id]
+        : profiles.map(p => p.id);
+
+      const { data, error } = await supabase.functions.invoke('send-manager-sms', {
+        body: {
+          recipients,
+          message: smsMessage,
+          type
+        },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Messages sent!",
+        description: `Successfully sent ${data.sent} message(s).`,
+      });
+
+      setSmsMessage("");
+      setSmsDialogOpen(false);
+      setGroupSmsDialogOpen(false);
+      setSelectedRecipient(null);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Failed to send messages",
+        description: error.message,
+      });
+    } finally {
+      setSendingSms(false);
+    }
+  };
+
+  const openIndividualSms = (profile: Profile, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!profile.phone_number) {
+      toast({
+        variant: "destructive",
+        title: "No phone number",
+        description: `${profile.name} doesn't have a phone number on file.`,
+      });
+      return;
+    }
+    setSelectedRecipient(profile);
+    setSmsMessage("");
+    setSmsDialogOpen(true);
+  };
+
   // Filter data by selected band
   const filteredRehearsals = selectedBandId
     ? rehearsals.filter(r => r.band_id === selectedBandId)
@@ -1070,11 +1147,33 @@ const Dashboard = () => {
           <>
             <Card className="border-border/50 shadow-lg">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Music className="h-5 w-5 text-primary" />
-                  Available Artists/Musicians
-                </CardTitle>
-                <CardDescription>Browse and connect with artists/musicians</CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Music className="h-5 w-5 text-primary" />
+                      Available Artists/Musicians
+                    </CardTitle>
+                    <CardDescription>Browse and connect with artists/musicians</CardDescription>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      if (profiles.some(p => !p.phone_number)) {
+                        toast({
+                          title: "Some artists missing phone numbers",
+                          description: "Only artists with phone numbers will receive the message.",
+                        });
+                      }
+                      setSmsMessage("");
+                      setGroupSmsDialogOpen(true);
+                    }}
+                    className="gap-2"
+                  >
+                    <UsersIcon className="h-4 w-4" />
+                    Group Text
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 {profiles.length === 0 ? (
@@ -1086,23 +1185,34 @@ const Dashboard = () => {
                     {profiles.map((bandProfile) => (
                       <div
                         key={bandProfile.id}
-                        onClick={() => navigate(`/bookings?artistId=${bandProfile.id}&artistName=${encodeURIComponent(bandProfile.name)}`)}
-                        className="flex flex-col items-center p-1.5 border-[0.5px] border-border rounded-md hover:shadow-md hover:border-primary hover:bg-primary/5 transition-all bg-card cursor-pointer"
+                        className="relative flex flex-col items-center p-1.5 border-[0.5px] border-border rounded-md hover:shadow-md hover:border-primary hover:bg-primary/5 transition-all bg-card group"
                       >
-                        <Avatar className="h-8 w-8 mb-1 border-[0.5px] border-primary">
-                          <AvatarImage src={bandProfile.photo_urls?.[0]} alt={bandProfile.name} />
-                          <AvatarFallback className="bg-primary/10 text-primary text-[10px]">
-                            {bandProfile.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <h4 className="font-medium text-[10px] text-center line-clamp-1 w-full px-0.5">
-                          {bandProfile.name}
-                        </h4>
-                        {bandProfile.instrument && (
-                          <p className="text-[8px] text-muted-foreground mt-0.5 truncate w-full text-center">
-                            {bandProfile.instrument}
-                          </p>
-                        )}
+                        <button
+                          onClick={(e) => openIndividualSms(bandProfile, e)}
+                          className="absolute top-0.5 right-0.5 opacity-0 group-hover:opacity-100 transition-opacity p-0.5 bg-primary text-primary-foreground rounded-sm hover:bg-primary/90 z-10"
+                          title="Send text message"
+                        >
+                          <MessageSquare className="h-3 w-3" />
+                        </button>
+                        <div
+                          onClick={() => navigate(`/bookings?artistId=${bandProfile.id}&artistName=${encodeURIComponent(bandProfile.name)}`)}
+                          className="cursor-pointer flex flex-col items-center w-full"
+                        >
+                          <Avatar className="h-8 w-8 mb-1 border-[0.5px] border-primary">
+                            <AvatarImage src={bandProfile.photo_urls?.[0]} alt={bandProfile.name} />
+                            <AvatarFallback className="bg-primary/10 text-primary text-[10px]">
+                              {bandProfile.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <h4 className="font-medium text-[10px] text-center line-clamp-1 w-full px-0.5">
+                            {bandProfile.name}
+                          </h4>
+                          {bandProfile.instrument && (
+                            <p className="text-[8px] text-muted-foreground mt-0.5 truncate w-full text-center">
+                              {bandProfile.instrument}
+                            </p>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1257,6 +1367,104 @@ const Dashboard = () => {
           onClose={() => setPlayingVideo(null)}
         />
       )}
+
+      {/* Individual SMS Dialog */}
+      <Dialog open={smsDialogOpen} onOpenChange={setSmsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Send Text Message</DialogTitle>
+            <DialogDescription>
+              Send a text message to {selectedRecipient?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="sms-message">Message</Label>
+              <Textarea
+                id="sms-message"
+                value={smsMessage}
+                onChange={(e) => setSmsMessage(e.target.value)}
+                placeholder="Type your message here..."
+                rows={5}
+                maxLength={160}
+              />
+              <p className="text-xs text-muted-foreground">
+                {smsMessage.length}/160 characters
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setSmsDialogOpen(false)}
+              disabled={sendingSms}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => handleSendSMS('individual')}
+              disabled={sendingSms || !smsMessage.trim()}
+              className="gap-2"
+            >
+              {sendingSms ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+              Send
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Group SMS Dialog */}
+      <Dialog open={groupSmsDialogOpen} onOpenChange={setGroupSmsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Send Group Text</DialogTitle>
+            <DialogDescription>
+              Send a text message to all {profiles.filter(p => p.phone_number).length} artists with phone numbers
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="group-sms-message">Message</Label>
+              <Textarea
+                id="group-sms-message"
+                value={smsMessage}
+                onChange={(e) => setSmsMessage(e.target.value)}
+                placeholder="Example: Hi! I have a gig opportunity on [date]. Are you available? Reply if interested!"
+                rows={6}
+                maxLength={160}
+              />
+              <p className="text-xs text-muted-foreground">
+                {smsMessage.length}/160 characters
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setGroupSmsDialogOpen(false)}
+              disabled={sendingSms}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => handleSendSMS('group')}
+              disabled={sendingSms || !smsMessage.trim()}
+              className="gap-2"
+            >
+              {sendingSms ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <UsersIcon className="h-4 w-4" />
+              )}
+              Send to All
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <BottomNav />
     </div>

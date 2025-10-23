@@ -32,7 +32,7 @@ const Index = () => {
             Connect band leaders, band members, artists/musicians, and booking managers for seamless gig management
           </p>
           <div className="flex gap-4 justify-center items-center">
-            <p className="text-lg text-muted-foreground">
+            <p className="text-lg text-purple-500 font-medium">
               Click below to get started
             </p>
             <span className="text-muted-foreground">|</span>

@@ -64,6 +64,10 @@ interface Gig {
   end_time?: string | null;
   payment_amount?: number | null;
   payment_status?: string | null;
+  attire?: string | null;
+  food_provided?: string | null;
+  venue_contact_person?: string | null;
+  sound_man_info?: string | null;
 }
 
 interface GigInvite {
@@ -149,9 +153,17 @@ const Dashboard = () => {
   const [artistGigs, setArtistGigs] = useState<Gig[]>([]);
   const [loadingArtistGigs, setLoadingArtistGigs] = useState(false);
   const [newBookingDate, setNewBookingDate] = useState("");
+  const [newBookingVenueName, setNewBookingVenueName] = useState("");
   const [newBookingVenue, setNewBookingVenue] = useState("");
-  const [newBookingStartTime, setNewBookingStartTime] = useState("");
+  const [newBookingLoadingTime, setNewBookingLoadingTime] = useState("");
+  const [newBookingSoundCheckTime, setNewBookingSoundCheckTime] = useState("");
   const [newBookingEndTime, setNewBookingEndTime] = useState("");
+  const [newBookingAttire, setNewBookingAttire] = useState("");
+  const [newBookingFoodProvided, setNewBookingFoodProvided] = useState("");
+  const [newBookingVenueContact, setNewBookingVenueContact] = useState("");
+  const [newBookingSoundManInfo, setNewBookingSoundManInfo] = useState("");
+  const [newBookingNotes, setNewBookingNotes] = useState("");
+  const [newBookingPaymentAmount, setNewBookingPaymentAmount] = useState("");
   const [isBookingArtist, setIsBookingArtist] = useState(false);
 
   const checkAuth = async () => {
@@ -886,7 +898,11 @@ const Dashboard = () => {
             sound_check_time,
             end_time,
             payment_amount,
-            payment_status
+            payment_status,
+            attire,
+            food_provided,
+            venue_contact_person,
+            sound_man_info
           )
         `)
         .eq('member_id', artist.id)
@@ -910,7 +926,7 @@ const Dashboard = () => {
   };
 
   const handleBookArtist = async () => {
-    if (!selectedArtist || !newBookingDate || !newBookingVenue || !newBookingStartTime || !newBookingEndTime) {
+    if (!selectedArtist || !newBookingDate || !newBookingVenue || !newBookingLoadingTime || !newBookingEndTime) {
       toast({
         variant: "destructive",
         title: "Missing information",
@@ -920,7 +936,7 @@ const Dashboard = () => {
     }
 
     // Validate that end time is after start time
-    if (newBookingEndTime <= newBookingStartTime) {
+    if (newBookingEndTime <= newBookingLoadingTime) {
       toast({
         variant: "destructive",
         title: "Invalid time range",
@@ -960,7 +976,7 @@ const Dashboard = () => {
         const existingEnd = gig.end_time || "23:59";
 
         // Check if times overlap
-        const newStart = newBookingStartTime;
+        const newStart = newBookingLoadingTime;
         const newEnd = newBookingEndTime;
 
         // Times conflict if: new start is before existing end AND new end is after existing start
@@ -983,9 +999,17 @@ const Dashboard = () => {
         .insert({
           date: newBookingDate,
           venue: newBookingVenue,
-          venue_name: newBookingVenue,
-          loading_time: newBookingStartTime,
+          venue_name: newBookingVenueName || null,
+          loading_time: newBookingLoadingTime,
+          sound_check_time: newBookingSoundCheckTime || null,
           end_time: newBookingEndTime,
+          attire: newBookingAttire || null,
+          food_provided: newBookingFoodProvided || null,
+          venue_contact_person: newBookingVenueContact || null,
+          sound_man_info: newBookingSoundManInfo || null,
+          notes: newBookingNotes || null,
+          payment_amount: newBookingPaymentAmount ? parseFloat(newBookingPaymentAmount) : null,
+          payment_status: 'unpaid',
           status: 'confirmed',
           user_id: user?.id,
         })
@@ -1007,14 +1031,22 @@ const Dashboard = () => {
 
       toast({
         title: "Artist booked!",
-        description: `${selectedArtist.name} has been booked for ${new Date(newBookingDate).toLocaleDateString()} from ${newBookingStartTime} to ${newBookingEndTime}`,
+        description: `${selectedArtist.name} has been booked for ${new Date(newBookingDate).toLocaleDateString()} from ${newBookingLoadingTime} to ${newBookingEndTime}`,
       });
 
       // Clear form
       setNewBookingDate("");
+      setNewBookingVenueName("");
       setNewBookingVenue("");
-      setNewBookingStartTime("");
+      setNewBookingLoadingTime("");
+      setNewBookingSoundCheckTime("");
       setNewBookingEndTime("");
+      setNewBookingAttire("");
+      setNewBookingFoodProvided("");
+      setNewBookingVenueContact("");
+      setNewBookingSoundManInfo("");
+      setNewBookingNotes("");
+      setNewBookingPaymentAmount("");
 
       // Refresh the artist's gigs
       openArtistProfile(selectedArtist);
@@ -1852,7 +1884,7 @@ const Dashboard = () => {
                 </h4>
                 <div className="space-y-3">
                   <div>
-                    <Label htmlFor="booking-date" className="text-sm">Date</Label>
+                    <Label htmlFor="booking-date" className="text-sm font-medium">Date *</Label>
                     <Input
                       id="booking-date"
                       type="date"
@@ -1861,30 +1893,54 @@ const Dashboard = () => {
                       className="mt-1"
                     />
                   </div>
+                  
                   <div>
-                    <Label htmlFor="booking-venue" className="text-sm">Venue</Label>
+                    <Label htmlFor="booking-venue-name" className="text-sm font-medium">Venue Name</Label>
+                    <Input
+                      id="booking-venue-name"
+                      type="text"
+                      placeholder="e.g., Blue Note Jazz Club"
+                      value={newBookingVenueName}
+                      onChange={(e) => setNewBookingVenueName(e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="booking-venue" className="text-sm font-medium">Venue Address *</Label>
                     <Input
                       id="booking-venue"
                       type="text"
-                      placeholder="Venue name"
+                      placeholder="Full address"
                       value={newBookingVenue}
                       onChange={(e) => setNewBookingVenue(e.target.value)}
                       className="mt-1"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+
+                  <div className="grid grid-cols-3 gap-3">
                     <div>
-                      <Label htmlFor="booking-start-time" className="text-sm">Start Time</Label>
+                      <Label htmlFor="booking-loading-time" className="text-sm font-medium">Start Time *</Label>
                       <Input
-                        id="booking-start-time"
+                        id="booking-loading-time"
                         type="time"
-                        value={newBookingStartTime}
-                        onChange={(e) => setNewBookingStartTime(e.target.value)}
+                        value={newBookingLoadingTime}
+                        onChange={(e) => setNewBookingLoadingTime(e.target.value)}
                         className="mt-1"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="booking-end-time" className="text-sm">End Time</Label>
+                      <Label htmlFor="booking-soundcheck-time" className="text-sm font-medium">Sound Check</Label>
+                      <Input
+                        id="booking-soundcheck-time"
+                        type="time"
+                        value={newBookingSoundCheckTime}
+                        onChange={(e) => setNewBookingSoundCheckTime(e.target.value)}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="booking-end-time" className="text-sm font-medium">End Time *</Label>
                       <Input
                         id="booking-end-time"
                         type="time"
@@ -1894,9 +1950,87 @@ const Dashboard = () => {
                       />
                     </div>
                   </div>
+
+                  <div>
+                    <Label htmlFor="booking-attire" className="text-sm font-medium">Attire</Label>
+                    <Input
+                      id="booking-attire"
+                      type="text"
+                      placeholder="e.g., Black formal, Casual, etc."
+                      value={newBookingAttire}
+                      onChange={(e) => setNewBookingAttire(e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="booking-food" className="text-sm font-medium">Food Provided</Label>
+                    <Input
+                      id="booking-food"
+                      type="text"
+                      placeholder="e.g., Dinner, Snacks, etc."
+                      value={newBookingFoodProvided}
+                      onChange={(e) => setNewBookingFoodProvided(e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="booking-venue-contact" className="text-sm font-medium">Venue Contact Person</Label>
+                    <Input
+                      id="booking-venue-contact"
+                      type="text"
+                      placeholder="Name and phone"
+                      value={newBookingVenueContact}
+                      onChange={(e) => setNewBookingVenueContact(e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="booking-soundman" className="text-sm font-medium">Sound Man Info</Label>
+                    <Input
+                      id="booking-soundman"
+                      type="text"
+                      placeholder="Name and contact"
+                      value={newBookingSoundManInfo}
+                      onChange={(e) => setNewBookingSoundManInfo(e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="booking-payment" className="text-sm font-medium">Payment Amount</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-sm text-muted-foreground">$</span>
+                      <Input
+                        id="booking-payment"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00"
+                        value={newBookingPaymentAmount}
+                        onChange={(e) => setNewBookingPaymentAmount(e.target.value)}
+                        className="flex-1"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="booking-notes" className="text-sm font-medium">Notes</Label>
+                    <Textarea
+                      id="booking-notes"
+                      placeholder="Additional details..."
+                      value={newBookingNotes}
+                      onChange={(e) => setNewBookingNotes(e.target.value)}
+                      className="mt-1"
+                      rows={3}
+                    />
+                  </div>
+
                   <Button
                     onClick={handleBookArtist}
-                    disabled={isBookingArtist || !newBookingDate || !newBookingVenue || !newBookingStartTime || !newBookingEndTime}
+                    disabled={isBookingArtist || !newBookingDate || !newBookingVenue || !newBookingLoadingTime || !newBookingEndTime}
                     className="w-full gap-2"
                   >
                     {isBookingArtist ? (
@@ -1953,8 +2087,28 @@ const Dashboard = () => {
                             <p className="text-sm text-muted-foreground">
                               📍 {gig.venue_name || gig.venue}
                             </p>
+                            {gig.attire && (
+                              <p className="text-xs text-muted-foreground">
+                                👔 Attire: {gig.attire}
+                              </p>
+                            )}
+                            {gig.food_provided && (
+                              <p className="text-xs text-muted-foreground">
+                                🍽️ Food: {gig.food_provided}
+                              </p>
+                            )}
+                            {gig.venue_contact_person && (
+                              <p className="text-xs text-muted-foreground">
+                                📞 Contact: {gig.venue_contact_person}
+                              </p>
+                            )}
+                            {gig.sound_man_info && (
+                              <p className="text-xs text-muted-foreground">
+                                🎚️ Sound: {gig.sound_man_info}
+                              </p>
+                            )}
                             {gig.notes && (
-                              <p className="text-xs text-muted-foreground mt-1">{gig.notes}</p>
+                              <p className="text-xs text-muted-foreground mt-1">📝 {gig.notes}</p>
                             )}
                             
                             {/* Payment Section */}

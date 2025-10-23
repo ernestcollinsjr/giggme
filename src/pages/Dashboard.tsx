@@ -110,8 +110,6 @@ interface Setlist {
 
 type UserRole = "band_leader" | "band_member" | "booking_manager" | "artist";
 
-const CENTRAL_TIMEZONE = "America/Chicago";
-
 const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -119,6 +117,7 @@ const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const [userTimezone, setUserTimezone] = useState<string>("America/Chicago");
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [rehearsals, setRehearsals] = useState<Rehearsal[]>([]);
   const [gigs, setGigs] = useState<Gig[]>([]);
@@ -990,7 +989,7 @@ const Dashboard = () => {
         toast({
           variant: "destructive",
           title: "Already Booked",
-          description: `${selectedArtist.name} is already booked during this time on ${formatInTimeZone(new Date(newBookingDate), CENTRAL_TIMEZONE, 'MMM d, yyyy')} CT.`,
+          description: `${selectedArtist.name} is already booked during this time on ${formatInTimeZone(new Date(newBookingDate), userTimezone, 'MMM d, yyyy')}.`,
         });
         setIsBookingArtist(false);
         return;
@@ -1034,7 +1033,7 @@ const Dashboard = () => {
 
       toast({
         title: "Artist booked!",
-        description: `${selectedArtist.name} has been booked for ${formatInTimeZone(new Date(newBookingDate), CENTRAL_TIMEZONE, 'MMM d, yyyy')} from ${newBookingLoadingTime} to ${newBookingEndTime} CT`,
+        description: `${selectedArtist.name} has been booked for ${formatInTimeZone(new Date(newBookingDate), userTimezone, 'MMM d, yyyy')} from ${newBookingLoadingTime} to ${newBookingEndTime}`,
       });
 
       // Clear form
@@ -2067,10 +2066,10 @@ const Dashboard = () => {
                       return (
                         <Card key={gig.id} className={`p-4 border-border/50 ${isPast ? 'opacity-60' : ''}`}>
                           <div className="space-y-3">
-                            <div className="flex items-center justify-between">
+                              <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
                                 <span className="font-medium text-sm">
-                                  {formatInTimeZone(new Date(gig.date), CENTRAL_TIMEZONE, 'EEE, MMM d, yyyy')}
+                                  {formatInTimeZone(new Date(gig.date), userTimezone, 'EEE, MMM d, yyyy')}
                                 </span>
                                 {isPast && (
                                   <Badge variant="secondary" className="text-xs">Past</Badge>
@@ -2078,8 +2077,8 @@ const Dashboard = () => {
                               </div>
                               <Badge variant="outline" className="text-xs">
                                 {gig.loading_time && gig.end_time 
-                                  ? `${gig.loading_time} - ${gig.end_time} CT`
-                                  : gig.loading_time || gig.sound_check_time || gig.end_time ? `${gig.loading_time || gig.sound_check_time || gig.end_time} CT` : 'TBD'}
+                                  ? `${gig.loading_time} - ${gig.end_time}`
+                                  : gig.loading_time || gig.sound_check_time || gig.end_time || 'TBD'}
                               </Badge>
                             </div>
                             <p className="text-sm text-muted-foreground">

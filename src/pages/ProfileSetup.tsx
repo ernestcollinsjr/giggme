@@ -26,6 +26,7 @@ const ProfileSetup = () => {
   const [instrument, setInstrument] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [riderNotes, setRiderNotes] = useState("");
+  const [timezone, setTimezone] = useState("America/Chicago");
   const [photoFiles, setPhotoFiles] = useState<(File | null)[]>([null, null, null, null]);
   const [photoPreviews, setPhotoPreviews] = useState<string[]>(["", "", "", ""]);
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
@@ -64,6 +65,7 @@ const ProfileSetup = () => {
           setInstrument(profile.instrument || "");
           setPhoneNumber(profile.phone_number || "");
           setRiderNotes(profile.rider_notes || "");
+          setTimezone(profile.timezone || "America/Chicago");
           const urls = profile.photo_urls || [];
           setPhotoUrls(urls);
           setPhotoPreviews(urls.length > 0 ? [...urls, "", "", "", ""].slice(0, 4) : ["", "", "", ""]);
@@ -242,6 +244,7 @@ const ProfileSetup = () => {
         instrument: (role === "band_leader" || role === "band_member" ? instrument : null) as any,
         phone_number: phoneNumber || null,
         rider_notes: riderNotes,
+        timezone,
         photo_urls: uploadedPhotoUrls,
         updated_at: new Date().toISOString(),
       };
@@ -562,6 +565,27 @@ const ProfileSetup = () => {
               />
               <p className="text-xs text-muted-foreground">
                 Include country code (e.g., +1 for US). You'll receive text reminders 1 day and 1 hour before gigs/rehearsals.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="timezone">Timezone</Label>
+              <Select value={timezone} onValueChange={setTimezone}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your timezone" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="America/New_York">Eastern Time (ET)</SelectItem>
+                  <SelectItem value="America/Chicago">Central Time (CT)</SelectItem>
+                  <SelectItem value="America/Denver">Mountain Time (MT)</SelectItem>
+                  <SelectItem value="America/Phoenix">Arizona Time (MST - No DST)</SelectItem>
+                  <SelectItem value="America/Los_Angeles">Pacific Time (PT)</SelectItem>
+                  <SelectItem value="America/Anchorage">Alaska Time (AKT)</SelectItem>
+                  <SelectItem value="Pacific/Honolulu">Hawaii Time (HST)</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                All dates and times will be displayed in your selected timezone.
               </p>
             </div>
             

@@ -1086,7 +1086,8 @@ const Dashboard = () => {
                     {profiles.map((bandProfile) => (
                       <div
                         key={bandProfile.id}
-                        className="flex flex-col items-center p-1.5 border-[0.5px] border-border rounded-md hover:shadow-sm transition-all bg-card"
+                        onClick={() => navigate(`/bookings?artistId=${bandProfile.id}&artistName=${encodeURIComponent(bandProfile.name)}`)}
+                        className="flex flex-col items-center p-1.5 border-[0.5px] border-border rounded-md hover:shadow-md hover:border-primary transition-all bg-card cursor-pointer"
                       >
                         <Avatar className="h-8 w-8 mb-1 border-[0.5px] border-primary">
                           <AvatarImage src={bandProfile.photo_urls?.[0]} alt={bandProfile.name} />

@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Mail, Users, Copy, Check, Edit } from "lucide-react";
+import { ArrowLeft, Mail, Users, Copy, Check, Edit, UserPlus } from "lucide-react";
 import { format } from "date-fns";
 import CrewMemberDetailsDialog from "@/components/CrewMemberDetailsDialog";
 
@@ -64,6 +64,10 @@ export default function TourDetail() {
   const [authReady, setAuthReady] = useState(false);
   const [selectedMember, setSelectedMember] = useState<CrewMember | null>(null);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [addMemberDialogOpen, setAddMemberDialogOpen] = useState(false);
+  const [availableProfiles, setAvailableProfiles] = useState<Array<{ id: string; name: string; email: string }>>([]);
+  const [selectedProfileId, setSelectedProfileId] = useState("");
+  const [selectedCrewType, setSelectedCrewType] = useState<'band_members' | 'singer' | 'sound_crew' | 'lighting_crew'>('band_members');
 
   useEffect(() => {
     let mounted = true;
@@ -91,7 +95,7 @@ export default function TourDetail() {
 
   const fetchTourData = async () => {
     try {
-      const [tourResult, crewResult, invitesResult] = await Promise.all([
+      const [tourResult, crewResult, invitesResult, profilesResult] = await Promise.all([
         supabase.from("tours").select("*").eq("id", tourId).maybeSingle(),
         supabase
           .from("tour_crew_members")
@@ -104,11 +108,20 @@ export default function TourDetail() {
           .from("tour_invitations")
           .select("*")
           .eq("tour_id", tourId)
-          .eq("status", "pending")
+          .eq("status", "pending"),
+        supabase
+          .from("profiles")
+          .select("id, name, email")
+          .limit(100)
       ]);
 
       if (tourResult.error) throw tourResult.error;
       setTour(tourResult.data);
+      
+      const existingMemberIds = (crewResult.data || []).map((m: any) => m.crew_member_id);
+      const available = (profilesResult.data || []).filter(p => !existingMemberIds.includes(p.id));
+      setAvailableProfiles(available);
+      
       setCrewMembers((crewResult.data || []) as any);
       setInvitations(invitesResult.data || []);
     } catch (error) {
@@ -236,6 +249,40 @@ export default function TourDetail() {
     }
   };
 
+  const handleAddExistingMember = async () => {
+    if (!selectedProfileId || !tourId) return;
+
+    try {
+      const { error } = await supabase
+        .from("tour_crew_members")
+        .insert({
+          tour_id: tourId,
+          crew_member_id: selectedProfileId,
+          crew_type: selectedCrewType,
+          status: "accepted"
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Member Added",
+        description: "Crew member has been added to the tour"
+      });
+
+      setAddMemberDialogOpen(false);
+      setSelectedProfileId("");
+      setSelectedCrewType('band_members');
+      fetchTourData();
+    } catch (error) {
+      console.error("Error adding crew member:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add crew member",
+        variant: "destructive"
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -272,13 +319,70 @@ export default function TourDetail() {
             </p>
           )}
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Mail className="mr-2 h-4 w-4" />
-              Invite Crew Member
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Dialog open={addMemberDialogOpen} onOpenChange={setAddMemberDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <UserPlus className="mr-2 h-4 w-4" />
+                Add Existing Member
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add Existing Member</DialogTitle>
+                <DialogDescription>
+                  Select an existing profile to add to this tour
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="profile">Select Member *</Label>
+                  <Select value={selectedProfileId} onValueChange={setSelectedProfileId}>
+                    <SelectTrigger id="profile">
+                      <SelectValue placeholder="Choose a member" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableProfiles.map((profile) => (
+                        <SelectItem key={profile.id} value={profile.id}>
+                          {profile.name} ({profile.email})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="memberCrewType">Crew Type *</Label>
+                  <Select value={selectedCrewType} onValueChange={(value: any) => setSelectedCrewType(value)}>
+                    <SelectTrigger id="memberCrewType">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="band_members">Band Members</SelectItem>
+                      <SelectItem value="singer">Singer</SelectItem>
+                      <SelectItem value="sound_crew">Sound Crew</SelectItem>
+                      <SelectItem value="lighting_crew">Lighting Crew</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button type="button" variant="outline" onClick={() => setAddMemberDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleAddExistingMember} disabled={!selectedProfileId}>
+                    Add Member
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Mail className="mr-2 h-4 w-4" />
+                Invite Crew Member
+              </Button>
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Invite Crew Member</DialogTitle>
@@ -321,6 +425,7 @@ export default function TourDetail() {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

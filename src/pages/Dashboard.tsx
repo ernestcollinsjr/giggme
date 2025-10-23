@@ -150,6 +150,8 @@ const Dashboard = () => {
   const [loadingArtistGigs, setLoadingArtistGigs] = useState(false);
   const [newBookingDate, setNewBookingDate] = useState("");
   const [newBookingVenue, setNewBookingVenue] = useState("");
+  const [newBookingStartTime, setNewBookingStartTime] = useState("");
+  const [newBookingEndTime, setNewBookingEndTime] = useState("");
   const [isBookingArtist, setIsBookingArtist] = useState(false);
 
   const checkAuth = async () => {
@@ -908,17 +910,73 @@ const Dashboard = () => {
   };
 
   const handleBookArtist = async () => {
-    if (!selectedArtist || !newBookingDate || !newBookingVenue) {
+    if (!selectedArtist || !newBookingDate || !newBookingVenue || !newBookingStartTime || !newBookingEndTime) {
       toast({
         variant: "destructive",
         title: "Missing information",
-        description: "Please provide both date and venue.",
+        description: "Please provide date, venue, start time, and end time.",
+      });
+      return;
+    }
+
+    // Validate that end time is after start time
+    if (newBookingEndTime <= newBookingStartTime) {
+      toast({
+        variant: "destructive",
+        title: "Invalid time range",
+        description: "End time must be after start time.",
       });
       return;
     }
 
     setIsBookingArtist(true);
     try {
+      // Check for time conflicts on the same date
+      const { data: existingGigs, error: checkError } = await supabase
+        .from('gig_members')
+        .select(`
+          gig_id,
+          gigs!inner (
+            id,
+            date,
+            loading_time,
+            end_time
+          )
+        `)
+        .eq('member_id', selectedArtist.id)
+        .eq('status', 'accepted');
+
+      if (checkError) throw checkError;
+
+      // Check for time conflicts on the same date
+      const hasConflict = existingGigs?.some((gm: any) => {
+        const gig = gm.gigs;
+        const gigDate = new Date(gig.date).toISOString().split('T')[0];
+        const newDate = new Date(newBookingDate).toISOString().split('T')[0];
+        
+        if (gigDate !== newDate) return false;
+
+        const existingStart = gig.loading_time || "00:00";
+        const existingEnd = gig.end_time || "23:59";
+
+        // Check if times overlap
+        const newStart = newBookingStartTime;
+        const newEnd = newBookingEndTime;
+
+        // Times conflict if: new start is before existing end AND new end is after existing start
+        return (newStart < existingEnd && newEnd > existingStart);
+      });
+
+      if (hasConflict) {
+        toast({
+          variant: "destructive",
+          title: "Already Booked",
+          description: `${selectedArtist.name} is already booked during this time on ${new Date(newBookingDate).toLocaleDateString()}.`,
+        });
+        setIsBookingArtist(false);
+        return;
+      }
+
       // Create the gig
       const { data: gigData, error: gigError } = await supabase
         .from('gigs')
@@ -926,6 +984,8 @@ const Dashboard = () => {
           date: newBookingDate,
           venue: newBookingVenue,
           venue_name: newBookingVenue,
+          loading_time: newBookingStartTime,
+          end_time: newBookingEndTime,
           status: 'confirmed',
           user_id: user?.id,
         })
@@ -947,12 +1007,14 @@ const Dashboard = () => {
 
       toast({
         title: "Artist booked!",
-        description: `${selectedArtist.name} has been booked for ${new Date(newBookingDate).toLocaleDateString()}`,
+        description: `${selectedArtist.name} has been booked for ${new Date(newBookingDate).toLocaleDateString()} from ${newBookingStartTime} to ${newBookingEndTime}`,
       });
 
       // Clear form
       setNewBookingDate("");
       setNewBookingVenue("");
+      setNewBookingStartTime("");
+      setNewBookingEndTime("");
 
       // Refresh the artist's gigs
       openArtistProfile(selectedArtist);
@@ -1810,9 +1872,31 @@ const Dashboard = () => {
                       className="mt-1"
                     />
                   </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="booking-start-time" className="text-sm">Start Time</Label>
+                      <Input
+                        id="booking-start-time"
+                        type="time"
+                        value={newBookingStartTime}
+                        onChange={(e) => setNewBookingStartTime(e.target.value)}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="booking-end-time" className="text-sm">End Time</Label>
+                      <Input
+                        id="booking-end-time"
+                        type="time"
+                        value={newBookingEndTime}
+                        onChange={(e) => setNewBookingEndTime(e.target.value)}
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
                   <Button
                     onClick={handleBookArtist}
-                    disabled={isBookingArtist || !newBookingDate || !newBookingVenue}
+                    disabled={isBookingArtist || !newBookingDate || !newBookingVenue || !newBookingStartTime || !newBookingEndTime}
                     className="w-full gap-2"
                   >
                     {isBookingArtist ? (
@@ -1861,7 +1945,9 @@ const Dashboard = () => {
                                 )}
                               </div>
                               <Badge variant="outline" className="text-xs">
-                                {gig.loading_time || gig.sound_check_time || gig.end_time || 'TBD'}
+                                {gig.loading_time && gig.end_time 
+                                  ? `${gig.loading_time} - ${gig.end_time}`
+                                  : gig.loading_time || gig.sound_check_time || gig.end_time || 'TBD'}
                               </Badge>
                             </div>
                             <p className="text-sm text-muted-foreground">

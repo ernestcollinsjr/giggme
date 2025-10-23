@@ -674,8 +674,16 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_assigned_to_tour: {
+        Args: { _tour_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_in_sharing_window: {
         Args: { earliest_time: string; gig_date: string }
+        Returns: boolean
+      }
+      is_tour_manager: {
+        Args: { _tour_id: string; _user_id: string }
         Returns: boolean
       }
       mark_message_as_read: {

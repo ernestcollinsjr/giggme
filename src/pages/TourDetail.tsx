@@ -112,7 +112,7 @@ export default function TourDetail() {
     e.preventDefault();
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user || !tourId) return;
+    if (!user || !tourId || !tour) return;
 
     try {
       const inviteToken = crypto.randomUUID();
@@ -128,10 +128,36 @@ export default function TourDetail() {
 
       if (error) throw error;
 
-      toast({
-        title: "Invitation Created",
-        description: `Invitation link created for ${inviteEmail}. Copy and share the link below.`
+      // Get user profile for manager name
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("name")
+        .eq("id", user.id)
+        .single();
+
+      // Send invitation email
+      const { error: emailError } = await supabase.functions.invoke("send-tour-invite", {
+        body: {
+          recipientEmail: inviteEmail,
+          tourName: tour.name,
+          inviteToken: inviteToken,
+          tourManagerName: profile?.name || "Tour Manager"
+        }
       });
+
+      if (emailError) {
+        console.error("Error sending invitation email:", emailError);
+        toast({
+          title: "Invitation Created",
+          description: `Invitation created for ${inviteEmail}, but email sending failed. You can copy and share the link below.`,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Invitation Sent",
+          description: `Invitation email sent to ${inviteEmail}`
+        });
+      }
 
       setDialogOpen(false);
       setInviteEmail("");

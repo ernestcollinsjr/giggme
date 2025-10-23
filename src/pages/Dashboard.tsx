@@ -1221,7 +1221,7 @@ const Dashboard = () => {
                   <div>
                     <CardTitle className="flex items-center gap-2">
                       <Music className="h-5 w-5 text-primary" />
-                      Available Artists/Musicians
+                      Band/Artist/Musician
                     </CardTitle>
                     <CardDescription>
                       Browse and connect with artists/musicians

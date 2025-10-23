@@ -24,6 +24,7 @@ import { MessageInbox } from "@/components/MessageInbox";
 import { Checkbox } from "@/components/ui/checkbox";
 import { BookingManagerClientLocations } from "@/components/BookingManagerClientLocations";
 import { BandMemberRoster } from "@/components/BandMemberRoster";
+import { YouTubePlayer } from "@/components/YouTubePlayer";
 
 interface Profile {
   id: string;
@@ -120,6 +121,7 @@ const Dashboard = () => {
   const [setlists, setSetlists] = useState<Setlist[]>([]);
   const [playingAudio, setPlayingAudio] = useState<HTMLAudioElement | null>(null);
   const [playingSongId, setPlayingSongId] = useState<string | null>(null);
+  const [playingVideo, setPlayingVideo] = useState<{ videoId: string; title: string } | null>(null);
 
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -569,7 +571,7 @@ const Dashboard = () => {
 
     const localVideoId = extractVideoId(song.audio_url);
     if (localVideoId) {
-      window.open(`https://www.youtube.com/watch?v=${localVideoId}`, '_blank');
+      setPlayingVideo({ videoId: localVideoId, title: song.title });
       return;
     }
 
@@ -578,7 +580,7 @@ const Dashboard = () => {
         body: { url: song.audio_url }
       });
       if (data?.videoId) {
-        window.open(`https://www.youtube.com/watch?v=${data.videoId}`, '_blank');
+        setPlayingVideo({ videoId: data.videoId, title: song.title });
       } else {
         toast({ variant: 'destructive', title: 'Could not load video' });
       }
@@ -1162,6 +1164,15 @@ const Dashboard = () => {
           </DialogContent>
         </Dialog>
       </div>
+
+      {playingVideo && (
+        <YouTubePlayer
+          videoId={playingVideo.videoId}
+          title={playingVideo.title}
+          isOpen={!!playingVideo}
+          onClose={() => setPlayingVideo(null)}
+        />
+      )}
 
       <BottomNav />
     </div>

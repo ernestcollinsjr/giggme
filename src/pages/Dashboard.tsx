@@ -1224,7 +1224,7 @@ const Dashboard = () => {
                       Band/Artist/Musician
                     </CardTitle>
                     <CardDescription>
-                      Browse and connect with artists/musicians
+                      Browse and connect with bands, artists, and musicians
                       <span className="block text-xs mt-1 text-primary/70">
                         💡 Tip: Hover over any artist to send personal text, click the Text icon button
                       </span>

@@ -832,15 +832,10 @@ export default function TourDetail() {
               <CalendarIconLucide className="h-5 w-5" />
               Tour Dates ({tourDates.length})
             </CardTitle>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => {/* TODO: Navigate to travel itinerary */}}>
-                Travel Itinerary
-              </Button>
-              <Button onClick={() => openDateDialog()}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Date
-              </Button>
-            </div>
+            <Button onClick={() => openDateDialog()}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Date
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -969,6 +964,10 @@ export default function TourDetail() {
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSaveTourDate} className="space-y-4">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold">Travel Itinerary</h3>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Date *</Label>

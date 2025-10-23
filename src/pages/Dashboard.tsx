@@ -539,6 +539,10 @@ const Dashboard = () => {
                   <Music className="h-4 w-4" />
                   Add Rehearsal
                 </Button>
+                <Button size="sm" variant="outline" className="gap-2" onClick={() => navigate("/setlist")}>
+                  <ListMusic className="h-4 w-4" />
+                  Add Setlist
+                </Button>
                 <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                   <DialogTrigger asChild>
                     <Button size="sm" variant="outline" className="gap-2">

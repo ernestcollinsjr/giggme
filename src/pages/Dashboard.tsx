@@ -108,7 +108,7 @@ interface Setlist {
   songs: SetlistSong[];
 }
 
-type UserRole = "band_leader" | "band_member" | "booking_manager" | "artist";
+type UserRole = "band_leader" | "band_member" | "booking_manager" | "artist" | "tour_manager";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -1102,6 +1102,8 @@ const Dashboard = () => {
                   ? "Band Leader"
                   : userRole === "artist"
                   ? "Artist/Musician"
+                  : userRole === "tour_manager"
+                  ? "Tour/Road Manager"
                   : "Band Member"}
               </Badge>
             </div>
@@ -1646,6 +1648,71 @@ const Dashboard = () => {
                   <li className="flex items-start gap-2">
                     <Badge variant="secondary">4</Badge>
                     <span>Write a compelling bio that showcases your unique style</span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {userRole === "tour_manager" && (
+          <div className="space-y-6">
+            <Card className="border-border/50 shadow-lg bg-gradient-to-br from-primary/5 to-secondary/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CalendarIcon className="h-5 w-5 text-primary" />
+                  Tour/Road Manager Dashboard
+                </CardTitle>
+                <CardDescription>
+                  Manage your tours and coordinate with crew members
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Button
+                    variant="default"
+                    onClick={() => navigate("/tours")}
+                    className="h-20 text-lg"
+                  >
+                    <CalendarIcon className="mr-2 h-5 w-5" />
+                    Manage Tours
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate("/profile-setup")}
+                    className="h-20 text-lg"
+                  >
+                    <UserIcon className="mr-2 h-5 w-5" />
+                    Edit Profile
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground text-center mt-4">
+                  Create tours, invite crew members, and book tour gigs all in one place!
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-border/50 shadow-lg">
+              <CardHeader>
+                <CardTitle>Quick Tips</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-start gap-2">
+                    <Badge variant="secondary">1</Badge>
+                    <span>Create tours and organize them by date range</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Badge variant="secondary">2</Badge>
+                    <span>Send invitation links to your crew members</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Badge variant="secondary">3</Badge>
+                    <span>Use "Book Tour Gig" to schedule tour performances</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Badge variant="secondary">4</Badge>
+                    <span>Track crew member responses and manage your roster</span>
                   </li>
                 </ul>
               </CardContent>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, User, MessageCircle, Calendar } from "lucide-react";
+import { Home, User, MessageCircle, Briefcase, Calendar as CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -10,12 +10,22 @@ const BottomNav = () => {
   const location = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
+      
+      // Get user role
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .single();
+      
+      setUserRole(roleData?.role || null);
       fetchUnreadCount(user.id);
 
       // Subscribe to message changes
@@ -58,7 +68,11 @@ const BottomNav = () => {
     { icon: Home, label: "Dashboard", path: "/dashboard" },
     { icon: User, label: "Profile", path: "/profile-setup" },
     { icon: MessageCircle, label: "Chat", path: "/chat", badge: unreadCount },
-    { icon: Calendar, label: "Bookings", path: "/bookings" },
+    { 
+      icon: userRole === "tour_manager" ? CalendarIcon : Briefcase, 
+      label: userRole === "tour_manager" ? "Tours" : "Bookings", 
+      path: userRole === "tour_manager" ? "/tours" : "/bookings" 
+    },
   ];
 
   return (

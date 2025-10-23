@@ -790,42 +790,45 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Show member locations for upcoming gigs */}
-            {filteredGigs.length > 0 && filteredGigs[0] && (
-              <MemberLocationsMap gigId={filteredGigs[0].id} />
-            )}
+            {/* Compact grid layout for Member Locations and Setlist */}
+            <div className="grid md:grid-cols-2 gap-4">
+              {/* Show member locations for upcoming gigs */}
+              {filteredGigs.length > 0 && filteredGigs[0] && (
+                <MemberLocationsMap gigId={filteredGigs[0].id} />
+              )}
+
+              <Card className="border-border/50 shadow-lg">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <ListMusic className="h-4 w-4 text-primary" />
+                    Setlists
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    View and manage your band's setlists
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pb-4">
+                  <Button onClick={() => navigate("/setlist")} className="w-full" size="sm">
+                    View Setlists
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
 
             <Card className="border-border/50 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ListMusic className="h-5 w-5 text-primary" />
-                  Setlists
-                </CardTitle>
-                <CardDescription>
-                  View your band's setlists and play songs
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button onClick={() => navigate("/setlist")} className="w-full">
-                  View Setlists
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="border-border/50 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-primary" />
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <MapPin className="h-4 w-4 text-primary" />
                   Location Sharing
                 </CardTitle>
-                <CardDescription>
-                  Share your location with band leaders for on-time arrivals at gigs and rehearsals
+                <CardDescription className="text-xs">
+                  Share your location with band leaders
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
+              <CardContent className="pb-4">
+                <div className="space-y-3">
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium">Enter your location</Label>
+                    <Label className="text-xs font-medium">Enter your location</Label>
                     <PlaceAutocomplete
                       value={manualLocation}
                       onChange={(val, place) => {
@@ -838,6 +841,7 @@ const Dashboard = () => {
                     <Button 
                       onClick={handleManualLocationSave} 
                       className="w-full"
+                      size="sm"
                       disabled={
                         isSavingManualLocation || !(selectedPlace && selectedPlace.geometry && selectedPlace.geometry.location)
                       }
@@ -871,6 +875,7 @@ const Dashboard = () => {
                     onClick={handleShareLocation} 
                     variant="outline"
                     className="w-full"
+                    size="sm"
                     disabled={isSharingLocation}
                   >
                     {isSharingLocation ? (

@@ -111,10 +111,10 @@ export const MemberLocationsMap = ({ gigId }: MemberLocationsMapProps) => {
 
   if (loading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Member Locations</CardTitle>
-          <CardDescription>Loading...</CardDescription>
+      <Card className="border-border/50 shadow-lg">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg">Member Locations</CardTitle>
+          <CardDescription className="text-xs">Loading...</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -122,11 +122,11 @@ export const MemberLocationsMap = ({ gigId }: MemberLocationsMapProps) => {
 
   if (locations.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Member Locations</CardTitle>
-          <CardDescription>
-            No members are currently sharing their location for this gig.
+      <Card className="border-border/50 shadow-lg">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg">Member Locations</CardTitle>
+          <CardDescription className="text-xs">
+            No members sharing location
           </CardDescription>
         </CardHeader>
       </Card>
@@ -134,35 +134,35 @@ export const MemberLocationsMap = ({ gigId }: MemberLocationsMapProps) => {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <MapPin className="h-5 w-5" />
+    <Card className="border-border/50 shadow-lg">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <MapPin className="h-4 w-4" />
           Member Locations
         </CardTitle>
-        <CardDescription>
-          Real-time locations of band members who accepted this gig
+        <CardDescription className="text-xs">
+          Real-time band member locations
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-2 pb-4">
         {locations.map((location) => (
           <div
             key={location.member_id}
-            className="flex items-center justify-between p-3 border rounded-lg"
+            className="flex items-center justify-between p-2 border rounded-lg"
           >
-            <div>
-              <p className="font-medium">{location.name}</p>
-              <p className="text-sm text-muted-foreground">
-                Last updated: {new Date(location.last_location_update).toLocaleTimeString()}
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm truncate">{location.name}</p>
+              <p className="text-xs text-muted-foreground">
+                {new Date(location.last_location_update).toLocaleTimeString()}
               </p>
             </div>
             <Button
               variant="outline"
               size="sm"
               onClick={() => openInMaps(location.location_lat, location.location_lng, location.name)}
+              className="ml-2 shrink-0"
             >
-              <Navigation className="h-4 w-4 mr-2" />
-              View on Map
+              <Navigation className="h-3 w-3" />
             </Button>
           </div>
         ))}

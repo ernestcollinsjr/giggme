@@ -1089,36 +1089,40 @@ export default function TourDetail() {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="groundTransportation">Ground Transportation (Provided by Management)</Label>
-              <Select
-                value={dateFormData.ground_transportation}
-                onValueChange={(value) => setDateFormData(prev => ({ ...prev, ground_transportation: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select transportation" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Hotel Shuttle">Hotel Shuttle</SelectItem>
-                  <SelectItem value="Uber">Uber</SelectItem>
-                  <SelectItem value="Limo">Limo</SelectItem>
-                  <SelectItem value="Van">Van</SelectItem>
-                  <SelectItem value="SUV">SUV</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="groundTransportation">Ground Transportation (Provided by Management)</Label>
+                <Select
+                  value={dateFormData.ground_transportation}
+                  onValueChange={(value) => setDateFormData(prev => ({ ...prev, ground_transportation: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select transportation" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Hotel Shuttle">Hotel Shuttle</SelectItem>
+                    <SelectItem value="Uber">Uber</SelectItem>
+                    <SelectItem value="Limo">Limo</SelectItem>
+                    <SelectItem value="Van">Van</SelectItem>
+                    <SelectItem value="SUV">SUV</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="transportationNotProvided"
-                checked={dateFormData.transportation_not_provided}
-                onCheckedChange={(checked) => 
-                  setDateFormData(prev => ({ ...prev, transportation_not_provided: checked as boolean }))
-                }
-              />
-              <Label htmlFor="transportationNotProvided" className="cursor-pointer">
-                Transportation not provided
-              </Label>
+              <div className="flex items-end pb-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="transportationNotProvided"
+                    checked={dateFormData.transportation_not_provided}
+                    onCheckedChange={(checked) => 
+                      setDateFormData(prev => ({ ...prev, transportation_not_provided: checked as boolean }))
+                    }
+                  />
+                  <Label htmlFor="transportationNotProvided" className="cursor-pointer">
+                    Transportation not provided
+                  </Label>
+                </div>
+              </div>
             </div>
 
             <div className="flex justify-end gap-2">

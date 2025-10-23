@@ -49,6 +49,8 @@ interface TourDate {
   hotel_name: string | null;
   hotel_address: string | null;
   hotel_check_in_time: string | null;
+  hotel_check_out_date: string | null;
+  hotel_check_out_time: string | null;
 }
 
 interface CrewMember {
@@ -123,7 +125,9 @@ export default function TourDetail() {
     transportation_not_provided: false,
     hotel_name: "",
     hotel_address: "",
-    hotel_check_in_time: ""
+    hotel_check_in_time: "",
+    hotel_check_out_date: "",
+    hotel_check_out_time: ""
   });
 
   useEffect(() => {
@@ -380,7 +384,9 @@ export default function TourDetail() {
         transportation_not_provided: date.transportation_not_provided || false,
         hotel_name: date.hotel_name || "",
         hotel_address: date.hotel_address || "",
-        hotel_check_in_time: date.hotel_check_in_time || ""
+        hotel_check_in_time: date.hotel_check_in_time || "",
+        hotel_check_out_date: date.hotel_check_out_date || "",
+        hotel_check_out_time: date.hotel_check_out_time || ""
       });
     } else {
       setEditingDate(null);
@@ -405,7 +411,9 @@ export default function TourDetail() {
         transportation_not_provided: false,
         hotel_name: "",
         hotel_address: "",
-        hotel_check_in_time: ""
+        hotel_check_in_time: "",
+        hotel_check_out_date: "",
+        hotel_check_out_time: ""
       });
     }
     setDateDialogOpen(true);
@@ -442,7 +450,9 @@ export default function TourDetail() {
         transportation_not_provided: dateFormData.transportation_not_provided,
         hotel_name: dateFormData.hotel_name.trim() || null,
         hotel_address: dateFormData.hotel_address.trim() || null,
-        hotel_check_in_time: dateFormData.hotel_check_in_time.trim() || null
+        hotel_check_in_time: dateFormData.hotel_check_in_time.trim() || null,
+        hotel_check_out_date: dateFormData.hotel_check_out_date.trim() || null,
+        hotel_check_out_time: dateFormData.hotel_check_out_time.trim() || null
       };
 
       let error;
@@ -1084,14 +1094,36 @@ export default function TourDetail() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="hotelCheckInTime">Hotel Check-in Time</Label>
-              <Input
-                id="hotelCheckInTime"
-                type="time"
-                value={dateFormData.hotel_check_in_time}
-                onChange={(e) => setDateFormData(prev => ({ ...prev, hotel_check_in_time: e.target.value }))}
-              />
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="hotelCheckInTime">Hotel Check-in Time</Label>
+                <Input
+                  id="hotelCheckInTime"
+                  type="time"
+                  value={dateFormData.hotel_check_in_time}
+                  onChange={(e) => setDateFormData(prev => ({ ...prev, hotel_check_in_time: e.target.value }))}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="hotelCheckOutDate">Check-out Date</Label>
+                <Input
+                  id="hotelCheckOutDate"
+                  type="date"
+                  value={dateFormData.hotel_check_out_date}
+                  onChange={(e) => setDateFormData(prev => ({ ...prev, hotel_check_out_date: e.target.value }))}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="hotelCheckOutTime">Check-out Time</Label>
+                <Input
+                  id="hotelCheckOutTime"
+                  type="time"
+                  value={dateFormData.hotel_check_out_time}
+                  onChange={(e) => setDateFormData(prev => ({ ...prev, hotel_check_out_time: e.target.value }))}
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

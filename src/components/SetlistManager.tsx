@@ -792,7 +792,7 @@ export const SetlistManager = () => {
                         {setSongs.map((song, index) => (
                           <div
                             key={song.id}
-                            className="flex items-center justify-between py-1.5 px-2 rounded bg-muted/15"
+                            className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-muted/15"
                           >
                             <div className="flex items-center gap-1.5 flex-1 min-w-0">
                               <span className="text-xs text-muted-foreground font-medium w-4 shrink-0">

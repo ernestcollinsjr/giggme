@@ -60,19 +60,19 @@ const Pricing = () => {
     },
     {
       name: "Premium Plan",
-      price: "$29.99",
-      description: "Complete solution for booking managers",
+      price: "Free",
+      description: "For booking managers - free up to 5 bands",
       icon: Briefcase,
       color: "text-accent",
       bgColor: "bg-accent/10",
       features: [
-        "Everything in Pro",
+        "Manage up to 5 bands for free",
         "Multi-band management",
-        "Advanced analytics",
-        "API access",
-        "White-label options",
-        "Dedicated account manager",
-        "Custom integrations",
+        "Artist discovery",
+        "Location tracking",
+        "Direct messaging",
+        "Standard support",
+        "Booking calendar",
       ],
       priceId: "price_1SLNgmEPiAZgF8MeOXGfKYvX",
     },
@@ -117,7 +117,9 @@ const Pricing = () => {
                   <CardDescription>{tier.description}</CardDescription>
                   <div className="mt-4">
                     <span className="text-4xl font-bold">{tier.price}</span>
-                    <span className="text-muted-foreground">/month</span>
+                    {tier.price !== "Free" && (
+                      <span className="text-muted-foreground">/month</span>
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent>

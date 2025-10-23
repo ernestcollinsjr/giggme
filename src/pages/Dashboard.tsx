@@ -28,6 +28,7 @@ import { YouTubePlayer } from "@/components/YouTubePlayer";
 import RoleSwitcher from "@/components/RoleSwitcher";
 import { MessageSquare, Send, Users as UsersIcon } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { formatInTimeZone } from "date-fns-tz";
 
 interface Profile {
   id: string;
@@ -108,6 +109,8 @@ interface Setlist {
 }
 
 type UserRole = "band_leader" | "band_member" | "booking_manager" | "artist";
+
+const CENTRAL_TIMEZONE = "America/Chicago";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -987,7 +990,7 @@ const Dashboard = () => {
         toast({
           variant: "destructive",
           title: "Already Booked",
-          description: `${selectedArtist.name} is already booked during this time on ${new Date(newBookingDate).toLocaleDateString()}.`,
+          description: `${selectedArtist.name} is already booked during this time on ${formatInTimeZone(new Date(newBookingDate), CENTRAL_TIMEZONE, 'MMM d, yyyy')} CT.`,
         });
         setIsBookingArtist(false);
         return;
@@ -1031,7 +1034,7 @@ const Dashboard = () => {
 
       toast({
         title: "Artist booked!",
-        description: `${selectedArtist.name} has been booked for ${new Date(newBookingDate).toLocaleDateString()} from ${newBookingLoadingTime} to ${newBookingEndTime}`,
+        description: `${selectedArtist.name} has been booked for ${formatInTimeZone(new Date(newBookingDate), CENTRAL_TIMEZONE, 'MMM d, yyyy')} from ${newBookingLoadingTime} to ${newBookingEndTime} CT`,
       });
 
       // Clear form
@@ -2067,12 +2070,7 @@ const Dashboard = () => {
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
                                 <span className="font-medium text-sm">
-                                  {new Date(gig.date).toLocaleDateString('en-US', {
-                                    weekday: 'short',
-                                    month: 'short',
-                                    day: 'numeric',
-                                    year: 'numeric'
-                                  })}
+                                  {formatInTimeZone(new Date(gig.date), CENTRAL_TIMEZONE, 'EEE, MMM d, yyyy')}
                                 </span>
                                 {isPast && (
                                   <Badge variant="secondary" className="text-xs">Past</Badge>
@@ -2080,8 +2078,8 @@ const Dashboard = () => {
                               </div>
                               <Badge variant="outline" className="text-xs">
                                 {gig.loading_time && gig.end_time 
-                                  ? `${gig.loading_time} - ${gig.end_time}`
-                                  : gig.loading_time || gig.sound_check_time || gig.end_time || 'TBD'}
+                                  ? `${gig.loading_time} - ${gig.end_time} CT`
+                                  : gig.loading_time || gig.sound_check_time || gig.end_time ? `${gig.loading_time || gig.sound_check_time || gig.end_time} CT` : 'TBD'}
                               </Badge>
                             </div>
                             <p className="text-sm text-muted-foreground">

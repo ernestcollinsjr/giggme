@@ -555,6 +555,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "tour_crew_members_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "tour_crew_members_tour_id_fkey"
             columns: ["tour_id"]
             isOneToOne: false

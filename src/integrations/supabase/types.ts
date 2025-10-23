@@ -530,31 +530,58 @@ export type Database = {
           created_at: string
           crew_member_id: string
           crew_type: Database["public"]["Enums"]["crew_type"]
+          flight_confirmation: string | null
+          hotel_address: string | null
+          hotel_check_in_time: string | null
+          hotel_name: string | null
+          hotel_room_number: string | null
           id: string
+          nearby_services: string | null
+          per_diem_info: string | null
           role_title: string | null
           status: string
+          ticket_purchase_responsibility: string | null
           tour_id: string
           updated_at: string
+          venue_amenities: string | null
         }
         Insert: {
           created_at?: string
           crew_member_id: string
           crew_type?: Database["public"]["Enums"]["crew_type"]
+          flight_confirmation?: string | null
+          hotel_address?: string | null
+          hotel_check_in_time?: string | null
+          hotel_name?: string | null
+          hotel_room_number?: string | null
           id?: string
+          nearby_services?: string | null
+          per_diem_info?: string | null
           role_title?: string | null
           status?: string
+          ticket_purchase_responsibility?: string | null
           tour_id: string
           updated_at?: string
+          venue_amenities?: string | null
         }
         Update: {
           created_at?: string
           crew_member_id?: string
           crew_type?: Database["public"]["Enums"]["crew_type"]
+          flight_confirmation?: string | null
+          hotel_address?: string | null
+          hotel_check_in_time?: string | null
+          hotel_name?: string | null
+          hotel_room_number?: string | null
           id?: string
+          nearby_services?: string | null
+          per_diem_info?: string | null
           role_title?: string | null
           status?: string
+          ticket_purchase_responsibility?: string | null
           tour_id?: string
           updated_at?: string
+          venue_amenities?: string | null
         }
         Relationships: [
           {

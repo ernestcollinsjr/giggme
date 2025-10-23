@@ -8,8 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Mail, Users, Copy, Check } from "lucide-react";
+import { ArrowLeft, Mail, Users, Copy, Check, Edit } from "lucide-react";
 import { format } from "date-fns";
+import CrewMemberDetailsDialog from "@/components/CrewMemberDetailsDialog";
 
 interface Tour {
   id: string;
@@ -25,6 +26,15 @@ interface CrewMember {
   status: string;
   role_title: string | null;
   crew_type: 'band_members' | 'singer' | 'sound_crew' | 'lighting_crew';
+  flight_confirmation: string | null;
+  hotel_name: string | null;
+  hotel_address: string | null;
+  hotel_room_number: string | null;
+  hotel_check_in_time: string | null;
+  per_diem_info: string | null;
+  ticket_purchase_responsibility: string | null;
+  venue_amenities: string | null;
+  nearby_services: string | null;
   profiles: {
     name: string;
     email: string;
@@ -52,6 +62,8 @@ export default function TourDetail() {
   const [inviteCrewType, setInviteCrewType] = useState<'band_members' | 'singer' | 'sound_crew' | 'lighting_crew'>('band_members');
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [authReady, setAuthReady] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<CrewMember | null>(null);
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -344,19 +356,44 @@ export default function TourDetail() {
                       </h3>
                       <div className="space-y-2">
                         {typeMembers.map((member) => (
-                          <div key={member.id} className="flex items-center justify-between p-3 border rounded-lg">
-                            <div>
-                              <p className="font-medium">{member.profiles.name}</p>
-                              <p className="text-sm text-muted-foreground">{member.profiles.email}</p>
-                              {member.role_title && (
-                                <p className="text-xs text-muted-foreground mt-1">{member.role_title}</p>
-                              )}
+                          <div key={member.id} className="p-3 border rounded-lg space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="font-medium">{member.profiles.name}</p>
+                                <p className="text-sm text-muted-foreground">{member.profiles.email}</p>
+                                {member.role_title && (
+                                  <p className="text-xs text-muted-foreground mt-1">{member.role_title}</p>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className={`px-2 py-1 rounded text-xs ${
+                                  member.status === 'accepted' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                                }`}>
+                                  {member.status}
+                                </span>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => {
+                                    setSelectedMember(member);
+                                    setDetailsDialogOpen(true);
+                                  }}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
-                            <span className={`px-2 py-1 rounded text-xs ${
-                              member.status === 'accepted' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                            }`}>
-                              {member.status}
-                            </span>
+                            
+                            {(member.hotel_name || member.flight_confirmation) && (
+                              <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t">
+                                {member.flight_confirmation && (
+                                  <p>✈️ Flight: {member.flight_confirmation}</p>
+                                )}
+                                {member.hotel_name && (
+                                  <p>🏨 {member.hotel_name}{member.hotel_room_number ? ` - Room ${member.hotel_room_number}` : ''}</p>
+                                )}
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -426,6 +463,13 @@ export default function TourDetail() {
           </CardContent>
         </Card>
       </div>
+
+      <CrewMemberDetailsDialog
+        member={selectedMember}
+        open={detailsDialogOpen}
+        onOpenChange={setDetailsDialogOpen}
+        onUpdate={fetchTourData}
+      />
     </div>
   );
 }

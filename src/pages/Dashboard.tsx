@@ -21,6 +21,7 @@ import { AutoLocationTracker } from "@/components/AutoLocationTracker";
 import { MemberLocationsMap } from "@/components/MemberLocationsMap";
 import { AcceptedGigsCard } from "@/components/AcceptedGigsCard";
 import { Checkbox } from "@/components/ui/checkbox";
+import { BookingManagerClientLocations } from "@/components/BookingManagerClientLocations";
 
 interface Profile {
   id: string;
@@ -938,6 +939,10 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {userRole === "booking_manager" && (
+          <BookingManagerClientLocations />
         )}
 
         <Card className="border-border/50 shadow-lg bg-gradient-to-br from-primary/5 to-secondary/5">

@@ -41,6 +41,35 @@ export type Database = {
         }
         Relationships: []
       }
+      booking_manager_bands: {
+        Row: {
+          band_id: string
+          booking_manager_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          band_id: string
+          booking_manager_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          band_id?: string
+          booking_manager_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_manager_bands_band_id_fkey"
+            columns: ["band_id"]
+            isOneToOne: false
+            referencedRelation: "bands"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gig_members: {
         Row: {
           created_at: string

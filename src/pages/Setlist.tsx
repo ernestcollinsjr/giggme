@@ -251,34 +251,34 @@ const Setlist = () => {
                     No songs in this setlist yet
                   </p>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {[1, 2, 3, 4].map((setNum) => {
                       const setSongs = setlist.songs.filter(song => song.set_number === setNum);
                       if (setSongs.length === 0) return null;
                       
                       return (
-                         <div key={setNum} className="space-y-1.5">
-                          <h3 className="text-sm font-semibold text-muted-foreground/70 mb-1">Set {setNum} ({setSongs.length} songs)</h3>
+                         <div key={setNum} className="space-y-1">
+                          <h3 className="text-xs font-semibold text-muted-foreground/70 mb-0.5">Set {setNum} ({setSongs.length} songs)</h3>
                           {setSongs.map((song, index) => (
-                            <div key={song.id} className="space-y-1.5">
-                              <div className="group relative flex items-center justify-between p-2 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-                                <div className="flex items-center gap-2 flex-1 min-w-0">
-                                  <span className="text-xs text-muted-foreground font-medium w-5 shrink-0">
+                            <div key={song.id}>
+                              <div className="group relative flex items-center justify-between py-1.5 px-2 rounded bg-muted/30 hover:bg-muted/50 transition-colors">
+                                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                  <span className="text-xs text-muted-foreground font-medium w-4 shrink-0">
                                     {index + 1}
                                   </span>
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium truncate">{song.title}</p>
+                                    <p className="text-xs font-medium truncate leading-tight">{song.title}</p>
                                     {song.artist && (
-                                      <p className="text-xs text-muted-foreground truncate">{song.artist}</p>
+                                      <p className="text-[10px] text-muted-foreground truncate leading-tight">{song.artist}</p>
                                     )}
                                   </div>
                                 </div>
-                                 <div className="flex items-center gap-1.5 shrink-0">
+                                 <div className="flex items-center gap-1 shrink-0">
                                    {song.audio_url && /(youtu\.be|youtube\.com|youtube-nocookie\.com)/i.test(song.audio_url) && (
                                      <Button
                                        variant="default"
                                        size="sm"
-                                       className="h-7 text-xs px-2"
+                                       className="h-6 text-[10px] px-1.5 py-0"
                                        onClick={async () => {
                                          // Try local extraction first
                                          const localVideoId = extractVideoId(song.audio_url!);
@@ -302,30 +302,30 @@ const Setlist = () => {
                                          }
                                        }}
                                        >
-                                        <Play className="h-3 w-3 mr-1" />
+                                        <Play className="h-2.5 w-2.5 mr-0.5" />
                                         Watch
                                     </Button>
                                    )}
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="h-7 text-xs px-2"
+                                    className="h-6 text-[10px] px-1.5 py-0"
                                     onClick={() => navigate(`/setlist/lyrics/${song.id}`)}
                                   >
-                                    <FileText className="h-3 w-3 mr-1" />
+                                    <FileText className="h-2.5 w-2.5 mr-0.5" />
                                     Lyrics
                                   </Button>
                                     {song.audio_url && !/(youtu\.be|youtube\.com|youtube-nocookie\.com)/i.test(song.audio_url) && (
                                       <Button
                                         size="icon"
-                                        className="h-7 w-7"
+                                        className="h-6 w-6"
                                         variant={playingSongId === song.id ? "default" : "ghost"}
                                         onClick={() => handlePlayPause(song)}
                                       >
                                         {playingSongId === song.id ? (
-                                          <Pause className="h-3 w-3" />
+                                          <Pause className="h-2.5 w-2.5" />
                                         ) : (
-                                          <Play className="h-3 w-3" />
+                                          <Play className="h-2.5 w-2.5" />
                                         )}
                                       </Button>
                                      )}

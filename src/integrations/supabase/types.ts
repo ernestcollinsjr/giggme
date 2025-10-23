@@ -607,6 +607,7 @@ export type Database = {
           date: string
           end_time: string | null
           food_provided: string | null
+          ground_transportation: string | null
           id: string
           loading_time: string | null
           notes: string | null
@@ -628,6 +629,7 @@ export type Database = {
           date: string
           end_time?: string | null
           food_provided?: string | null
+          ground_transportation?: string | null
           id?: string
           loading_time?: string | null
           notes?: string | null
@@ -649,6 +651,7 @@ export type Database = {
           date?: string
           end_time?: string | null
           food_provided?: string | null
+          ground_transportation?: string | null
           id?: string
           loading_time?: string | null
           notes?: string | null

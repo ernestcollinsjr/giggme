@@ -42,6 +42,7 @@ interface TourDate {
   sound_man_info: string | null;
   notes: string | null;
   payment_amount: number | null;
+  ground_transportation: string | null;
 }
 
 interface CrewMember {
@@ -110,7 +111,8 @@ export default function TourDetail() {
     venue_contact_person: "",
     sound_man_info: "",
     notes: "",
-    payment_amount: ""
+    payment_amount: "",
+    ground_transportation: ""
   });
 
   useEffect(() => {
@@ -361,7 +363,8 @@ export default function TourDetail() {
         venue_contact_person: date.venue_contact_person || "",
         sound_man_info: date.sound_man_info || "",
         notes: date.notes || "",
-        payment_amount: date.payment_amount?.toString() || ""
+        payment_amount: date.payment_amount?.toString() || "",
+        ground_transportation: date.ground_transportation || ""
       });
     } else {
       setEditingDate(null);
@@ -380,7 +383,8 @@ export default function TourDetail() {
         venue_contact_person: "",
         sound_man_info: "",
         notes: "",
-        payment_amount: ""
+        payment_amount: "",
+        ground_transportation: ""
       });
     }
     setDateDialogOpen(true);
@@ -411,7 +415,8 @@ export default function TourDetail() {
         venue_contact_person: dateFormData.venue_contact_person.trim() || null,
         sound_man_info: dateFormData.sound_man_info.trim() || null,
         notes: dateFormData.notes.trim() || null,
-        payment_amount: dateFormData.payment_amount ? parseFloat(dateFormData.payment_amount) : null
+        payment_amount: dateFormData.payment_amount ? parseFloat(dateFormData.payment_amount) : null,
+        ground_transportation: dateFormData.ground_transportation.trim() || null
       };
 
       let error;
@@ -1057,6 +1062,25 @@ export default function TourDetail() {
                 placeholder="Additional details..."
                 rows={3}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="groundTransportation">Ground Transportation</Label>
+              <Select
+                value={dateFormData.ground_transportation}
+                onValueChange={(value) => setDateFormData(prev => ({ ...prev, ground_transportation: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select transportation" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Hotel Shuttle">Hotel Shuttle</SelectItem>
+                  <SelectItem value="Uber">Uber</SelectItem>
+                  <SelectItem value="Limo">Limo</SelectItem>
+                  <SelectItem value="Van">Van</SelectItem>
+                  <SelectItem value="SUV">SUV</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="flex justify-end gap-2">

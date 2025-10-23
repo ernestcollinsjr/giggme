@@ -35,6 +35,7 @@ interface TourDate {
   venue_lng: number | null;
   show_time: string | null;
   loading_time: string | null;
+  lobby_time: string | null;
   sound_check_time: string | null;
   end_time: string | null;
   attire: string | null;
@@ -110,6 +111,7 @@ export default function TourDetail() {
     date: new Date(),
     show_time: "19:00",
     loading_time: "",
+    lobby_time: "",
     sound_check_time: "",
     end_time: "23:00",
     venue: "",
@@ -371,6 +373,7 @@ export default function TourDetail() {
         date: new Date(date.date),
         show_time: date.show_time || "19:00",
         loading_time: date.loading_time || "",
+        lobby_time: date.lobby_time || "",
         sound_check_time: date.sound_check_time || "",
         end_time: date.end_time || "23:00",
         venue: date.venue,
@@ -400,6 +403,7 @@ export default function TourDetail() {
         date: new Date(),
         show_time: "19:00",
         loading_time: "",
+        lobby_time: "",
         sound_check_time: "",
         end_time: "23:00",
         venue: "",
@@ -445,6 +449,7 @@ export default function TourDetail() {
         venue_lng: dateFormData.venue_lng,
         show_time: dateFormData.show_time,
         loading_time: dateFormData.loading_time.trim() || null,
+        lobby_time: dateFormData.lobby_time.trim() || null,
         sound_check_time: dateFormData.sound_check_time.trim() || null,
         end_time: dateFormData.end_time || null,
         attire: dateFormData.attire.trim() || null,
@@ -992,7 +997,7 @@ export default function TourDetail() {
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-4 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="dateLoadingTime">Loading Time</Label>
                 <Input
@@ -1000,6 +1005,15 @@ export default function TourDetail() {
                   type="time"
                   value={dateFormData.loading_time}
                   onChange={(e) => setDateFormData(prev => ({ ...prev, loading_time: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lobbyTime">Lobby Time</Label>
+                <Input
+                  id="lobbyTime"
+                  type="time"
+                  value={dateFormData.lobby_time}
+                  onChange={(e) => setDateFormData(prev => ({ ...prev, lobby_time: e.target.value }))}
                 />
               </div>
               <div className="space-y-2">

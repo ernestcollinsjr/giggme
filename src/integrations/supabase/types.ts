@@ -617,6 +617,7 @@ export type Database = {
           hotel_notes: string | null
           id: string
           loading_time: string | null
+          lobby_time: string | null
           notes: string | null
           payment_amount: number | null
           per_diem: number | null
@@ -648,6 +649,7 @@ export type Database = {
           hotel_notes?: string | null
           id?: string
           loading_time?: string | null
+          lobby_time?: string | null
           notes?: string | null
           payment_amount?: number | null
           per_diem?: number | null
@@ -679,6 +681,7 @@ export type Database = {
           hotel_notes?: string | null
           id?: string
           loading_time?: string | null
+          lobby_time?: string | null
           notes?: string | null
           payment_amount?: number | null
           per_diem?: number | null

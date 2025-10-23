@@ -261,7 +261,7 @@ const Setlist = () => {
                           <h3 className="text-xs font-semibold text-muted-foreground/70 mb-0.5">Set {setNum} ({setSongs.length} songs)</h3>
                           {setSongs.map((song, index) => (
                             <div key={song.id}>
-                              <div className="group relative flex items-center justify-between py-1.5 px-2 rounded-lg bg-muted/15 hover:bg-muted/25 transition-colors">
+                              <div className="group relative flex items-center justify-between py-1.5 px-2 rounded-lg bg-slate-100 dark:bg-slate-800/20 hover:bg-slate-200 dark:hover:bg-slate-700/30 transition-colors">
                                 <div className="flex items-center gap-1.5 flex-1 min-w-0">
                                   <span className="text-xs text-muted-foreground font-medium w-4 shrink-0">
                                     {index + 1}

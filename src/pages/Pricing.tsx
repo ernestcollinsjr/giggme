@@ -46,8 +46,8 @@ const Pricing = () => {
 
   const tiers = [
     {
-      name: "Basic Plan",
-      price: "$9.99",
+      name: "Band Members (free plan)",
+      price: "Free",
       description: "Perfect for getting started with essential features",
       icon: Music,
       color: "text-secondary",

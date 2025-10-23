@@ -546,32 +546,36 @@ export default function Tours() {
                     </div>
                   )}
                   
-                  {tour.tour_crew_members && tour.tour_crew_members.length > 0 && (
-                    <div className="pt-2 border-t space-y-2">
-                      <div className="flex items-center gap-2 font-medium">
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                        <span>Crew Members</span>
-                      </div>
-                      {['band_members', 'singer', 'sound_crew', 'lighting_crew'].map((type) => {
-                        const typeMembers = tour.tour_crew_members?.filter(m => m.crew_type === type) || [];
-                        if (typeMembers.length === 0) return null;
-                        
-                        const typeLabels: Record<string, string> = {
-                          band_members: 'Band Members',
-                          singer: 'Singer',
-                          sound_crew: 'Sound Crew',
-                          lighting_crew: 'Lighting Crew'
-                        };
-                        
-                        return (
-                          <div key={type} className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">{typeLabels[type]}</span>
-                            <span className="font-medium">{typeMembers.length}</span>
-                          </div>
-                        );
-                      })}
+                  <div className="pt-2 border-t space-y-2">
+                    <div className="flex items-center gap-2 font-medium">
+                      <Users className="h-4 w-4 text-muted-foreground" />
+                      <span>Crew Members</span>
                     </div>
-                  )}
+                    {(!tour.tour_crew_members || tour.tour_crew_members.length === 0) ? (
+                      <p className="text-xs text-muted-foreground">No crew members yet</p>
+                    ) : (
+                      <>
+                        {['band_members', 'singer', 'sound_crew', 'lighting_crew'].map((type) => {
+                          const typeMembers = tour.tour_crew_members?.filter(m => m.crew_type === type) || [];
+                          if (typeMembers.length === 0) return null;
+                          
+                          const typeLabels: Record<string, string> = {
+                            band_members: 'Band Members',
+                            singer: 'Singer',
+                            sound_crew: 'Sound Crew',
+                            lighting_crew: 'Lighting Crew'
+                          };
+                          
+                          return (
+                            <div key={type} className="flex items-center justify-between text-xs">
+                              <span className="text-muted-foreground">{typeLabels[type]}</span>
+                              <span className="font-medium">{typeMembers.length}</span>
+                            </div>
+                          );
+                        })}
+                      </>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>

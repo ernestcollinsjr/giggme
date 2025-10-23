@@ -22,6 +22,7 @@ import { MemberLocationsMap } from "@/components/MemberLocationsMap";
 import { AcceptedGigsCard } from "@/components/AcceptedGigsCard";
 import { Checkbox } from "@/components/ui/checkbox";
 import { BookingManagerClientLocations } from "@/components/BookingManagerClientLocations";
+import { BandMemberRoster } from "@/components/BandMemberRoster";
 
 interface Profile {
   id: string;
@@ -608,6 +609,8 @@ const Dashboard = () => {
                         </CardContent>
                       </Card>
                     )}
+                    
+                    <BandMemberRoster bandId={band.id} />
                   </TabsContent>
                 ))
               )}

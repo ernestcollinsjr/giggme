@@ -51,6 +51,8 @@ interface TourDate {
   hotel_check_in_time: string | null;
   hotel_check_out_date: string | null;
   hotel_check_out_time: string | null;
+  hotel_notes: string | null;
+  general_notes: string | null;
 }
 
 interface CrewMember {
@@ -127,7 +129,9 @@ export default function TourDetail() {
     hotel_address: "",
     hotel_check_in_time: "",
     hotel_check_out_date: "",
-    hotel_check_out_time: ""
+    hotel_check_out_time: "",
+    hotel_notes: "",
+    general_notes: ""
   });
 
   useEffect(() => {
@@ -386,7 +390,9 @@ export default function TourDetail() {
         hotel_address: date.hotel_address || "",
         hotel_check_in_time: date.hotel_check_in_time || "",
         hotel_check_out_date: date.hotel_check_out_date || "",
-        hotel_check_out_time: date.hotel_check_out_time || ""
+        hotel_check_out_time: date.hotel_check_out_time || "",
+        hotel_notes: date.hotel_notes || "",
+        general_notes: date.general_notes || ""
       });
     } else {
       setEditingDate(null);
@@ -413,7 +419,9 @@ export default function TourDetail() {
         hotel_address: "",
         hotel_check_in_time: "",
         hotel_check_out_date: "",
-        hotel_check_out_time: ""
+        hotel_check_out_time: "",
+        hotel_notes: "",
+        general_notes: ""
       });
     }
     setDateDialogOpen(true);
@@ -452,7 +460,9 @@ export default function TourDetail() {
         hotel_address: dateFormData.hotel_address.trim() || null,
         hotel_check_in_time: dateFormData.hotel_check_in_time.trim() || null,
         hotel_check_out_date: dateFormData.hotel_check_out_date.trim() || null,
-        hotel_check_out_time: dateFormData.hotel_check_out_time.trim() || null
+        hotel_check_out_time: dateFormData.hotel_check_out_time.trim() || null,
+        hotel_notes: dateFormData.hotel_notes.trim() || null,
+        general_notes: dateFormData.general_notes.trim() || null
       };
 
       let error;
@@ -1123,6 +1133,30 @@ export default function TourDetail() {
                   type="time"
                   value={dateFormData.hotel_check_out_time}
                   onChange={(e) => setDateFormData(prev => ({ ...prev, hotel_check_out_time: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="hotelNotes">Hotel Notes</Label>
+                <Textarea
+                  id="hotelNotes"
+                  value={dateFormData.hotel_notes}
+                  onChange={(e) => setDateFormData(prev => ({ ...prev, hotel_notes: e.target.value }))}
+                  placeholder="Special requests, room preferences, etc."
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="generalNotes">General Notes</Label>
+                <Textarea
+                  id="generalNotes"
+                  value={dateFormData.general_notes}
+                  onChange={(e) => setDateFormData(prev => ({ ...prev, general_notes: e.target.value }))}
+                  placeholder="Additional notes about this date..."
+                  rows={3}
                 />
               </div>
             </div>

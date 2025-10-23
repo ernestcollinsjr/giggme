@@ -23,6 +23,7 @@ const ProfileSetup = () => {
   
   const [bio, setBio] = useState("");
   const [instrument, setInstrument] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [riderNotes, setRiderNotes] = useState("");
   const [photoFiles, setPhotoFiles] = useState<(File | null)[]>([null, null, null, null]);
   const [photoPreviews, setPhotoPreviews] = useState<string[]>(["", "", "", ""]);
@@ -59,6 +60,7 @@ const ProfileSetup = () => {
         if (profile) {
           setBio(profile.bio || "");
           setInstrument(profile.instrument || "");
+          setPhoneNumber(profile.phone_number || "");
           setRiderNotes(profile.rider_notes || "");
           const urls = profile.photo_urls || [];
           setPhotoUrls(urls);
@@ -235,6 +237,7 @@ const ProfileSetup = () => {
         id: user.id,
         bio,
         instrument: (role === "band_leader" || role === "band_member" ? instrument : null) as any,
+        phone_number: phoneNumber || null,
         rider_notes: riderNotes,
         photo_urls: uploadedPhotoUrls,
         updated_at: new Date().toISOString(),
@@ -531,6 +534,20 @@ const ProfileSetup = () => {
                 rows={4}
                 required
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phoneNumber">Phone Number (for SMS reminders)</Label>
+              <Input
+                id="phoneNumber"
+                type="tel"
+                placeholder="e.g., +1234567890"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Include country code (e.g., +1 for US). You'll receive text reminders 1 day and 1 hour before gigs/rehearsals.
+              </p>
             </div>
             
             {(role === "band_leader" || role === "band_member") && (

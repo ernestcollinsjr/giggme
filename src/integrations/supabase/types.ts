@@ -254,6 +254,7 @@ export type Database = {
           location_lat: number | null
           location_lng: number | null
           name: string
+          phone_number: string | null
           photo_urls: string[] | null
           rider_notes: string | null
           updated_at: string | null
@@ -267,6 +268,7 @@ export type Database = {
           location_lat?: number | null
           location_lng?: number | null
           name: string
+          phone_number?: string | null
           photo_urls?: string[] | null
           rider_notes?: string | null
           updated_at?: string | null
@@ -280,6 +282,7 @@ export type Database = {
           location_lat?: number | null
           location_lng?: number | null
           name?: string
+          phone_number?: string | null
           photo_urls?: string[] | null
           rider_notes?: string | null
           updated_at?: string | null
@@ -471,6 +474,8 @@ export type Database = {
         Args: { earliest_time: string; gig_date: string }
         Returns: boolean
       }
+      send_gig_reminders: { Args: never; Returns: undefined }
+      send_rehearsal_reminders: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "band_leader" | "band_member" | "booking_manager"

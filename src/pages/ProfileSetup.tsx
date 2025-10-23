@@ -411,8 +411,8 @@ const ProfileSetup = () => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <div className="flex items-center gap-4">
-                <div className="flex flex-col gap-2">
+              <div className="flex items-start gap-6">
+                <div className="flex flex-col items-center gap-3">
                   <div className="relative group cursor-pointer" onClick={() => !processingPhoto && document.getElementById('main-photo')?.click()}>
                     {processingPhoto === 0 ? (
                       <div className="w-20 h-20 rounded-full border-2 border-primary flex items-center justify-center bg-muted/10">
@@ -435,11 +435,22 @@ const ProfileSetup = () => {
                       </div>
                     )}
                   </div>
-                  {memberSince && (
-                    <span className="text-xs text-muted-foreground text-center">
-                      Member since {memberSince}
-                    </span>
-                  )}
+                  <div className="text-center space-y-1 w-full">
+                    <Input
+                      id="name"
+                      type="text"
+                      placeholder="Your name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                      className="text-center"
+                    />
+                    {memberSince && (
+                      <span className="text-xs text-muted-foreground">
+                        Member since {memberSince}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="flex-1">
                   <Input
@@ -515,17 +526,6 @@ const ProfileSetup = () => {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="name">Name *</Label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="Your full name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">

@@ -596,7 +596,7 @@ const Dashboard = () => {
               <Tabs value={selectedBandId || bands[0]?.id} onValueChange={setSelectedBandId}>
                 <TabsList className="bg-transparent border-0 p-0 h-auto gap-2">
                   {bands.map((band) => (
-                    <TabsTrigger key={band.id} value={band.id} className="border border-border">
+                    <TabsTrigger key={band.id} value={band.id} className="border-2 border-border shadow-sm">
                       {band.name}
                     </TabsTrigger>
                   ))}

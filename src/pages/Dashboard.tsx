@@ -11,7 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Music, Briefcase, MapPin, Calendar, Crown, LogOut, ListMusic, User as UserIcon, Plus, Loader2 } from "lucide-react";
+import { Music, Briefcase, MapPin, Calendar as CalendarIcon, Crown, LogOut, ListMusic, User as UserIcon, Plus, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
 import { BandAssistant } from "@/components/BandAssistant";
@@ -325,18 +325,14 @@ const Dashboard = () => {
       },
       (error) => {
         console.error("Geolocation error:", error);
-        let errorMessage = "Failed to get your location.";
+        let errorMessage = "Could not get your location.";
         
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            errorMessage = "Location permission denied. Please enable location access in your browser settings.";
-            break;
-          case error.POSITION_UNAVAILABLE:
-            errorMessage = "Location information unavailable. Please try again.";
-            break;
-          case error.TIMEOUT:
-            errorMessage = "Location request timed out. Please try again.";
-            break;
+        if (error.code === error.PERMISSION_DENIED) {
+          errorMessage = "Location access was denied. Please enable location permissions in your browser settings and try again.";
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          errorMessage = "Location information is unavailable. Try entering your address manually instead.";
+        } else if (error.code === error.TIMEOUT) {
+          errorMessage = "Location request timed out. Please try again.";
         }
         
         toast({
@@ -355,17 +351,17 @@ const Dashboard = () => {
   };
 
   const handleManualLocationSave = async () => {
-    if (!selectedPlace || !selectedPlace.geometry || !selectedPlace.geometry.location) {
+    if (!selectedPlace?.geometry?.location) {
       toast({
         variant: "destructive",
-        title: "Select a place",
-        description: "Please choose a suggested place to capture coordinates.",
+        title: "No location selected",
+        description: "Please select a location from the dropdown.",
       });
       return;
     }
 
+    setIsSavingManualLocation(true);
     try {
-      setIsSavingManualLocation(true);
       const lat = selectedPlace.geometry.location.lat();
       const lng = selectedPlace.geometry.location.lng();
 
@@ -536,50 +532,60 @@ const Dashboard = () => {
           <div className="space-y-4">
             <div className="flex items-center justify-between gap-2">
               <h2 className="text-xl font-semibold">My Bands</h2>
-              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button size="sm" variant="outline" className="gap-2">
-                    <Plus className="h-4 w-4" />
-                    New Band
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Create New Band</DialogTitle>
-                    <DialogDescription>
-                      Add a new band to manage separately
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="band-name">Band Name</Label>
-                      <Input
-                        id="band-name"
-                        value={newBandName}
-                        onChange={(e) => setNewBandName(e.target.value)}
-                        placeholder="Enter band name"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="band-description">Description (Optional)</Label>
-                      <Input
-                        id="band-description"
-                        value={newBandDescription}
-                        onChange={(e) => setNewBandDescription(e.target.value)}
-                        placeholder="Brief description"
-                      />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button
-                      onClick={handleCreateBand}
-                      disabled={isCreatingBand}
-                    >
-                      {isCreatingBand ? "Creating..." : "Create Band"}
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" className="gap-2" onClick={() => navigate("/bookings")}>
+                  <CalendarIcon className="h-4 w-4" />
+                  Add Gig
+                </Button>
+                <Button size="sm" variant="outline" className="gap-2" onClick={() => navigate("/rehearsals")}>
+                  <Music className="h-4 w-4" />
+                  Add Rehearsal
+                </Button>
+                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" variant="outline" className="gap-2">
+                      <Plus className="h-4 w-4" />
+                      New Band
                     </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Create New Band</DialogTitle>
+                      <DialogDescription>
+                        Add a new band to manage separately
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="band-name">Band Name</Label>
+                        <Input
+                          id="band-name"
+                          value={newBandName}
+                          onChange={(e) => setNewBandName(e.target.value)}
+                          placeholder="Enter band name"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="band-description">Description (Optional)</Label>
+                        <Input
+                          id="band-description"
+                          value={newBandDescription}
+                          onChange={(e) => setNewBandDescription(e.target.value)}
+                          placeholder="Brief description"
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button
+                        onClick={handleCreateBand}
+                        disabled={isCreatingBand}
+                      >
+                        {isCreatingBand ? "Creating..." : "Create Band"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </div>
 
             {bands.length === 0 ? (
@@ -642,7 +648,7 @@ const Dashboard = () => {
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                          <Calendar className="h-4 w-4" />
+                          <CalendarIcon className="h-4 w-4" />
                           {new Date(invite.gigs.date).toLocaleDateString('en-US', { 
                             weekday: 'short', 
                             year: 'numeric', 
@@ -694,124 +700,94 @@ const Dashboard = () => {
               >
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-lg">
-                    <Calendar className="h-4 w-4 text-primary" />
+                    <CalendarIcon className="h-4 w-4 text-primary" />
                     Upcoming Rehearsals
                   </CardTitle>
                   <CardDescription className="text-xs">
-                    Band practice sessions
+                    {filteredRehearsals.length > 0 ? `${filteredRehearsals.length} scheduled` : "No rehearsals yet"}
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="pb-4">
-                  {filteredRehearsals.length === 0 ? (
-                    <p className="text-center text-muted-foreground text-sm py-3">No rehearsals scheduled</p>
-                  ) : (
-                    <div className="space-y-2">
-                      {filteredRehearsals.slice(0, 2).map((rehearsal) => (
-                        <div key={rehearsal.id} className="p-2 border rounded-lg">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
-                                <Calendar className="h-3 w-3" />
-                                {new Date(rehearsal.date).toLocaleDateString('en-US', { 
-                                  month: 'short', 
-                                  day: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                })}
-                              </div>
-                              <h4 className="font-semibold text-sm truncate">{rehearsal.venue}</h4>
-                              {rehearsal.notes && (
-                                <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{rehearsal.notes}</p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                <CardContent className="space-y-2">
+                  {filteredRehearsals.slice(0, 2).map((rehearsal) => (
+                    <div key={rehearsal.id} className="p-2 border rounded-md text-sm">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                        <CalendarIcon className="h-3 w-3" />
+                        {new Date(rehearsal.date).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric'
+                        })}
+                      </div>
+                      <p className="font-medium truncate">{rehearsal.venue}</p>
                     </div>
+                  ))}
+                  {filteredRehearsals.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      No rehearsals scheduled
+                    </p>
                   )}
-                  <Button variant="outline" size="sm" className="w-full mt-3">
-                    View All
-                  </Button>
                 </CardContent>
               </Card>
 
-              <Card 
+              <Card
                 className="border-border/50 shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
                 onClick={() => navigate("/bookings")}
               >
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-lg">
-                    <Music className="h-4 w-4 text-primary" />
+                    <Briefcase className="h-4 w-4 text-primary" />
                     Upcoming Gigs
                   </CardTitle>
                   <CardDescription className="text-xs">
-                    Performance dates and venues
+                    {filteredGigs.length > 0 ? `${filteredGigs.length} booked` : "No gigs yet"}
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="pb-4">
-                  {filteredGigs.length === 0 ? (
-                    <p className="text-center text-muted-foreground text-sm py-3">No gigs scheduled</p>
-                  ) : (
-                    <div className="space-y-2">
-                      {filteredGigs.slice(0, 2).map((gig) => (
-                        <div key={gig.id} className="p-2 border rounded-lg">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1 mb-1">
-                                <Badge variant={gig.status === 'confirmed' ? 'default' : 'secondary'} className="text-xs px-1.5 py-0">
-                                  {gig.status}
-                                </Badge>
-                              </div>
-                              <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
-                                <Calendar className="h-3 w-3" />
-                                {new Date(gig.date).toLocaleDateString('en-US', { 
-                                  month: 'short', 
-                                  day: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                })}
-                              </div>
-                              <h4 className="font-semibold text-sm truncate">{gig.venue}</h4>
-                              {gig.notes && (
-                                <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{gig.notes}</p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                <CardContent className="space-y-2">
+                  {filteredGigs.slice(0, 2).map((gig) => (
+                    <div key={gig.id} className="p-2 border rounded-md text-sm">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                        <CalendarIcon className="h-3 w-3" />
+                        {new Date(gig.date).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric'
+                        })}
+                      </div>
+                      <p className="font-medium truncate">{gig.venue}</p>
                     </div>
+                  ))}
+                  {filteredGigs.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      No gigs scheduled
+                    </p>
                   )}
-                  <Button variant="outline" size="sm" className="w-full mt-3">
-                    View All
-                  </Button>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Compact grid layout for Member Locations and Setlist */}
-            <div className="grid md:grid-cols-2 gap-4">
-              {/* Show member locations for upcoming gigs */}
-              {filteredGigs.length > 0 && filteredGigs[0] && (
-                <MemberLocationsMap gigId={filteredGigs[0].id} />
-              )}
-
-              <Card className="border-border/50 shadow-lg">
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <ListMusic className="h-4 w-4 text-primary" />
-                    Setlists
-                  </CardTitle>
-                  <CardDescription className="text-xs">
-                    View and manage your band's setlists
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pb-4">
-                  <Button onClick={() => navigate("/setlist")} className="w-full" size="sm">
-                    View Setlists
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
+            {selectedBandId && (
+              <div className="grid md:grid-cols-2 gap-4">
+                <MemberLocationsMap bandId={selectedBandId} />
+                
+                <Card
+                  className="border-border/50 shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
+                  onClick={() => navigate("/setlist")}
+                >
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <ListMusic className="h-4 w-4 text-primary" />
+                      Setlists
+                    </CardTitle>
+                    <CardDescription className="text-xs">
+                      Manage your band's setlists
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">
+                      View and manage setlists for this band
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
 
             <Card className="border-border/50 shadow-lg">
               <CardHeader className="pb-3">
@@ -820,217 +796,179 @@ const Dashboard = () => {
                   Location Sharing
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  Share your location with band leaders
+                  Share your location with band members
                 </CardDescription>
               </CardHeader>
-              <CardContent className="pb-4">
+              <CardContent>
                 <div className="space-y-3">
-                  <div className="space-y-2">
-                    <Label className="text-xs font-medium">Enter your location</Label>
-                    <PlaceAutocomplete
-                      value={manualLocation}
-                      onChange={(val, place) => {
-                        setManualLocation(val);
-                        setSelectedPlace(place || null);
-                      }}
-                      placeholder="Search address or place"
-                      className="w-full"
-                    />
-                    <Button 
-                      onClick={handleManualLocationSave} 
-                      className="w-full"
+                  <AutoLocationTracker
+                    userId={user?.id || ""}
+                    activeGigIds={activeGigsWithSharing}
+                  />
+
+                  <div>
+                    <Label htmlFor="location" className="text-sm">Use GPS Location</Label>
+                    <Button
+                      onClick={handleShareLocation}
+                      disabled={isSharingLocation}
+                      className="w-full mt-2"
                       size="sm"
-                      disabled={
-                        isSavingManualLocation || !(selectedPlace && selectedPlace.geometry && selectedPlace.geometry.location)
-                      }
                     >
-                      {isSavingManualLocation ? (
+                      {isSharingLocation ? (
                         <>
                           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Saving...
+                          Getting location...
                         </>
                       ) : (
                         <>
                           <MapPin className="h-4 w-4 mr-2" />
-                          Save Location
+                          Share My Location
                         </>
                       )}
                     </Button>
                   </div>
 
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-background px-2 text-muted-foreground">
-                        Or use GPS
-                      </span>
+                  <div>
+                    <Label htmlFor="manual-location" className="text-sm">Or Enter Address Manually</Label>
+                    <div className="flex gap-2 mt-2">
+                      <PlaceAutocomplete
+                        value={manualLocation}
+                        onChange={(value, place) => {
+                          setManualLocation(value);
+                          setSelectedPlace(place || null);
+                        }}
+                        placeholder="Enter your address..."
+                      />
+                      <Button
+                        onClick={handleManualLocationSave}
+                        disabled={isSavingManualLocation || !selectedPlace}
+                        size="sm"
+                      >
+                        {isSavingManualLocation ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          "Save"
+                        )}
+                      </Button>
                     </div>
                   </div>
-
-                  <Button 
-                    onClick={handleShareLocation} 
-                    variant="outline"
-                    className="w-full"
-                    size="sm"
-                    disabled={isSharingLocation}
-                  >
-                    {isSharingLocation ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Getting location...
-                      </>
-                    ) : (
-                      <>
-                        <MapPin className="h-4 w-4 mr-2" />
-                        Use My Current Location
-                      </>
-                    )}
-                  </Button>
-
-                  {profile?.location_lat && profile?.location_lng && (
-                    <p className="text-xs text-muted-foreground text-center mt-2">
-                      ✓ Location shared
-                    </p>
-                  )}
                 </div>
               </CardContent>
             </Card>
-
           </>
         )}
 
         {userRole === "booking_manager" && (
-          <Card className="border-border/50 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Music className="h-5 w-5" />
-                Available Bands
-              </CardTitle>
-              <CardDescription>
-                Browse bands and start building your roster
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4">
+          <>
+            <Card className="border-border/50 shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Music className="h-5 w-5 text-primary" />
+                  Available Bands
+                </CardTitle>
+                <CardDescription>Browse and connect with bands</CardDescription>
+              </CardHeader>
+              <CardContent>
                 {profiles.length === 0 ? (
                   <p className="text-center text-muted-foreground py-8">
-                    No bands available yet
+                    No bands available at the moment
                   </p>
                 ) : (
-                  profiles.map((p) => (
-                    <Card key={p.id} className="border-border/50">
-                      <CardContent className="pt-6">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-lg">{p.name}</h3>
-                            {p.instrument && (
-                              <Badge variant="secondary" className="mt-2">
-                                {p.instrument}
-                              </Badge>
-                            )}
-                            <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                              {p.bio}
-                            </p>
-                            {p.location_lat && p.location_lng && (
-                              <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
-                                <MapPin className="h-3 w-3" />
-                                <span>Location shared</span>
-                              </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {profiles.map((bandProfile) => (
+                      <Card key={bandProfile.id} className="p-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar>
+                            <AvatarImage src={bandProfile.photo_urls?.[0]} alt={bandProfile.name} />
+                            <AvatarFallback>{bandProfile.name.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <h4 className="font-semibold">{bandProfile.name}</h4>
+                            {bandProfile.instrument && (
+                              <p className="text-sm text-muted-foreground">{bandProfile.instrument}</p>
                             )}
                           </div>
-                          <Button size="sm" className="ml-4">
-                            Contact
-                          </Button>
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))
+                      </Card>
+                    ))}
+                  </div>
                 )}
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+
+            <BookingManagerClientLocations />
+          </>
         )}
 
-        {userRole === "booking_manager" && (
-          <BookingManagerClientLocations />
-        )}
-
-        <Card className="border-border/50 shadow-lg bg-gradient-to-br from-primary/5 to-secondary/5">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                <Crown className="h-6 w-6 text-white" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold">Upgrade to Premium</h3>
-                <p className="text-sm text-muted-foreground">
-                  Get unlimited bookings, priority support, and more
-                </p>
-              </div>
-              <Button variant="outline">
-                Subscribe
-              </Button>
-            </div>
+        <Card className="border-border/50 shadow-lg bg-gradient-to-br from-primary/5 to-accent/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Crown className="h-5 w-5 text-yellow-500" />
+              Upgrade to Premium
+            </CardTitle>
+            <CardDescription>
+              Unlock advanced features for your band
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Get access to priority support, advanced analytics, and more.
+            </p>
+            <Button className="w-full">
+              Coming Soon
+            </Button>
           </CardContent>
         </Card>
-      </div>
 
-      {/* Location Sharing Accept Dialog */}
-      <Dialog open={acceptInviteDialog.open} onOpenChange={(open) => setAcceptInviteDialog({open, inviteId: null})}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Accept Gig Invitation</DialogTitle>
-            <DialogDescription>
-              Share your location with the band leader to help coordinate arrival times.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="flex items-start space-x-2">
-              <Checkbox 
-                id="location-sharing" 
-                checked={locationSharingConsent}
-                onCheckedChange={(checked) => setLocationSharingConsent(checked as boolean)}
-              />
-              <div className="grid gap-1.5 leading-none">
+        <Dialog 
+          open={acceptInviteDialog.open} 
+          onOpenChange={(open) => setAcceptInviteDialog({open, inviteId: null})}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Accept Gig Invitation</DialogTitle>
+              <DialogDescription>
+                Would you like to enable automatic location sharing for this gig?
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="location-consent"
+                  checked={locationSharingConsent}
+                  onCheckedChange={(checked) => setLocationSharingConsent(checked as boolean)}
+                />
                 <label
-                  htmlFor="location-sharing"
+                  htmlFor="location-consent"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
-                  Share my location automatically
+                  Share my location 1 hour before the gig starts
                 </label>
-                <p className="text-sm text-muted-foreground">
-                  Your location will be shared with the band leader starting 1 hour before the earliest event time (loading, sound check, or gig start).
-                </p>
               </div>
+              <p className="text-xs text-muted-foreground">
+                This helps the band leader know when everyone is arriving at the venue.
+              </p>
             </div>
-          </div>
-          <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => setAcceptInviteDialog({open: false, inviteId: null})}
-            >
-              Cancel
-            </Button>
-            <Button 
-              onClick={() => {
-                if (acceptInviteDialog.inviteId) {
-                  handleInviteResponse(acceptInviteDialog.inviteId, "accepted", locationSharingConsent);
-                }
-              }}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              Accept Gig
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Auto Location Tracker for active gigs */}
-      {user && activeGigsWithSharing.length > 0 && (
-        <AutoLocationTracker userId={user.id} isEnabled={true} />
-      )}
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setAcceptInviteDialog({open: false, inviteId: null})}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  if (acceptInviteDialog.inviteId) {
+                    handleInviteResponse(acceptInviteDialog.inviteId, "accepted", locationSharingConsent);
+                  }
+                }}
+              >
+                Accept Gig
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
 
       <BottomNav />
     </div>

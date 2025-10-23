@@ -56,6 +56,7 @@ export const SetlistManager = () => {
   const [selectedSet, setSelectedSet] = useState(1);
   const [uploading, setUploading] = useState(false);
   const [playingVideo, setPlayingVideo] = useState<{ videoId: string; title: string } | null>(null);
+  const [fetchingVideoInfo, setFetchingVideoInfo] = useState(false);
 
   useEffect(() => {
     fetchBands();
@@ -324,6 +325,53 @@ export const SetlistManager = () => {
       });
     } finally {
       setUploading(false);
+    }
+  };
+
+  const fetchVideoInfo = async (url: string) => {
+    if (!url.trim()) return;
+
+    // Normalize URL
+    let normalizedUrl = url.trim();
+    if (!/^https?:\/\//i.test(normalizedUrl)) {
+      normalizedUrl = `https://${normalizedUrl}`;
+    }
+
+    // Validate YouTube URL
+    try {
+      const parsed = new URL(normalizedUrl);
+      const host = parsed.hostname.toLowerCase();
+      const isYouTube = host.includes('youtube.com') || host.includes('youtu.be');
+      if (!isYouTube) return;
+    } catch (e) {
+      return;
+    }
+
+    setFetchingVideoInfo(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-youtube', {
+        body: { url: normalizedUrl }
+      });
+
+      if (error) throw error;
+
+      if (data?.title && data?.channelTitle) {
+        setSongTitle(data.title);
+        setSongArtist(data.channelTitle);
+        toast({
+          title: "Video info fetched!",
+          description: "Title and artist have been auto-filled",
+        });
+      }
+    } catch (error: any) {
+      console.error('Error fetching video info:', error);
+      toast({
+        title: "Could not fetch video info",
+        description: "Please enter title and artist manually",
+        variant: "destructive",
+      });
+    } finally {
+      setFetchingVideoInfo(false);
     }
   };
 
@@ -700,12 +748,31 @@ export const SetlistManager = () => {
                   </div>
                   <div>
                     <Label htmlFor="youtube-link">YouTube Link</Label>
-                    <Input
-                      id="youtube-link"
-                      value={youtubeLink}
-                      onChange={(e) => setYoutubeLink(e.target.value)}
-                      placeholder="https://youtube.com/watch?v=..."
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        id="youtube-link"
+                        value={youtubeLink}
+                        onChange={(e) => setYoutubeLink(e.target.value)}
+                        onBlur={(e) => {
+                          if (e.target.value.trim() && !songTitle.trim()) {
+                            fetchVideoInfo(e.target.value);
+                          }
+                        }}
+                        placeholder="https://youtube.com/watch?v=..."
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => fetchVideoInfo(youtubeLink)}
+                        disabled={!youtubeLink.trim() || fetchingVideoInfo}
+                      >
+                        {fetchingVideoInfo ? "Fetching..." : "Autofill"}
+                      </Button>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Paste a YouTube link and click Autofill to automatically get the title and artist
+                    </p>
                   </div>
                   <Button onClick={addYoutubeLink} className="w-full">
                     Add Song

@@ -215,7 +215,7 @@ const Setlist = () => {
         </div>
 
         {userRole === "band_leader" ? (
-          <Card className="border-border/50 shadow-lg">
+          <Card className="border-border/20 shadow-lg">
             <CardContent className="pt-6">
               <SetlistManager />
             </CardContent>
@@ -223,7 +223,7 @@ const Setlist = () => {
         ) : (
           <>
             {setlists.length === 0 ? (
-              <Card className="border-border/50 shadow-lg">
+              <Card className="border-border/20 shadow-lg">
                 <CardContent className="pt-6">
                   <div className="text-center py-12">
                     <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -235,7 +235,7 @@ const Setlist = () => {
               </Card>
             ) : (
               setlists.map((setlist) => (
-            <Card key={setlist.id} className="border-border/50 shadow-lg">
+            <Card key={setlist.id} className="border-border/20 shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <span className="text-muted-foreground">For:</span>

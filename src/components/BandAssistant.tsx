@@ -135,54 +135,54 @@ export const BandAssistant = () => {
   };
 
   return (
-    <Card className="border-border/50 shadow-lg h-[600px] flex flex-col">
-      <CardHeader className="border-b">
-        <CardTitle className="flex items-center gap-2">
-          <Bot className="h-5 w-5 text-primary" />
+    <Card className="border-border/50 shadow-lg h-[400px] flex flex-col">
+      <CardHeader className="border-b py-3">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Bot className="h-4 w-4 text-primary" />
           Band Assistant
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col p-0">
-        <ScrollArea ref={scrollRef} className="flex-1 p-4">
+        <ScrollArea ref={scrollRef} className="flex-1 p-3">
           {messages.length === 0 && (
-            <div className="text-center text-muted-foreground py-12">
-              <Bot className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="text-sm">Ask me anything about your gigs, setlists, or rehearsals!</p>
-              <p className="text-xs mt-2">
-                Example: "What's my next gig?" or "Suggest a setlist for a 2-hour show"
+            <div className="text-center text-muted-foreground py-8">
+              <Bot className="h-10 w-10 mx-auto mb-3 opacity-50" />
+              <p className="text-xs">Ask me anything about your gigs, setlists, or rehearsals!</p>
+              <p className="text-xs mt-2 opacity-70">
+                Example: "What's my next gig?" or "Suggest a setlist"
               </p>
             </div>
           )}
-          <div className="space-y-4">
+          <div className="space-y-3">
             {messages.map((msg, idx) => (
               <div
                 key={idx}
-                className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 {msg.role === "assistant" && (
                   <div className="flex-shrink-0">
-                    <Bot className="h-8 w-8 p-1.5 rounded-full bg-primary/10 text-primary" />
+                    <Bot className="h-6 w-6 p-1 rounded-full bg-primary/10 text-primary" />
                   </div>
                 )}
                 <div
-                  className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                  className={`max-w-[80%] rounded-lg px-3 py-2 ${
                     msg.role === "user"
                       ? "bg-primary text-primary-foreground"
                       : "bg-secondary text-secondary-foreground border border-border"
                   }`}
                 >
-                  <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                  <p className="text-xs whitespace-pre-wrap">{msg.content}</p>
                 </div>
                 {msg.role === "user" && (
                   <div className="flex-shrink-0">
-                    <User className="h-8 w-8 p-1.5 rounded-full bg-primary/10 text-primary" />
+                    <User className="h-6 w-6 p-1 rounded-full bg-primary/10 text-primary" />
                   </div>
                 )}
               </div>
             ))}
           </div>
         </ScrollArea>
-        <div className="p-4 border-t">
+        <div className="p-3 border-t">
           <div className="flex gap-2">
             <Input
               value={input}
@@ -190,9 +190,9 @@ export const BandAssistant = () => {
               onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
               placeholder="Ask me anything..."
               disabled={isLoading}
-              className="flex-1"
+              className="flex-1 text-sm"
             />
-            <Button onClick={handleSend} disabled={isLoading || !input.trim()}>
+            <Button onClick={handleSend} disabled={isLoading || !input.trim()} size="sm">
               {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (

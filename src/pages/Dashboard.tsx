@@ -526,8 +526,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <BandAssistant />
-
         {userRole === "band_leader" && (
           <div className="space-y-4">
             <div className="flex items-center justify-between gap-2">
@@ -627,68 +625,74 @@ const Dashboard = () => {
                 ))}
               </Tabs>
             )}
+            
+            <BandAssistant />
           </div>
         )}
 
-        {userRole === "band_member" && gigInvites.length > 0 && (
-          <Card className="border-border/50 shadow-lg bg-gradient-to-br from-primary/5 to-accent/5">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Music className="h-5 w-5 text-primary" />
-                Gig Invites
-              </CardTitle>
-              <CardDescription>
-                You have {gigInvites.length} pending gig {gigInvites.length === 1 ? 'invite' : 'invites'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {gigInvites.map((invite) => (
-                  <div key={invite.id} className="p-4 border rounded-lg bg-background">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                          <CalendarIcon className="h-4 w-4" />
-                          {new Date(invite.gigs.date).toLocaleDateString('en-US', { 
-                            weekday: 'short', 
-                            year: 'numeric', 
-                            month: 'short', 
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </div>
-                        <h4 className="font-semibold">{invite.gigs.venue}</h4>
-                        {invite.gigs.notes && (
-                          <p className="text-sm text-muted-foreground mt-1">{invite.gigs.notes}</p>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        <Button 
-                          size="sm" 
-                          onClick={() => setAcceptInviteDialog({open: true, inviteId: invite.id})}
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          Accept
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="destructive"
-                          onClick={() => handleInviteResponse(invite.id, "declined", false)}
-                        >
-                          Decline
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         {userRole === "band_member" && (
-          <AcceptedGigsCard userId={user?.id || ""} />
+          <>
+            {gigInvites.length > 0 && (
+              <Card className="border-border/50 shadow-lg bg-gradient-to-br from-primary/5 to-accent/5">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Music className="h-5 w-5 text-primary" />
+                    Gig Invites
+                  </CardTitle>
+                  <CardDescription>
+                    You have {gigInvites.length} pending gig {gigInvites.length === 1 ? 'invite' : 'invites'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {gigInvites.map((invite) => (
+                      <div key={invite.id} className="p-4 border rounded-lg bg-background">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                              <CalendarIcon className="h-4 w-4" />
+                              {new Date(invite.gigs.date).toLocaleDateString('en-US', { 
+                                weekday: 'short', 
+                                year: 'numeric', 
+                                month: 'short', 
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </div>
+                            <h4 className="font-semibold">{invite.gigs.venue}</h4>
+                            {invite.gigs.notes && (
+                              <p className="text-sm text-muted-foreground mt-1">{invite.gigs.notes}</p>
+                            )}
+                          </div>
+                          <div className="flex gap-2">
+                            <Button 
+                              size="sm" 
+                              onClick={() => setAcceptInviteDialog({open: true, inviteId: invite.id})}
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              Accept
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="destructive"
+                              onClick={() => handleInviteResponse(invite.id, "declined", false)}
+                            >
+                              Decline
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            <BandAssistant />
+            
+            <AcceptedGigsCard userId={user?.id || ""} />
+          </>
         )}
 
         {(userRole === "band_leader" || userRole === "band_member") && (

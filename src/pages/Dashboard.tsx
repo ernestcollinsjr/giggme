@@ -764,29 +764,25 @@ const Dashboard = () => {
             </div>
 
             {selectedBandId && (
-              <div className="grid md:grid-cols-2 gap-4">
-                <MemberLocationsMap bandId={selectedBandId} />
-                
-                <Card
-                  className="border-border/50 shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
-                  onClick={() => navigate("/setlist")}
-                >
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                      <ListMusic className="h-4 w-4 text-primary" />
-                      Setlists
-                    </CardTitle>
-                    <CardDescription className="text-xs">
-                      Manage your band's setlists
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground">
-                      View and manage setlists for this band
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
+              <Card
+                className="border-border/50 shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
+                onClick={() => navigate("/setlist")}
+              >
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <ListMusic className="h-4 w-4 text-primary" />
+                    Setlists
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    Manage your band's setlists
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    View and manage setlists for this band
+                  </p>
+                </CardContent>
+              </Card>
             )}
 
             <Card className="border-border/50 shadow-lg">
@@ -803,7 +799,7 @@ const Dashboard = () => {
                 <div className="space-y-3">
                   <AutoLocationTracker
                     userId={user?.id || ""}
-                    activeGigIds={activeGigsWithSharing}
+                    isEnabled={activeGigsWithSharing.length > 0}
                   />
 
                   <div>

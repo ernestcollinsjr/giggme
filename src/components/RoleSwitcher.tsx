@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { Music, Briefcase, Crown, Star, Users, RefreshCw } from "lucide-react";
 
-type UserRole = "band_leader" | "band_member" | "booking_manager";
+type UserRole = "band_leader" | "band_member" | "booking_manager" | "artist";
 
 interface RoleSwitcherProps {
   currentRole: UserRole | null;
@@ -44,6 +44,15 @@ const RoleSwitcher = ({ currentRole, onRoleChange }: RoleSwitcherProps) => {
       iconBg: "bg-accent/10",
       iconColor: "text-accent",
       badge: { icon: Star, text: "Premium Role", color: "text-accent" }
+    },
+    { 
+      value: "artist" as UserRole, 
+      label: "Artist/Musician", 
+      description: "Showcase your talent, build your portfolio, and get discovered by booking managers",
+      icon: Music,
+      iconBg: "bg-purple-100",
+      iconColor: "text-purple-600",
+      badge: { icon: Star, text: "Premium Role", color: "text-purple-600" }
     },
   ];
 
@@ -100,7 +109,7 @@ const RoleSwitcher = ({ currentRole, onRoleChange }: RoleSwitcherProps) => {
         </CardHeader>
       </Card>
 
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
         {roles.map((role) => {
           const Icon = role.icon;
           const BadgeIcon = role.badge.icon;

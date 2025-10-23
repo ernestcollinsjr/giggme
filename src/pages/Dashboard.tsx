@@ -25,6 +25,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { BookingManagerClientLocations } from "@/components/BookingManagerClientLocations";
 import { BandMemberRoster } from "@/components/BandMemberRoster";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
+import RoleSwitcher from "@/components/RoleSwitcher";
 
 interface Profile {
   id: string;
@@ -693,6 +694,8 @@ const Dashboard = () => {
             </Button>
           </div>
         </div>
+
+        <RoleSwitcher currentRole={userRole} onRoleChange={checkAuth} />
 
         {userRole === "band_leader" && (
           <div className="space-y-4">

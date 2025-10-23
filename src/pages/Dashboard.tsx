@@ -11,7 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Music, Briefcase, MapPin, Calendar as CalendarIcon, Crown, LogOut, ListMusic, User as UserIcon, Plus, Loader2 } from "lucide-react";
+import { Music, Briefcase, MapPin, Calendar as CalendarIcon, Crown, LogOut, ListMusic, User as UserIcon, Plus, Loader2, Play, Pause, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
 import { BandAssistant } from "@/components/BandAssistant";
@@ -74,6 +74,23 @@ interface Band {
   band_leader_id: string;
 }
 
+interface SetlistSong {
+  id: string;
+  title: string;
+  artist: string | null;
+  audio_url: string | null;
+  order_index: number;
+  set_number: number;
+}
+
+interface Setlist {
+  id: string;
+  title: string;
+  description: string | null;
+  created_at: string;
+  songs: SetlistSong[];
+}
+
 type UserRole = "band_leader" | "band_member" | "booking_manager";
 
 const Dashboard = () => {
@@ -100,6 +117,9 @@ const Dashboard = () => {
   const [acceptInviteDialog, setAcceptInviteDialog] = useState<{open: boolean, inviteId: string | null}>({open: false, inviteId: null});
   const [locationSharingConsent, setLocationSharingConsent] = useState(true);
   const [activeGigsWithSharing, setActiveGigsWithSharing] = useState<string[]>([]);
+  const [setlists, setSetlists] = useState<Setlist[]>([]);
+  const [playingAudio, setPlayingAudio] = useState<HTMLAudioElement | null>(null);
+  const [playingSongId, setPlayingSongId] = useState<string | null>(null);
 
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -182,6 +202,9 @@ const Dashboard = () => {
           .order("created_at", { ascending: false });
         
         setGigInvites(inviteData || []);
+        
+        // Fetch setlists for band members
+        fetchSetlists(user.id);
         
         // Check for active gigs with location sharing enabled
         const { data: activeGigs } = await supabase
@@ -429,6 +452,82 @@ const Dashboard = () => {
     }
   };
 
+  const fetchSetlists = async (userId: string) => {
+    try {
+      // Get bands that the user is a member of
+      const { data: memberBands } = await supabase
+        .from("gig_members")
+        .select("gig_id, gigs!inner(band_id)")
+        .eq("member_id", userId);
+
+      const bandIds = [...new Set(memberBands?.map(m => (m.gigs as any).band_id).filter(Boolean))];
+
+      if (bandIds.length === 0) {
+        setSetlists([]);
+        return;
+      }
+
+      // Fetch setlists for these bands
+      const { data: setlistsData } = await supabase
+        .from("setlists")
+        .select("*")
+        .in("band_id", bandIds)
+        .order("created_at", { ascending: false });
+
+      // Fetch songs for each setlist
+      const setlistsWithSongs = await Promise.all(
+        (setlistsData || []).map(async (setlist) => {
+          const { data: songsData } = await supabase
+            .from("setlist_songs")
+            .select("*")
+            .eq("setlist_id", setlist.id)
+            .order("set_number", { ascending: true })
+            .order("order_index", { ascending: true });
+
+          return {
+            ...setlist,
+            songs: songsData || [],
+          };
+        })
+      );
+
+      setSetlists(setlistsWithSongs);
+    } catch (error: any) {
+      console.error("Error fetching setlists:", error);
+    }
+  };
+
+  const handlePlayPause = (song: SetlistSong) => {
+    if (!song.audio_url) {
+      toast({
+        variant: "destructive",
+        title: "No audio available",
+        description: "This song doesn't have an audio file yet.",
+      });
+      return;
+    }
+
+    if (playingSongId === song.id && playingAudio) {
+      playingAudio.pause();
+      setPlayingAudio(null);
+      setPlayingSongId(null);
+      return;
+    }
+
+    if (playingAudio) {
+      playingAudio.pause();
+    }
+
+    const audio = new Audio(song.audio_url);
+    audio.play();
+    audio.onended = () => {
+      setPlayingAudio(null);
+      setPlayingSongId(null);
+    };
+    setPlayingAudio(audio);
+    setPlayingSongId(song.id);
+  };
+
   const handleCreateBand = async () => {
     if (!newBandName.trim()) {
       toast({
@@ -638,7 +737,17 @@ const Dashboard = () => {
         )}
 
         {userRole === "band_member" && (
-          <>
+          <Tabs defaultValue="overview" className="space-y-4">
+            <TabsList className="bg-transparent border-0 p-0 h-auto gap-2">
+              <TabsTrigger value="overview" className="border-2 border-border shadow-sm">
+                Overview
+              </TabsTrigger>
+              <TabsTrigger value="setlists" className="border-2 border-border shadow-sm">
+                View Setlist and Songs
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="overview" className="space-y-4">
             {gigInvites.length > 0 && (
               <Card className="border-border/50 shadow-lg bg-gradient-to-br from-primary/5 to-accent/5">
                 <CardHeader>
@@ -708,7 +817,95 @@ const Dashboard = () => {
                 isEnabled={activeGigsWithSharing.length > 0}
               />
             )}
-          </>
+            </TabsContent>
+
+            <TabsContent value="setlists" className="space-y-4">
+              {setlists.length === 0 ? (
+                <Card className="border-border/50 shadow-lg">
+                  <CardContent className="pt-6">
+                    <div className="text-center py-12">
+                      <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground">
+                        No setlists available yet. Your band leader will upload them soon!
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                setlists.map((setlist) => (
+                  <Card key={setlist.id} className="border-border/50 shadow-lg">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Music className="h-5 w-5 text-primary" />
+                        {setlist.title}
+                      </CardTitle>
+                      {setlist.description && (
+                        <CardDescription>{setlist.description}</CardDescription>
+                      )}
+                    </CardHeader>
+                    <CardContent>
+                      {setlist.songs.length === 0 ? (
+                        <p className="text-center text-muted-foreground py-4">
+                          No songs in this setlist yet
+                        </p>
+                      ) : (
+                        <div className="space-y-6">
+                          {[1, 2, 3, 4].map((setNum) => {
+                            const setSongs = setlist.songs.filter(song => song.set_number === setNum);
+                            if (setSongs.length === 0) return null;
+                            
+                            return (
+                              <div key={setNum} className="space-y-2">
+                                <h3 className="font-semibold">Set {setNum} ({setSongs.length} songs)</h3>
+                                {setSongs.map((song, index) => (
+                                  <div key={song.id} className="group relative flex items-center justify-between p-3 rounded-lg bg-accent/50 hover:bg-accent transition-colors">
+                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                      <span className="text-sm text-muted-foreground font-medium w-6 shrink-0">
+                                        {index + 1}
+                                      </span>
+                                      <div className="flex-1">
+                                        <p className="font-medium truncate">{song.title}</p>
+                                        {song.artist && (
+                                          <p className="text-sm text-muted-foreground">{song.artist}</p>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => navigate(`/setlist/lyrics/${song.id}`)}
+                                      >
+                                        <FileText className="h-4 w-4 mr-1" />
+                                        Lyrics
+                                      </Button>
+                                      {song.audio_url && !/(youtu\.be|youtube\.com|youtube-nocookie\.com)/i.test(song.audio_url) && (
+                                        <Button
+                                          size="icon"
+                                          variant={playingSongId === song.id ? "default" : "ghost"}
+                                          onClick={() => handlePlayPause(song)}
+                                        >
+                                          {playingSongId === song.id ? (
+                                            <Pause className="h-4 w-4" />
+                                          ) : (
+                                            <Play className="h-4 w-4" />
+                                          )}
+                                        </Button>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </TabsContent>
+          </Tabs>
         )}
 
         {(userRole === "band_leader" || userRole === "band_member") && (

@@ -29,7 +29,7 @@ const Index = () => {
             GigMe
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Connect band leaders, band members, and booking managers for seamless gig management
+            Connect band leaders, band members, artists/musicians, and booking managers for seamless gig management
           </p>
           <div className="flex gap-4 justify-center">
             <Button 
@@ -123,7 +123,7 @@ const Index = () => {
           <Star className="h-12 w-12 mx-auto mb-4 text-primary" />
           <h2 className="text-2xl font-bold mb-4">Ready to transform your gig management?</h2>
           <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-            Join GigMe today and experience seamless connections between band leaders, band members, and booking managers
+            Join GigMe today and experience seamless connections between band leaders, band members, artists/musicians, and booking managers
           </p>
           <Button size="lg" onClick={() => navigate("/auth")}>
             Sign Up Now

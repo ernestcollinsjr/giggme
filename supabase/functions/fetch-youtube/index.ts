@@ -21,15 +21,6 @@ serve(async (req) => {
       );
     }
 
-    const apiKey = Deno.env.get('YOUTUBE_API_KEY');
-    if (!apiKey) {
-      console.error('[fetch-youtube] YOUTUBE_API_KEY not configured');
-      return new Response(
-        JSON.stringify({ error: 'YouTube API key not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
     // Extract video ID from various YouTube URL formats
     let videoId = '';
     try {
@@ -38,22 +29,7 @@ serve(async (req) => {
       
       console.log('[fetch-youtube] Parsing URL:', { url, host, pathname: urlObj.pathname });
       
-      // Check if this is a search query URL
-      if (urlObj.pathname === '/results' && urlObj.searchParams.get('search_query')) {
-        const searchQuery = urlObj.searchParams.get('search_query');
-        console.log('[fetch-youtube] Detected search query:', searchQuery);
-        const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=1&q=${encodeURIComponent(searchQuery!)}&key=${apiKey}`;
-        
-        const searchRes = await fetch(searchUrl);
-        const searchData = await searchRes.json();
-        
-        console.log('[fetch-youtube] Search results:', searchData);
-        
-        if (searchData.items && searchData.items.length > 0) {
-          videoId = searchData.items[0].id.videoId;
-          console.log('[fetch-youtube] Found video from search:', videoId);
-        }
-      } else if (host === 'youtu.be') {
+      if (host === 'youtu.be') {
         videoId = urlObj.pathname.substring(1).split('?')[0];
       } else if (host.includes('youtube.com')) {
         if (urlObj.pathname === '/watch') {
@@ -79,47 +55,80 @@ serve(async (req) => {
       );
     }
 
-    // Fetch video details from YouTube API
-    const apiUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,status&id=${videoId}&key=${apiKey}`;
-    console.log('[fetch-youtube] Fetching video details for:', videoId);
+    console.log('[fetch-youtube] Scraping video page for:', videoId);
 
-    const response = await fetch(apiUrl);
-    const data = await response.json();
+    // Scrape the YouTube page to get video metadata
+    const pageUrl = `https://www.youtube.com/watch?v=${videoId}`;
+    const pageResponse = await fetch(pageUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
+    });
 
-    if (!response.ok) {
-      console.error('[fetch-youtube] YouTube API error:', data);
+    if (!pageResponse.ok) {
+      console.error('[fetch-youtube] Failed to fetch YouTube page:', pageResponse.status);
       return new Response(
-        JSON.stringify({ error: 'YouTube API error', details: data }),
-        { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Failed to fetch video page' }),
+        { status: pageResponse.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    if (!data.items || data.items.length === 0) {
+    const html = await pageResponse.text();
+    
+    // Extract title from various possible meta tags
+    let title = '';
+    let channelTitle = '';
+    
+    // Try to extract from og:title meta tag
+    const titleMatch = html.match(/<meta property="og:title" content="([^"]+)"/);
+    if (titleMatch) {
+      title = titleMatch[1];
+    }
+    
+    // Try to extract channel name from various sources
+    const channelMatch = html.match(/<link itemprop="name" content="([^"]+)"/);
+    if (channelMatch) {
+      channelTitle = channelMatch[1];
+    } else {
+      // Alternative: try to get from author meta tag
+      const authorMatch = html.match(/<link itemprop="url" href="[^"]*">\s*<meta itemprop="name" content="([^"]+)"/);
+      if (authorMatch) {
+        channelTitle = authorMatch[1];
+      }
+    }
+    
+    // If we couldn't find the data through meta tags, try JSON-LD
+    if (!title || !channelTitle) {
+      const jsonLdMatch = html.match(/<script type="application\/ld\+json">({[^<]+})<\/script>/);
+      if (jsonLdMatch) {
+        try {
+          const jsonLd = JSON.parse(jsonLdMatch[1]);
+          if (!title && jsonLd.name) {
+            title = jsonLd.name;
+          }
+          if (!channelTitle && jsonLd.author) {
+            channelTitle = jsonLd.author;
+          }
+        } catch (e) {
+          console.log('[fetch-youtube] Failed to parse JSON-LD:', e);
+        }
+      }
+    }
+
+    if (!title) {
       return new Response(
-        JSON.stringify({ error: 'Video not found' }),
+        JSON.stringify({ error: 'Could not extract video title' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const video = data.items[0];
-    const status = video.status;
-
-    // Check if video is available
-    if (!status.embeddable || status.privacyStatus === 'private') {
-      return new Response(
-        JSON.stringify({ 
-          error: 'Video unavailable',
-          reason: !status.embeddable ? 'not embeddable' : 'private video'
-        }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    console.log('[fetch-youtube] Successfully scraped:', { title, channelTitle });
 
     // Return video metadata
     const result = {
       videoId,
-      title: video.snippet.title,
-      channelTitle: video.snippet.channelTitle,
+      title: title,
+      channelTitle: channelTitle || 'Unknown Channel',
       embedUrl: `https://www.youtube-nocookie.com/embed/${videoId}`,
       canonicalUrl: `https://www.youtube.com/watch?v=${videoId}`,
     };

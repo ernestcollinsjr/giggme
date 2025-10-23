@@ -1074,23 +1074,23 @@ export default function TourDetail() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="hotelCheckInTime">Hotel Check-in Time</Label>
+                <Label htmlFor="hotelAddress">Hotel Address</Label>
                 <Input
-                  id="hotelCheckInTime"
-                  type="time"
-                  value={dateFormData.hotel_check_in_time}
-                  onChange={(e) => setDateFormData(prev => ({ ...prev, hotel_check_in_time: e.target.value }))}
+                  id="hotelAddress"
+                  value={dateFormData.hotel_address}
+                  onChange={(e) => setDateFormData(prev => ({ ...prev, hotel_address: e.target.value }))}
+                  placeholder="Full hotel address"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="hotelAddress">Hotel Address</Label>
+              <Label htmlFor="hotelCheckInTime">Hotel Check-in Time</Label>
               <Input
-                id="hotelAddress"
-                value={dateFormData.hotel_address}
-                onChange={(e) => setDateFormData(prev => ({ ...prev, hotel_address: e.target.value }))}
-                placeholder="Full hotel address"
+                id="hotelCheckInTime"
+                type="time"
+                value={dateFormData.hotel_check_in_time}
+                onChange={(e) => setDateFormData(prev => ({ ...prev, hotel_check_in_time: e.target.value }))}
               />
             </div>
 

@@ -31,14 +31,11 @@ const Index = () => {
           <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             Connect band leaders, band members, artists/musicians, and booking managers for seamless gig management
           </p>
-          <div className="flex gap-4 justify-center">
-            <Button 
-              size="lg" 
-              onClick={() => navigate("/auth")}
-              className="text-lg px-8 py-6"
-            >
-              Get Started
-            </Button>
+          <div className="flex gap-4 justify-center items-center">
+            <p className="text-lg text-muted-foreground">
+              Click below to get started
+            </p>
+            <span className="text-muted-foreground">|</span>
             <Button 
               size="lg" 
               onClick={() => navigate("/auth")}

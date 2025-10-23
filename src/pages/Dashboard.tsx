@@ -910,24 +910,24 @@ const Dashboard = () => {
                           No songs in this setlist yet
                         </p>
                       ) : (
-                        <div className="space-y-6">
+                        <div className="space-y-3">
                           {[1, 2, 3, 4].map((setNum) => {
                             const setSongs = setlist.songs.filter(song => song.set_number === setNum);
                             if (setSongs.length === 0) return null;
                             
                             return (
-                              <div key={setNum} className="space-y-2">
-                                <h3 className="font-semibold">Set {setNum} ({setSongs.length} songs)</h3>
+                              <div key={setNum} className="space-y-1">
+                                <h3 className="text-xs font-semibold text-muted-foreground/70 mb-0.5">Set {setNum} ({setSongs.length} songs)</h3>
                                 {setSongs.map((song, index) => (
-                                  <div key={song.id} className="group relative flex items-center justify-between p-3 rounded-lg bg-accent/50 hover:bg-accent transition-colors">
-                                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                                      <span className="text-sm text-muted-foreground font-medium w-6 shrink-0">
+                                  <div key={song.id} className="group relative flex items-center justify-between py-1.5 px-2 rounded-lg bg-slate-100 dark:bg-slate-800/20 hover:bg-slate-200 dark:hover:bg-slate-700/30 transition-colors">
+                                    <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                      <span className="text-xs text-muted-foreground font-medium w-4 shrink-0">
                                         {index + 1}
                                       </span>
                                       <div className="flex-1">
-                                        <p className="font-medium truncate">{song.title}</p>
+                                        <p className="text-xs font-medium truncate leading-tight">{song.title}</p>
                                         {song.artist && (
-                                          <p className="text-sm text-foreground">{song.artist}</p>
+                                          <p className="text-[10px] text-muted-foreground truncate leading-tight">{song.artist}</p>
                                         )}
                                       </div>
                                     </div>
@@ -936,28 +936,31 @@ const Dashboard = () => {
                                         <Button
                                           variant="default"
                                           size="sm"
+                                          className="h-6 text-[10px] px-1.5 py-0"
                                           onClick={() => handleWatchVideo(song)}
                                         >
-                                          <Play className="h-4 w-4 mr-1" />
+                                          <Play className="h-2.5 w-2.5 mr-0.5" />
                                           Watch
                                         </Button>
                                       )}
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => navigate(`/setlist/lyrics/${song.id}`)}
-                                      >
-                                        <FileText className="h-4 w-4 mr-1" />
-                                        Lyrics
-                                      </Button>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-6 text-[10px] px-1.5 py-0"
+                                          onClick={() => navigate(`/setlist/lyrics/${song.id}`)}
+                                        >
+                                          <FileText className="h-2.5 w-2.5 mr-0.5" />
+                                          Lyrics
+                                        </Button>
                                       {song.audio_url && !/(youtu\.be|youtube\.com|youtube-nocookie\.com)/i.test(song.audio_url) && (
                                         <Button
                                           size="icon"
+                                          className="h-6 w-6"
                                           variant={playingSongId === song.id ? "default" : "ghost"}
                                           onClick={() => handlePlayPause(song)}
                                         >
                                           {playingSongId === song.id ? (
-                                            <Pause className="h-4 w-4" />
+                                            <Pause className="h-2.5 w-2.5" />
                                           ) : (
                                             <Play className="h-4 w-4" />
                                           )}

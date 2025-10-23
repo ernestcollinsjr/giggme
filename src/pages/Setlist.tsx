@@ -258,10 +258,10 @@ const Setlist = () => {
                       
                       return (
                          <div key={setNum} className="space-y-2">
-                          <h3 className="font-semibold">Set {setNum} ({setSongs.length} songs)</h3>
+                          <h3 className="font-semibold text-muted-foreground/70">Set {setNum} ({setSongs.length} songs)</h3>
                           {setSongs.map((song, index) => (
                             <div key={song.id} className="space-y-3">
-                              <div className="group relative flex items-center justify-between p-3 rounded-lg bg-accent/50 hover:bg-accent transition-colors">
+                              <div className="group relative flex items-center justify-between p-3 rounded-lg bg-accent/20 hover:bg-accent/30 transition-colors">
                                 <div className="flex items-center gap-3 flex-1 min-w-0">
                                   <span className="text-sm text-muted-foreground font-medium w-6 shrink-0">
                                     {index + 1}

@@ -26,8 +26,8 @@ export const BandAssistant = () => {
   }, [messages]);
 
   const streamChat = async (userMessage: string) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Not authenticated");
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error("Not authenticated");
 
     const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/band-assistant`;
 
@@ -35,11 +35,10 @@ export const BandAssistant = () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        Authorization: `Bearer ${session.access_token}`,
       },
       body: JSON.stringify({
         messages: [...messages, { role: "user", content: userMessage }],
-        userId: user.id,
       }),
     });
 

@@ -10,7 +10,13 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages, userId } = await req.json();
+    const { messages } = await req.json();
+    
+    // Extract user ID from JWT token
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) throw new Error("Missing authorization header");
+    
+    const token = authHeader.replace('Bearer ', '');
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -19,6 +25,12 @@ serve(async (req) => {
 
     // Initialize Supabase client with service role for data access
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+    
+    // Get user from JWT token
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) throw new Error("Invalid authentication token");
+    
+    const userId = user.id;
 
     // Get user role
     const { data: roleData } = await supabase

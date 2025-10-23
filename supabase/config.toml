@@ -1,7 +1,7 @@
 project_id = "pgvfeolxgufldpwyheqf"
 
 [functions.band-assistant]
-verify_jwt = false
+verify_jwt = true
 
 [functions.fetch-youtube]
 verify_jwt = true

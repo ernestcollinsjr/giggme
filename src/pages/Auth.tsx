@@ -8,6 +8,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Music, Briefcase } from "lucide-react";
+import { z } from "zod";
+
+const loginSchema = z.object({
+  email: z.string().trim().email({ message: "Invalid email address" }).max(255),
+  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+});
+
+const signupSchema = z.object({
+  email: z.string().trim().email({ message: "Invalid email address" }).max(255),
+  password: z.string().min(6, { message: "Password must be at least 6 characters" }).max(72),
+  name: z.string().trim().min(1, { message: "Name is required" }).max(100),
+});
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -27,9 +39,15 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      // Validate input
+      const validatedData = loginSchema.parse({
         email: loginEmail,
         password: loginPassword,
+      });
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email: validatedData.email,
+        password: validatedData.password,
       });
 
       if (error) throw error;
@@ -41,11 +59,19 @@ const Auth = () => {
       
       navigate("/dashboard");
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Login failed",
-        description: error.message,
-      });
+      if (error instanceof z.ZodError) {
+        toast({
+          variant: "destructive",
+          title: "Validation Error",
+          description: error.errors[0].message,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Login failed",
+          description: error.message,
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -56,12 +82,19 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signUp({
+      // Validate input
+      const validatedData = signupSchema.parse({
         email: signupEmail,
         password: signupPassword,
+        name: signupName,
+      });
+
+      const { error } = await supabase.auth.signUp({
+        email: validatedData.email,
+        password: validatedData.password,
         options: {
           data: {
-            name: signupName,
+            name: validatedData.name,
             role: role,
           },
           emailRedirectTo: `${window.location.origin}/`,
@@ -77,11 +110,19 @@ const Auth = () => {
       
       navigate("/profile-setup");
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Signup failed",
-        description: error.message,
-      });
+      if (error instanceof z.ZodError) {
+        toast({
+          variant: "destructive",
+          title: "Validation Error",
+          description: error.errors[0].message,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Signup failed",
+          description: error.message,
+        });
+      }
     } finally {
       setLoading(false);
     }

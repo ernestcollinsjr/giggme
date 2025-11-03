@@ -27,7 +27,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Sending tour invite to:", recipientEmail);
 
-    const inviteUrl = `${req.headers.get("origin") || "https://your-app-url.com"}/tour-invite/${inviteToken}`;
+    const origin = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/$/, "") || "";
+    const inviteUrl = `${origin}/tour-invite/${inviteToken}`;
 
     const emailResponse = await resend.emails.send({
       from: "Gig Manager <invites@giggme.com>",

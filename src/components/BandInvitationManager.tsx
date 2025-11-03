@@ -78,6 +78,12 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
         .eq("id", user.id)
         .single();
 
+      console.log("Creating invitation with:", {
+        band_id: bandId,
+        email: email.toLowerCase().trim(),
+        invited_by: user.id,
+      });
+
       // Create invitation
       const { data: invitation, error: inviteError } = await supabase
         .from("band_invitations")
@@ -89,7 +95,12 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
         .select()
         .single();
 
-      if (inviteError) throw inviteError;
+      console.log("Insert result:", { invitation, error: inviteError });
+
+      if (inviteError) {
+        console.error("Full invitation error:", inviteError);
+        throw inviteError;
+      }
 
       // Send email via edge function
       const { error: emailError } = await supabase.functions.invoke("send-band-invite", {

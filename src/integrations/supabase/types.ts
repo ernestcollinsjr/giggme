@@ -59,6 +59,76 @@ export type Database = {
         }
         Relationships: []
       }
+      band_invitations: {
+        Row: {
+          band_id: string
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          status: string
+          token: string
+        }
+        Insert: {
+          band_id: string
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by: string
+          status?: string
+          token?: string
+        }
+        Update: {
+          band_id?: string
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          status?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "band_invitations_band_id_fkey"
+            columns: ["band_id"]
+            isOneToOne: false
+            referencedRelation: "bands"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      band_members: {
+        Row: {
+          band_id: string
+          id: string
+          joined_at: string
+          member_id: string
+        }
+        Insert: {
+          band_id: string
+          id?: string
+          joined_at?: string
+          member_id: string
+        }
+        Update: {
+          band_id?: string
+          id?: string
+          joined_at?: string
+          member_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "band_members_band_id_fkey"
+            columns: ["band_id"]
+            isOneToOne: false
+            referencedRelation: "bands"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bands: {
         Row: {
           band_leader_id: string

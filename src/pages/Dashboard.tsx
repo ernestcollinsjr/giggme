@@ -24,6 +24,7 @@ import { MessageInbox } from "@/components/MessageInbox";
 import { Checkbox } from "@/components/ui/checkbox";
 import { BookingManagerClientLocations } from "@/components/BookingManagerClientLocations";
 import { BandMemberRoster } from "@/components/BandMemberRoster";
+import { BandInvitationManager } from "@/components/BandInvitationManager";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
 import RoleSwitcher from "@/components/RoleSwitcher";
 import { MessageSquare, Send, Users as UsersIcon } from "lucide-react";
@@ -1222,8 +1223,9 @@ const Dashboard = () => {
                           <CardDescription>{band.description}</CardDescription>
                         )}
                       </CardHeader>
-                      <CardContent>
+                      <CardContent className="space-y-4">
                         <BandMemberRoster bandId={band.id} />
+                        <BandInvitationManager bandId={band.id} bandName={band.name} />
                       </CardContent>
                     </Card>
                   </TabsContent>

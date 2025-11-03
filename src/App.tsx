@@ -20,6 +20,7 @@ import OpenExternal from "./pages/OpenExternal";
 import Tours from "./pages/Tours";
 import TourDetail from "./pages/TourDetail";
 import TourInvite from "./pages/TourInvite";
+import BandInvite from "./pages/BandInvite";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +46,7 @@ const App = () => (
           <Route path="/tours" element={<Tours />} />
           <Route path="/tours/:tourId" element={<TourDetail />} />
           <Route path="/tour-invite/:token" element={<TourInvite />} />
+          <Route path="/band-invite/:token" element={<BandInvite />} />
           <Route path="/open" element={<OpenExternal />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

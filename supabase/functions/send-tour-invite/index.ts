@@ -27,8 +27,10 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Sending tour invite to:", recipientEmail);
 
-    const origin = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/$/, "") || "";
-    const inviteUrl = `${origin}/tour-invite/${inviteToken}`;
+    const configured = Deno.env.get("PUBLIC_SITE_URL") || Deno.env.get("SITE_URL") || "";
+    const origin = req.headers.get("origin") || req.headers.get("referer") || "";
+    const base = (configured || origin).toString().replace(/\/$/, "");
+    const inviteUrl = `${base}/tour-invite/${inviteToken}`;
 
     const emailResponse = await resend.emails.send({
       from: "Gig Manager <invites@giggme.com>",

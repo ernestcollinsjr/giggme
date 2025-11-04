@@ -33,7 +33,7 @@ const handler = async (req: Request): Promise<Response> => {
     const inviteUrl = `${base}/band-invite/${inviteToken}`;
 
     const emailResponse = await resend.emails.send({
-      from: "Gig Manager <invites@send.giggme.com>",
+      from: "Gig Manager <invites@giggme.com>",
       to: [recipientEmail],
       subject: `You're invited to join ${bandName}`,
       html: `

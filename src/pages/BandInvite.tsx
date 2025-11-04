@@ -108,16 +108,6 @@ const BandInvite = () => {
         return;
       }
 
-      // Add user to band_members
-      const { error: memberError } = await supabase
-        .from("band_members")
-        .insert({
-          band_id: invitation.band_id,
-          member_id: user.id,
-        });
-
-      if (memberError) throw memberError;
-
       // Update invitation status
       const { error: updateError } = await supabase
         .from("band_invitations")
@@ -128,7 +118,7 @@ const BandInvite = () => {
 
       toast({
         title: "Success!",
-        description: `You've joined ${invitation.bands.name}!`,
+        description: `You've accepted the invitation to ${invitation.bands.name}! The band leader will assign you to the band.`,
       });
 
       navigate("/dashboard");

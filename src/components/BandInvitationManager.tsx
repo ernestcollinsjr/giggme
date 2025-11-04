@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Mail, Copy, Trash2 } from "lucide-react";
+import { Loader2, Mail, Copy, Trash2, UserPlus } from "lucide-react";
 
 interface Invitation {
   id: string;
@@ -167,6 +167,54 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
     }
   };
 
+  const addToBand = async (invitationId: string, email: string) => {
+    try {
+      // Find the user by email
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("email", email.toLowerCase())
+        .single();
+
+      if (!profile) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "User not found. They may need to sign up first.",
+        });
+        return;
+      }
+
+      // Add user to band_members
+      const { error: memberError } = await supabase
+        .from("band_members")
+        .insert({
+          band_id: bandId,
+          member_id: profile.id,
+        });
+
+      if (memberError) throw memberError;
+
+      // Delete the invitation
+      await deleteInvitation(invitationId);
+
+      toast({
+        title: "Member added!",
+        description: `${email} has been added to the band.`,
+      });
+    } catch (error: any) {
+      console.error("Error adding member:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to add member to band.",
+      });
+    }
+  };
+
+  const pendingInvitations = invitations.filter(inv => inv.status === "pending");
+  const acceptedInvitations = invitations.filter(inv => inv.status === "accepted");
+
   return (
     <Card>
       <CardHeader>
@@ -203,44 +251,85 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
           <div className="flex justify-center py-4">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
-        ) : invitations.length > 0 ? (
-          <div className="space-y-2">
-            <h4 className="font-semibold text-sm">Pending Invitations</h4>
-            {invitations.map((invite) => (
-              <div
-                key={invite.id}
-                className="flex items-center justify-between p-3 border rounded-lg"
-              >
-                <div className="flex-1">
-                  <p className="font-medium">{invite.email}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {invite.status === "accepted" ? "Accepted" : "Pending"} • 
-                    Expires {new Date(invite.expires_at).toLocaleDateString()}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => copyInviteLink(invite.token)}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => deleteInvitation(invite.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
         ) : (
-          <p className="text-sm text-muted-foreground text-center py-4">
-            No pending invitations
-          </p>
+          <>
+            {acceptedInvitations.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="font-semibold text-sm">Accepted Invitations</h4>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Add these members to your band
+                </p>
+                {acceptedInvitations.map((invite) => (
+                  <div
+                    key={invite.id}
+                    className="flex items-center justify-between p-3 border rounded-lg bg-primary/5"
+                  >
+                    <div className="flex-1">
+                      <p className="font-medium">{invite.email}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Accepted • Waiting to be added to band
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => addToBand(invite.id, invite.email)}
+                      >
+                        <UserPlus className="h-4 w-4 mr-1" />
+                        Add to Band
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => deleteInvitation(invite.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {pendingInvitations.length > 0 ? (
+              <div className="space-y-2">
+                <h4 className="font-semibold text-sm">Pending Invitations</h4>
+                {pendingInvitations.map((invite) => (
+                  <div
+                    key={invite.id}
+                    className="flex items-center justify-between p-3 border rounded-lg"
+                  >
+                    <div className="flex-1">
+                      <p className="font-medium">{invite.email}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Pending • Expires {new Date(invite.expires_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => copyInviteLink(invite.token)}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => deleteInvitation(invite.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : acceptedInvitations.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No pending invitations
+              </p>
+            ) : null}
+          </>
         )}
       </CardContent>
     </Card>

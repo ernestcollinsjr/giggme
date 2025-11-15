@@ -898,6 +898,10 @@ export type Database = {
         Args: { _tour_id: string; _user_id: string }
         Returns: boolean
       }
+      is_band_member: {
+        Args: { _band_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_in_sharing_window: {
         Args: { earliest_time: string; gig_date: string }
         Returns: boolean

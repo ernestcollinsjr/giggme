@@ -11,7 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Music, Briefcase, MapPin, Calendar as CalendarIcon, Crown, LogOut, ListMusic, User as UserIcon, Plus, Loader2, Play, Pause, FileText } from "lucide-react";
+import { Music, Briefcase, MapPin, Calendar as CalendarIcon, Crown, LogOut, ListMusic, User as UserIcon, Plus, Loader2, Play, Pause, FileText, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
 import { BandAssistant } from "@/components/BandAssistant";
@@ -22,7 +22,6 @@ import { MemberLocationsMap } from "@/components/MemberLocationsMap";
 import { AcceptedGigsCard } from "@/components/AcceptedGigsCard";
 import { MessageInbox } from "@/components/MessageInbox";
 import { Checkbox } from "@/components/ui/checkbox";
-import { BookingManagerClientLocations } from "@/components/BookingManagerClientLocations";
 import { BandMemberRoster } from "@/components/BandMemberRoster";
 import { BandInvitationManager } from "@/components/BandInvitationManager";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
@@ -1499,97 +1498,40 @@ const Dashboard = () => {
         )}
 
         {userRole === "booking_manager" && (
-          <>
-            <Card className="border-border/50 shadow-lg">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <Music className="h-5 w-5 text-primary" />
-                      Band/Artist/Musician
-                    </CardTitle>
-                    <CardDescription>
-                      Browse and connect with bands, artists, and musicians
-                      <span className="block text-xs mt-1 text-primary/70">
-                        💡 Tip: Hover over any artist to send personal text, click the Text icon button
-                      </span>
-                    </CardDescription>
-                  </div>
-                  <div className="flex gap-2">
-                    <div className="flex flex-col items-center">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={openGigRequest}
-                        className="gap-2"
-                      >
-                        <CalendarIcon className="h-4 w-4" />
-                        Group Gig Request
-                      </Button>
-                      <span className="text-[10px] text-muted-foreground mt-0.5">only to unbooked members</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={openGroupText}
-                        className="gap-2"
-                      >
-                        <UsersIcon className="h-4 w-4" />
-                        Group Text
-                      </Button>
-                      <span className="text-[10px] text-muted-foreground mt-0.5">to everyone</span>
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {profiles.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">
-                    No artists/musicians available at the moment
-                  </p>
-                ) : (
-                  <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-1.5">
-                    {profiles.map((bandProfile) => (
-                      <div
-                        key={bandProfile.id}
-                        className="relative flex flex-col items-center p-1.5 border-[0.5px] border-border rounded-md hover:shadow-md hover:border-primary hover:bg-primary/5 transition-all bg-card group"
-                      >
-                        <button
-                          onClick={(e) => openIndividualSms(bandProfile, e)}
-                          className="absolute top-0.5 right-0.5 opacity-0 group-hover:opacity-100 transition-opacity p-0.5 bg-primary text-primary-foreground rounded-sm hover:bg-primary/90 z-10"
-                          title="Text Member"
-                        >
-                          <MessageSquare className="h-3 w-3" />
-                        </button>
-                        <div
-                          onClick={() => openArtistProfile(bandProfile)}
-                          className="cursor-pointer flex flex-col items-center w-full"
-                        >
-                          <Avatar className="h-8 w-8 mb-1 border-[0.5px] border-primary">
-                            <AvatarImage src={bandProfile.photo_urls?.[0]} alt={bandProfile.name} />
-                            <AvatarFallback className="bg-primary/10 text-primary text-[10px]">
-                              {bandProfile.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <h4 className="font-medium text-[10px] text-center line-clamp-1 w-full px-0.5">
-                            {bandProfile.name}
-                          </h4>
-                          {bandProfile.instrument && (
-                            <p className="text-[8px] text-muted-foreground mt-0.5 truncate w-full text-center">
-                              {bandProfile.instrument}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <BookingManagerClientLocations />
-          </>
+          <Card className="border-border/50 shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Briefcase className="h-5 w-5 text-primary" />
+                Booking Manager Dashboard
+              </CardTitle>
+              <CardDescription>
+                Manage your roster and discover new talent
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <Button
+                  variant="default"
+                  onClick={() => navigate("/booking-manager")}
+                  className="h-20 text-lg"
+                >
+                  <UsersIcon className="mr-2 h-5 w-5" />
+                  Manage Roster & Artists
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => navigate("/artists")}
+                  className="h-20 text-lg"
+                >
+                  <Search className="mr-2 h-5 w-5" />
+                  Discover New Artists
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground text-center mt-4">
+                Add bands to your roster, browse artists, and track locations during gigs!
+              </p>
+            </CardContent>
+          </Card>
         )}
 
         {userRole === "artist" && (

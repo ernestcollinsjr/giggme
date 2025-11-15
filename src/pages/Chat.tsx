@@ -38,7 +38,6 @@ const Chat = () => {
   const [recipientId, setRecipientId] = useState<string | undefined>();
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
-  const [managedArtistIds, setManagedArtistIds] = useState<string[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -56,44 +55,12 @@ const Chat = () => {
       
       setUserRole(roleData?.role || null);
 
-      // If booking manager, get managed artists
-      if (roleData?.role === "booking_manager") {
-        const { data: managedBands } = await supabase
-          .from("booking_manager_bands")
-          .select(`
-            band_id,
-            bands!inner (
-              band_leader_id,
-              band_members!inner (
-                member_id
-              )
-            )
-          `)
-          .eq("booking_manager_id", user.id);
-
-        const artistIds = new Set<string>();
-        managedBands?.forEach((mb: any) => {
-          artistIds.add(mb.bands.band_leader_id);
-          mb.bands.band_members?.forEach((bm: any) => {
-            artistIds.add(bm.member_id);
-          });
-        });
-        setManagedArtistIds(Array.from(artistIds));
-      }
-
-      // Load users (exclude self, or filter to managed artists if booking manager)
+      // Load users (exclude self)
       const { data: profs } = await supabase
         .from("profiles")
         .select("id, name, photo_urls");
       
-      let filteredProfiles = (profs as Profile[] | null)?.filter(p => p.id !== user.id) || [];
-      
-      // If booking manager, only show managed artists
-      if (roleData?.role === "booking_manager" && managedArtistIds.length > 0) {
-        filteredProfiles = filteredProfiles.filter(p => managedArtistIds.includes(p.id));
-      }
-      
-      setProfiles(filteredProfiles);
+      setProfiles((profs as Profile[] | null)?.filter(p => p.id !== user.id) || []);
 
       // Load existing messages visible to this user
       const { data: msgs, error: msgErr } = await supabase
@@ -133,7 +100,7 @@ const Chat = () => {
         supabase.removeChannel(channel);
       };
     })();
-  }, [managedArtistIds]);
+  }, []);
 
   useEffect(() => {
     // Auto-scroll to bottom on new messages
@@ -149,28 +116,14 @@ const Chat = () => {
   const senderName = (id: string) => (id === userId ? "You" : (profilesById.get(id)?.name || "Unknown"));
   const recipientName = (id: string | null) => (id ? (id === userId ? "You" : (profilesById.get(id)?.name || "Unknown")) : "Everyone");
 
-  // Filter messages based on user role and target type
+  // Filter messages based on target type
   const filteredMessages = useMemo(() => {
-    let filtered = messages;
-
-    // If booking manager, only show messages involving managed artists
-    if (userRole === "booking_manager" && managedArtistIds.length > 0) {
-      filtered = filtered.filter(m => 
-        m.sender_id === userId || // Messages sent by me
-        managedArtistIds.includes(m.sender_id) || // Messages from managed artists
-        (m.recipient_id && m.recipient_id === userId) // Direct messages to me
-      );
-    }
-
-    // Filter by target type
     if (targetType === "group") {
-      filtered = filtered.filter(m => m.is_group_message);
+      return messages.filter(m => m.is_group_message);
     } else {
-      filtered = filtered.filter(m => !m.is_group_message);
+      return messages.filter(m => !m.is_group_message);
     }
-
-    return filtered;
-  }, [messages, userRole, managedArtistIds, userId, targetType]);
+  }, [messages, targetType]);
 
   const handleSend = async () => {
     if (!userId) return;

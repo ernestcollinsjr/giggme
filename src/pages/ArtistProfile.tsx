@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload, Plus, Trash2, Youtube, ArrowLeft } from "lucide-react";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
+import { TopNav } from "@/components/TopNav";
 
 interface ArtistProfile {
   id: string;
@@ -256,8 +257,10 @@ const ArtistProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/10 p-6">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/10">
+      <TopNav userRole="artist" />
+      <div className="p-6">
+        <div className="max-w-4xl mx-auto">
         <Button variant="ghost" onClick={() => navigate("/dashboard")} className="mb-6">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Dashboard
@@ -435,6 +438,7 @@ const ArtistProfile = () => {
           <Button onClick={handleSaveProfile} disabled={saving} className="w-full" size="lg">
             {saving ? "Saving..." : "Save Profile"}
           </Button>
+        </div>
         </div>
       </div>
     </div>

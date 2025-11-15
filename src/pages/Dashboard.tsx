@@ -29,6 +29,7 @@ import RoleSwitcher from "@/components/RoleSwitcher";
 import { MessageSquare, Send, Users as UsersIcon } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { formatInTimeZone } from "date-fns-tz";
+import { TopNav } from "@/components/TopNav";
 
 interface Profile {
   id: string;
@@ -1082,6 +1083,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/10 pb-20">
+      <TopNav userRole={userRole} />
       <div className="max-w-4xl mx-auto p-4 space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">

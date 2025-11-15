@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { BookingManagerClientLocations } from "@/components/BookingManagerClientLocations";
 import { useToast } from "@/hooks/use-toast";
+import { TopNav } from "@/components/TopNav";
 import { 
   Music, 
   Users as UsersIcon, 
@@ -271,8 +272,10 @@ export default function BookingManager() {
   );
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background">
+      <TopNav userRole="booking_manager" />
+      <div className="p-6">
+        <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -527,6 +530,7 @@ export default function BookingManager() {
             <Button>Send Message</Button>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
     </div>
   );

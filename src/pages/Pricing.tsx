@@ -46,22 +46,6 @@ const Pricing = () => {
 
   const tiers = [
     {
-      name: "Band Members (free plan)",
-      price: "Free",
-      description: "Perfect for getting started with essential features",
-      icon: Music,
-      color: "text-secondary",
-      bgColor: "bg-secondary/10",
-      features: [
-        "Basic gig management",
-        "Location sharing",
-        "Message inbox",
-        "Standard support",
-        "Up to 5 band members",
-      ],
-      priceId: "price_1SLN7wEPiAZgF8MeBiPM6fj1",
-    },
-    {
       name: "Artist/Musician Plan",
       price: "$10.99",
       description: "Showcase your talent and get discovered",
@@ -132,7 +116,7 @@ const Pricing = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-4 gap-6 mb-12">
+        <div className="grid md:grid-cols-3 gap-6 mb-12">
           {tiers.map((tier) => {
             const Icon = tier.icon;
             return (

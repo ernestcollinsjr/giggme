@@ -226,15 +226,29 @@ const Chat = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Recent Messages</Label>
+              <div className="flex items-center justify-between">
+                <Label>Recent Messages</Label>
+                <p className="text-xs text-muted-foreground">
+                  {targetType === "group" ? "Group Messages" : "Direct Messages"} 
+                  {filteredMessages.length > 0 && ` (${filteredMessages.length})`}
+                </p>
+              </div>
               <ScrollArea className="h-[380px] border rounded-md p-3" ref={scrollRef as any}>
                 <div className="space-y-3">
                   {filteredMessages.length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-8">
-                      {targetType === "group" 
-                        ? "No group messages yet" 
-                        : "No direct messages yet"}
-                    </p>
+                    <div className="text-center py-12">
+                      <MessageCircle className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+                      <p className="text-sm font-medium text-muted-foreground mb-1">
+                        {targetType === "group" 
+                          ? "No group messages yet" 
+                          : "No direct messages yet"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {targetType === "group"
+                          ? "Send a message to everyone using the form above"
+                          : "Select a recipient and send a direct message"}
+                      </p>
+                    </div>
                   )}
                   {filteredMessages.map((m) => (
                     <div key={m.id} className="p-3 rounded-md border bg-background">

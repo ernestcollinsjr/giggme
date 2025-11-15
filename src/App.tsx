@@ -15,13 +15,13 @@ import SongLyrics from "./pages/SongLyrics";
 import Pricing from "./pages/Pricing";
 import ArtistProfile from "./pages/ArtistProfile";
 import ArtistsDiscovery from "./pages/ArtistsDiscovery";
+import BookingManager from "./pages/BookingManager";
 import NotFound from "./pages/NotFound";
 import OpenExternal from "./pages/OpenExternal";
 import Tours from "./pages/Tours";
 import TourDetail from "./pages/TourDetail";
 import TourInvite from "./pages/TourInvite";
 import BandInvite from "./pages/BandInvite";
-import BookingManager from "./pages/BookingManager";
 
 const queryClient = new QueryClient();
 

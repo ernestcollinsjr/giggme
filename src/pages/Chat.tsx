@@ -31,12 +31,14 @@ interface Profile {
 const Chat = () => {
   const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [targetType, setTargetType] = useState<"group" | "direct">("group");
   const [recipientId, setRecipientId] = useState<string | undefined>();
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
+  const [managedArtistIds, setManagedArtistIds] = useState<string[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -45,11 +47,53 @@ const Chat = () => {
       if (!user) return;
       setUserId(user.id);
 
-      // Load users (exclude self)
+      // Get user role
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .single();
+      
+      setUserRole(roleData?.role || null);
+
+      // If booking manager, get managed artists
+      if (roleData?.role === "booking_manager") {
+        const { data: managedBands } = await supabase
+          .from("booking_manager_bands")
+          .select(`
+            band_id,
+            bands!inner (
+              band_leader_id,
+              band_members!inner (
+                member_id
+              )
+            )
+          `)
+          .eq("booking_manager_id", user.id);
+
+        const artistIds = new Set<string>();
+        managedBands?.forEach((mb: any) => {
+          artistIds.add(mb.bands.band_leader_id);
+          mb.bands.band_members?.forEach((bm: any) => {
+            artistIds.add(bm.member_id);
+          });
+        });
+        setManagedArtistIds(Array.from(artistIds));
+      }
+
+      // Load users (exclude self, or filter to managed artists if booking manager)
       const { data: profs } = await supabase
         .from("profiles")
         .select("id, name, photo_urls");
-      setProfiles((profs as Profile[] | null)?.filter(p => p.id !== user.id) || []);
+      
+      let filteredProfiles = (profs as Profile[] | null)?.filter(p => p.id !== user.id) || [];
+      
+      // If booking manager, only show managed artists
+      if (roleData?.role === "booking_manager" && managedArtistIds.length > 0) {
+        filteredProfiles = filteredProfiles.filter(p => managedArtistIds.includes(p.id));
+      }
+      
+      setProfiles(filteredProfiles);
 
       // Load existing messages visible to this user
       const { data: msgs, error: msgErr } = await supabase
@@ -89,7 +133,7 @@ const Chat = () => {
         supabase.removeChannel(channel);
       };
     })();
-  }, []);
+  }, [managedArtistIds]);
 
   useEffect(() => {
     // Auto-scroll to bottom on new messages
@@ -104,6 +148,29 @@ const Chat = () => {
 
   const senderName = (id: string) => (id === userId ? "You" : (profilesById.get(id)?.name || "Unknown"));
   const recipientName = (id: string | null) => (id ? (id === userId ? "You" : (profilesById.get(id)?.name || "Unknown")) : "Everyone");
+
+  // Filter messages based on user role and target type
+  const filteredMessages = useMemo(() => {
+    let filtered = messages;
+
+    // If booking manager, only show messages involving managed artists
+    if (userRole === "booking_manager" && managedArtistIds.length > 0) {
+      filtered = filtered.filter(m => 
+        m.sender_id === userId || // Messages sent by me
+        managedArtistIds.includes(m.sender_id) || // Messages from managed artists
+        (m.recipient_id && m.recipient_id === userId) // Direct messages to me
+      );
+    }
+
+    // Filter by target type
+    if (targetType === "group") {
+      filtered = filtered.filter(m => m.is_group_message);
+    } else {
+      filtered = filtered.filter(m => !m.is_group_message);
+    }
+
+    return filtered;
+  }, [messages, userRole, managedArtistIds, userId, targetType]);
 
   const handleSend = async () => {
     if (!userId) return;
@@ -158,11 +225,13 @@ const Chat = () => {
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem id="audience-group" value="group" />
-                    <Label htmlFor="audience-group">Everyone</Label>
+                    <Label htmlFor="audience-group">
+                      {userRole === "booking_manager" ? "All Artists" : "Everyone"}
+                    </Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem id="audience-direct" value="direct" />
-                    <Label htmlFor="audience-direct">Direct</Label>
+                    <Label htmlFor="audience-direct">Direct Message</Label>
                   </div>
                 </RadioGroup>
               </div>
@@ -207,10 +276,14 @@ const Chat = () => {
               <Label>Recent Messages</Label>
               <ScrollArea className="h-[380px] border rounded-md p-3" ref={scrollRef as any}>
                 <div className="space-y-3">
-                  {messages.length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-8">No messages yet</p>
+                  {filteredMessages.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-8">
+                      {targetType === "group" 
+                        ? "No group messages yet" 
+                        : "No direct messages yet"}
+                    </p>
                   )}
-                  {messages.map((m) => (
+                  {filteredMessages.map((m) => (
                     <div key={m.id} className="p-3 rounded-md border bg-background">
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
                         <span>

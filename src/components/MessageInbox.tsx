@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle, Eye } from "lucide-react";
+import { MessageCircle, Eye, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
@@ -118,6 +118,21 @@ export const MessageInbox = ({ userId, onUnreadCountChange }: MessageInboxProps)
     }
   };
 
+  const handleDelete = async (messageId: string) => {
+    try {
+      const { error } = await supabase.from("messages").delete().eq("id", messageId);
+      if (error) throw error;
+      setMessages((prev) => prev.filter((m) => m.id !== messageId));
+      toast({ title: "Deleted", description: "Message deleted successfully." });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Failed to delete",
+        description: error.message,
+      });
+    }
+  };
+
   const getSenderName = (senderId: string) => {
     if (senderId === userId) return "You";
     return profiles.get(senderId)?.name || "Unknown";
@@ -200,15 +215,29 @@ export const MessageInbox = ({ userId, onUnreadCountChange }: MessageInboxProps)
                     </div>
                     <p className="text-sm">{message.content}</p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => markAsRead(message.id)}
-                    className="shrink-0 gap-1"
-                  >
-                    <Eye className="h-4 w-4" />
-                    Read
-                  </Button>
+                  <div className="flex gap-1 shrink-0">
+                    {message.sender_id !== userId && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => markAsRead(message.id)}
+                        className="gap-1"
+                      >
+                        <Eye className="h-4 w-4" />
+                        Read
+                      </Button>
+                    )}
+                    {message.sender_id === userId && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(message.id)}
+                        className="gap-1 text-muted-foreground hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -219,27 +248,42 @@ export const MessageInbox = ({ userId, onUnreadCountChange }: MessageInboxProps)
                 key={message.id}
                 className="p-3 rounded-md border bg-background opacity-60"
               >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span className="font-medium">
-                      From {getSenderName(message.sender_id)}
-                    </span>
-                    {message.is_group_message ? (
-                      <Badge variant="outline" className="text-xs">
-                        Group
-                      </Badge>
-                    ) : (
-                      <span>→ {getRecipientName(message.recipient_id)}</span>
-                    )}
-                    <span className="ml-auto">
-                      {new Date(message.created_at).toLocaleDateString()} at{" "}
-                      {new Date(message.created_at).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span className="font-medium">
+                        From {getSenderName(message.sender_id)}
+                      </span>
+                      {message.is_group_message ? (
+                        <Badge variant="outline" className="text-xs">
+                          Group
+                        </Badge>
+                      ) : (
+                        <span>→ {getRecipientName(message.recipient_id)}</span>
+                      )}
+                      <span className="ml-auto">
+                        {new Date(message.created_at).toLocaleDateString()} at{" "}
+                        {new Date(message.created_at).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </div>
+                    <p className="text-sm">{message.content}</p>
+                    <Badge variant="outline" className="text-xs w-fit">
+                      Read
+                    </Badge>
                   </div>
-                  <p className="text-sm">{message.content}</p>
+                  {message.sender_id === userId && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(message.id)}
+                      className="shrink-0 gap-1 text-muted-foreground hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}

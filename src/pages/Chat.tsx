@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, Send } from "lucide-react";
+import { MessageCircle, Send, Trash2 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -156,6 +156,17 @@ const Chat = () => {
     }
   };
 
+  const handleDelete = async (messageId: string) => {
+    try {
+      const { error } = await supabase.from("messages").delete().eq("id", messageId);
+      if (error) throw error;
+      setMessages(prev => prev.filter(m => m.id !== messageId));
+      toast({ title: "Deleted", description: "Message deleted successfully." });
+    } catch (e: any) {
+      toast({ variant: "destructive", title: "Failed to delete", description: e.message || "Unknown error" });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/10 pb-20">
       <div className="max-w-4xl mx-auto p-4 space-y-4">
@@ -252,11 +263,23 @@ const Chat = () => {
                   )}
                   {filteredMessages.map((m) => (
                     <div key={m.id} className="p-3 rounded-md border bg-background">
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
                         <span>
                           From {senderName(m.sender_id)} {m.is_group_message ? "to Everyone" : m.recipient_id ? `→ ${recipientName(m.recipient_id)}` : ""}
                         </span>
-                        <span>{new Date(m.created_at).toLocaleString()}</span>
+                        <div className="flex items-center gap-2">
+                          <span>{new Date(m.created_at).toLocaleString()}</span>
+                          {m.sender_id === userId && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                              onClick={() => handleDelete(m.id)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
+                        </div>
                       </div>
                       <p className="mt-1 text-sm">{m.content}</p>
                     </div>

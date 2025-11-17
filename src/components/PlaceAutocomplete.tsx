@@ -65,19 +65,22 @@ useEffect(() => {
       // Initialize autocomplete
       autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, {
         types: ["establishment", "geocode"],
-        fields: ["name", "formatted_address", "place_id", "geometry"],
+        fields: ["name", "formatted_address", "place_id", "geometry", "vicinity", "address_components"],
       });
 
       // Listen for place selection
       const listener = autocompleteRef.current.addListener("place_changed", () => {
-        const place = autocompleteRef.current?.getPlace();
-        if (place && place.name) {
-          const placeName = place.name;
-          const address = place.formatted_address;
-          const fullText = address ? `${placeName}, ${address}` : placeName;
-          
-          setInputValue(fullText);
-          onChangeRef.current(fullText, place);
+        const place = autocompleteRef.current?.getPlace() as google.maps.places.PlaceResult | undefined;
+        if (!place) return;
+        const name = place.name ?? "";
+        const formatted = place.formatted_address ?? "";
+        // Some address-only selections may not have name; also try description (from predictions)
+        const description: string = ((place as any)?.description as string | undefined) ?? "";
+        const text = formatted || description || name || inputRef.current?.value || "";
+
+        if (text) {
+          setInputValue(text);
+          onChangeRef.current(text, place);
         }
       });
 

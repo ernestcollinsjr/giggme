@@ -30,6 +30,7 @@ export const PlaceAutocomplete = ({
 
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
   const [effectiveKey, setEffectiveKey] = useState<string>(apiKey || "");
+  const [keyReady, setKeyReady] = useState<boolean>(!!apiKey);
 
   useEffect(() => {
     if (!apiKey) {
@@ -38,20 +39,28 @@ export const PlaceAutocomplete = ({
         .then(({ data, error }) => {
           if (error) {
             console.warn("[PlaceAutocomplete] Failed to fetch Maps API key from backend", error);
+            setKeyReady(true); // Proceed anyway to show error
             return;
           }
           if (data?.apiKey) {
             setEffectiveKey(data.apiKey as string);
+            setKeyReady(true);
             console.log("Google Maps API Key status:", "Loaded (via backend)");
           }
         })
-        .catch((e) => console.warn("[PlaceAutocomplete] Key fetch error", e));
+        .catch((e) => {
+          console.warn("[PlaceAutocomplete] Key fetch error", e);
+          setKeyReady(true); // Proceed anyway
+        });
+    } else {
+      setKeyReady(true);
     }
   }, [apiKey]);
   
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: effectiveKey || "",
+    googleMapsApiKey: keyReady && effectiveKey ? effectiveKey : undefined,
     libraries,
+    id: 'google-maps-script',
   });
 
   useEffect(() => {
@@ -105,6 +114,19 @@ useEffect(() => {
   };
 
   // Always render a single input to preserve focus while Maps loads/errors
+  // But only enable autocomplete once we have a valid key
+  if (!keyReady || !effectiveKey) {
+    return (
+      <Input
+        value={inputValue}
+        onChange={handleInputChange}
+        placeholder="Loading Maps..."
+        className={className}
+        autoComplete="off"
+      />
+    );
+  }
+
   return (
     <Input
       ref={inputRef}

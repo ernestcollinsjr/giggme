@@ -56,7 +56,7 @@ export const PlaceAutocomplete = ({
     }
   }, [apiKey]);
 
-  const { ready: mapsReady } = useMapsLoader(keyReady && effectiveKey ? effectiveKey : undefined, libraries);
+  const { ready: mapsReady, error: mapsErr } = useMapsLoader(keyReady && effectiveKey ? effectiveKey : undefined, libraries);
 
   useEffect(() => {
     setInputValue(value);
@@ -65,8 +65,17 @@ export const PlaceAutocomplete = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const initializedRef = useRef(false);
-
-  // Fallback: resolve typed text to a place using AutocompleteService or Geocoder
+  const [googleBroken, setGoogleBroken] = useState(false);
+  // If loader reports an error, fall back to plain input and keep it enabled
+  useEffect(() => {
+    if (!mapsErr && !googleBroken) return;
+    if (inputRef.current) {
+      inputRef.current.disabled = false;
+      inputRef.current.setAttribute("aria-disabled", "false");
+      (inputRef.current as any).readOnly = false;
+    }
+    setGoogleBroken(true);
+  }, [mapsErr, googleBroken]);
   const resolveTextToPlace = async (text: string) => {
     if (!text || !(window as any).google) return;
     try {
@@ -132,12 +141,17 @@ export const PlaceAutocomplete = ({
       });
       autocompleteRef.current = autocomplete;
       initializedRef.current = true;
+      // Ensure the input stays enabled
+      if (inputRef.current) {
+        inputRef.current.disabled = false;
+        inputRef.current.setAttribute("aria-disabled", "false");
+        (inputRef.current as any).readOnly = false;
+      }
 
       // Prevent Enter key from submitting a surrounding form; if no Google selection, try fallback
       const keydownHandler = (e: KeyboardEvent) => {
         if (e.key === "Enter") {
           e.preventDefault();
-          // If Google hasn't populated a place yet, resolve typed text
           const typed = (inputRef.current?.value || "").trim();
           const gp = (autocomplete as any)?.getPlace?.();
           if (!gp || (!gp.place_id && !gp.formatted_address)) {
@@ -170,12 +184,21 @@ export const PlaceAutocomplete = ({
           autocompleteRef.current = null;
         }
         if (inputRef.current) {
+          inputRef.current.disabled = false;
+          inputRef.current.setAttribute("aria-disabled", "false");
+          (inputRef.current as any).readOnly = false;
           inputRef.current.removeEventListener("keydown", keydownHandler);
         }
         initializedRef.current = false;
       };
     } catch (e) {
       console.warn("[PlaceAutocomplete] Autocomplete init error:", e);
+      setGoogleBroken(true);
+      if (inputRef.current) {
+        inputRef.current.disabled = false;
+        inputRef.current.setAttribute("aria-disabled", "false");
+        (inputRef.current as any).readOnly = false;
+      }
     }
   }, [mapsReady, disableAutocomplete]);
 
@@ -186,7 +209,7 @@ export const PlaceAutocomplete = ({
   };
 
   // Always render a single input to preserve focus while Maps loads/errors
-  if (!keyReady || !effectiveKey || !mapsReady || disableAutocomplete) {
+  if (!keyReady || !effectiveKey || !mapsReady || disableAutocomplete || googleBroken) {
     return (
       <Input
         ref={inputRef}

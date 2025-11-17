@@ -153,8 +153,12 @@ export const PlaceAutocomplete = ({
         if (e.key === "Enter") {
           e.preventDefault();
           const typed = (inputRef.current?.value || "").trim();
+          // Immediately propagate typed text so parents never receive undefined
+          setInputValue(typed);
+          onChangeRef.current(typed);
           const gp = (autocomplete as any)?.getPlace?.();
           if (!gp || (!gp.place_id && !gp.formatted_address)) {
+            // Try to resolve to a full place in the background
             resolveTextToPlace(typed);
           }
         }
@@ -169,10 +173,9 @@ export const PlaceAutocomplete = ({
         const formatted = place.formatted_address ?? "";
         const description: string = ((place as any)?.description as string | undefined) ?? "";
         const text = formatted || name || description;
-        if (text) {
-          setInputValue(text);
-          onChangeRef.current(text, place);
-        }
+        const textOut = text || inputRef.current?.value || "";
+        setInputValue(textOut);
+        onChangeRef.current(textOut, place);
       });
 
       return () => {

@@ -69,6 +69,7 @@ export const PlaceAutocomplete = ({
   useEffect(() => {
     if (!mapsReady || !inputRef.current || disableAutocomplete || initializedRef.current) return;
     try {
+      console.debug("[PlaceAutocomplete] Initializing Google Autocomplete");
       const autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
         types: ["establishment", "geocode"],
         fields: [
@@ -83,8 +84,18 @@ export const PlaceAutocomplete = ({
       autocompleteRef.current = autocomplete;
       initializedRef.current = true;
 
+      // Prevent Enter key from submitting a surrounding form before selection
+      const keydownHandler = (e: KeyboardEvent) => {
+        if (e.key === "Enter") {
+          e.stopPropagation();
+          // Do not preventDefault here so Google can handle confirming the selection
+        }
+      };
+      inputRef.current.addEventListener("keydown", keydownHandler);
+
       const listener = autocomplete.addListener("place_changed", () => {
         const place = autocomplete.getPlace();
+        console.debug("[PlaceAutocomplete] place_changed", place);
         if (!place) return;
         const name = place.name ?? "";
         const formatted = place.formatted_address ?? "";
@@ -103,6 +114,9 @@ export const PlaceAutocomplete = ({
         if (autocompleteRef.current) {
           google.maps.event.clearInstanceListeners(autocompleteRef.current);
           autocompleteRef.current = null;
+        }
+        if (inputRef.current) {
+          inputRef.current.removeEventListener("keydown", keydownHandler);
         }
         initializedRef.current = false;
       };

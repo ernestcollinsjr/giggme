@@ -453,7 +453,6 @@ const Bookings = () => {
                       }
                     }}
                     placeholder="Start typing a venue address..."
-                    disableAutocomplete
                   />
                 </div>
               </div>

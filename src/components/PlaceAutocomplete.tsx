@@ -63,20 +63,21 @@ useEffect(() => {
 
     try {
       // Initialize autocomplete
-      autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, {
+      const autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
         types: ["establishment", "geocode"],
         fields: ["name", "formatted_address", "place_id", "geometry", "vicinity", "address_components"],
       });
+      autocompleteRef.current = autocomplete;
 
       // Listen for place selection
-      const listener = autocompleteRef.current.addListener("place_changed", () => {
-        const place = autocompleteRef.current?.getPlace() as google.maps.places.PlaceResult | undefined;
+      const listener = autocomplete.addListener("place_changed", () => {
+        const place = autocomplete.getPlace();
         if (!place) return;
+        
         const name = place.name ?? "";
         const formatted = place.formatted_address ?? "";
-        // Some address-only selections may not have name; also try description (from predictions)
         const description: string = ((place as any)?.description as string | undefined) ?? "";
-        const text = formatted || description || name || inputRef.current?.value || "";
+        const text = formatted || name || description;
 
         if (text) {
           setInputValue(text);
@@ -88,9 +89,11 @@ useEffect(() => {
         if (listener) {
           google.maps.event.removeListener(listener);
         }
+        if (autocompleteRef.current) {
+          google.maps.event.clearInstanceListeners(inputRef.current!);
+        }
       };
     } catch (e) {
-      // If initialization fails (e.g., key restrictions), fall back to plain input
       console.warn("[PlaceAutocomplete] Autocomplete disabled due to error:", e);
     }
   }, [isLoaded, disableAutocomplete]);

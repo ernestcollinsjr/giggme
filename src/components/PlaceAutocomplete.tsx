@@ -66,6 +66,55 @@ export const PlaceAutocomplete = ({
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const initializedRef = useRef(false);
 
+  // Fallback: resolve typed text to a place using AutocompleteService or Geocoder
+  const resolveTextToPlace = async (text: string) => {
+    if (!text || !(window as any).google) return;
+    try {
+      const svc = new google.maps.places.AutocompleteService();
+      const predictions = await new Promise<google.maps.places.AutocompletePrediction[]>((resolve) => {
+        svc.getPlacePredictions({ input: text, types: ["establishment", "geocode"] }, (preds) => {
+          resolve(preds || []);
+        });
+      });
+      let placeResult: google.maps.places.PlaceResult | null = null;
+      if (predictions.length > 0) {
+        const placeId = predictions[0].place_id!;
+        const ps = new google.maps.places.PlacesService(document.createElement("div"));
+        placeResult = await new Promise((resolve) => {
+          ps.getDetails(
+            { placeId, fields: ["name", "formatted_address", "place_id", "geometry", "vicinity", "address_components"] },
+            (res) => resolve(res || null)
+          );
+        });
+      } else {
+        // Geocode as last resort
+        const geocoder = new google.maps.Geocoder();
+        const geocodeRes = await new Promise<google.maps.GeocoderResult[] | null>((resolve) => {
+          geocoder.geocode({ address: text }, (res, status) => {
+            resolve(status === "OK" ? res || null : null);
+          });
+        });
+        if (geocodeRes && geocodeRes.length) {
+          placeResult = {
+            name: text,
+            formatted_address: geocodeRes[0].formatted_address,
+            geometry: { location: geocodeRes[0].geometry.location } as any,
+            place_id: geocodeRes[0].place_id,
+          } as google.maps.places.PlaceResult;
+        }
+      }
+      if (placeResult) {
+        const name = placeResult.name ?? "";
+        const formatted = placeResult.formatted_address ?? "";
+        const textOut = formatted || name || text;
+        setInputValue(textOut);
+        onChangeRef.current(textOut, placeResult);
+      }
+    } catch (err) {
+      console.warn("[PlaceAutocomplete] Fallback resolve failed", err);
+    }
+  };
+
   useEffect(() => {
     if (!mapsReady || !inputRef.current || disableAutocomplete || initializedRef.current) return;
     try {
@@ -84,11 +133,16 @@ export const PlaceAutocomplete = ({
       autocompleteRef.current = autocomplete;
       initializedRef.current = true;
 
-      // Prevent Enter key from submitting a surrounding form before selection
+      // Prevent Enter key from submitting a surrounding form; if no Google selection, try fallback
       const keydownHandler = (e: KeyboardEvent) => {
         if (e.key === "Enter") {
-          e.stopPropagation();
-          // Do not preventDefault here so Google can handle confirming the selection
+          e.preventDefault();
+          // If Google hasn't populated a place yet, resolve typed text
+          const typed = (inputRef.current?.value || "").trim();
+          const gp = (autocomplete as any)?.getPlace?.();
+          if (!gp || (!gp.place_id && !gp.formatted_address)) {
+            resolveTextToPlace(typed);
+          }
         }
       };
       inputRef.current.addEventListener("keydown", keydownHandler);

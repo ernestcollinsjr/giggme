@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { useLoadScript } from "@react-google-maps/api";
 import { supabase } from "@/integrations/supabase/client";
+import { useMapsLoader } from "@/hooks/useMapsLoader";
+
 const libraries: ("places")[] = ["places"];
 
 interface PlaceAutocompleteProps {
@@ -37,7 +38,7 @@ export const PlaceAutocomplete = ({
         .then(({ data, error }) => {
           if (error) {
             console.warn("[PlaceAutocomplete] Failed to fetch Maps API key from backend", error);
-            setKeyReady(true); // Proceed anyway to show error
+            setKeyReady(true);
             return;
           }
           if (data?.apiKey) {
@@ -48,90 +49,67 @@ export const PlaceAutocomplete = ({
         })
         .catch((e) => {
           console.warn("[PlaceAutocomplete] Key fetch error", e);
-          setKeyReady(true); // Proceed anyway
+          setKeyReady(true);
         });
     } else {
       setKeyReady(true);
     }
   }, [apiKey]);
-  
-  // Inner component loads Google Maps only when key is ready to avoid double-loading
-  const AutocompleteInner = ({
-    value,
-    onChange,
-    placeholder,
-    className,
-    disableAutocomplete,
-    effectiveKey,
-  }: PlaceAutocompleteProps & { effectiveKey: string }) => {
-    const inputRef = useRef<HTMLInputElement>(null);
-    const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
-    const onChangeInternalRef = useRef(onChange);
-    useEffect(() => {
-      onChangeInternalRef.current = onChange;
-    }, [onChange]);
 
-    const { isLoaded, loadError } = useLoadScript({
-      googleMapsApiKey: effectiveKey,
-      libraries,
-      id: 'google-maps-script',
-    });
-
-    useEffect(() => {
-      if (!isLoaded || !inputRef.current || disableAutocomplete) return;
-
-      try {
-        const autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
-          types: ["establishment", "geocode"],
-          fields: ["name", "formatted_address", "place_id", "geometry", "vicinity", "address_components"],
-        });
-        autocompleteRef.current = autocomplete;
-
-        const listener = autocomplete.addListener("place_changed", () => {
-          const place = autocomplete.getPlace();
-          if (!place) return;
-
-          const name = place.name ?? "";
-          const formatted = place.formatted_address ?? "";
-          const description: string = ((place as any)?.description as string | undefined) ?? "";
-          const text = formatted || name || description;
-
-          if (text) {
-            onChangeInternalRef.current(text, place);
-          }
-        });
-
-        return () => {
-          if (listener) {
-            google.maps.event.removeListener(listener);
-          }
-          if (autocompleteRef.current) {
-            google.maps.event.clearInstanceListeners(autocompleteRef.current);
-            autocompleteRef.current = null;
-          }
-        };
-      } catch (e) {
-        console.warn("[PlaceAutocomplete] Autocomplete disabled due to error:", e);
-      }
-    }, [isLoaded, disableAutocomplete]);
-
-    return (
-      <Input
-        ref={inputRef}
-        value={value}
-        onChange={(e) => onChangeInternalRef.current(e.target.value)}
-        placeholder={isLoaded ? placeholder : loadError ? placeholder : "Loading venue..."}
-        className={className}
-        autoComplete="off"
-      />
-    );
-  };
+  const { ready: mapsReady } = useMapsLoader(keyReady && effectiveKey ? effectiveKey : undefined, libraries);
 
   useEffect(() => {
     setInputValue(value);
   }, [value]);
 
-  // Autocomplete initialization moved into inner component to avoid double-loading the Maps script
+  const inputRef = useRef<HTMLInputElement>(null);
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const initializedRef = useRef(false);
+
+  useEffect(() => {
+    if (!mapsReady || !inputRef.current || disableAutocomplete || initializedRef.current) return;
+    try {
+      const autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
+        types: ["establishment", "geocode"],
+        fields: [
+          "name",
+          "formatted_address",
+          "place_id",
+          "geometry",
+          "vicinity",
+          "address_components",
+        ],
+      });
+      autocompleteRef.current = autocomplete;
+      initializedRef.current = true;
+
+      const listener = autocomplete.addListener("place_changed", () => {
+        const place = autocomplete.getPlace();
+        if (!place) return;
+        const name = place.name ?? "";
+        const formatted = place.formatted_address ?? "";
+        const description: string = ((place as any)?.description as string | undefined) ?? "";
+        const text = formatted || name || description;
+        if (text) {
+          setInputValue(text);
+          onChangeRef.current(text, place);
+        }
+      });
+
+      return () => {
+        if (listener) {
+          google.maps.event.removeListener(listener);
+        }
+        if (autocompleteRef.current) {
+          google.maps.event.clearInstanceListeners(autocompleteRef.current);
+          autocompleteRef.current = null;
+        }
+        initializedRef.current = false;
+      };
+    } catch (e) {
+      console.warn("[PlaceAutocomplete] Autocomplete init error:", e);
+    }
+  }, [mapsReady, disableAutocomplete]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
@@ -140,30 +118,28 @@ export const PlaceAutocomplete = ({
   };
 
   // Always render a single input to preserve focus while Maps loads/errors
-  // But only enable autocomplete once we have a valid key
-  if (!keyReady || !effectiveKey) {
+  if (!keyReady || !effectiveKey || !mapsReady || disableAutocomplete) {
     return (
       <Input
+        ref={inputRef}
         value={inputValue}
         onChange={handleInputChange}
-        placeholder="Loading Maps..."
+        placeholder={placeholder ?? "Search venue"}
         className={className}
         autoComplete="off"
       />
     );
   }
 
+  // Maps ready + autocomplete active
   return (
-    <AutocompleteInner
+    <Input
+      ref={inputRef}
       value={inputValue}
-      onChange={(text, place) => {
-        setInputValue(text);
-        onChangeRef.current(text, place);
-      }}
-      placeholder={placeholder}
+      onChange={handleInputChange}
+      placeholder={placeholder ?? "Search venue"}
       className={className}
-      disableAutocomplete={disableAutocomplete}
-      effectiveKey={effectiveKey}
+      autoComplete="off"
     />
   );
 };

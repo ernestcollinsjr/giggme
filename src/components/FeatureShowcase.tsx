@@ -87,6 +87,7 @@ export const FeatureShowcase = () => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isNarrating, setIsNarrating] = useState(false);
+  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const requestIdRef = useRef(0);
@@ -100,6 +101,7 @@ export const FeatureShowcase = () => {
       audioRef.current = null;
     }
     setIsNarrating(false);
+    setIsLoadingAudio(false);
   }, []);
 
   // Stop and invalidate any pending requests
@@ -115,6 +117,7 @@ export const FeatureShowcase = () => {
     // Stop current audio and get a new request ID
     stopCurrentAudio();
     const currentRequestId = ++requestIdRef.current;
+    setIsLoadingAudio(true);
 
     try {
       const { data, error } = await supabase.functions.invoke("text-to-speech", {
@@ -128,11 +131,7 @@ export const FeatureShowcase = () => {
 
       if (error || !data?.audioContent) {
         console.error("TTS error:", error);
-        return;
-      }
-
-      // Double check before playing
-      if (currentRequestId !== requestIdRef.current) {
+        setIsLoadingAudio(false);
         return;
       }
 
@@ -142,6 +141,7 @@ export const FeatureShowcase = () => {
       audio.onended = () => {
         if (currentRequestId === requestIdRef.current) {
           setIsNarrating(false);
+          setIsLoadingAudio(false);
         }
         if (audioRef.current === audio) {
           audioRef.current = null;
@@ -151,18 +151,21 @@ export const FeatureShowcase = () => {
       audio.onerror = () => {
         if (currentRequestId === requestIdRef.current) {
           setIsNarrating(false);
+          setIsLoadingAudio(false);
         }
         if (audioRef.current === audio) {
           audioRef.current = null;
         }
       };
 
+      setIsLoadingAudio(false);
       setIsNarrating(true);
       await audio.play();
     } catch (error) {
       console.error("TTS error:", error);
       if (currentRequestId === requestIdRef.current) {
         setIsNarrating(false);
+        setIsLoadingAudio(false);
       }
     }
   }, [isMuted, stopCurrentAudio]);
@@ -195,12 +198,12 @@ export const FeatureShowcase = () => {
 
   // Auto-advance when playing
   useEffect(() => {
-    if (!isPlaying || isAnimating || isNarrating) return;
+    if (!isPlaying || isAnimating || isNarrating || isLoadingAudio) return;
     
     const delay = isMuted ? 4000 : 2000;
     const timeout = setTimeout(nextStep, delay);
     return () => clearTimeout(timeout);
-  }, [isPlaying, nextStep, isNarrating, isMuted, isAnimating, currentStep]);
+  }, [isPlaying, nextStep, isNarrating, isLoadingAudio, isMuted, isAnimating, currentStep]);
 
   // Speak on mount
   useEffect(() => {

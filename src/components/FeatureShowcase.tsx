@@ -92,6 +92,7 @@ export const FeatureShowcase = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const requestIdRef = useRef(0);
   const hasMountedRef = useRef(false);
+  const isBusyRef = useRef(false); // Single source of truth for "busy" state
   
   // Use refs for values that need to be read inside setTimeout
   const isMutedRef = useRef(isMuted);
@@ -101,7 +102,7 @@ export const FeatureShowcase = () => {
   useEffect(() => { isMutedRef.current = isMuted; }, [isMuted]);
   useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
 
-  // Stop just the audio playback (doesn't affect loading state)
+  // Stop just the audio playback
   const stopAudioPlayback = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
@@ -114,6 +115,7 @@ export const FeatureShowcase = () => {
   // Stop audio and clear all states (used when switching steps)
   const stopAudio = useCallback(() => {
     requestIdRef.current++;
+    isBusyRef.current = false;
     stopAudioPlayback();
     setIsLoadingAudio(false);
   }, [stopAudioPlayback]);
@@ -122,7 +124,10 @@ export const FeatureShowcase = () => {
   const speak = useCallback(async (text: string) => {
     if (!text || isMutedRef.current) return;
     
-    // Stop any current audio playback but keep loading state
+    // Mark as busy immediately
+    isBusyRef.current = true;
+    
+    // Stop any current audio playback
     stopAudioPlayback();
     const currentRequestId = ++requestIdRef.current;
     setIsLoadingAudio(true);
@@ -139,6 +144,7 @@ export const FeatureShowcase = () => {
 
       if (error || !data?.audioContent) {
         console.error("TTS error:", error);
+        isBusyRef.current = false;
         setIsLoadingAudio(false);
         return;
       }
@@ -148,6 +154,7 @@ export const FeatureShowcase = () => {
       
       audio.onended = () => {
         if (currentRequestId === requestIdRef.current) {
+          isBusyRef.current = false;
           setIsNarrating(false);
         }
         if (audioRef.current === audio) {
@@ -157,6 +164,7 @@ export const FeatureShowcase = () => {
       
       audio.onerror = () => {
         if (currentRequestId === requestIdRef.current) {
+          isBusyRef.current = false;
           setIsNarrating(false);
           setIsLoadingAudio(false);
         }
@@ -172,6 +180,7 @@ export const FeatureShowcase = () => {
     } catch (error) {
       console.error("TTS error:", error);
       if (currentRequestId === requestIdRef.current) {
+        isBusyRef.current = false;
         setIsNarrating(false);
         setIsLoadingAudio(false);
       }
@@ -187,9 +196,10 @@ export const FeatureShowcase = () => {
     setTimeout(() => {
       setCurrentStep(step);
       
-      // Set isLoadingAudio BEFORE isAnimating becomes false to prevent race condition
+      // Set busy and loading BEFORE isAnimating becomes false to prevent race condition
       const shouldSpeak = !isMutedRef.current && isPlayingRef.current;
       if (shouldSpeak) {
+        isBusyRef.current = true;
         setIsLoadingAudio(true);
       }
       
@@ -216,7 +226,12 @@ export const FeatureShowcase = () => {
     if (!isPlaying || isAnimating || isNarrating || isLoadingAudio) return;
     
     const delay = isMuted ? 4000 : 2000;
-    const timeout = setTimeout(nextStep, delay);
+    const timeout = setTimeout(() => {
+      // Double-check we're not busy before advancing
+      if (!isBusyRef.current) {
+        nextStep();
+      }
+    }, delay);
     return () => clearTimeout(timeout);
   }, [isPlaying, nextStep, isNarrating, isLoadingAudio, isMuted, isAnimating, currentStep]);
 
@@ -225,8 +240,9 @@ export const FeatureShowcase = () => {
     if (hasMountedRef.current) return;
     hasMountedRef.current = true;
     
-    // Set isLoadingAudio immediately to prevent auto-advance
+    // Set busy and loading immediately to prevent auto-advance
     if (!isMutedRef.current) {
+      isBusyRef.current = true;
       setIsLoadingAudio(true);
     }
     

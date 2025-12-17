@@ -179,7 +179,9 @@ export const FeatureShowcase = () => {
                 variant="ghost"
                 size="icon"
                 onClick={() => {
+                  console.log("Pause/Play clicked, isPlaying:", isPlaying);
                   if (isPlaying) {
+                    console.log("Calling stop()");
                     stop();
                   }
                   setIsPlaying(!isPlaying);

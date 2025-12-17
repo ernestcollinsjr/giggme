@@ -120,10 +120,16 @@ export const useTutorialNarration = () => {
   }, [isMuted]);
 
   const stop = useCallback(() => {
+    console.log("Stop called, audioRef:", audioRef.current);
     requestIdRef.current++; // Invalidate any pending requests
     if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
+      try {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        audioRef.current.src = "";
+      } catch (e) {
+        console.error("Error stopping audio:", e);
+      }
       audioRef.current = null;
     }
     setIsSpeaking(false);

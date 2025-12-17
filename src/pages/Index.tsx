@@ -1,10 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "next-themes";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { FeatureShowcase } from "@/components/FeatureShowcase";
-import { Music, Briefcase, Star, Users, Crown, Mic, Check, ArrowRight, Moon, Sun } from "lucide-react";
+import { AnimatedTutorial, TutorialStep } from "@/components/tutorials/AnimatedTutorial";
+import { Music, Briefcase, Star, Users, Crown, Mic, Check, ArrowRight, Moon, Sun, Calendar, MapPin, ListMusic } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -154,6 +155,95 @@ const Index = () => {
 
       {/* Feature Highlights Section */}
       <FeatureShowcase />
+
+      {/* Animated Tutorial Section */}
+      <section className="max-w-6xl mx-auto px-4 py-16">
+        <h2 className="text-2xl md:text-3xl font-bold text-center mb-4">How It Works</h2>
+        <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
+          See how GigMe streamlines your music workflow in just a few simple steps.
+        </p>
+        <AnimatedTutorial
+          id="getting-started"
+          steps={[
+            {
+              title: "Create Your Gig",
+              description: "Set up your next performance with venue details, times, and all the info your band needs.",
+              visual: (
+                <div className="flex items-center justify-center">
+                  <div className="relative">
+                    <div className="w-64 h-48 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl border border-primary/30 flex items-center justify-center">
+                      <Calendar className="h-20 w-20 text-primary animate-pulse" />
+                    </div>
+                    <div className="absolute -right-4 -bottom-4 bg-card border border-border rounded-lg p-3 shadow-lg">
+                      <p className="text-xs font-medium">Dec 21, 2024</p>
+                      <p className="text-xs text-muted-foreground">8:00 PM</p>
+                    </div>
+                  </div>
+                </div>
+              ),
+              narration: "First, create your gig by adding the venue, date, and performance details."
+            },
+            {
+              title: "Invite Your Band",
+              description: "Add band members and crew. They'll receive notifications and can confirm their availability.",
+              visual: (
+                <div className="flex items-center justify-center">
+                  <div className="flex -space-x-4">
+                    {[Crown, Music, Mic, Users].map((Icon, i) => (
+                      <div 
+                        key={i}
+                        className="w-16 h-16 rounded-full bg-gradient-to-br from-secondary/30 to-secondary/10 border-2 border-background flex items-center justify-center shadow-lg"
+                        style={{ animationDelay: `${i * 0.1}s` }}
+                      >
+                        <Icon className="h-7 w-7 text-secondary" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ),
+              narration: "Invite your band members and crew. They'll get instant notifications."
+            },
+            {
+              title: "Track Everyone",
+              description: "See where your team members are on gig day with real-time location sharing.",
+              visual: (
+                <div className="flex items-center justify-center">
+                  <div className="relative w-64 h-48 bg-gradient-to-br from-accent/20 to-accent/5 rounded-2xl border border-accent/30 overflow-hidden">
+                    <MapPin className="absolute top-8 left-12 h-8 w-8 text-primary animate-bounce" />
+                    <MapPin className="absolute top-16 right-16 h-6 w-6 text-secondary animate-bounce" style={{ animationDelay: "0.2s" }} />
+                    <MapPin className="absolute bottom-12 left-1/2 h-7 w-7 text-accent animate-bounce" style={{ animationDelay: "0.4s" }} />
+                  </div>
+                </div>
+              ),
+              narration: "Track your team's location in real-time on gig day."
+            },
+            {
+              title: "Manage Your Setlist",
+              description: "Organize your songs, add lyrics, and share with your band for a flawless performance.",
+              visual: (
+                <div className="flex items-center justify-center">
+                  <div className="bg-card border border-border rounded-xl p-4 shadow-lg w-56">
+                    <div className="flex items-center gap-2 mb-3">
+                      <ListMusic className="h-5 w-5 text-primary" />
+                      <span className="font-medium text-sm">Tonight's Setlist</span>
+                    </div>
+                    <div className="space-y-2">
+                      {["My Girl", "Superstition", "Ain't No Mountain"].map((song, i) => (
+                        <div key={song} className="flex items-center gap-2 text-sm p-2 bg-muted/50 rounded-lg">
+                          <span className="text-primary font-medium">{i + 1}.</span>
+                          <span>{song}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ),
+              narration: "Organize your setlist with songs and lyrics for a perfect show."
+            }
+          ]}
+          onComplete={(id) => console.log(`Tutorial ${id} completed`)}
+        />
+      </section>
 
       {/* Role Cards Section */}
       <section className="max-w-6xl mx-auto px-4 py-16 border-t border-border/40">

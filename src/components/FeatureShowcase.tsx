@@ -105,16 +105,19 @@ export const FeatureShowcase = () => {
     goToStep(prev);
   }, [currentStep, goToStep]);
 
-  // Auto-advance when playing
+  // Auto-advance when playing (wait for narration to finish)
   useEffect(() => {
     if (!isPlaying) return;
     
-    const interval = setInterval(() => {
+    // Don't advance while narration is still playing
+    if (isNarrating) return;
+    
+    const timeout = setTimeout(() => {
       nextStep();
-    }, 6000);
+    }, isMuted ? 6000 : 3000); // Shorter delay after narration ends, longer if muted
 
-    return () => clearInterval(interval);
-  }, [isPlaying, nextStep]);
+    return () => clearTimeout(timeout);
+  }, [isPlaying, nextStep, isNarrating, isMuted]);
 
   // Speak on mount if not muted
   useEffect(() => {

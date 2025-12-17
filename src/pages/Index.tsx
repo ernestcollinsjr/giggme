@@ -116,13 +116,13 @@ const Index = () => {
                 <p className="text-xs font-medium mb-2">Setlist</p>
                 <div className="space-y-1.5 text-xs text-muted-foreground">
                   <div className="flex items-center gap-2">
-                    <span className="text-primary">●</span> Amazing Grace
+                    <span className="text-primary">●</span> My Girl
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-primary">●</span> How Great
+                    <span className="text-primary">●</span> Ain't No Mountain
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-primary">●</span> Goodness
+                    <span className="text-primary">●</span> Superstition
                   </div>
                 </div>
               </div>

@@ -92,9 +92,8 @@ export const FeatureShowcase = () => {
   const requestIdRef = useRef(0);
   const hasMountedRef = useRef(false);
 
-  // Stop audio function
-  const stopAudio = useCallback(() => {
-    requestIdRef.current++; // Invalidate any pending audio
+  // Stop audio function - does NOT increment requestId
+  const stopCurrentAudio = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.src = "";
@@ -103,12 +102,19 @@ export const FeatureShowcase = () => {
     setIsNarrating(false);
   }, []);
 
+  // Stop and invalidate any pending requests
+  const stopAudio = useCallback(() => {
+    requestIdRef.current++;
+    stopCurrentAudio();
+  }, [stopCurrentAudio]);
+
   // Speak function
   const speak = useCallback(async (text: string) => {
     if (!text || isMuted) return;
     
+    // Stop current audio and get a new request ID
+    stopCurrentAudio();
     const currentRequestId = ++requestIdRef.current;
-    stopAudio();
 
     try {
       const { data, error } = await supabase.functions.invoke("text-to-speech", {
@@ -117,7 +123,7 @@ export const FeatureShowcase = () => {
 
       // Check if this request is still valid
       if (currentRequestId !== requestIdRef.current) {
-        return; // A newer request was made, ignore this one
+        return;
       }
 
       if (error || !data?.audioContent) {
@@ -159,7 +165,7 @@ export const FeatureShowcase = () => {
         setIsNarrating(false);
       }
     }
-  }, [isMuted, stopAudio]);
+  }, [isMuted, stopCurrentAudio]);
 
   const goToStep = useCallback((step: number) => {
     if (isAnimating) return;

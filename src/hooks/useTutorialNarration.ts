@@ -1,52 +1,118 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
-interface NarrationStep {
-  text: string;
-  duration?: number;
+interface UseTutorialNarrationOptions {
+  enabled?: boolean;
+  voice?: "alloy" | "echo" | "fable" | "onyx" | "nova" | "shimmer";
 }
 
-export const useTutorialNarration = () => {
-  const [isNarrating, setIsNarrating] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+export const useTutorialNarration = (options: UseTutorialNarrationOptions = {}) => {
+  const { enabled = true, voice = "nova" } = options;
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  const speak = useCallback((text: string) => {
-    if (isMuted || !('speechSynthesis' in window)) return;
+  const speak = useCallback(async (text: string) => {
+    if (!enabled || !text || isMuted) return;
 
-    // Cancel any ongoing speech
-    window.speechSynthesis.cancel();
+    // Stop any existing audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.95;
-    utterance.pitch = 1;
-    utterance.volume = 0.8;
+    setIsLoading(true);
+    abortControllerRef.current = new AbortController();
 
-    utterance.onstart = () => setIsNarrating(true);
-    utterance.onend = () => setIsNarrating(false);
-    utterance.onerror = () => setIsNarrating(false);
+    try {
+      const { data, error } = await supabase.functions.invoke("text-to-speech", {
+        body: { text, voice },
+      });
 
-    utteranceRef.current = utterance;
-    window.speechSynthesis.speak(utterance);
-  }, [isMuted]);
+      if (error) {
+        console.error("TTS error:", error);
+        setIsLoading(false);
+        return;
+      }
+
+      if (data?.audioContent) {
+        const audioBlob = new Blob(
+          [Uint8Array.from(atob(data.audioContent), c => c.charCodeAt(0))],
+          { type: "audio/mpeg" }
+        );
+        const audioUrl = URL.createObjectURL(audioBlob);
+        
+        const audio = new Audio(audioUrl);
+        audioRef.current = audio;
+        
+        audio.onplay = () => {
+          setIsLoading(false);
+          setIsSpeaking(true);
+        };
+        
+        audio.onended = () => {
+          setIsSpeaking(false);
+          URL.revokeObjectURL(audioUrl);
+        };
+        
+        audio.onerror = (e) => {
+          console.error("Audio playback error:", e);
+          setIsLoading(false);
+          setIsSpeaking(false);
+        };
+
+        await audio.play();
+      }
+    } catch (error) {
+      console.error("TTS error:", error);
+      setIsLoading(false);
+      setIsSpeaking(false);
+    }
+  }, [enabled, voice, isMuted]);
 
   const stop = useCallback(() => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
     }
-    setIsNarrating(false);
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    setIsSpeaking(false);
+    setIsLoading(false);
   }, []);
 
   const toggleMute = useCallback(() => {
     if (!isMuted) {
       stop();
     }
-    setIsMuted(!isMuted);
+    setIsMuted(prev => !prev);
   }, [isMuted, stop]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   return {
     speak,
     stop,
-    isNarrating,
+    isNarrating: isSpeaking,
+    isLoading,
     isMuted,
     toggleMute,
   };

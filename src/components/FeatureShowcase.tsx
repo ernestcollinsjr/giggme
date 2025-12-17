@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { 
   Camera, Calendar, Bell, ListMusic, MapPin, Users, Music, MessageSquare,
   Play, Pause, ChevronLeft, ChevronRight, Volume2, VolumeX
@@ -77,6 +77,7 @@ export const FeatureShowcase = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isAnimating, setIsAnimating] = useState(false);
+  const hasMountedRef = useRef(false);
   const { speak, stop, isMuted, toggleMute, isNarrating } = useTutorialNarration();
 
   const goToStep = useCallback((step: number) => {
@@ -121,10 +122,13 @@ export const FeatureShowcase = () => {
 
   // Speak on mount if not muted
   useEffect(() => {
+    if (hasMountedRef.current) return;
+    hasMountedRef.current = true;
+    
     if (!isMuted) {
       speak(features[0].narration);
     }
-  }, []);
+  }, [isMuted, speak]);
 
   const currentFeature = features[currentStep];
   const Icon = currentFeature.icon;

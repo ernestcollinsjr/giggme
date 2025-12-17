@@ -152,40 +152,40 @@ const Index = () => {
       </section>
 
       {/* Feature Highlights Section */}
-      <section className="max-w-6xl mx-auto px-4 py-16">
+      <section className="max-w-6xl mx-auto px-4 py-16 overflow-hidden">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {/* Capture Feature */}
-          <div className="group bg-card border border-border/50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-500 animate-fade-in" style={{ animationDelay: '0ms' }}>
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-              <Camera className="h-7 w-7 text-primary group-hover:animate-pulse" />
+          <div className="group bg-card border border-border/50 rounded-xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 opacity-0 animate-slide-in-left hover:-translate-y-2" style={{ animationDelay: '0ms' }}>
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+              <Camera className="h-7 w-7 text-primary" />
             </div>
             <h3 className="font-semibold text-lg mb-2">Capture Moments</h3>
             <p className="text-sm text-muted-foreground">Document your gigs, rehearsals, and performances</p>
           </div>
 
           {/* Calendar Feature */}
-          <div className="group bg-card border border-border/50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-500 animate-fade-in" style={{ animationDelay: '100ms' }}>
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-secondary/20 to-secondary/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-              <Calendar className="h-7 w-7 text-secondary group-hover:animate-pulse" />
+          <div className="group bg-card border border-border/50 rounded-xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 opacity-0 animate-slide-up-bounce hover:-translate-y-2" style={{ animationDelay: '150ms' }}>
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-secondary/20 to-secondary/5 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-300">
+              <Calendar className="h-7 w-7 text-secondary" />
             </div>
             <h3 className="font-semibold text-lg mb-2">Smart Calendar</h3>
             <p className="text-sm text-muted-foreground">Schedule gigs, rehearsals, and events seamlessly</p>
           </div>
 
           {/* Notifications Feature */}
-          <div className="group bg-card border border-border/50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-500 animate-fade-in" style={{ animationDelay: '200ms' }}>
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-              <Bell className="h-7 w-7 text-accent group-hover:animate-[wiggle_0.5s_ease-in-out_infinite]" />
+          <div className="group bg-card border border-border/50 rounded-xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 opacity-0 animate-pop-in hover:-translate-y-2" style={{ animationDelay: '300ms' }}>
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+              <Bell className="h-7 w-7 text-accent group-hover:animate-wiggle" />
             </div>
             <h3 className="font-semibold text-lg mb-2">Push Notifications</h3>
             <p className="text-sm text-muted-foreground">Never miss a gig update or band message</p>
           </div>
 
           {/* Songlist & Profile Feature */}
-          <div className="group bg-card border border-border/50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-500 animate-fade-in" style={{ animationDelay: '300ms' }}>
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+          <div className="group bg-card border border-border/50 rounded-xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 opacity-0 animate-slide-in-right hover:-translate-y-2" style={{ animationDelay: '450ms' }}>
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-300">
               <div className="relative">
-                <ListMusic className="h-7 w-7 text-primary group-hover:animate-pulse" />
+                <ListMusic className="h-7 w-7 text-primary" />
                 <User className="h-3 w-3 text-accent absolute -bottom-1 -right-1" />
               </div>
             </div>

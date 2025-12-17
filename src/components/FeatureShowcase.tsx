@@ -180,10 +180,16 @@ export const FeatureShowcase = () => {
     
     setTimeout(() => {
       setCurrentStep(step);
+      
+      // Set isLoadingAudio BEFORE isAnimating becomes false to prevent race condition
+      const shouldSpeak = !isMutedRef.current && isPlayingRef.current;
+      if (shouldSpeak) {
+        setIsLoadingAudio(true);
+      }
+      
       setIsAnimating(false);
       
-      // Use refs to get current values
-      if (!isMutedRef.current && isPlayingRef.current) {
+      if (shouldSpeak) {
         speak(features[step].narration);
       }
     }, 300);
@@ -212,6 +218,11 @@ export const FeatureShowcase = () => {
   useEffect(() => {
     if (hasMountedRef.current) return;
     hasMountedRef.current = true;
+    
+    // Set isLoadingAudio immediately to prevent auto-advance
+    if (!isMutedRef.current) {
+      setIsLoadingAudio(true);
+    }
     
     // Small delay to ensure component is fully mounted
     const timer = setTimeout(() => {

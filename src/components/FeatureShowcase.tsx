@@ -178,7 +178,12 @@ export const FeatureShowcase = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setIsPlaying(!isPlaying)}
+                onClick={() => {
+                  if (isPlaying) {
+                    stop();
+                  }
+                  setIsPlaying(!isPlaying);
+                }}
                 className="h-8 w-8"
               >
                 {isPlaying ? (

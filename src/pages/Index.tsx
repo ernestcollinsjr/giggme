@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Music, Briefcase, MapPin, Star, Users, Crown, Mic } from "lucide-react";
+import { Music, Briefcase, Star, Users, Crown, Mic, Check, ArrowRight } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -19,34 +19,125 @@ const Index = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/10">
-      <div className="max-w-6xl mx-auto px-4 py-12">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-primary to-secondary mb-6 shadow-lg">
-            <Music className="h-10 w-10 text-white" />
+    <div className="min-h-screen bg-background">
+      {/* Top Navigation */}
+      <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+              <Music className="h-5 w-5 text-white" />
+            </div>
+            <span className="text-xl font-bold text-primary">GigMe</span>
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary via-purple-500 to-secondary bg-clip-text text-transparent">
-            GigMe
-          </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Connect band leaders, band members, artists/musicians, and booking managers for seamless gig management
-          </p>
-          <div className="flex gap-4 justify-center items-center">
-            <p className="text-lg text-purple-500 font-medium">
-              Click below to get started
-            </p>
-            <span className="text-muted-foreground">|</span>
-            <Button 
-              size="lg" 
-              onClick={() => navigate("/auth")}
-              className="text-lg px-8 py-6"
-            >
-              Log In
+          <nav className="hidden md:flex items-center gap-6">
+            <button onClick={() => navigate("/pricing")} className="text-muted-foreground hover:text-foreground transition-colors">
+              Pricing
+            </button>
+            <button onClick={() => navigate("/auth")} className="text-muted-foreground hover:text-foreground transition-colors">
+              Sign In
+            </button>
+            <Button onClick={() => navigate("/auth")}>
+              Get Started
             </Button>
+          </nav>
+          <Button className="md:hidden" onClick={() => navigate("/auth")}>
+            Get Started
+          </Button>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="max-w-6xl mx-auto px-4 py-16 md:py-24">
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
+              <Music className="h-4 w-4" />
+              For Music Teams
+            </div>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+              <span className="text-foreground">Gig Management</span>
+              <br />
+              <span className="text-primary">Made Simple</span>
+            </h1>
+            <p className="text-lg text-muted-foreground mb-8 max-w-lg">
+              Setlists, scheduling, and team coordination that's intuitive and free for music teams.
+            </p>
+            <Button size="lg" onClick={() => navigate("/auth")} className="text-lg px-8 py-6 gap-2">
+              Get Started Free
+              <ArrowRight className="h-5 w-5" />
+            </Button>
+            <div className="flex flex-wrap gap-x-6 gap-y-2 mt-8 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-primary" />
+                Free to get started
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-primary" />
+                No credit card required
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-primary" />
+                Unlimited team members
+              </div>
+            </div>
+          </div>
+          <div className="hidden md:flex justify-center">
+            <div className="relative">
+              <div className="w-64 h-[420px] bg-card border border-border/50 rounded-3xl shadow-2xl p-4 overflow-hidden">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-6 h-6 rounded bg-primary/20 flex items-center justify-center">
+                    <Music className="h-3 w-3 text-primary" />
+                  </div>
+                  <span className="text-sm font-medium">GigMe</span>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">Upcoming Gig</p>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                      <span className="text-xs">🎸</span>
+                    </div>
+                    <span className="text-sm">Rock The House</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 rounded-lg">
+                    <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center">
+                      <span className="text-xs">🎤</span>
+                    </div>
+                    <span className="text-sm">Jazz Night</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 rounded-lg">
+                    <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
+                      <span className="text-xs">🎹</span>
+                    </div>
+                    <span className="text-sm">Piano Lounge</span>
+                  </div>
+                </div>
+              </div>
+              <div className="absolute -right-8 top-12 w-48 bg-card border border-border/50 rounded-xl shadow-xl p-3">
+                <p className="text-xs font-medium mb-2">Setlist</p>
+                <div className="space-y-1.5 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <span className="text-primary">●</span> Amazing Grace
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-primary">●</span> How Great
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-primary">●</span> Goodness
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+      </section>
 
-        <div className="grid md:grid-cols-4 gap-6 mb-16">
+      {/* Role Cards Section */}
+      <section className="max-w-6xl mx-auto px-4 py-16 border-t border-border/40">
+        <h2 className="text-2xl md:text-3xl font-bold text-center mb-4">Built for Everyone in Music</h2>
+        <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
+          Whether you're leading a band, playing in one, or booking talent – GigMe has you covered.
+        </p>
+        <div className="grid md:grid-cols-4 gap-6">
           <div 
             className="bg-card border border-border/50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105"
             onClick={() => navigate("/pricing")}
@@ -115,7 +206,10 @@ const Index = () => {
             </div>
           </div>
         </div>
+      </section>
 
+      {/* CTA Section */}
+      <section className="max-w-6xl mx-auto px-4 py-16">
         <div className="bg-gradient-to-br from-primary/5 to-secondary/5 border border-border/50 rounded-xl p-8 text-center shadow-lg">
           <Star className="h-12 w-12 mx-auto mb-4 text-primary" />
           <h2 className="text-2xl font-bold mb-4">Ready to transform your gig management?</h2>
@@ -126,7 +220,7 @@ const Index = () => {
             Sign Up Now
           </Button>
         </div>
-      </div>
+      </section>
     </div>
   );
 };

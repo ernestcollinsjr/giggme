@@ -154,8 +154,8 @@ const Index = () => {
 
           {/* Notifications Feature */}
           <div className="group bg-card border border-border/50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-500 animate-fade-in" style={{ animationDelay: '200ms' }}>
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-500/20 to-amber-500/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-              <Bell className="h-7 w-7 text-amber-500 group-hover:animate-[wiggle_0.5s_ease-in-out_infinite]" />
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+              <Bell className="h-7 w-7 text-accent group-hover:animate-[wiggle_0.5s_ease-in-out_infinite]" />
             </div>
             <h3 className="font-semibold text-lg mb-2">Push Notifications</h3>
             <p className="text-sm text-muted-foreground">Never miss a gig update or band message</p>
@@ -163,10 +163,10 @@ const Index = () => {
 
           {/* Songlist & Profile Feature */}
           <div className="group bg-card border border-border/50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-500 animate-fade-in" style={{ animationDelay: '300ms' }}>
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500/20 to-purple-500/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
               <div className="relative">
-                <ListMusic className="h-7 w-7 text-purple-500 group-hover:animate-pulse" />
-                <User className="h-3 w-3 text-purple-400 absolute -bottom-1 -right-1" />
+                <ListMusic className="h-7 w-7 text-primary group-hover:animate-pulse" />
+                <User className="h-3 w-3 text-accent absolute -bottom-1 -right-1" />
               </div>
             </div>
             <h3 className="font-semibold text-lg mb-2">Setlist & Profile</h3>
@@ -220,14 +220,14 @@ const Index = () => {
             className="bg-card border border-border/50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105"
             onClick={() => navigate("/pricing")}
           >
-            <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center mb-4">
-              <Mic className="h-6 w-6 text-purple-500" />
+            <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mb-4">
+              <Mic className="h-6 w-6 text-accent" />
             </div>
             <h3 className="text-xl font-semibold mb-2">Artist/Musician</h3>
             <p className="text-muted-foreground mb-4">
               Showcase your talent, build your portfolio, and connect with bands and venues
             </p>
-            <div className="flex items-center gap-2 text-sm text-purple-500">
+            <div className="flex items-center gap-2 text-sm text-accent">
               <Star className="h-4 w-4" />
               <span className="font-medium">Premium Role</span>
             </div>

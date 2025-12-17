@@ -1,33 +1,22 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-interface UseTutorialNarrationOptions {
-  enabled?: boolean;
-  voice?: "alloy" | "echo" | "fable" | "onyx" | "nova" | "shimmer";
-}
-
-export const useTutorialNarration = (options: UseTutorialNarrationOptions = {}) => {
-  const { enabled = true, voice = "nova" } = options;
+export const useTutorialNarration = () => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
 
-  const speak = useCallback(async (text: string) => {
-    if (!enabled || !text || isMuted) return;
+  const speak = useCallback(async (text: string, voice: string = "nova") => {
+    if (!text || isMuted) return;
 
     // Stop any existing audio
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
     }
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
 
     setIsLoading(true);
-    abortControllerRef.current = new AbortController();
 
     try {
       const { data, error } = await supabase.functions.invoke("text-to-speech", {
@@ -60,20 +49,22 @@ export const useTutorialNarration = (options: UseTutorialNarrationOptions = {}) 
           URL.revokeObjectURL(audioUrl);
         };
         
-        audio.onerror = (e) => {
-          console.error("Audio playback error:", e);
+        audio.onerror = () => {
+          console.error("Audio playback error");
           setIsLoading(false);
           setIsSpeaking(false);
         };
 
         await audio.play();
+      } else {
+        setIsLoading(false);
       }
     } catch (error) {
       console.error("TTS error:", error);
       setIsLoading(false);
       setIsSpeaking(false);
     }
-  }, [enabled, voice, isMuted]);
+  }, [isMuted]);
 
   const stop = useCallback(() => {
     if (audioRef.current) {
@@ -81,19 +72,24 @@ export const useTutorialNarration = (options: UseTutorialNarrationOptions = {}) 
       audioRef.current.currentTime = 0;
       audioRef.current = null;
     }
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
     setIsSpeaking(false);
     setIsLoading(false);
   }, []);
 
   const toggleMute = useCallback(() => {
-    if (!isMuted) {
-      stop();
-    }
-    setIsMuted(prev => !prev);
-  }, [isMuted, stop]);
+    setIsMuted(prev => {
+      if (!prev) {
+        // About to mute, stop current audio
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current = null;
+        }
+        setIsSpeaking(false);
+        setIsLoading(false);
+      }
+      return !prev;
+    });
+  }, []);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -101,9 +97,6 @@ export const useTutorialNarration = (options: UseTutorialNarrationOptions = {}) 
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
-      }
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
       }
     };
   }, []);

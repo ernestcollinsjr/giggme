@@ -60,7 +60,7 @@ const Index = () => {
               <span className="text-primary">Made Simple</span>
             </h1>
             <p className="text-lg text-muted-foreground mb-8 max-w-lg">
-              Setlists, scheduling, and team coordination that's intuitive and free for music teams.
+              Setlists, scheduling gigs, track your artist, organizing your band, get booked with agents, free to get started.
             </p>
             <Button size="lg" onClick={() => navigate("/auth")} className="text-lg px-8 py-6 gap-2">
               Get Started Free

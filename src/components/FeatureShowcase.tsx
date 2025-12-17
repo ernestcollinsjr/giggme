@@ -43,7 +43,7 @@ const features = [
     icon: MapPin,
     title: "Location Tracking",
     description: "Find your bandmates",
-    narration: "Know where your bandmates are before the gig. Share locations and coordinate arrivals.",
+    narration: "Know where your performers are before the gig to assure timely arrivals.",
     color: "from-red-500 to-red-600",
     bgColor: "bg-red-500",
   },

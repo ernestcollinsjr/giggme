@@ -111,7 +111,7 @@ export const FeatureShowcase = () => {
     
     const interval = setInterval(() => {
       nextStep();
-    }, 4000);
+    }, 6000);
 
     return () => clearInterval(interval);
   }, [isPlaying, nextStep]);

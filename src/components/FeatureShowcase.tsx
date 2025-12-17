@@ -71,6 +71,14 @@ const features = [
     color: "from-indigo-500 to-indigo-600",
     bgColor: "bg-indigo-500",
   },
+  {
+    icon: Users,
+    title: "Quick Callouts",
+    description: "Replace performers instantly",
+    narration: "Manage callouts and replace performers with one click of a button. Never scramble to find a sub again.",
+    color: "from-amber-500 to-amber-600",
+    bgColor: "bg-amber-500",
+  },
 ];
 
 export const FeatureShowcase = () => {

@@ -52,27 +52,34 @@ export const useTutorialNarration = () => {
         const audio = new Audio(audioUrl);
         audioRef.current = audio;
         
-        audio.onplay = () => {
-          if (currentRequestId === requestIdRef.current) {
-            setIsLoading(false);
-            setIsSpeaking(true);
-          }
-        };
-        
-        audio.onended = () => {
+        const handleEnded = () => {
           if (currentRequestId === requestIdRef.current) {
             setIsSpeaking(false);
+            setIsLoading(false);
           }
+          cleanup();
         };
         
-        audio.onerror = () => {
+        const handleError = () => {
           console.error("Audio playback error");
           if (currentRequestId === requestIdRef.current) {
             setIsLoading(false);
             setIsSpeaking(false);
           }
+          cleanup();
         };
-
+        
+        const cleanup = () => {
+          audio.removeEventListener('ended', handleEnded);
+          audio.removeEventListener('error', handleError);
+        };
+        
+        audio.addEventListener('ended', handleEnded);
+        audio.addEventListener('error', handleError);
+        
+        setIsLoading(false);
+        setIsSpeaking(true);
+        
         await audio.play();
       } else {
         setIsLoading(false);

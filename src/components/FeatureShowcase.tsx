@@ -86,7 +86,7 @@ export const FeatureShowcase = () => {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isAnimating, setIsAnimating] = useState(false);
   const hasMountedRef = useRef(false);
-  const { speak, stop, isMuted, toggleMute, isNarrating } = useTutorialNarration();
+  const { speak, stop, isMuted, toggleMute, isNarrating, isLoading } = useTutorialNarration();
 
   const goToStep = useCallback((step: number) => {
     if (isAnimating) return;
@@ -119,7 +119,7 @@ export const FeatureShowcase = () => {
     if (!isPlaying || isAnimating) return;
     
     // Don't advance while narration is still playing or loading
-    if (isNarrating) return;
+    if (isNarrating || isLoading) return;
     
     const delay = isMuted ? 4000 : 2000;
     const timeout = setTimeout(() => {
@@ -127,7 +127,7 @@ export const FeatureShowcase = () => {
     }, delay);
 
     return () => clearTimeout(timeout);
-  }, [isPlaying, nextStep, isNarrating, isMuted, isAnimating, currentStep]);
+  }, [isPlaying, nextStep, isNarrating, isLoading, isMuted, isAnimating, currentStep]);
 
   // Speak on mount if not muted
   useEffect(() => {

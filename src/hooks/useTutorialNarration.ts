@@ -1,12 +1,25 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+// Module-level audio reference to ensure we can always stop it
+let globalAudio: HTMLAudioElement | null = null;
+
 export const useTutorialNarration = () => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const requestIdRef = useRef<number>(0);
+
+  const stopAudio = useCallback(() => {
+    if (globalAudio) {
+      globalAudio.pause();
+      globalAudio.currentTime = 0;
+      globalAudio.src = "";
+      globalAudio = null;
+    }
+    setIsSpeaking(false);
+    setIsLoading(false);
+  }, []);
 
   const speak = useCallback(async (text: string, voice: string = "nova") => {
     if (!text || isMuted) return;
@@ -15,13 +28,7 @@ export const useTutorialNarration = () => {
     const currentRequestId = ++requestIdRef.current;
 
     // Stop any existing audio immediately
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      audioRef.current = null;
-    }
-
-    setIsSpeaking(false);
+    stopAudio();
     setIsLoading(true);
 
     try {
@@ -31,7 +38,7 @@ export const useTutorialNarration = () => {
 
       // Check if this is still the latest request
       if (currentRequestId !== requestIdRef.current) {
-        return; // A newer request was made, ignore this one
+        return;
       }
 
       if (error) {
@@ -41,16 +48,13 @@ export const useTutorialNarration = () => {
       }
 
       if (data?.audioContent) {
-        // Double-check we're still the current request
         if (currentRequestId !== requestIdRef.current) {
           return;
         }
 
-        // Use data URI - browser natively decodes base64 audio without corruption
         const audioUrl = `data:audio/mpeg;base64,${data.audioContent}`;
-        
         const audio = new Audio(audioUrl);
-        audioRef.current = audio;
+        globalAudio = audio;
         
         let hasEnded = false;
         
@@ -60,40 +64,22 @@ export const useTutorialNarration = () => {
           if (currentRequestId === requestIdRef.current) {
             setIsSpeaking(false);
           }
-          cleanup();
+          if (globalAudio === audio) {
+            globalAudio = null;
+          }
         };
         
-        const handleEnded = () => {
-          console.log("Audio ended event fired");
-          markEnded();
-        };
-        
-        const handleError = (e: Event) => {
-          console.error("Audio playback error:", e);
+        audio.onended = markEnded;
+        audio.onerror = () => {
+          console.error("Audio playback error");
           if (currentRequestId === requestIdRef.current) {
             setIsLoading(false);
             setIsSpeaking(false);
           }
-          cleanup();
-        };
-        
-        // Fallback: check if audio has finished via timeupdate
-        const handleTimeUpdate = () => {
-          if (audio.duration && audio.currentTime >= audio.duration - 0.1) {
-            console.log("Audio finished via timeupdate");
-            markEnded();
+          if (globalAudio === audio) {
+            globalAudio = null;
           }
         };
-        
-        const cleanup = () => {
-          audio.removeEventListener('ended', handleEnded);
-          audio.removeEventListener('error', handleError);
-          audio.removeEventListener('timeupdate', handleTimeUpdate);
-        };
-        
-        audio.addEventListener('ended', handleEnded);
-        audio.addEventListener('error', handleError);
-        audio.addEventListener('timeupdate', handleTimeUpdate);
         
         setIsLoading(false);
         setIsSpeaking(true);
@@ -105,7 +91,9 @@ export const useTutorialNarration = () => {
           if (currentRequestId === requestIdRef.current) {
             setIsSpeaking(false);
           }
-          cleanup();
+          if (globalAudio === audio) {
+            globalAudio = null;
+          }
         }
       } else {
         setIsLoading(false);
@@ -117,51 +105,30 @@ export const useTutorialNarration = () => {
         setIsSpeaking(false);
       }
     }
-  }, [isMuted]);
+  }, [isMuted, stopAudio]);
 
   const stop = useCallback(() => {
-    console.log("Stop called, audioRef:", audioRef.current);
-    requestIdRef.current++; // Invalidate any pending requests
-    if (audioRef.current) {
-      try {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-        audioRef.current.src = "";
-      } catch (e) {
-        console.error("Error stopping audio:", e);
-      }
-      audioRef.current = null;
-    }
-    setIsSpeaking(false);
-    setIsLoading(false);
-  }, []);
+    requestIdRef.current++;
+    stopAudio();
+  }, [stopAudio]);
 
   const toggleMute = useCallback(() => {
     setIsMuted(prev => {
       if (!prev) {
-        // About to mute, stop current audio
         requestIdRef.current++;
-        if (audioRef.current) {
-          audioRef.current.pause();
-          audioRef.current = null;
-        }
-        setIsSpeaking(false);
-        setIsLoading(false);
+        stopAudio();
       }
       return !prev;
     });
-  }, []);
+  }, [stopAudio]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       requestIdRef.current++;
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
+      stopAudio();
     };
-  }, []);
+  }, [stopAudio]);
 
   return {
     speak,

@@ -1,11 +1,13 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "next-themes";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Music, Briefcase, Star, Users, Crown, Mic, Check, ArrowRight, Camera, Calendar, Bell, ListMusic, User } from "lucide-react";
+import { Music, Briefcase, Star, Users, Crown, Mic, Check, ArrowRight, Camera, Calendar, Bell, ListMusic, User, Moon, Sun } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -29,20 +31,38 @@ const Index = () => {
             </div>
             <span className="text-xl font-bold text-primary">GigMe</span>
           </div>
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className="hidden md:flex items-center gap-4">
             <button onClick={() => navigate("/pricing")} className="text-muted-foreground hover:text-foreground transition-colors">
               Pricing
             </button>
             <button onClick={() => navigate("/auth")} className="text-muted-foreground hover:text-foreground transition-colors">
               Sign In
             </button>
+            <button
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="relative p-2 rounded-lg hover:bg-muted transition-colors"
+              aria-label="Toggle theme"
+            >
+              <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute top-2 left-2 h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            </button>
             <Button onClick={() => navigate("/auth")}>
               Get Started
             </Button>
           </nav>
-          <Button className="md:hidden" onClick={() => navigate("/auth")}>
-            Get Started
-          </Button>
+          <div className="flex items-center gap-2 md:hidden">
+            <button
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="p-2 rounded-lg hover:bg-muted transition-colors relative"
+              aria-label="Toggle theme"
+            >
+              <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 top-2 left-2" />
+            </button>
+            <Button onClick={() => navigate("/auth")}>
+              Get Started
+            </Button>
+          </div>
         </div>
       </header>
 

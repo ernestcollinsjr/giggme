@@ -89,10 +89,12 @@ export const FeatureShowcase = () => {
   const [isNarrating, setIsNarrating] = useState(false);
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const requestIdRef = useRef(0);
   const hasMountedRef = useRef(false);
 
   // Stop audio function
   const stopAudio = useCallback(() => {
+    requestIdRef.current++; // Invalidate any pending audio
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.src = "";
@@ -105,6 +107,7 @@ export const FeatureShowcase = () => {
   const speak = useCallback(async (text: string) => {
     if (!text || isMuted) return;
     
+    const currentRequestId = ++requestIdRef.current;
     stopAudio();
 
     try {
@@ -112,8 +115,18 @@ export const FeatureShowcase = () => {
         body: { text, voice: "nova" },
       });
 
+      // Check if this request is still valid
+      if (currentRequestId !== requestIdRef.current) {
+        return; // A newer request was made, ignore this one
+      }
+
       if (error || !data?.audioContent) {
         console.error("TTS error:", error);
+        return;
+      }
+
+      // Double check before playing
+      if (currentRequestId !== requestIdRef.current) {
         return;
       }
 
@@ -121,14 +134,18 @@ export const FeatureShowcase = () => {
       audioRef.current = audio;
       
       audio.onended = () => {
-        setIsNarrating(false);
+        if (currentRequestId === requestIdRef.current) {
+          setIsNarrating(false);
+        }
         if (audioRef.current === audio) {
           audioRef.current = null;
         }
       };
       
       audio.onerror = () => {
-        setIsNarrating(false);
+        if (currentRequestId === requestIdRef.current) {
+          setIsNarrating(false);
+        }
         if (audioRef.current === audio) {
           audioRef.current = null;
         }
@@ -138,7 +155,9 @@ export const FeatureShowcase = () => {
       await audio.play();
     } catch (error) {
       console.error("TTS error:", error);
-      setIsNarrating(false);
+      if (currentRequestId === requestIdRef.current) {
+        setIsNarrating(false);
+      }
     }
   }, [isMuted, stopAudio]);
 

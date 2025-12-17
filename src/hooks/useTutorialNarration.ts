@@ -52,35 +52,61 @@ export const useTutorialNarration = () => {
         const audio = new Audio(audioUrl);
         audioRef.current = audio;
         
-        const handleEnded = () => {
+        let hasEnded = false;
+        
+        const markEnded = () => {
+          if (hasEnded) return;
+          hasEnded = true;
           if (currentRequestId === requestIdRef.current) {
             setIsSpeaking(false);
-            setIsLoading(false);
           }
           cleanup();
         };
         
-        const handleError = () => {
-          console.error("Audio playback error");
+        const handleEnded = () => {
+          console.log("Audio ended event fired");
+          markEnded();
+        };
+        
+        const handleError = (e: Event) => {
+          console.error("Audio playback error:", e);
           if (currentRequestId === requestIdRef.current) {
             setIsLoading(false);
             setIsSpeaking(false);
           }
           cleanup();
+        };
+        
+        // Fallback: check if audio has finished via timeupdate
+        const handleTimeUpdate = () => {
+          if (audio.duration && audio.currentTime >= audio.duration - 0.1) {
+            console.log("Audio finished via timeupdate");
+            markEnded();
+          }
         };
         
         const cleanup = () => {
           audio.removeEventListener('ended', handleEnded);
           audio.removeEventListener('error', handleError);
+          audio.removeEventListener('timeupdate', handleTimeUpdate);
         };
         
         audio.addEventListener('ended', handleEnded);
         audio.addEventListener('error', handleError);
+        audio.addEventListener('timeupdate', handleTimeUpdate);
         
         setIsLoading(false);
         setIsSpeaking(true);
         
-        await audio.play();
+        try {
+          await audio.play();
+        } catch (playError) {
+          console.error("Audio play failed:", playError);
+          if (currentRequestId === requestIdRef.current) {
+            setIsSpeaking(false);
+          }
+          cleanup();
+        }
       } else {
         setIsLoading(false);
       }

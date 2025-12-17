@@ -92,9 +92,18 @@ export const FeatureShowcase = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const requestIdRef = useRef(0);
   const hasMountedRef = useRef(false);
+  
+  // Use refs for values that need to be read inside setTimeout
+  const isMutedRef = useRef(isMuted);
+  const isPlayingRef = useRef(isPlaying);
+  
+  // Keep refs in sync
+  useEffect(() => { isMutedRef.current = isMuted; }, [isMuted]);
+  useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
 
-  // Stop audio function - does NOT increment requestId
-  const stopCurrentAudio = useCallback(() => {
+  // Stop audio and invalidate pending requests
+  const stopAudio = useCallback(() => {
+    requestIdRef.current++;
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.src = "";
@@ -104,18 +113,12 @@ export const FeatureShowcase = () => {
     setIsLoadingAudio(false);
   }, []);
 
-  // Stop and invalidate any pending requests
-  const stopAudio = useCallback(() => {
-    requestIdRef.current++;
-    stopCurrentAudio();
-  }, [stopCurrentAudio]);
-
   // Speak function
   const speak = useCallback(async (text: string) => {
-    if (!text || isMuted) return;
+    if (!text || isMutedRef.current) return;
     
-    // Stop current audio and get a new request ID
-    stopCurrentAudio();
+    // Stop any current audio and get a new request ID
+    stopAudio();
     const currentRequestId = ++requestIdRef.current;
     setIsLoadingAudio(true);
 
@@ -141,7 +144,6 @@ export const FeatureShowcase = () => {
       audio.onended = () => {
         if (currentRequestId === requestIdRef.current) {
           setIsNarrating(false);
-          setIsLoadingAudio(false);
         }
         if (audioRef.current === audio) {
           audioRef.current = null;
@@ -168,7 +170,7 @@ export const FeatureShowcase = () => {
         setIsLoadingAudio(false);
       }
     }
-  }, [isMuted, stopCurrentAudio]);
+  }, [stopAudio]);
 
   const goToStep = useCallback((step: number) => {
     if (isAnimating) return;
@@ -180,11 +182,12 @@ export const FeatureShowcase = () => {
       setCurrentStep(step);
       setIsAnimating(false);
       
-      if (!isMuted && isPlaying) {
+      // Use refs to get current values
+      if (!isMutedRef.current && isPlayingRef.current) {
         speak(features[step].narration);
       }
     }, 300);
-  }, [isAnimating, isMuted, isPlaying, speak, stopAudio]);
+  }, [isAnimating, speak, stopAudio]);
 
   const nextStep = useCallback(() => {
     const next = (currentStep + 1) % features.length;
@@ -205,15 +208,20 @@ export const FeatureShowcase = () => {
     return () => clearTimeout(timeout);
   }, [isPlaying, nextStep, isNarrating, isLoadingAudio, isMuted, isAnimating, currentStep]);
 
-  // Speak on mount
+  // Speak on mount (only once)
   useEffect(() => {
     if (hasMountedRef.current) return;
     hasMountedRef.current = true;
     
-    if (!isMuted) {
-      speak(features[0].narration);
-    }
-  }, [isMuted, speak]);
+    // Small delay to ensure component is fully mounted
+    const timer = setTimeout(() => {
+      if (!isMutedRef.current) {
+        speak(features[0].narration);
+      }
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [speak]);
 
   // Cleanup on unmount
   useEffect(() => {

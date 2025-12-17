@@ -4,7 +4,7 @@ import {
   Play, Pause, ChevronLeft, ChevronRight, Volume2, VolumeX
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useTutorialNarration } from "@/hooks/useTutorialNarration";
+import { supabase } from "@/integrations/supabase/client";
 
 const features = [
   {
@@ -85,24 +85,78 @@ export const FeatureShowcase = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isNarrating, setIsNarrating] = useState(false);
+  
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const hasMountedRef = useRef(false);
-  const { speak, stop, isMuted, toggleMute, isNarrating, isLoading } = useTutorialNarration();
+
+  // Stop audio function
+  const stopAudio = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = "";
+      audioRef.current = null;
+    }
+    setIsNarrating(false);
+  }, []);
+
+  // Speak function
+  const speak = useCallback(async (text: string) => {
+    if (!text || isMuted) return;
+    
+    stopAudio();
+
+    try {
+      const { data, error } = await supabase.functions.invoke("text-to-speech", {
+        body: { text, voice: "nova" },
+      });
+
+      if (error || !data?.audioContent) {
+        console.error("TTS error:", error);
+        return;
+      }
+
+      const audio = new Audio(`data:audio/mpeg;base64,${data.audioContent}`);
+      audioRef.current = audio;
+      
+      audio.onended = () => {
+        setIsNarrating(false);
+        if (audioRef.current === audio) {
+          audioRef.current = null;
+        }
+      };
+      
+      audio.onerror = () => {
+        setIsNarrating(false);
+        if (audioRef.current === audio) {
+          audioRef.current = null;
+        }
+      };
+
+      setIsNarrating(true);
+      await audio.play();
+    } catch (error) {
+      console.error("TTS error:", error);
+      setIsNarrating(false);
+    }
+  }, [isMuted, stopAudio]);
 
   const goToStep = useCallback((step: number) => {
     if (isAnimating) return;
     
     setIsAnimating(true);
-    stop();
+    stopAudio();
     
     setTimeout(() => {
       setCurrentStep(step);
       setIsAnimating(false);
       
-      if (!isMuted) {
+      if (!isMuted && isPlaying) {
         speak(features[step].narration);
       }
     }, 300);
-  }, [isAnimating, isMuted, speak, stop]);
+  }, [isAnimating, isMuted, isPlaying, speak, stopAudio]);
 
   const nextStep = useCallback(() => {
     const next = (currentStep + 1) % features.length;
@@ -114,22 +168,16 @@ export const FeatureShowcase = () => {
     goToStep(prev);
   }, [currentStep, goToStep]);
 
-  // Auto-advance when playing (wait for narration to finish)
+  // Auto-advance when playing
   useEffect(() => {
-    if (!isPlaying || isAnimating) return;
-    
-    // Don't advance while narration is still playing or loading
-    if (isNarrating || isLoading) return;
+    if (!isPlaying || isAnimating || isNarrating) return;
     
     const delay = isMuted ? 4000 : 2000;
-    const timeout = setTimeout(() => {
-      nextStep();
-    }, delay);
-
+    const timeout = setTimeout(nextStep, delay);
     return () => clearTimeout(timeout);
-  }, [isPlaying, nextStep, isNarrating, isLoading, isMuted, isAnimating, currentStep]);
+  }, [isPlaying, nextStep, isNarrating, isMuted, isAnimating, currentStep]);
 
-  // Speak on mount if not muted
+  // Speak on mount
   useEffect(() => {
     if (hasMountedRef.current) return;
     hasMountedRef.current = true;
@@ -138,6 +186,11 @@ export const FeatureShowcase = () => {
       speak(features[0].narration);
     }
   }, [isMuted, speak]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => stopAudio();
+  }, [stopAudio]);
 
   const currentFeature = features[currentStep];
   const Icon = currentFeature.icon;
@@ -166,7 +219,12 @@ export const FeatureShowcase = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={toggleMute}
+                onClick={() => {
+                  if (!isMuted) {
+                    stopAudio();
+                  }
+                  setIsMuted(!isMuted);
+                }}
                 className="h-8 w-8"
               >
                 {isMuted ? (
@@ -179,10 +237,8 @@ export const FeatureShowcase = () => {
                 variant="ghost"
                 size="icon"
                 onClick={() => {
-                  console.log("Pause/Play clicked, isPlaying:", isPlaying);
                   if (isPlaying) {
-                    console.log("Calling stop()");
-                    stop();
+                    stopAudio();
                   }
                   setIsPlaying(!isPlaying);
                 }}

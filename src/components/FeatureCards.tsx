@@ -65,15 +65,15 @@ const FeatureCards = () => {
               <div className="w-7 h-7 rounded bg-primary-foreground/20 flex items-center justify-center">
                 <Play className="h-3.5 w-3.5 fill-current" />
               </div>
-              <span className="text-sm font-medium">Amazing Grace</span>
+              <span className="text-sm font-medium">My Girl</span>
             </div>
             <div className="flex items-center gap-3 p-2.5 bg-muted/50 rounded-lg">
               <span className="w-7 h-7 flex items-center justify-center text-sm font-medium text-muted-foreground">2</span>
-              <span className="text-sm">How Great Is Our God</span>
+              <span className="text-sm">Superstition</span>
             </div>
             <div className="flex items-center gap-3 p-2.5 bg-muted/50 rounded-lg">
               <span className="w-7 h-7 flex items-center justify-center text-sm font-medium text-muted-foreground">3</span>
-              <span className="text-sm">Goodness of God</span>
+              <span className="text-sm">Ain't No Mountain</span>
             </div>
             <button className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mt-2 pl-2">
               <Plus className="h-4 w-4" />
@@ -110,20 +110,20 @@ const FeatureCards = () => {
             <div className={`flex items-start gap-2 transition-all duration-300 ${activeChat === 0 ? 'opacity-100' : 'opacity-60'}`}>
               <div className="w-6 h-6 rounded-full bg-red-500 flex-shrink-0" />
               <div>
-                <p className="text-xs font-semibold text-red-500">Sarah</p>
-                <p className="text-xs text-muted-foreground">Ready for practice!</p>
+                <p className="text-xs font-semibold text-red-500">Marcus</p>
+                <p className="text-xs text-muted-foreground">Ready for rehearsal!</p>
               </div>
             </div>
             <div className={`flex items-start gap-2 transition-all duration-300 ${activeChat === 1 ? 'opacity-100' : 'opacity-60'}`}>
               <div className="w-6 h-6 rounded-full bg-orange-500 flex-shrink-0" />
               <div>
-                <p className="text-xs font-semibold text-orange-500">Mike</p>
-                <p className="text-xs text-muted-foreground">Can we run song 2 first?</p>
+                <p className="text-xs font-semibold text-orange-500">Jay</p>
+                <p className="text-xs text-muted-foreground">Can we run the bridge again?</p>
               </div>
             </div>
             <div className={`transition-all duration-500 ${activeChat === 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
               <button className="bg-primary text-primary-foreground text-xs px-4 py-2 rounded-lg font-medium">
-                Sure, starting now!
+                Let's do it!
               </button>
             </div>
           </div>
@@ -160,13 +160,13 @@ const FeatureCards = () => {
               <Calendar className="h-3 w-3" />
               Upcoming Event
             </div>
-            <p className="text-sm font-medium">Sunday Service</p>
-            <p className="text-xs text-muted-foreground">Dec 22 • 10:00 AM</p>
+            <p className="text-sm font-medium">Jazz Club Gig</p>
+            <p className="text-xs text-muted-foreground">Dec 22 • 9:00 PM</p>
             <div className="flex items-center gap-1 mt-2">
               <div className="w-4 h-4 rounded-full bg-red-400 border-2 border-card" />
               <div className="w-4 h-4 rounded-full bg-blue-400 border-2 border-card -ml-2" />
               <div className="w-4 h-4 rounded-full bg-green-400 border-2 border-card -ml-2" />
-              <span className="text-xs text-muted-foreground ml-1">+5 attending</span>
+              <span className="text-xs text-muted-foreground ml-1">+3 confirmed</span>
             </div>
           </div>
         </div>

@@ -160,8 +160,9 @@ export const FeatureShowcase = () => {
         }
       };
 
-      setIsLoadingAudio(false);
+      // Set isNarrating BEFORE clearing isLoadingAudio to prevent race condition
       setIsNarrating(true);
+      setIsLoadingAudio(false);
       await audio.play();
     } catch (error) {
       console.error("TTS error:", error);

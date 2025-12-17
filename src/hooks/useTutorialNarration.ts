@@ -46,11 +46,8 @@ export const useTutorialNarration = () => {
           return;
         }
 
-        const audioBlob = new Blob(
-          [Uint8Array.from(atob(data.audioContent), c => c.charCodeAt(0))],
-          { type: "audio/mpeg" }
-        );
-        const audioUrl = URL.createObjectURL(audioBlob);
+        // Use data URI - browser natively decodes base64 audio without corruption
+        const audioUrl = `data:audio/mpeg;base64,${data.audioContent}`;
         
         const audio = new Audio(audioUrl);
         audioRef.current = audio;
@@ -66,7 +63,6 @@ export const useTutorialNarration = () => {
           if (currentRequestId === requestIdRef.current) {
             setIsSpeaking(false);
           }
-          URL.revokeObjectURL(audioUrl);
         };
         
         audio.onerror = () => {

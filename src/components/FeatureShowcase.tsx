@@ -101,24 +101,29 @@ export const FeatureShowcase = () => {
   useEffect(() => { isMutedRef.current = isMuted; }, [isMuted]);
   useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
 
-  // Stop audio and invalidate pending requests
-  const stopAudio = useCallback(() => {
-    requestIdRef.current++;
+  // Stop just the audio playback (doesn't affect loading state)
+  const stopAudioPlayback = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.src = "";
       audioRef.current = null;
     }
     setIsNarrating(false);
-    setIsLoadingAudio(false);
   }, []);
+
+  // Stop audio and clear all states (used when switching steps)
+  const stopAudio = useCallback(() => {
+    requestIdRef.current++;
+    stopAudioPlayback();
+    setIsLoadingAudio(false);
+  }, [stopAudioPlayback]);
 
   // Speak function
   const speak = useCallback(async (text: string) => {
     if (!text || isMutedRef.current) return;
     
-    // Stop any current audio and get a new request ID
-    stopAudio();
+    // Stop any current audio playback but keep loading state
+    stopAudioPlayback();
     const currentRequestId = ++requestIdRef.current;
     setIsLoadingAudio(true);
 
@@ -171,7 +176,7 @@ export const FeatureShowcase = () => {
         setIsLoadingAudio(false);
       }
     }
-  }, [stopAudio]);
+  }, [stopAudioPlayback]);
 
   const goToStep = useCallback((step: number) => {
     if (isAnimating) return;

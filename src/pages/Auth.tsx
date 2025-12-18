@@ -245,10 +245,12 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-primary/10">
       <Link 
         to="/" 
-        className="absolute top-4 left-4 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+        className="absolute top-4 left-4 flex items-center gap-2 text-foreground hover:opacity-80 transition-opacity"
       >
-        <ArrowLeft className="h-5 w-5" />
-        <span>Back</span>
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+          <Music className="h-5 w-5 text-white" />
+        </div>
+        <span className="font-bold text-lg bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">GigMe</span>
       </Link>
       <Card className="w-full max-w-md border-border/50 shadow-xl">
         <CardHeader className="space-y-2 text-center">

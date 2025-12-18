@@ -36,6 +36,7 @@ import heroJazzTrio from "@/assets/hero-jazz-trio.jpg";
 import heroVocalist from "@/assets/hero-vocalist.jpg";
 import heroMariachi from "@/assets/hero-mariachi.jpg";
 import heroQuartet from "@/assets/hero-quartet.jpg";
+import heroVirtualAssistant from "@/assets/hero-virtual-assistant.jpg";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -175,13 +176,24 @@ const Index = () => {
       <section className="relative overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 min-h-[600px]">
-            {/* Left Side - Purple Gradient with Content */}
+            {/* Left Side - Virtual Assistant Image */}
+            <div className="relative hidden lg:block">
+              <img 
+                src={heroVirtualAssistant} 
+                alt="Virtual assistant booking gigs for clients"
+                className="w-full h-full object-cover"
+              />
+              {/* Gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-primary/20" />
+            </div>
+
+            {/* Right Side - Content */}
             <div className="relative bg-primary px-6 py-12 lg:py-20 flex flex-col justify-center">
               {/* Decorative elements */}
               <div className="absolute inset-0 overflow-hidden">
-                <div className="absolute top-20 left-10 w-32 h-32 border-2 border-primary-foreground/20 rounded-full" />
-                <div className="absolute bottom-32 left-1/4 w-24 h-24 border-2 border-primary-foreground/20 rounded-full" />
-                <svg className="absolute bottom-20 left-8 w-16 h-16 text-primary-foreground/20" viewBox="0 0 100 100">
+                <div className="absolute top-20 right-10 w-32 h-32 border-2 border-primary-foreground/20 rounded-full" />
+                <div className="absolute bottom-32 right-1/4 w-24 h-24 border-2 border-primary-foreground/20 rounded-full" />
+                <svg className="absolute bottom-20 right-8 w-16 h-16 text-primary-foreground/20" viewBox="0 0 100 100">
                   <path d="M10,50 Q25,10 50,50 T90,50" stroke="currentColor" fill="none" strokeWidth="3"/>
                 </svg>
               </div>
@@ -189,13 +201,13 @@ const Index = () => {
               <div className="relative z-10 max-w-lg">
                 <p className="text-primary-foreground/80 text-sm mb-4 flex items-center gap-2">
                   <Star className="h-4 w-4 fill-current" />
-                  Over 10k 5-star reviews
+                  Your personal booking assistant
                 </p>
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground mb-6 leading-tight">
-                  The easiest way to book entertainers
+                  Let us book your entertainment
                 </h1>
                 <p className="text-primary-foreground/80 text-lg mb-8">
-                  Entertainment booked through automation and virtual assistance.
+                  Our virtual assistant handles everything — finding talent, scheduling, and managing your recurring bookings automatically.
                 </p>
 
                 {/* Search Card */}
@@ -233,45 +245,29 @@ const Index = () => {
                 </form>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
 
-            {/* Right Side - Animated Scrolling Image Columns */}
-            <div className="hidden lg:block relative bg-muted/30 overflow-hidden">
-              <div className="absolute inset-0 p-4">
-                <div className="grid grid-cols-2 gap-3 h-full">
-                  {/* Column 1 - Scrolls Up */}
-                  <div className="relative overflow-hidden h-full">
-                    <div className="animate-scroll-up space-y-3">
-                      {[...heroImages, ...heroImages].map((img, index) => (
-                        <div key={`col1-${index}`} className="h-48 rounded-2xl overflow-hidden">
-                          <img 
-                            src={img.src} 
-                            alt={img.alt}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  {/* Column 2 - Scrolls Down */}
-                  <div className="relative overflow-hidden h-full">
-                    <div className="animate-scroll-down space-y-3">
-                      {[...heroImages.slice().reverse(), ...heroImages.slice().reverse()].map((img, index) => (
-                        <div key={`col2-${index}`} className="h-48 rounded-2xl overflow-hidden">
-                          <img 
-                            src={img.src} 
-                            alt={img.alt}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+      {/* Entertainer Slideshow Section */}
+      <section className="py-8 bg-muted/30 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 mb-6">
+          <h2 className="text-2xl font-bold text-center">Our Talented Entertainers</h2>
+        </div>
+        <div className="flex gap-4">
+          <div className="animate-scroll-up flex flex-col gap-4">
+            {[...heroImages, ...heroImages].map((img, index) => (
+              <div key={`scroll1-${index}`} className="w-48 h-32 rounded-xl overflow-hidden shrink-0">
+                <img src={img.src} alt={img.alt} className="w-full h-full object-cover" />
               </div>
-              {/* Gradient overlays for smooth edges */}
-              <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-muted/30 to-transparent pointer-events-none z-10" />
-              <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-muted/30 to-transparent pointer-events-none z-10" />
-            </div>
+            ))}
+          </div>
+          <div className="animate-scroll-down flex flex-col gap-4">
+            {[...heroImages.slice().reverse(), ...heroImages.slice().reverse()].map((img, index) => (
+              <div key={`scroll2-${index}`} className="w-48 h-32 rounded-xl overflow-hidden shrink-0">
+                <img src={img.src} alt={img.alt} className="w-full h-full object-cover" />
+              </div>
+            ))}
           </div>
         </div>
       </section>

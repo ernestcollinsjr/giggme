@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Music, Briefcase, Building2 } from "lucide-react";
+import { Music, Briefcase, Building2, ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 import { z } from "zod";
 
 const loginSchema = z.object({
@@ -242,6 +243,13 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-primary/10">
+      <Link 
+        to="/" 
+        className="absolute top-4 left-4 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <ArrowLeft className="h-5 w-5" />
+        <span>Back</span>
+      </Link>
       <Card className="w-full max-w-md border-border/50 shadow-xl">
         <CardHeader className="space-y-2 text-center">
           <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center mb-2">

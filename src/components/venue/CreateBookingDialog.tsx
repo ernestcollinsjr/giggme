@@ -79,22 +79,33 @@ export const CreateBookingDialog = ({
     // Get all artists
     const { data: artistData } = await supabase
       .from("artist_profiles")
-      .select(`
-        user_id,
-        stage_name,
-        profile:profiles!artist_profiles_user_id_fkey(name)
-      `);
+      .select("user_id, stage_name");
 
     if (artistData) {
+      // Fetch profiles separately
+      const userIds = artistData.map(a => a.user_id);
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, name")
+        .in("id", userIds);
+
+      const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+
+      const enriched = artistData.map(a => ({
+        user_id: a.user_id,
+        stage_name: a.stage_name,
+        profile: profileMap.get(a.user_id)
+      }));
+
       // Sort preferred entertainers first
-      const sorted = artistData.sort((a, b) => {
+      const sorted = enriched.sort((a, b) => {
         const aPreferred = preferredIds.includes(a.user_id);
         const bPreferred = preferredIds.includes(b.user_id);
         if (aPreferred && !bPreferred) return -1;
         if (!aPreferred && bPreferred) return 1;
         return 0;
       });
-      setEntertainers(sorted);
+      setEntertainers(sorted as Entertainer[]);
     }
   };
 

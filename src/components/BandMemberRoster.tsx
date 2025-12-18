@@ -142,7 +142,7 @@ export const BandMemberRoster = ({ bandId }: BandMemberRosterProps) => {
                 {member.name}
               </h4>
               {member.hasAcceptedGigs ? (
-                <Badge className="bg-green-600 hover:bg-green-700 text-[10px] h-4 px-1.5 mt-1">
+                <Badge className="bg-green-600 hover:bg-green-700 text-[10px] h-4 px-1.5 mt-1 animate-pulse shadow-[0_0_8px_2px_rgba(34,197,94,0.6)]">
                   ✓
                 </Badge>
               ) : (

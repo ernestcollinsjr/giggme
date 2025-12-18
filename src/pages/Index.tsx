@@ -24,6 +24,13 @@ import {
   Speaker
 } from "lucide-react";
 
+import heroSinger from "@/assets/hero-singer.jpg";
+import heroDj from "@/assets/hero-dj.jpg";
+import heroBand from "@/assets/hero-band.jpg";
+import heroAcoustic from "@/assets/hero-acoustic.jpg";
+import heroPianist from "@/assets/hero-pianist.jpg";
+import heroSaxophone from "@/assets/hero-saxophone.jpg";
+
 const Index = () => {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
@@ -81,12 +88,12 @@ const Index = () => {
   ];
 
   const heroImages = [
-    "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=500&fit=crop",
-    "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=400&h=300&fit=crop",
-    "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=400&h=500&fit=crop",
-    "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=300&fit=crop",
-    "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop",
-    "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=400&h=350&fit=crop"
+    { src: heroSinger, alt: "Singer performing at venue" },
+    { src: heroDj, alt: "DJ at club event" },
+    { src: heroBand, alt: "Live band at restaurant" },
+    { src: heroAcoustic, alt: "Acoustic performance at retirement home" },
+    { src: heroPianist, alt: "Pianist at upscale event" },
+    { src: heroSaxophone, alt: "Saxophonist at jazz club" }
   ];
 
   return (
@@ -229,22 +236,22 @@ const Index = () => {
                   <div className="space-y-3">
                     <div className="h-[45%] rounded-2xl overflow-hidden">
                       <img 
-                        src={heroImages[0]} 
-                        alt="Live concert" 
+                        src={heroImages[0].src} 
+                        alt={heroImages[0].alt}
                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                       />
                     </div>
                     <div className="h-[25%] rounded-2xl overflow-hidden">
                       <img 
-                        src={heroImages[1]} 
-                        alt="DJ performance" 
+                        src={heroImages[1].src} 
+                        alt={heroImages[1].alt}
                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                       />
                     </div>
                     <div className="h-[25%] rounded-2xl overflow-hidden">
                       <img 
-                        src={heroImages[4]} 
-                        alt="Music equipment" 
+                        src={heroImages[4].src} 
+                        alt={heroImages[4].alt}
                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                       />
                     </div>
@@ -253,22 +260,22 @@ const Index = () => {
                   <div className="space-y-3 pt-8">
                     <div className="h-[30%] rounded-2xl overflow-hidden">
                       <img 
-                        src={heroImages[3]} 
-                        alt="Band playing" 
+                        src={heroImages[3].src} 
+                        alt={heroImages[3].alt}
                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                       />
                     </div>
                     <div className="h-[40%] rounded-2xl overflow-hidden bg-secondary">
                       <img 
-                        src={heroImages[2]} 
-                        alt="Concert crowd" 
+                        src={heroImages[2].src} 
+                        alt={heroImages[2].alt}
                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                       />
                     </div>
                     <div className="h-[25%] rounded-2xl overflow-hidden">
                       <img 
-                        src={heroImages[5]} 
-                        alt="Studio session" 
+                        src={heroImages[5].src} 
+                        alt={heroImages[5].alt}
                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                       />
                     </div>

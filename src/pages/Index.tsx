@@ -161,7 +161,7 @@ const Index = () => {
                   Over 10k 5-star reviews
                 </p>
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground mb-6 leading-tight">
-                  The easiest way to book entertainers Virtually
+                  The easiest way to book entertainers
                 </h1>
                 <p className="text-primary-foreground/80 text-lg mb-8">
                   Entertainment booked through automation and virtual assistance.

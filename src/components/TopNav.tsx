@@ -1,4 +1,4 @@
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
   Home, 
@@ -10,7 +10,8 @@ import {
   Briefcase,
   User,
   Search,
-  MapPin
+  MapPin,
+  Zap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -72,6 +73,12 @@ export const TopNav = ({ userRole }: TopNavProps) => {
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 max-w-screen-2xl items-center">
+        <Link to="/" className="flex items-center gap-2 mr-6 hover:opacity-80 transition-opacity">
+          <div className="bg-primary rounded-lg p-1.5">
+            <Zap className="h-5 w-5 text-primary-foreground" />
+          </div>
+          <span className="font-bold text-lg hidden sm:inline">GigMe</span>
+        </Link>
         <div className="flex gap-1 md:gap-2">
           {links.map((link) => {
             const Icon = link.icon;

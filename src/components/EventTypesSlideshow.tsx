@@ -4,27 +4,31 @@ import { UtensilsCrossed, Music2, Heart, CalendarClock, ChevronLeft, ChevronRigh
 const eventTypes = [
   {
     title: "Restaurants",
-    bgColor: "bg-gradient-to-br from-primary to-purple-600",
+    bgColor: "bg-gradient-to-br from-orange-400 via-red-400 to-pink-500",
     icon: UtensilsCrossed,
-    decorativeColor: "bg-secondary/80"
+    decorativeColor: "bg-amber-300",
+    accentColor: "bg-yellow-400"
   },
   {
     title: "Clubs",
-    bgColor: "bg-gradient-to-br from-blue-400 to-primary",
+    bgColor: "bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-500",
     icon: Music2,
-    decorativeColor: "bg-primary"
+    decorativeColor: "bg-cyan-400",
+    accentColor: "bg-pink-400"
   },
   {
     title: "Retirement Homes",
-    bgColor: "bg-gradient-to-br from-amber-400 to-yellow-500",
+    bgColor: "bg-gradient-to-br from-emerald-400 via-teal-400 to-cyan-500",
     icon: Heart,
-    decorativeColor: "bg-primary"
+    decorativeColor: "bg-yellow-300",
+    accentColor: "bg-orange-400"
   },
   {
     title: "Recurring Events",
-    bgColor: "bg-gradient-to-br from-purple-300 to-primary",
+    bgColor: "bg-gradient-to-br from-pink-500 via-rose-500 to-red-500",
     icon: CalendarClock,
-    decorativeColor: "bg-primary"
+    decorativeColor: "bg-purple-400",
+    accentColor: "bg-yellow-400"
   }
 ];
 
@@ -67,16 +71,25 @@ const EventTypesSlideshow = () => {
           <div 
             className={`relative aspect-[4/3] rounded-2xl overflow-hidden ${currentEvent.bgColor} transition-all duration-500 ease-in-out`}
           >
-            {/* Decorative cloud/blob shape */}
-            <div className={`absolute bottom-0 right-0 w-3/4 h-3/4 ${currentEvent.decorativeColor} rounded-tl-[100px] transition-all duration-500`}>
-              <div className="absolute -top-16 -left-16 w-32 h-32 bg-inherit rounded-full" />
-              <div className="absolute -top-8 left-16 w-24 h-24 bg-inherit rounded-full" />
+            {/* Decorative blob shapes */}
+            <div className={`absolute bottom-0 right-0 w-3/4 h-3/4 ${currentEvent.decorativeColor} rounded-tl-[120px] transition-all duration-700`}>
+              <div className="absolute -top-20 -left-20 w-40 h-40 bg-inherit rounded-full" />
+              <div className="absolute -top-10 left-20 w-28 h-28 bg-inherit rounded-full" />
             </div>
             
+            {/* Additional accent shape */}
+            <div className={`absolute top-8 left-8 w-20 h-20 ${currentEvent.accentColor} rounded-full opacity-80 transition-all duration-700`} />
+            <div className={`absolute top-20 left-24 w-12 h-12 ${currentEvent.accentColor} rounded-full opacity-60 transition-all duration-700`} />
+            
             {/* Event Icon */}
-            <div className="absolute top-6 right-6 opacity-20">
-              <Icon className="h-24 w-24 text-white" />
+            <div className="absolute top-6 right-6 opacity-30">
+              <Icon className="h-28 w-28 text-white drop-shadow-lg" />
             </div>
+
+            {/* Sparkle decorations */}
+            <div className="absolute top-1/4 right-1/4 w-3 h-3 bg-white rounded-full opacity-60 animate-pulse" />
+            <div className="absolute top-1/3 right-1/3 w-2 h-2 bg-white rounded-full opacity-40 animate-pulse" style={{ animationDelay: '0.5s' }} />
+            <div className="absolute bottom-1/3 left-1/4 w-2 h-2 bg-white rounded-full opacity-50 animate-pulse" style={{ animationDelay: '1s' }} />
 
             {/* Title */}
             <div className="absolute bottom-8 left-8 z-10">

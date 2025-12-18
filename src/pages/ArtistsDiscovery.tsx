@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Music, MapPin, Calendar, DollarSign, Youtube, Search } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 interface ArtistWithProfile {
   id: string;
@@ -25,13 +25,23 @@ interface ArtistWithProfile {
 
 const ArtistsDiscovery = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [artists, setArtists] = useState<ArtistWithProfile[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
 
   useEffect(() => {
     fetchArtists();
   }, []);
+
+  // Update URL when search term changes
+  useEffect(() => {
+    if (searchTerm) {
+      setSearchParams({ search: searchTerm });
+    } else {
+      setSearchParams({});
+    }
+  }, [searchTerm, setSearchParams]);
 
   const fetchArtists = async () => {
     try {

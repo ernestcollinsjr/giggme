@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "next-themes";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +26,20 @@ import {
 const Index = () => {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/artists?search=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && searchQuery.trim()) {
+      navigate(`/artists?search=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -88,15 +102,18 @@ const Index = () => {
           </div>
 
           {/* Search Bar */}
-          <div className="hidden md:flex flex-1 max-w-md">
+          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input 
                 placeholder="Search for entertainers" 
                 className="pl-10 bg-muted/50 border-border/50"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
               />
             </div>
-          </div>
+          </form>
 
           {/* Right Nav */}
           <nav className="flex items-center gap-2 sm:gap-3">
@@ -168,12 +185,15 @@ const Index = () => {
                 </p>
 
                 {/* Search Card */}
-                <div className="bg-card rounded-xl p-5 shadow-2xl">
+                <form onSubmit={handleSearch} className="bg-card rounded-xl p-5 shadow-2xl">
                   <div className="relative mb-4">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input 
                       placeholder="Search for entertainers" 
                       className="pl-10"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyDown={handleSearchKeyDown}
                     />
                   </div>
                   
@@ -196,7 +216,7 @@ const Index = () => {
                       </button>
                     ))}
                   </div>
-                </div>
+                </form>
               </div>
             </div>
 

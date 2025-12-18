@@ -78,12 +78,6 @@ const Index = () => {
       title: "Sound & Production",
       description: "Sound engineers, Lighting crews, Production teams, and more",
       color: "text-green-500"
-    },
-    {
-      icon: Calendar,
-      title: "Event Services",
-      description: "Tour managers, Booking agents, Venue coordinators, and more",
-      color: "text-amber-500"
     }
   ];
 

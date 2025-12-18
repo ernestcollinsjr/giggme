@@ -62,21 +62,25 @@ export const CalloutDialog = ({
       // Get suggested replacements from venue's preferred list
       const { data: preferredEntertainers } = await supabase
         .from("venue_preferred_entertainers")
-        .select(`
-          entertainer_id,
-          priority,
-          profile:profiles!venue_preferred_entertainers_entertainer_id_fkey(name)
-        `)
+        .select("entertainer_id, priority")
         .eq("venue_id", booking.venue_id)
         .neq("entertainer_id", booking.entertainer_id)
         .order("priority", { ascending: true })
         .limit(3);
 
-      // Build suggestion message
+      // Fetch profile names separately
       let suggestionText = "";
       if (preferredEntertainers && preferredEntertainers.length > 0) {
-        const names = preferredEntertainers.map(e => e.profile?.name || "Unknown").join(", ");
-        suggestionText = ` Suggested replacements from your preferred list: ${names}`;
+        const entertainerIds = preferredEntertainers.map(e => e.entertainer_id);
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("id, name")
+          .in("id", entertainerIds);
+
+        const names = profiles?.map(p => p.name).join(", ") || "";
+        if (names) {
+          suggestionText = ` Suggested replacements from your preferred list: ${names}`;
+        }
       }
 
       // Notify venue owner

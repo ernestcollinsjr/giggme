@@ -23,6 +23,9 @@ import Tours from "./pages/Tours";
 import TourDetail from "./pages/TourDetail";
 import TourInvite from "./pages/TourInvite";
 import BandInvite from "./pages/BandInvite";
+import VenueDashboard from "./pages/VenueDashboard";
+import EntertainerMarketplace from "./pages/EntertainerMarketplace";
+import EntertainerDashboard from "./pages/EntertainerDashboard";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +54,9 @@ const App = () => (
             <Route path="/tour-invite/:token" element={<TourInvite />} />
             <Route path="/band-invite/:token" element={<BandInvite />} />
             <Route path="/booking-manager" element={<BookingManager />} />
+            <Route path="/venue-dashboard" element={<VenueDashboard />} />
+            <Route path="/entertainers" element={<EntertainerMarketplace />} />
+            <Route path="/entertainer-dashboard" element={<EntertainerDashboard />} />
             <Route path="/open" element={<OpenExternal />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

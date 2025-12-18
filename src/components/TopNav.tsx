@@ -16,7 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 
 interface TopNavProps {
-  userRole: "band_leader" | "band_member" | "booking_manager" | "artist" | "tour_manager";
+  userRole: "band_leader" | "band_member" | "booking_manager" | "artist" | "tour_manager" | "venue_owner";
 }
 
 export const TopNav = ({ userRole }: TopNavProps) => {
@@ -53,6 +53,12 @@ export const TopNav = ({ userRole }: TopNavProps) => {
     { path: "/chat", label: "Messages", icon: MessageSquare },
   ];
 
+  const venueOwnerLinks = [
+    { path: "/venue-dashboard", label: "Dashboard", icon: Home },
+    { path: "/entertainers", label: "Find Entertainment", icon: Search },
+    { path: "/chat", label: "Messages", icon: MessageSquare },
+  ];
+
   const getLinks = () => {
     switch (userRole) {
       case "band_leader":
@@ -63,6 +69,8 @@ export const TopNav = ({ userRole }: TopNavProps) => {
         return artistLinks;
       case "tour_manager":
         return tourManagerLinks;
+      case "venue_owner":
+        return venueOwnerLinks;
       default:
         return [{ path: "/dashboard", label: "Dashboard", icon: Home }];
     }

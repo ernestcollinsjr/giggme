@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import TopNav from "@/components/TopNav";
+import { TopNav } from "@/components/TopNav";
 import BottomNav from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -88,16 +88,25 @@ const EntertainerMarketplace = () => {
       // Fetch all artist profiles
       const { data: artistData } = await supabase
         .from("artist_profiles")
-        .select(`
-          *,
-          profile:profiles!artist_profiles_user_id_fkey(name, photo_urls, bio)
-        `);
+        .select("*");
 
       if (artistData) {
-        setEntertainers(artistData.map(a => ({
+        // Fetch profiles separately
+        const userIds = artistData.map(a => a.user_id);
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("id, name, photo_urls, bio")
+          .in("id", userIds);
+
+        const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+
+        const enriched = artistData.map(a => ({
           ...a,
+          profile: profileMap.get(a.user_id),
           isPreferred: preferredIds.has(a.user_id)
-        })));
+        }));
+
+        setEntertainers(enriched as Entertainer[]);
       }
     } catch (error: any) {
       toast({

@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "next-themes";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import EventTypesSlideshow from "@/components/EventTypesSlideshow";
 import { 
   Music, 
   Briefcase, 
@@ -325,82 +326,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Role Cards Section */}
-      <section className="max-w-6xl mx-auto px-4 py-16">
-        <h2 className="text-2xl md:text-3xl font-bold text-center mb-4">Built for Everyone in Music</h2>
-        <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
-          Whether you're leading a band, playing in one, or booking talent – GigMe has you covered.
-        </p>
-        <div className="grid md:grid-cols-4 gap-6">
-          <div 
-            className="bg-card border border-border/50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105"
-            onClick={() => navigate("/auth")}
-          >
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-              <Crown className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Band Leaders</h3>
-            <p className="text-muted-foreground mb-4">
-              Lead your band, manage your group, and connect with booking managers to secure gigs
-            </p>
-            <div className="flex items-center gap-2 text-sm text-primary">
-              <Star className="h-4 w-4" />
-              <span className="font-medium">Premium Role</span>
-            </div>
-          </div>
-
-          <div 
-            className="bg-card border border-border/50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105"
-            onClick={() => navigate("/auth")}
-          >
-            <div className="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center mb-4">
-              <Music className="h-6 w-6 text-secondary" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Band Members</h3>
-            <p className="text-muted-foreground mb-4">
-              Share your location, showcase your instrument skills, and stay connected with your band
-            </p>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Users className="h-4 w-4" />
-              <span>Free Forever</span>
-            </div>
-          </div>
-
-          <div 
-            className="bg-card border border-border/50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105"
-            onClick={() => navigate("/auth")}
-          >
-            <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mb-4">
-              <Mic className="h-6 w-6 text-accent" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Artist/Musician</h3>
-            <p className="text-muted-foreground mb-4">
-              Showcase your talent, build your portfolio, and connect with bands and venues
-            </p>
-            <div className="flex items-center gap-2 text-sm text-accent">
-              <Star className="h-4 w-4" />
-              <span className="font-medium">Premium Role</span>
-            </div>
-          </div>
-
-          <div 
-            className="bg-card border border-border/50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105"
-            onClick={() => navigate("/auth")}
-          >
-            <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mb-4">
-              <Briefcase className="h-6 w-6 text-accent" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Booking Manager</h3>
-            <p className="text-muted-foreground mb-4">
-              Discover talented bands, track their locations, and manage your roster all in one place
-            </p>
-            <div className="flex items-center gap-2 text-sm text-accent">
-              <Star className="h-4 w-4" />
-              <span className="font-medium">Premium Role</span>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Event Types Slideshow Section */}
+      <EventTypesSlideshow />
 
       {/* CTA Section */}
       <section className="max-w-6xl mx-auto px-4 py-16">

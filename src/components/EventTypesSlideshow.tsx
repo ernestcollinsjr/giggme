@@ -1,34 +1,27 @@
 import { useState, useEffect, useCallback } from "react";
-import { UtensilsCrossed, Music2, Heart, CalendarClock, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
+import restaurantsImg from "@/assets/slideshow-restaurants.jpg";
+import clubsImg from "@/assets/slideshow-clubs.jpg";
+import retirementImg from "@/assets/slideshow-retirement.jpg";
+import recurringImg from "@/assets/slideshow-recurring.jpg";
 
 const eventTypes = [
   {
     title: "Restaurants",
-    bgColor: "bg-gradient-to-br from-orange-400 via-red-400 to-pink-500",
-    icon: UtensilsCrossed,
-    decorativeColor: "bg-amber-300",
-    accentColor: "bg-yellow-400"
+    image: restaurantsImg,
   },
   {
     title: "Clubs",
-    bgColor: "bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-500",
-    icon: Music2,
-    decorativeColor: "bg-cyan-400",
-    accentColor: "bg-pink-400"
+    image: clubsImg,
   },
   {
     title: "Retirement Homes",
-    bgColor: "bg-gradient-to-br from-emerald-400 via-teal-400 to-cyan-500",
-    icon: Heart,
-    decorativeColor: "bg-yellow-300",
-    accentColor: "bg-orange-400"
+    image: retirementImg,
   },
   {
     title: "Recurring Events",
-    bgColor: "bg-gradient-to-br from-pink-500 via-rose-500 to-red-500",
-    icon: CalendarClock,
-    decorativeColor: "bg-purple-400",
-    accentColor: "bg-yellow-400"
+    image: recurringImg,
   }
 ];
 
@@ -57,7 +50,6 @@ const EventTypesSlideshow = () => {
   // Safety check to ensure index is within bounds
   const safeIndex = currentIndex >= eventTypes.length ? 0 : currentIndex;
   const currentEvent = eventTypes[safeIndex];
-  const Icon = currentEvent.icon;
 
   return (
     <section className="max-w-6xl mx-auto px-4 py-16">
@@ -68,28 +60,16 @@ const EventTypesSlideshow = () => {
           onMouseEnter={() => setIsAutoPlaying(false)}
           onMouseLeave={() => setIsAutoPlaying(true)}
         >
-          <div 
-            className={`relative aspect-[4/3] rounded-2xl overflow-hidden ${currentEvent.bgColor} transition-all duration-500 ease-in-out`}
-          >
-            {/* Decorative blob shapes */}
-            <div className={`absolute bottom-0 right-0 w-3/4 h-3/4 ${currentEvent.decorativeColor} rounded-tl-[120px] transition-all duration-700`}>
-              <div className="absolute -top-20 -left-20 w-40 h-40 bg-inherit rounded-full" />
-              <div className="absolute -top-10 left-20 w-28 h-28 bg-inherit rounded-full" />
-            </div>
+          <div className="relative aspect-[4/3] rounded-2xl overflow-hidden transition-all duration-500 ease-in-out">
+            {/* Background Image */}
+            <img 
+              src={currentEvent.image} 
+              alt={currentEvent.title}
+              className="absolute inset-0 w-full h-full object-cover transition-all duration-500"
+            />
             
-            {/* Additional accent shape */}
-            <div className={`absolute top-8 left-8 w-20 h-20 ${currentEvent.accentColor} rounded-full opacity-80 transition-all duration-700`} />
-            <div className={`absolute top-20 left-24 w-12 h-12 ${currentEvent.accentColor} rounded-full opacity-60 transition-all duration-700`} />
-            
-            {/* Event Icon */}
-            <div className="absolute top-6 right-6 opacity-30">
-              <Icon className="h-28 w-28 text-white drop-shadow-lg" />
-            </div>
-
-            {/* Sparkle decorations */}
-            <div className="absolute top-1/4 right-1/4 w-3 h-3 bg-white rounded-full opacity-60 animate-pulse" />
-            <div className="absolute top-1/3 right-1/3 w-2 h-2 bg-white rounded-full opacity-40 animate-pulse" style={{ animationDelay: '0.5s' }} />
-            <div className="absolute bottom-1/3 left-1/4 w-2 h-2 bg-white rounded-full opacity-50 animate-pulse" style={{ animationDelay: '1s' }} />
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
             {/* Title */}
             <div className="absolute bottom-8 left-8 z-10">

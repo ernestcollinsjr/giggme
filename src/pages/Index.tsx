@@ -164,7 +164,7 @@ const Index = () => {
                   The easiest way to book entertainers Virtually
                 </h1>
                 <p className="text-primary-foreground/80 text-lg mb-8">
-                  Plan to leave a lasting impression, whatever the moment.
+                  Entertainment booked through automation and virtual assistance.
                 </p>
 
                 {/* Search Card */}

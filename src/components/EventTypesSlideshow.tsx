@@ -50,7 +50,9 @@ const EventTypesSlideshow = () => {
     return () => clearInterval(interval);
   }, [isAutoPlaying, nextSlide]);
 
-  const currentEvent = eventTypes[currentIndex];
+  // Safety check to ensure index is within bounds
+  const safeIndex = currentIndex >= eventTypes.length ? 0 : currentIndex;
+  const currentEvent = eventTypes[safeIndex];
   const Icon = currentEvent.icon;
 
   return (

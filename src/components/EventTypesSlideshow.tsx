@@ -117,7 +117,7 @@ const EventTypesSlideshow = () => {
             From <span className="text-foreground font-semibold">intimate restaurant performances</span> to <span className="text-foreground font-semibold">high-energy club nights</span>, we connect talented entertainers with venues that need them most.
           </p>
           <p className="text-lg text-muted-foreground">
-            Whether you are bringing joy to <span className="text-foreground font-semibold">retirement communities</span> or booking <span className="text-foreground font-semibold">recurring weekly gigs</span>, GigMe makes it simple to find the perfect match. Book something awesome®.
+            Allow us to <span className="text-foreground font-semibold">book your recurring bookings for you</span> with automated virtual tools. Book something awesome®.
           </p>
         </div>
       </div>

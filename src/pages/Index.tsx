@@ -249,28 +249,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Entertainer Slideshow Section */}
-      <section className="py-8 bg-muted/30 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 mb-6">
-          <h2 className="text-2xl font-bold text-center">Our Talented Entertainers</h2>
-        </div>
-        <div className="flex gap-4">
-          <div className="animate-scroll-up flex flex-col gap-4">
-            {[...heroImages, ...heroImages].map((img, index) => (
-              <div key={`scroll1-${index}`} className="w-48 h-32 rounded-xl overflow-hidden shrink-0">
-                <img src={img.src} alt={img.alt} className="w-full h-full object-cover" />
-              </div>
-            ))}
-          </div>
-          <div className="animate-scroll-down flex flex-col gap-4">
-            {[...heroImages.slice().reverse(), ...heroImages.slice().reverse()].map((img, index) => (
-              <div key={`scroll2-${index}`} className="w-48 h-32 rounded-xl overflow-hidden shrink-0">
-                <img src={img.src} alt={img.alt} className="w-full h-full object-cover" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* How it Works Section */}
       <section className="py-16 md:py-24 bg-muted/30">

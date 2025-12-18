@@ -87,7 +87,7 @@ const Pricing = () => {
     {
       name: "Booking Manager",
       price: "Free",
-      description: "For booking managers - free up to 5 bands",
+      description: "For booking managers - free up to 14 people",
       icon: Briefcase,
       color: "text-accent",
       bgColor: "bg-accent/10",

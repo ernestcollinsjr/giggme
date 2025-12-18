@@ -228,60 +228,43 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Right Side - Image Masonry Grid */}
-            <div className="hidden lg:block relative bg-muted/30">
+            {/* Right Side - Animated Scrolling Image Columns */}
+            <div className="hidden lg:block relative bg-muted/30 overflow-hidden">
               <div className="absolute inset-0 p-4">
                 <div className="grid grid-cols-2 gap-3 h-full">
-                  {/* Column 1 */}
-                  <div className="space-y-3">
-                    <div className="h-[45%] rounded-2xl overflow-hidden">
-                      <img 
-                        src={heroImages[0].src} 
-                        alt={heroImages[0].alt}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                      />
-                    </div>
-                    <div className="h-[25%] rounded-2xl overflow-hidden">
-                      <img 
-                        src={heroImages[1].src} 
-                        alt={heroImages[1].alt}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                      />
-                    </div>
-                    <div className="h-[25%] rounded-2xl overflow-hidden">
-                      <img 
-                        src={heroImages[4].src} 
-                        alt={heroImages[4].alt}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                      />
+                  {/* Column 1 - Scrolls Up */}
+                  <div className="relative overflow-hidden h-full">
+                    <div className="animate-scroll-up space-y-3">
+                      {[...heroImages, ...heroImages].map((img, index) => (
+                        <div key={`col1-${index}`} className="h-48 rounded-2xl overflow-hidden">
+                          <img 
+                            src={img.src} 
+                            alt={img.alt}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ))}
                     </div>
                   </div>
-                  {/* Column 2 */}
-                  <div className="space-y-3 pt-8">
-                    <div className="h-[30%] rounded-2xl overflow-hidden">
-                      <img 
-                        src={heroImages[3].src} 
-                        alt={heroImages[3].alt}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                      />
-                    </div>
-                    <div className="h-[40%] rounded-2xl overflow-hidden bg-secondary">
-                      <img 
-                        src={heroImages[2].src} 
-                        alt={heroImages[2].alt}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                      />
-                    </div>
-                    <div className="h-[25%] rounded-2xl overflow-hidden">
-                      <img 
-                        src={heroImages[5].src} 
-                        alt={heroImages[5].alt}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                      />
+                  {/* Column 2 - Scrolls Down */}
+                  <div className="relative overflow-hidden h-full">
+                    <div className="animate-scroll-down space-y-3">
+                      {[...heroImages.slice().reverse(), ...heroImages.slice().reverse()].map((img, index) => (
+                        <div key={`col2-${index}`} className="h-48 rounded-2xl overflow-hidden">
+                          <img 
+                            src={img.src} 
+                            alt={img.alt}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
               </div>
+              {/* Gradient overlays for smooth edges */}
+              <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-muted/30 to-transparent pointer-events-none z-10" />
+              <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-muted/30 to-transparent pointer-events-none z-10" />
             </div>
           </div>
         </div>

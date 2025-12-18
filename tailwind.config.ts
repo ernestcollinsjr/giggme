@@ -194,6 +194,22 @@ export default {
             transform: "scale(1)",
           },
         },
+        "scroll-up": {
+          "0%": {
+            transform: "translateY(0)",
+          },
+          "100%": {
+            transform: "translateY(-50%)",
+          },
+        },
+        "scroll-down": {
+          "0%": {
+            transform: "translateY(-50%)",
+          },
+          "100%": {
+            transform: "translateY(0)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -208,6 +224,8 @@ export default {
         "pulse-ring": "pulse-ring 2s ease-in-out infinite",
         "bounce-subtle": "bounce-subtle 2s ease-in-out infinite",
         "sparkle": "sparkle 1.5s ease-in-out infinite",
+        "scroll-up": "scroll-up 20s linear infinite",
+        "scroll-down": "scroll-down 20s linear infinite",
       },
     },
   },

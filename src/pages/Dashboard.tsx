@@ -1234,9 +1234,10 @@ const Dashboard = () => {
               </Tabs>
             )}
             
-            <BandAssistant />
-
-            <MessageInbox userId={user?.id || ""} />
+            <div className="space-y-6">
+              <BandAssistant />
+              <MessageInbox userId={user?.id || ""} />
+            </div>
           </div>
         )}
 
@@ -1309,11 +1310,11 @@ const Dashboard = () => {
               </Card>
             )}
 
-            <BandAssistant />
-            
-            <AcceptedGigsCard userId={user?.id || ""} />
-
-            <MessageInbox userId={user?.id || ""} />
+            <div className="space-y-6">
+              <BandAssistant />
+              <AcceptedGigsCard userId={user?.id || ""} />
+              <MessageInbox userId={user?.id || ""} />
+            </div>
 
             {userRole === "band_member" && (
               <AutoLocationTracker

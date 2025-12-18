@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Music, MapPin, Calendar, DollarSign, Youtube, Search } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Music, MapPin, Calendar, DollarSign, Youtube, Search, Filter } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 interface ArtistWithProfile {
@@ -29,6 +30,7 @@ const ArtistsDiscovery = () => {
   const [artists, setArtists] = useState<ArtistWithProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
+  const [selectedGenre, setSelectedGenre] = useState<string>("all");
 
   useEffect(() => {
     fetchArtists();
@@ -65,13 +67,27 @@ const ArtistsDiscovery = () => {
     }
   };
 
+  // Extract unique genres from artists
+  const genres = useMemo(() => {
+    const genreSet = new Set<string>();
+    artists.forEach((artist) => {
+      if (artist.genre) {
+        genreSet.add(artist.genre);
+      }
+    });
+    return Array.from(genreSet).sort();
+  }, [artists]);
+
   const filteredArtists = artists.filter((artist) => {
     const searchLower = searchTerm.toLowerCase();
-    return (
+    const matchesSearch =
       artist.profile.name.toLowerCase().includes(searchLower) ||
       artist.stage_name?.toLowerCase().includes(searchLower) ||
-      artist.genre?.toLowerCase().includes(searchLower)
-    );
+      artist.genre?.toLowerCase().includes(searchLower);
+    
+    const matchesGenre = selectedGenre === "all" || artist.genre === selectedGenre;
+    
+    return matchesSearch && matchesGenre;
   });
 
   if (loading) {
@@ -93,14 +109,31 @@ const ArtistsDiscovery = () => {
             Find talented artists and musicians for your next event
           </p>
 
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by name, stage name, or genre..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by name, stage name, or genre..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            
+            <Select value={selectedGenre} onValueChange={setSelectedGenre}>
+              <SelectTrigger className="w-full sm:w-[200px]">
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Filter by genre" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Genres</SelectItem>
+                {genres.map((genre) => (
+                  <SelectItem key={genre} value={genre}>
+                    {genre}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 

@@ -134,7 +134,7 @@ export const BandAssistant = () => {
   };
 
   return (
-    <Card className="border-border/50 shadow-lg h-[270px] flex flex-col mb-8">
+    <Card className="border-border/50 shadow-lg h-[270px] flex flex-col mb-12">
       <CardHeader className="border-b py-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <Bot className="h-4 w-4 text-primary" />

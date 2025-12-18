@@ -30,6 +30,12 @@ import heroBand from "@/assets/hero-band.jpg";
 import heroAcoustic from "@/assets/hero-acoustic.jpg";
 import heroPianist from "@/assets/hero-pianist.jpg";
 import heroSaxophone from "@/assets/hero-saxophone.jpg";
+import heroViolinist from "@/assets/hero-violinist.jpg";
+import heroDrummer from "@/assets/hero-drummer.jpg";
+import heroJazzTrio from "@/assets/hero-jazz-trio.jpg";
+import heroVocalist from "@/assets/hero-vocalist.jpg";
+import heroMariachi from "@/assets/hero-mariachi.jpg";
+import heroQuartet from "@/assets/hero-quartet.jpg";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -87,7 +93,13 @@ const Index = () => {
     { src: heroBand, alt: "Live band at restaurant" },
     { src: heroAcoustic, alt: "Acoustic performance at retirement home" },
     { src: heroPianist, alt: "Pianist at upscale event" },
-    { src: heroSaxophone, alt: "Saxophonist at jazz club" }
+    { src: heroSaxophone, alt: "Saxophonist at jazz club" },
+    { src: heroViolinist, alt: "Violinist at wedding reception" },
+    { src: heroDrummer, alt: "Drummer performing on stage" },
+    { src: heroJazzTrio, alt: "Jazz trio at upscale lounge" },
+    { src: heroVocalist, alt: "Vocalist at corporate event" },
+    { src: heroMariachi, alt: "Mariachi band at outdoor celebration" },
+    { src: heroQuartet, alt: "String quartet at elegant gala" }
   ];
 
   return (

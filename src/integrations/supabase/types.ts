@@ -185,6 +185,80 @@ export type Database = {
           },
         ]
       }
+      entertainment_bookings: {
+        Row: {
+          callout_reason: string | null
+          confirmation_sent_at: string | null
+          created_at: string
+          date: string
+          end_time: string | null
+          entertainer_id: string
+          entertainer_notes: string | null
+          id: string
+          is_recurring: boolean | null
+          notes: string | null
+          original_entertainer_id: string | null
+          payment_amount: number | null
+          payment_status: string | null
+          recurring_schedule_id: string | null
+          start_time: string
+          status: Database["public"]["Enums"]["booking_status"]
+          updated_at: string
+          venue_id: string
+          venue_notes: string | null
+        }
+        Insert: {
+          callout_reason?: string | null
+          confirmation_sent_at?: string | null
+          created_at?: string
+          date: string
+          end_time?: string | null
+          entertainer_id: string
+          entertainer_notes?: string | null
+          id?: string
+          is_recurring?: boolean | null
+          notes?: string | null
+          original_entertainer_id?: string | null
+          payment_amount?: number | null
+          payment_status?: string | null
+          recurring_schedule_id?: string | null
+          start_time: string
+          status?: Database["public"]["Enums"]["booking_status"]
+          updated_at?: string
+          venue_id: string
+          venue_notes?: string | null
+        }
+        Update: {
+          callout_reason?: string | null
+          confirmation_sent_at?: string | null
+          created_at?: string
+          date?: string
+          end_time?: string | null
+          entertainer_id?: string
+          entertainer_notes?: string | null
+          id?: string
+          is_recurring?: boolean | null
+          notes?: string | null
+          original_entertainer_id?: string | null
+          payment_amount?: number | null
+          payment_status?: string | null
+          recurring_schedule_id?: string | null
+          start_time?: string
+          status?: Database["public"]["Enums"]["booking_status"]
+          updated_at?: string
+          venue_id?: string
+          venue_notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entertainment_bookings_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gig_members: {
         Row: {
           created_at: string
@@ -403,6 +477,78 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_preferences: {
+        Row: {
+          created_at: string
+          email_enabled: boolean | null
+          id: string
+          push_enabled: boolean | null
+          reminder_1_day: boolean | null
+          reminder_1_week: boolean | null
+          reminder_day_of: boolean | null
+          sms_enabled: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_enabled?: boolean | null
+          id?: string
+          push_enabled?: boolean | null
+          reminder_1_day?: boolean | null
+          reminder_1_week?: boolean | null
+          reminder_day_of?: boolean | null
+          sms_enabled?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email_enabled?: boolean | null
+          id?: string
+          push_enabled?: boolean | null
+          reminder_1_day?: boolean | null
+          reminder_1_week?: boolean | null
+          reminder_day_of?: boolean | null
+          sms_enabled?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean | null
+          message: string
+          related_id: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message: string
+          related_id?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          related_id?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           bio: string | null
@@ -450,6 +596,59 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      recurring_schedules: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          end_time: string | null
+          entertainer_id: string
+          id: string
+          is_active: boolean | null
+          name: string
+          notes: string | null
+          payment_amount: number | null
+          start_time: string
+          updated_at: string
+          venue_id: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          end_time?: string | null
+          entertainer_id: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          notes?: string | null
+          payment_amount?: number | null
+          start_time: string
+          updated_at?: string
+          venue_id: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          end_time?: string | null
+          entertainer_id?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          notes?: string | null
+          payment_amount?: number | null
+          start_time?: string
+          updated_at?: string
+          venue_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recurring_schedules_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       rehearsals: {
         Row: {
@@ -878,6 +1077,101 @@ export type Database = {
         }
         Relationships: []
       }
+      venue_preferred_entertainers: {
+        Row: {
+          added_at: string
+          entertainer_id: string
+          id: string
+          notes: string | null
+          priority: number | null
+          venue_id: string
+        }
+        Insert: {
+          added_at?: string
+          entertainer_id: string
+          id?: string
+          notes?: string | null
+          priority?: number | null
+          venue_id: string
+        }
+        Update: {
+          added_at?: string
+          entertainer_id?: string
+          id?: string
+          notes?: string | null
+          priority?: number | null
+          venue_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venue_preferred_entertainers_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      venues: {
+        Row: {
+          address: string | null
+          capacity: number | null
+          city: string | null
+          created_at: string
+          description: string | null
+          email: string | null
+          id: string
+          lat: number | null
+          lng: number | null
+          logo_url: string | null
+          name: string
+          owner_id: string
+          phone: string | null
+          state: string | null
+          updated_at: string
+          venue_type: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          address?: string | null
+          capacity?: number | null
+          city?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          logo_url?: string | null
+          name: string
+          owner_id: string
+          phone?: string | null
+          state?: string | null
+          updated_at?: string
+          venue_type?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string | null
+          capacity?: number | null
+          city?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          logo_url?: string | null
+          name?: string
+          owner_id?: string
+          phone?: string | null
+          state?: string | null
+          updated_at?: string
+          venue_type?: string | null
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -924,6 +1218,14 @@ export type Database = {
         | "booking_manager"
         | "artist"
         | "tour_manager"
+        | "venue_owner"
+      booking_status:
+        | "pending"
+        | "confirmed"
+        | "declined"
+        | "cancelled"
+        | "callout"
+        | "completed"
       crew_type: "band_members" | "singer" | "sound_crew" | "lighting_crew"
       gig_status: "pending" | "confirmed" | "completed" | "cancelled"
       instrument_type:
@@ -1068,6 +1370,15 @@ export const Constants = {
         "booking_manager",
         "artist",
         "tour_manager",
+        "venue_owner",
+      ],
+      booking_status: [
+        "pending",
+        "confirmed",
+        "declined",
+        "cancelled",
+        "callout",
+        "completed",
       ],
       crew_type: ["band_members", "singer", "sound_crew", "lighting_crew"],
       gig_status: ["pending", "confirmed", "completed", "cancelled"],

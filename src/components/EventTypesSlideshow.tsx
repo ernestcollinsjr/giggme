@@ -114,10 +114,10 @@ const EventTypesSlideshow = () => {
         {/* Text Content */}
         <div className="bg-secondary/10 rounded-2xl p-8 lg:p-10">
           <p className="text-lg text-muted-foreground mb-4">
-            With us, <span className="text-foreground font-semibold">planners have the confidence to bring their events to life</span>, while entertainers and event professionals enjoy quality leads and more opportunities to do what they love.
+            From <span className="text-foreground font-semibold">intimate restaurant performances</span> to <span className="text-foreground font-semibold">high-energy club nights</span>, we connect talented entertainers with venues that need them most.
           </p>
           <p className="text-lg text-muted-foreground">
-            When booking is easy, everyone can focus on what really matters — <span className="text-foreground font-semibold">crafting experiences that leave a lasting impression on guests</span>. Book something awesome®.
+            Whether you are bringing joy to <span className="text-foreground font-semibold">retirement communities</span> or booking <span className="text-foreground font-semibold">recurring weekly gigs</span>, GigMe makes it simple to find the perfect match. Book something awesome®.
           </p>
         </div>
       </div>

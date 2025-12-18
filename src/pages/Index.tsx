@@ -77,9 +77,9 @@ const Index = () => {
               For Music Teams
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              <span className="text-foreground">Gig Management</span>
+              <span className="text-foreground">Virtual Entertainment</span>
               <br />
-              <span className="text-primary">Made Simple</span>
+              <span className="text-primary">Booking Agent</span>
             </h1>
             <p className="text-lg text-muted-foreground mb-8 max-w-lg">
               Setlists, scheduling gigs, track your artist, organizing your band, get booked with agents, free to get started.

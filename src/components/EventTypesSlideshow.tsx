@@ -117,7 +117,7 @@ const EventTypesSlideshow = () => {
             From <span className="text-foreground font-semibold">intimate restaurant performances</span> to <span className="text-foreground font-semibold">high-energy club nights</span>, we connect talented entertainers with venues that need them most.
           </p>
           <p className="text-lg text-muted-foreground">
-            Allow us to <span className="text-foreground font-semibold">book your recurring bookings for you</span> with automated virtual tools. Book something awesome®.
+            Allow us to <span className="text-foreground font-semibold">book your recurring bookings for you</span> with automated virtual tools. Let us take the headache out of finding talent week after week.
           </p>
         </div>
       </div>

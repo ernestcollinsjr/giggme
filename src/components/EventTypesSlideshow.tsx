@@ -1,42 +1,30 @@
 import { useState, useEffect, useCallback } from "react";
-import { Cake, Building2, PartyPopper, Heart, Sparkles, Gift, ChevronLeft, ChevronRight } from "lucide-react";
+import { UtensilsCrossed, Music2, Heart, CalendarClock, ChevronLeft, ChevronRight } from "lucide-react";
 
 const eventTypes = [
   {
-    title: "Weddings",
+    title: "Restaurants",
     bgColor: "bg-gradient-to-br from-primary to-purple-600",
-    icon: Heart,
+    icon: UtensilsCrossed,
     decorativeColor: "bg-secondary/80"
   },
   {
-    title: "Corporate Events",
+    title: "Clubs",
     bgColor: "bg-gradient-to-br from-blue-400 to-primary",
-    icon: Building2,
+    icon: Music2,
     decorativeColor: "bg-primary"
   },
   {
-    title: "Birthdays",
+    title: "Retirement Homes",
     bgColor: "bg-gradient-to-br from-amber-400 to-yellow-500",
-    icon: Cake,
+    icon: Heart,
     decorativeColor: "bg-primary"
   },
   {
-    title: "Holiday Parties",
+    title: "Recurring Events",
     bgColor: "bg-gradient-to-br from-purple-300 to-primary",
-    icon: PartyPopper,
+    icon: CalendarClock,
     decorativeColor: "bg-primary"
-  },
-  {
-    title: "Private Events",
-    bgColor: "bg-gradient-to-br from-primary to-violet-600",
-    icon: Sparkles,
-    decorativeColor: "bg-secondary/60"
-  },
-  {
-    title: "Special Occasions",
-    bgColor: "bg-gradient-to-br from-purple-500 to-primary",
-    icon: Gift,
-    decorativeColor: "bg-amber-400"
   }
 ];
 

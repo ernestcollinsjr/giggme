@@ -25,6 +25,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { BandMemberRoster } from "@/components/BandMemberRoster";
 import { BandInvitationManager } from "@/components/BandInvitationManager";
 import { TeamAvailabilityView } from "@/components/TeamAvailabilityView";
+import { AvailabilityRequestManager } from "@/components/AvailabilityRequestManager";
+import { AvailabilityRequestResults } from "@/components/AvailabilityRequestResults";
+import { AvailabilityRequestResponder } from "@/components/AvailabilityRequestResponder";
 import { BandProfileEditor } from "@/components/BandProfileEditor";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
 import RoleSwitcher from "@/components/RoleSwitcher";
@@ -170,6 +173,9 @@ const Dashboard = () => {
   const [newBookingNotes, setNewBookingNotes] = useState("");
   const [newBookingPaymentAmount, setNewBookingPaymentAmount] = useState("");
   const [isBookingArtist, setIsBookingArtist] = useState(false);
+  
+  // Availability request state
+  const [viewingRequestId, setViewingRequestId] = useState<string | null>(null);
 
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -1210,6 +1216,19 @@ const Dashboard = () => {
                       </CardContent>
                     </Card>
                     
+                    {/* Availability Request Section */}
+                    {viewingRequestId ? (
+                      <AvailabilityRequestResults 
+                        requestId={viewingRequestId} 
+                        onBack={() => setViewingRequestId(null)} 
+                      />
+                    ) : (
+                      <AvailabilityRequestManager 
+                        bandId={band.id} 
+                        onViewResponses={(requestId) => setViewingRequestId(requestId)} 
+                      />
+                    )}
+                    
                     {/* Team Availability View */}
                     <TeamAvailabilityView bandId={band.id} />
                   </TabsContent>
@@ -1236,6 +1255,9 @@ const Dashboard = () => {
             </TabsList>
 
             <TabsContent value="overview" className="space-y-4">
+            {/* Availability Requests from Band Leaders */}
+            <AvailabilityRequestResponder />
+            
             {gigInvites.length > 0 && (
               <Card className="border-border/50 shadow-lg bg-gradient-to-br from-primary/5 to-accent/5">
                 <CardHeader>

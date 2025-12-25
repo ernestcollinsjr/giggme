@@ -59,6 +59,91 @@ export type Database = {
         }
         Relationships: []
       }
+      availability_requests: {
+        Row: {
+          band_id: string
+          created_at: string
+          created_by: string
+          description: string | null
+          end_date: string
+          id: string
+          start_date: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          band_id: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          end_date: string
+          id?: string
+          start_date: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          band_id?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          end_date?: string
+          id?: string
+          start_date?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "availability_requests_band_id_fkey"
+            columns: ["band_id"]
+            isOneToOne: false
+            referencedRelation: "bands"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      availability_responses: {
+        Row: {
+          available_dates: string[]
+          id: string
+          member_id: string
+          notes: string | null
+          request_id: string
+          submitted_at: string
+          updated_at: string
+        }
+        Insert: {
+          available_dates?: string[]
+          id?: string
+          member_id: string
+          notes?: string | null
+          request_id: string
+          submitted_at?: string
+          updated_at?: string
+        }
+        Update: {
+          available_dates?: string[]
+          id?: string
+          member_id?: string
+          notes?: string | null
+          request_id?: string
+          submitted_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "availability_responses_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "availability_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       band_invitations: {
         Row: {
           band_id: string

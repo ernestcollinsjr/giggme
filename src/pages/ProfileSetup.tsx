@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "@supabase/supabase-js";
-import { LogOut, Crown, Music, Briefcase, Mail, Loader2, Youtube, Facebook, Instagram, Twitter, Globe, Plus, Trash2, Wrench, Tag, MapPin, Clock, Play, X } from "lucide-react";
+import { LogOut, Crown, Music, Briefcase, Mail, Loader2, Youtube, Facebook, Instagram, Twitter, Globe, Plus, Trash2, Wrench, Tag, MapPin, Clock, Play, X, Check, HelpCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { detectFaceAndCrop, loadImage } from "@/utils/imageCropping";
 import { Browser } from '@capacitor/browser';
@@ -488,6 +488,49 @@ const ProfileSetup = () => {
 
   const removeUnion = (index: number) => {
     setUnionMemberships((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Quick-set today's availability
+  const setTodayAvailability = async (status: 'available' | 'unavailable' | 'tentative') => {
+    try {
+      if (!user) {
+        toast({ title: "Please log in", variant: "destructive" });
+        return;
+      }
+
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Check if there's an existing entry for today
+      const { data: existing } = await supabase
+        .from('member_availability')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('date', today)
+        .maybeSingle();
+
+      if (existing) {
+        // Update existing
+        const { error } = await supabase
+          .from('member_availability')
+          .update({ status })
+          .eq('id', existing.id);
+
+        if (error) throw error;
+      } else {
+        // Insert new
+        const { error } = await supabase
+          .from('member_availability')
+          .insert({ user_id: user.id, date: today, status });
+
+        if (error) throw error;
+      }
+
+      setTodayCalendarStatus(status);
+      toast({ title: `Today marked as ${status}` });
+    } catch (error) {
+      console.error('Error setting today availability:', error);
+      toast({ title: "Error updating availability", variant: "destructive" });
+    }
   };
 
   // Calculate profile completeness
@@ -1233,7 +1276,7 @@ const ProfileSetup = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <Label className="text-xs">Today's Availability Status</Label>
                   <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 border">
                     {todayCalendarStatus === 'available' ? (
@@ -1258,8 +1301,40 @@ const ProfileSetup = () => {
                       </>
                     )}
                   </div>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={todayCalendarStatus === 'available' ? 'default' : 'outline'}
+                      className={todayCalendarStatus === 'available' ? 'bg-green-500 hover:bg-green-600' : ''}
+                      onClick={() => setTodayAvailability('available')}
+                    >
+                      <Check className="h-3 w-3 mr-1" />
+                      Available
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={todayCalendarStatus === 'tentative' ? 'default' : 'outline'}
+                      className={todayCalendarStatus === 'tentative' ? 'bg-yellow-500 hover:bg-yellow-600' : ''}
+                      onClick={() => setTodayAvailability('tentative')}
+                    >
+                      <HelpCircle className="h-3 w-3 mr-1" />
+                      Tentative
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={todayCalendarStatus === 'unavailable' ? 'default' : 'outline'}
+                      className={todayCalendarStatus === 'unavailable' ? 'bg-red-500 hover:bg-red-600' : ''}
+                      onClick={() => setTodayAvailability('unavailable')}
+                    >
+                      <X className="h-3 w-3 mr-1" />
+                      Unavailable
+                    </Button>
+                  </div>
                   <p className="text-xs text-muted-foreground">
-                    This syncs automatically with your availability calendar below
+                    Quick-set for today or use the calendar below for other dates
                   </p>
                 </div>
 

@@ -395,20 +395,31 @@ const ProfileSetup = () => {
   ];
 
   const openExternalLink = async (url: string) => {
+    console.log("Opening external link:", url);
     try {
       if (Capacitor.isNativePlatform()) {
+        console.log("Using Capacitor Browser");
         await Browser.open({ url });
       } else {
-        const a = document.createElement("a");
-        a.href = url;
-        a.target = "_blank";
-        a.rel = "noopener noreferrer";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        console.log("Using web fallback");
+        // Try multiple approaches for maximum compatibility
+        const newWindow = window.open(url, '_blank');
+        if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+          // Popup blocked or failed, try anchor click
+          console.log("window.open failed, trying anchor");
+          const a = document.createElement("a");
+          a.href = url;
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        }
       }
-    } catch {
-      window.open(url, '_blank', 'noopener,noreferrer');
+    } catch (error) {
+      console.error("Error opening link:", error);
+      // Last resort - navigate in same window
+      window.location.href = url;
     }
   };
 

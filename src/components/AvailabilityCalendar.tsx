@@ -3,9 +3,11 @@ import { Calendar } from "@/components/ui/calendar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarDays, Check, X, HelpCircle } from "lucide-react";
+import { CalendarDays, Check, X, HelpCircle, CalendarRange, Loader2 } from "lucide-react";
+import { format, eachDayOfInterval, isBefore, startOfDay } from "date-fns";
+import { DateRange } from "react-day-picker";
 
 interface AvailabilityDate {
   id: string;
@@ -23,6 +25,9 @@ export function AvailabilityCalendar({ userId, readOnly = false }: AvailabilityC
   const [availability, setAvailability] = useState<AvailabilityDate[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<'available' | 'unavailable' | 'tentative'>('available');
   const [loading, setLoading] = useState(true);
+  const [isRangeMode, setIsRangeMode] = useState(false);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [applyingRange, setApplyingRange] = useState(false);
 
   useEffect(() => {
     fetchAvailability();
@@ -48,7 +53,7 @@ export function AvailabilityCalendar({ userId, readOnly = false }: AvailabilityC
   };
 
   const handleDateClick = async (date: Date | undefined) => {
-    if (!date || readOnly) return;
+    if (!date || readOnly || isRangeMode) return;
 
     const dateStr = date.toISOString().split('T')[0];
     const existing = availability.find(a => a.date === dateStr);
@@ -106,9 +111,98 @@ export function AvailabilityCalendar({ userId, readOnly = false }: AvailabilityC
     }
   };
 
-  const getDateStatus = (date: Date) => {
-    const dateStr = date.toISOString().split('T')[0];
-    return availability.find(a => a.date === dateStr)?.status;
+  const handleApplyRange = async () => {
+    if (!dateRange?.from || !dateRange?.to) {
+      toast({ title: "Please select a date range", variant: "destructive" });
+      return;
+    }
+
+    setApplyingRange(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({ title: "Please log in", variant: "destructive" });
+        return;
+      }
+
+      const today = startOfDay(new Date());
+      const datesInRange = eachDayOfInterval({ start: dateRange.from, end: dateRange.to })
+        .filter(date => !isBefore(date, today));
+
+      if (datesInRange.length === 0) {
+        toast({ title: "No valid future dates in range", variant: "destructive" });
+        return;
+      }
+
+      // Process each date
+      const updates: AvailabilityDate[] = [];
+      const inserts: { user_id: string; date: string; status: string }[] = [];
+      const deleteIds: string[] = [];
+
+      for (const date of datesInRange) {
+        const dateStr = format(date, 'yyyy-MM-dd');
+        const existing = availability.find(a => a.date === dateStr);
+
+        if (existing) {
+          if (existing.status !== selectedStatus) {
+            updates.push({ ...existing, status: selectedStatus });
+          }
+        } else {
+          inserts.push({
+            user_id: user.id,
+            date: dateStr,
+            status: selectedStatus
+          });
+        }
+      }
+
+      // Batch update existing records
+      for (const update of updates) {
+        await supabase
+          .from('member_availability')
+          .update({ status: update.status })
+          .eq('id', update.id);
+      }
+
+      // Batch insert new records
+      if (inserts.length > 0) {
+        const { data: insertedData, error: insertError } = await supabase
+          .from('member_availability')
+          .insert(inserts)
+          .select();
+
+        if (insertError) throw insertError;
+
+        if (insertedData) {
+          setAvailability(prev => [
+            ...prev.map(a => {
+              const update = updates.find(u => u.id === a.id);
+              return update ? { ...a, status: update.status } : a;
+            }),
+            ...(insertedData as AvailabilityDate[])
+          ]);
+        }
+      } else {
+        setAvailability(prev => prev.map(a => {
+          const update = updates.find(u => u.id === a.id);
+          return update ? { ...a, status: update.status } : a;
+        }));
+      }
+
+      toast({ 
+        title: `Applied ${selectedStatus} to ${datesInRange.length} days`,
+        description: `${format(dateRange.from, 'MMM d')} - ${format(dateRange.to, 'MMM d, yyyy')}`
+      });
+
+      // Reset range mode
+      setDateRange(undefined);
+      setIsRangeMode(false);
+    } catch (error) {
+      console.error('Error applying range:', error);
+      toast({ title: "Error applying availability", variant: "destructive" });
+    } finally {
+      setApplyingRange(false);
+    }
   };
 
   const modifiers = {
@@ -145,55 +239,133 @@ export function AvailabilityCalendar({ userId, readOnly = false }: AvailabilityC
       </CardHeader>
       <CardContent className="space-y-4">
         {!readOnly && (
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => setSelectedStatus('available')}
-              className={cn(
-                "flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all",
-                selectedStatus === 'available'
-                  ? "bg-green-500 text-white"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              )}
-            >
-              <Check className="h-4 w-4" />
-              Available
-            </button>
-            <button
-              onClick={() => setSelectedStatus('unavailable')}
-              className={cn(
-                "flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all",
-                selectedStatus === 'unavailable'
-                  ? "bg-red-500 text-white"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              )}
-            >
-              <X className="h-4 w-4" />
-              Unavailable
-            </button>
-            <button
-              onClick={() => setSelectedStatus('tentative')}
-              className={cn(
-                "flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all",
-                selectedStatus === 'tentative'
-                  ? "bg-yellow-500 text-white"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              )}
-            >
-              <HelpCircle className="h-4 w-4" />
-              Tentative
-            </button>
-          </div>
+          <>
+            {/* Status Selection */}
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setSelectedStatus('available')}
+                className={cn(
+                  "flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all",
+                  selectedStatus === 'available'
+                    ? "bg-green-500 text-white"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                )}
+              >
+                <Check className="h-4 w-4" />
+                Available
+              </button>
+              <button
+                onClick={() => setSelectedStatus('unavailable')}
+                className={cn(
+                  "flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all",
+                  selectedStatus === 'unavailable'
+                    ? "bg-red-500 text-white"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                )}
+              >
+                <X className="h-4 w-4" />
+                Unavailable
+              </button>
+              <button
+                onClick={() => setSelectedStatus('tentative')}
+                className={cn(
+                  "flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all",
+                  selectedStatus === 'tentative'
+                    ? "bg-yellow-500 text-white"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                )}
+              >
+                <HelpCircle className="h-4 w-4" />
+                Tentative
+              </button>
+            </div>
+
+            {/* Mode Toggle */}
+            <div className="flex items-center justify-center gap-2">
+              <Button
+                variant={isRangeMode ? "outline" : "default"}
+                size="sm"
+                onClick={() => {
+                  setIsRangeMode(false);
+                  setDateRange(undefined);
+                }}
+              >
+                Single Day
+              </Button>
+              <Button
+                variant={isRangeMode ? "default" : "outline"}
+                size="sm"
+                onClick={() => setIsRangeMode(true)}
+                className="gap-1"
+              >
+                <CalendarRange className="h-4 w-4" />
+                Date Range
+              </Button>
+            </div>
+
+            {/* Range Info and Apply Button */}
+            {isRangeMode && (
+              <div className="bg-muted/50 rounded-lg p-3 space-y-2">
+                <p className="text-sm text-center text-muted-foreground">
+                  {dateRange?.from ? (
+                    dateRange.to ? (
+                      <>
+                        <span className="font-medium text-foreground">
+                          {format(dateRange.from, 'MMM d')} - {format(dateRange.to, 'MMM d, yyyy')}
+                        </span>
+                        <span className="block text-xs mt-1">
+                          {eachDayOfInterval({ start: dateRange.from, end: dateRange.to }).length} days selected
+                        </span>
+                      </>
+                    ) : (
+                      <>Select end date</>
+                    )
+                  ) : (
+                    <>Select start and end dates</>
+                  )}
+                </p>
+                {dateRange?.from && dateRange?.to && (
+                  <Button
+                    onClick={handleApplyRange}
+                    disabled={applyingRange}
+                    className="w-full gap-2"
+                    size="sm"
+                  >
+                    {applyingRange ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Check className="h-4 w-4" />
+                    )}
+                    Apply {selectedStatus} to selected range
+                  </Button>
+                )}
+              </div>
+            )}
+          </>
         )}
 
         <div className="flex justify-center">
-          <Calendar
-            mode="single"
-            onSelect={handleDateClick}
-            modifiers={modifiers}
-            modifiersStyles={modifiersStyles}
-            className="rounded-md border pointer-events-auto"
-            disabled={readOnly ? undefined : (date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-          />
+          {isRangeMode ? (
+            <Calendar
+              mode="range"
+              selected={dateRange}
+              onSelect={setDateRange}
+              modifiers={modifiers}
+              modifiersStyles={modifiersStyles}
+              className="rounded-md border pointer-events-auto"
+              disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+              numberOfMonths={1}
+            />
+          ) : (
+            <Calendar
+              mode="single"
+              onSelect={handleDateClick}
+              modifiers={modifiers}
+              modifiersStyles={modifiersStyles}
+              className="rounded-md border pointer-events-auto"
+              disabled={readOnly ? undefined : (date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+            />
+          )}
         </div>
 
         <div className="flex flex-wrap gap-3 justify-center text-sm">
@@ -213,7 +385,10 @@ export function AvailabilityCalendar({ userId, readOnly = false }: AvailabilityC
 
         {!readOnly && (
           <p className="text-xs text-muted-foreground text-center">
-            Click on a date to mark your availability. Click again with the same status to remove it.
+            {isRangeMode 
+              ? "Select a start and end date, then click Apply to set availability for the entire range."
+              : "Click on a date to mark your availability. Click again with the same status to remove it."
+            }
           </p>
         )}
       </CardContent>

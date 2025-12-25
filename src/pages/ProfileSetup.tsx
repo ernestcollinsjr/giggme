@@ -392,6 +392,16 @@ const ProfileSetup = () => {
     { key: "tiktok" as keyof SocialLinks, label: "TikTok", icon: Globe, placeholder: "https://tiktok.com/@yourprofile" },
   ];
 
+  const openExternalLink = (url: string) => {
+    const a = document.createElement("a");
+    a.href = url;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
   if (!hasRole) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-primary/10">
@@ -829,7 +839,7 @@ const ProfileSetup = () => {
                           {thumbnail ? (
                             <button 
                               type="button"
-                              onClick={() => window.open(link, '_blank', 'noopener,noreferrer')}
+                              onClick={() => openExternalLink(link)}
                               className="shrink-0 relative group cursor-pointer"
                             >
                               <img 
@@ -844,7 +854,7 @@ const ProfileSetup = () => {
                           ) : (
                             <button
                               type="button"
-                              onClick={() => window.open(link, '_blank', 'noopener,noreferrer')}
+                              onClick={() => openExternalLink(link)}
                               className="w-24 h-14 bg-muted rounded-md flex items-center justify-center shrink-0 cursor-pointer"
                             >
                               <Youtube className="h-6 w-6 text-red-500" />

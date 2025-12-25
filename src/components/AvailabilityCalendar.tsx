@@ -19,9 +19,10 @@ interface AvailabilityDate {
 interface AvailabilityCalendarProps {
   userId?: string;
   readOnly?: boolean;
+  onTodayStatusChange?: (status: string | null) => void;
 }
 
-export function AvailabilityCalendar({ userId, readOnly = false }: AvailabilityCalendarProps) {
+export function AvailabilityCalendar({ userId, readOnly = false, onTodayStatusChange }: AvailabilityCalendarProps) {
   const [availability, setAvailability] = useState<AvailabilityDate[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<'available' | 'unavailable' | 'tentative'>('available');
   const [loading, setLoading] = useState(true);
@@ -32,6 +33,15 @@ export function AvailabilityCalendar({ userId, readOnly = false }: AvailabilityC
   useEffect(() => {
     fetchAvailability();
   }, [userId]);
+
+  // Notify parent when today's status changes
+  useEffect(() => {
+    if (onTodayStatusChange) {
+      const today = new Date().toISOString().split('T')[0];
+      const todayAvail = availability.find(a => a.date === today);
+      onTodayStatusChange(todayAvail?.status || null);
+    }
+  }, [availability, onTodayStatusChange]);
 
   const fetchAvailability = async () => {
     try {

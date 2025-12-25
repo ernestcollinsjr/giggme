@@ -64,6 +64,7 @@ const ProfileSetup = () => {
   const [genres, setGenres] = useState<string[]>([]);
   const [newGenre, setNewGenre] = useState("");
   const [availabilityStatus, setAvailabilityStatus] = useState("available");
+  const [todayCalendarStatus, setTodayCalendarStatus] = useState<string | null>(null);
   const [travelDistance, setTravelDistance] = useState<string>("");
   const [yearsExperience, setYearsExperience] = useState<string>("");
   const [unionMemberships, setUnionMemberships] = useState<string[]>([]);
@@ -97,6 +98,21 @@ const ProfileSetup = () => {
           .select("role")
           .eq("user_id", user.id)
           .single();
+        
+        // Fetch today's availability from calendar
+        const today = new Date().toISOString().split('T')[0];
+        const { data: todayAvailability } = await supabase
+          .from("member_availability")
+          .select("status")
+          .eq("user_id", user.id)
+          .eq("date", today)
+          .maybeSingle();
+        
+        if (todayAvailability) {
+          setTodayCalendarStatus(todayAvailability.status);
+        } else {
+          setTodayCalendarStatus(null);
+        }
         
         if (profile) {
           setName(profile.name || "");
@@ -1218,32 +1234,33 @@ const ProfileSetup = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-xs">Availability Status</Label>
-                  <Select value={availabilityStatus} onValueChange={setAvailabilityStatus}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="available">
-                        <span className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-green-500" />
-                          Available for Gigs
-                        </span>
-                      </SelectItem>
-                      <SelectItem value="busy">
-                        <span className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-yellow-500" />
-                          Limited Availability
-                        </span>
-                      </SelectItem>
-                      <SelectItem value="unavailable">
-                        <span className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-red-500" />
-                          Not Available
-                        </span>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label className="text-xs">Today's Availability Status</Label>
+                  <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 border">
+                    {todayCalendarStatus === 'available' ? (
+                      <>
+                        <span className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
+                        <span className="text-sm font-medium text-green-600">Available</span>
+                      </>
+                    ) : todayCalendarStatus === 'unavailable' ? (
+                      <>
+                        <span className="w-3 h-3 rounded-full bg-red-500" />
+                        <span className="text-sm font-medium text-red-600">Unavailable</span>
+                      </>
+                    ) : todayCalendarStatus === 'tentative' ? (
+                      <>
+                        <span className="w-3 h-3 rounded-full bg-yellow-500" />
+                        <span className="text-sm font-medium text-yellow-600">Tentative</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="w-3 h-3 rounded-full bg-muted-foreground/30" />
+                        <span className="text-sm text-muted-foreground">Not set for today</span>
+                      </>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    This syncs automatically with your availability calendar below
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -1281,7 +1298,7 @@ const ProfileSetup = () => {
 
             {/* Availability Calendar */}
             <div className="pt-4">
-              <AvailabilityCalendar />
+              <AvailabilityCalendar onTodayStatusChange={setTodayCalendarStatus} />
             </div>
 
             {/* Notification Preferences */}

@@ -87,7 +87,7 @@ const handler = async (req: Request): Promise<Response> => {
         const resend = new Resend(resendApiKey);
         
         for (const member of members || []) {
-          const profile = member.profiles as { id: string; name: string; email: string; phone_number: string | null } | null;
+          const profile = (member.profiles as unknown) as { id: string; name: string; email: string; phone_number: string | null } | null;
           if (profile?.email) {
             try {
               const emailHtml = `
@@ -132,7 +132,7 @@ const handler = async (req: Request): Promise<Response> => {
         const smsMessage = `📅 ${band.name}: Availability Request\n\n${title}\n\nDate Range: ${formattedStartDate.split(',')[0]} - ${formattedEndDate.split(',')[0]}\n\nPlease log in to submit your available dates.`;
 
         for (const member of members || []) {
-          const profile = member.profiles as { id: string; name: string; email: string; phone_number: string | null } | null;
+          const profile = (member.profiles as unknown) as { id: string; name: string; email: string; phone_number: string | null } | null;
           if (profile?.phone_number) {
             try {
               await sendTwilioSMS(profile.phone_number, smsMessage, twilioAccountSid, twilioAuthToken, twilioPhoneNumber);

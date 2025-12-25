@@ -67,6 +67,9 @@ const ProfileSetup = () => {
   const [todayCalendarStatus, setTodayCalendarStatus] = useState<string | null>(null);
   const [weekAvailability, setWeekAvailability] = useState<{date: string; status: string | null}[]>([]);
   const [selectedQuickStatus, setSelectedQuickStatus] = useState<'available' | 'unavailable' | 'tentative'>('available');
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartIndex, setDragStartIndex] = useState<number | null>(null);
+  const [dragEndIndex, setDragEndIndex] = useState<number | null>(null);
   const [travelDistance, setTravelDistance] = useState<string>("");
   const [yearsExperience, setYearsExperience] = useState<string>("");
   const [unionMemberships, setUnionMemberships] = useState<string[]>([]);
@@ -571,6 +574,90 @@ const ProfileSetup = () => {
       console.error('Error setting availability:', error);
       toast({ title: "Error updating availability", variant: "destructive" });
     }
+  };
+
+  // Set availability for a range of dates (for drag)
+  const setRangeAvailability = async (startIdx: number, endIdx: number, status: 'available' | 'unavailable' | 'tentative') => {
+    const minIdx = Math.min(startIdx, endIdx);
+    const maxIdx = Math.max(startIdx, endIdx);
+    const datesToUpdate = weekAvailability.slice(minIdx, maxIdx + 1);
+    
+    if (datesToUpdate.length === 0) return;
+
+    try {
+      if (!user) {
+        toast({ title: "Please log in", variant: "destructive" });
+        return;
+      }
+
+      const today = new Date().toISOString().split('T')[0];
+
+      // Process each date
+      for (const day of datesToUpdate) {
+        const { data: existing } = await supabase
+          .from('member_availability')
+          .select('id, status')
+          .eq('user_id', user.id)
+          .eq('date', day.date)
+          .maybeSingle();
+
+        if (existing) {
+          await supabase
+            .from('member_availability')
+            .update({ status })
+            .eq('id', existing.id);
+        } else {
+          await supabase
+            .from('member_availability')
+            .insert({ user_id: user.id, date: day.date, status });
+        }
+      }
+
+      // Update local state
+      setWeekAvailability(prev => prev.map((day, idx) => 
+        idx >= minIdx && idx <= maxIdx ? { ...day, status } : day
+      ));
+      
+      // Update today's status if in range
+      const todayInRange = datesToUpdate.find(d => d.date === today);
+      if (todayInRange) setTodayCalendarStatus(status);
+
+      const count = datesToUpdate.length;
+      toast({ title: `${count} day${count > 1 ? 's' : ''} marked as ${status}` });
+    } catch (error) {
+      console.error('Error setting range availability:', error);
+      toast({ title: "Error updating availability", variant: "destructive" });
+    }
+  };
+
+  // Drag handlers for 7-day preview
+  const handleDragStart = (idx: number) => {
+    setIsDragging(true);
+    setDragStartIndex(idx);
+    setDragEndIndex(idx);
+  };
+
+  const handleDragEnter = (idx: number) => {
+    if (isDragging) {
+      setDragEndIndex(idx);
+    }
+  };
+
+  const handleDragEnd = async () => {
+    if (isDragging && dragStartIndex !== null && dragEndIndex !== null) {
+      await setRangeAvailability(dragStartIndex, dragEndIndex, selectedQuickStatus);
+    }
+    setIsDragging(false);
+    setDragStartIndex(null);
+    setDragEndIndex(null);
+  };
+
+  // Helper to check if index is in drag range
+  const isInDragRange = (idx: number): boolean => {
+    if (!isDragging || dragStartIndex === null || dragEndIndex === null) return false;
+    const minIdx = Math.min(dragStartIndex, dragEndIndex);
+    const maxIdx = Math.max(dragStartIndex, dragEndIndex);
+    return idx >= minIdx && idx <= maxIdx;
   };
 
   // Quick-set today's availability
@@ -1349,30 +1436,47 @@ const ProfileSetup = () => {
                       )}
                     </div>
                     
-                    {/* 7-day preview bar */}
-                    <div className="flex items-center gap-1 ml-auto">
+                    {/* 7-day preview bar with drag support */}
+                    <div 
+                      className="flex items-center gap-1 ml-auto select-none"
+                      onMouseLeave={handleDragEnd}
+                      onMouseUp={handleDragEnd}
+                    >
                       <span className="text-xs text-muted-foreground mr-1">Next 7 days:</span>
                       {weekAvailability.map((day, idx) => {
                         const dayLabel = new Date(day.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' }).charAt(0);
                         const dayNum = new Date(day.date + 'T00:00:00').getDate();
+                        const inDragRange = isInDragRange(idx);
                         return (
                           <button 
                             key={day.date}
                             type="button"
-                            onClick={() => setDateAvailability(day.date, selectedQuickStatus)}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              handleDragStart(idx);
+                            }}
+                            onMouseEnter={() => handleDragEnter(idx)}
+                            onMouseUp={handleDragEnd}
+                            onClick={() => !isDragging && setDateAvailability(day.date, selectedQuickStatus)}
                             className="flex flex-col items-center cursor-pointer hover:scale-110 transition-transform"
-                            title={`Click to set ${selectedQuickStatus} for ${new Date(day.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}`}
+                            title={`Click or drag to set ${selectedQuickStatus}`}
                           >
                             <span className="text-[10px] text-muted-foreground">{dayLabel}</span>
                             <div 
-                              className={`w-5 h-5 rounded-sm flex items-center justify-center text-[9px] font-medium text-white ${
-                                day.status === 'available' 
-                                  ? 'bg-green-500' 
-                                  : day.status === 'unavailable' 
-                                    ? 'bg-red-500' 
-                                    : day.status === 'tentative' 
-                                      ? 'bg-yellow-500' 
-                                      : 'bg-muted-foreground/20 text-muted-foreground'
+                              className={`w-5 h-5 rounded-sm flex items-center justify-center text-[9px] font-medium text-white transition-all ${
+                                inDragRange
+                                  ? selectedQuickStatus === 'available'
+                                    ? 'bg-green-500 ring-2 ring-green-300'
+                                    : selectedQuickStatus === 'unavailable'
+                                      ? 'bg-red-500 ring-2 ring-red-300'
+                                      : 'bg-yellow-500 ring-2 ring-yellow-300'
+                                  : day.status === 'available' 
+                                    ? 'bg-green-500' 
+                                    : day.status === 'unavailable' 
+                                      ? 'bg-red-500' 
+                                      : day.status === 'tentative' 
+                                        ? 'bg-yellow-500' 
+                                        : 'bg-muted-foreground/20 text-muted-foreground'
                               } ${idx === 0 ? 'ring-2 ring-primary ring-offset-1' : ''} hover:ring-2 hover:ring-offset-1 hover:ring-muted-foreground`}
                             >
                               {dayNum}
@@ -1426,7 +1530,7 @@ const ProfileSetup = () => {
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Quick-set for today or use the calendar below for other dates
+                    Click or drag across days to set availability. Use the calendar below for more options.
                   </p>
                 </div>
 

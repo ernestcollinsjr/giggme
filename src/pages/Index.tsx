@@ -107,31 +107,18 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       {/* Top Navigation */}
       <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
               <Music className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold text-primary hidden sm:inline">GigMe</span>
+            <span className="text-xl font-bold text-primary">GigMe</span>
           </div>
 
-          {/* Search Bar */}
-          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input 
-                placeholder="Search for entertainers" 
-                className="pl-10 bg-muted/50 border-border/50"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={handleSearchKeyDown}
-              />
-            </div>
-          </form>
-
           {/* Right Nav */}
-          <nav className="flex items-center gap-2 sm:gap-3">
+          <nav className="flex items-center gap-1 sm:gap-2">
+            {/* Theme Toggle */}
             <button
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               className="p-2 rounded-lg hover:bg-muted transition-colors relative"
@@ -140,33 +127,43 @@ const Index = () => {
               <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
               <Moon className="absolute top-2 left-2 h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
             </button>
+
+            {/* Nav Links */}
+            <button 
+              onClick={() => navigate("/pricing")}
+              className="hidden sm:block px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Pricing
+            </button>
             <button 
               onClick={() => navigate("/auth")}
-              className="hidden sm:block text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="hidden sm:block px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
-              Log in
+              Support
             </button>
+            <button 
+              onClick={() => navigate("/auth")}
+              className="hidden sm:block px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Sign In
+            </button>
+
+            {/* Get Started Button */}
             <Button 
-              variant="outline" 
               size="sm"
               onClick={() => navigate("/auth")}
-              className="hidden sm:flex"
+              className="ml-2"
             >
-              List your services
+              Get Started
             </Button>
+
+            {/* Mobile Menu */}
             <Button 
               size="icon" 
-              variant="outline"
-              className="rounded-full"
+              variant="ghost"
+              className="sm:hidden"
             >
-              <Heart className="h-4 w-4" />
-            </Button>
-            <Button 
-              size="icon" 
-              variant="outline"
-              className="rounded-full md:hidden"
-            >
-              <Menu className="h-4 w-4" />
+              <Menu className="h-5 w-5" />
             </Button>
           </nav>
         </div>

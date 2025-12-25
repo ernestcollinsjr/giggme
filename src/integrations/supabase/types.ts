@@ -568,6 +568,44 @@ export type Database = {
         }
         Relationships: []
       }
+      member_groups: {
+        Row: {
+          band_id: string
+          created_at: string
+          created_by: string
+          id: string
+          member_ids: string[]
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          band_id: string
+          created_at?: string
+          created_by: string
+          id?: string
+          member_ids?: string[]
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          band_id?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          member_ids?: string[]
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_groups_band_id_fkey"
+            columns: ["band_id"]
+            isOneToOne: false
+            referencedRelation: "bands"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string

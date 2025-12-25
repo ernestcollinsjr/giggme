@@ -360,6 +360,57 @@ const Dashboard = () => {
     };
   }, [navigate]);
 
+  // Real-time updates for gig member responses (for band leaders)
+  useEffect(() => {
+    if (userRole !== "band_leader" || !user) return;
+
+    const channel = supabase
+      .channel('gig-members-dashboard')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'gig_members'
+        },
+        async (payload) => {
+          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+            const update = payload.new as { member_id: string; status: string; gig_id: string };
+            
+            // Only notify for gigs that belong to this band leader
+            const { data: gigData } = await supabase
+              .from('gigs')
+              .select('id, venue, user_id')
+              .eq('id', update.gig_id)
+              .eq('user_id', user.id)
+              .single();
+            
+            if (!gigData) return;
+            
+            // Get member name
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('name')
+              .eq('id', update.member_id)
+              .single();
+            
+            const memberName = profile?.name || 'A member';
+            const statusEmoji = update.status === 'accepted' ? '✅' : update.status === 'declined' ? '❌' : '⏳';
+            
+            toast({
+              title: "Gig RSVP Update",
+              description: `${statusEmoji} ${memberName} has ${update.status} the gig at ${gigData.venue}`,
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userRole, user, toast]);
+
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut();

@@ -267,7 +267,26 @@ const Bookings = () => {
     }
 
     try {
-      const invites = selectedMembers.map(memberId => ({
+      // Check for existing invitations to avoid duplicates
+      const { data: existingInvites } = await supabase
+        .from("gig_members")
+        .select("member_id")
+        .eq("gig_id", currentGigForInvite)
+        .in("member_id", selectedMembers);
+
+      const alreadyInvitedIds = new Set(existingInvites?.map(i => i.member_id) || []);
+      const newMembers = selectedMembers.filter(id => !alreadyInvitedIds.has(id));
+
+      if (newMembers.length === 0) {
+        toast({
+          variant: "destructive",
+          title: "Already invited",
+          description: "All selected members have already been invited to this gig.",
+        });
+        return;
+      }
+
+      const invites = newMembers.map(memberId => ({
         gig_id: currentGigForInvite,
         member_id: memberId,
         status: 'pending',
@@ -279,9 +298,12 @@ const Bookings = () => {
 
       if (error) throw error;
 
+      const skippedCount = selectedMembers.length - newMembers.length;
       toast({
         title: "Invitations sent",
-        description: `Successfully invited ${selectedMembers.length} member(s) to the gig.`,
+        description: skippedCount > 0 
+          ? `Invited ${newMembers.length} member(s). ${skippedCount} already invited.`
+          : `Successfully invited ${newMembers.length} member(s) to the gig.`,
       });
 
       setInviteDialogOpen(false);

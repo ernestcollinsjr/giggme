@@ -136,7 +136,9 @@ export type Database = {
           description: string | null
           id: string
           name: string
+          social_links: Json | null
           updated_at: string
+          youtube_links: string[] | null
         }
         Insert: {
           band_leader_id: string
@@ -144,7 +146,9 @@ export type Database = {
           description?: string | null
           id?: string
           name: string
+          social_links?: Json | null
           updated_at?: string
+          youtube_links?: string[] | null
         }
         Update: {
           band_leader_id?: string
@@ -152,7 +156,9 @@ export type Database = {
           description?: string | null
           id?: string
           name?: string
+          social_links?: Json | null
           updated_at?: string
+          youtube_links?: string[] | null
         }
         Relationships: []
       }

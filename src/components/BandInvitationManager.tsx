@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Mail, Copy, Trash2, UserPlus } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Invitation {
   id: string;
@@ -14,6 +16,11 @@ interface Invitation {
   token: string;
   created_at: string;
   expires_at: string;
+}
+
+interface Band {
+  id: string;
+  name: string;
 }
 
 interface BandInvitationManagerProps {
@@ -27,6 +34,34 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
   const [sending, setSending] = useState(false);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [allBands, setAllBands] = useState<Band[]>([]);
+  const [showBandSelectDialog, setShowBandSelectDialog] = useState(false);
+  const [selectedBandForMember, setSelectedBandForMember] = useState<string>("");
+  const [selectedInvitation, setSelectedInvitation] = useState<Invitation | null>(null);
+  const [addingToBand, setAddingToBand] = useState(false);
+
+  useEffect(() => {
+    fetchInvitations();
+    fetchAllBands();
+  }, [bandId]);
+
+  const fetchAllBands = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("bands")
+        .select("id, name")
+        .eq("band_leader_id", user.id)
+        .order("name");
+
+      if (error) throw error;
+      setAllBands(data || []);
+    } catch (error: any) {
+      console.error("Error fetching bands:", error);
+    }
+  };
 
   useEffect(() => {
     fetchInvitations();
@@ -167,13 +202,30 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
     }
   };
 
-  const addToBand = async (invitationId: string, email: string) => {
+  const openBandSelectDialog = (invitation: Invitation) => {
+    setSelectedInvitation(invitation);
+    setSelectedBandForMember(bandId); // Default to current band
+    setShowBandSelectDialog(true);
+  };
+
+  const addToBandWithSelection = async () => {
+    if (!selectedInvitation || !selectedBandForMember) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please select a band.",
+      });
+      return;
+    }
+
+    setAddingToBand(true);
+
     try {
       // Find the user by email
       const { data: profile } = await supabase
         .from("profiles")
         .select("id")
-        .eq("email", email.toLowerCase())
+        .eq("email", selectedInvitation.email.toLowerCase())
         .single();
 
       if (!profile) {
@@ -185,23 +237,28 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
         return;
       }
 
-      // Add user to band_members
+      // Add user to the selected band
       const { error: memberError } = await supabase
         .from("band_members")
         .insert({
-          band_id: bandId,
+          band_id: selectedBandForMember,
           member_id: profile.id,
         });
 
       if (memberError) throw memberError;
 
       // Delete the invitation
-      await deleteInvitation(invitationId);
+      await deleteInvitation(selectedInvitation.id);
 
+      const selectedBand = allBands.find(b => b.id === selectedBandForMember);
       toast({
         title: "Member added!",
-        description: `${email} has been added to the band.`,
+        description: `${selectedInvitation.email} has been added to ${selectedBand?.name || 'the band'}.`,
       });
+
+      setShowBandSelectDialog(false);
+      setSelectedInvitation(null);
+      setSelectedBandForMember("");
     } catch (error: any) {
       console.error("Error adding member:", error);
       toast({
@@ -209,6 +266,8 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
         title: "Error",
         description: error.message || "Failed to add member to band.",
       });
+    } finally {
+      setAddingToBand(false);
     }
   };
 
@@ -273,7 +332,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
                     <div className="flex gap-2">
                       <Button
                         size="sm"
-                        onClick={() => addToBand(invite.id, invite.email)}
+                        onClick={() => openBandSelectDialog(invite)}
                       >
                         <UserPlus className="h-4 w-4 mr-1" />
                         Add to Band
@@ -332,6 +391,57 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
           </>
         )}
       </CardContent>
+
+      {/* Band Selection Dialog */}
+      <Dialog open={showBandSelectDialog} onOpenChange={setShowBandSelectDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Select Band</DialogTitle>
+            <DialogDescription>
+              Choose which band to add {selectedInvitation?.email} to
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label>Select Band</Label>
+              <Select 
+                value={selectedBandForMember} 
+                onValueChange={setSelectedBandForMember}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a band" />
+                </SelectTrigger>
+                <SelectContent>
+                  {allBands.map((band) => (
+                    <SelectItem key={band.id} value={band.id}>
+                      {band.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowBandSelectDialog(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={addToBandWithSelection}
+                disabled={!selectedBandForMember || addingToBand}
+              >
+                {addingToBand ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <UserPlus className="h-4 w-4 mr-2" />
+                )}
+                Add to Band
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };

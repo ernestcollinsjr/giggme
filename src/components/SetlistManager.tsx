@@ -921,29 +921,25 @@ export const SetlistManager = () => {
                           const isDragging = draggedSongIndex === index && draggedSetlistId === setlist.id && draggedSetNum === setNum;
                           const isInSameDragContext = draggedSetlistId === setlist.id && draggedSetNum === setNum && draggedSongIndex !== null;
                           
-                          // Calculate if this item should shift to make room
-                          let shiftDirection = '';
-                          if (isInSameDragContext && insertionIndex !== null && !isDragging) {
-                            if (draggedSongIndex !== null) {
-                              // Item is below dragged item and insertion point is at or above this item
-                              if (index > draggedSongIndex && insertionIndex <= index) {
-                                shiftDirection = 'translate-y-8'; // Move down
-                              }
-                              // Item is above dragged item and insertion point is at or below this item  
-                              else if (index < draggedSongIndex && insertionIndex > index) {
-                                shiftDirection = '-translate-y-8'; // Move up
-                              }
+                          // Calculate smooth shift for items making room
+                          let translateY = 0;
+                          if (isInSameDragContext && insertionIndex !== null && !isDragging && draggedSongIndex !== null) {
+                            if (draggedSongIndex < index && insertionIndex > index) {
+                              translateY = -44; // Shift up (item height + gap)
+                            } else if (draggedSongIndex > index && insertionIndex <= index) {
+                              translateY = 44; // Shift down
                             }
                           }
                           
                           return (
-                          <div key={song.id} className="relative">
-                            {/* Insertion gap indicator */}
-                            {insertionIndex === index && isInSameDragContext && !isDragging && (
-                              <div className="h-10 mb-1 rounded-lg border-2 border-dashed border-primary/50 bg-primary/5 transition-all duration-200 flex items-center justify-center">
-                                <span className="text-xs text-primary/70 font-medium">Drop here</span>
-                              </div>
-                            )}
+                          <div 
+                            key={song.id} 
+                            className="relative"
+                            style={{
+                              transform: `translateY(${translateY}px)`,
+                              transition: 'transform 0.25s cubic-bezier(0.25, 0.1, 0.25, 1)',
+                            }}
+                          >
                             <div
                               ref={(el) => { songItemRefs.current[index] = el; }}
                               draggable
@@ -954,19 +950,10 @@ export const SetlistManager = () => {
                               onTouchStart={(e) => handleTouchStart(setlist.id, setNum, index, e)}
                               onTouchMove={handleTouchMove}
                               onTouchEnd={handleTouchEnd}
-                              style={isDragging && ghostPosition ? {
-                                position: 'fixed',
-                                left: ghostPosition.x - 100,
-                                top: ghostPosition.y - 20,
-                                width: '250px',
-                                zIndex: 50,
-                                transform: 'rotate(-2deg) scale(1.05)',
-                                pointerEvents: 'none',
-                              } : undefined}
-                              className={`flex items-center justify-between py-1.5 px-2 rounded-lg cursor-grab active:cursor-grabbing transition-all duration-300 ease-out ${
+                              className={`flex items-center justify-between py-1.5 px-2 rounded-lg cursor-grab active:cursor-grabbing transition-all duration-200 ${
                                 isDragging 
-                                  ? 'shadow-2xl ring-2 ring-primary bg-card border border-primary/30' 
-                                  : `bg-slate-100 dark:bg-slate-800/20 hover:bg-slate-200 dark:hover:bg-slate-700/30 ${shiftDirection}`
+                                  ? 'opacity-30 scale-95 bg-muted border-2 border-dashed border-primary/40' 
+                                  : 'bg-slate-100 dark:bg-slate-800/20 hover:bg-slate-200 dark:hover:bg-slate-700/30'
                               } ${recentlyReordered === song.id ? 'animate-spring-settle bg-primary/10 ring-2 ring-primary/30' : ''}`}
                             >
                             <div className="flex items-center gap-1.5 flex-1 min-w-0">
@@ -1075,12 +1062,6 @@ export const SetlistManager = () => {
                               </Button>
                             </div>
                             </div>
-                            {/* Insertion gap indicator - shows at end */}
-                            {insertionIndex === setSongs.length && isInSameDragContext && index === setSongs.length - 1 && !isDragging && (
-                              <div className="h-10 mt-1 rounded-lg border-2 border-dashed border-primary/50 bg-primary/5 transition-all duration-200 flex items-center justify-center">
-                                <span className="text-xs text-primary/70 font-medium">Drop here</span>
-                              </div>
-                            )}
                           </div>
                         );
                         })}
@@ -1094,7 +1075,32 @@ export const SetlistManager = () => {
         ))
       )}
 
-
+      {/* Smooth floating ghost card */}
+      {ghostPosition && draggedSongIndex !== null && draggedSetlistId && draggedSetNum !== null && (
+        <div
+          className="fixed pointer-events-none z-50"
+          style={{
+            left: ghostPosition.x - 120,
+            top: ghostPosition.y - 24,
+            transition: 'left 0.02s linear, top 0.02s linear',
+          }}
+        >
+          <div 
+            className="w-[260px] py-2 px-3 rounded-lg bg-card shadow-2xl border-2 border-primary ring-4 ring-primary/20"
+            style={{
+              transform: 'rotate(-1deg) scale(1.02)',
+            }}
+          >
+            <div className="flex items-center gap-2">
+              <GripVertical className="h-4 w-4 text-primary shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold truncate">{getDraggedSongTitle()}</p>
+                <p className="text-xs text-muted-foreground">Drag to reorder</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {playingVideo && (
         <YouTubePlayer
           videoId={playingVideo.videoId}

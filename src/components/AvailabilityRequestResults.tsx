@@ -15,7 +15,9 @@ import { format, eachDayOfInterval, parseISO } from "date-fns";
 
 interface AvailabilityRequest {
   id: string;
-  band_id: string;
+  band_id: string | null;
+  booking_manager_id: string | null;
+  target_artist_ids: string[] | null;
   title: string;
   description: string | null;
   start_date: string;
@@ -142,7 +144,7 @@ export function AvailabilityRequestResults({ requestId, onBack }: AvailabilityRe
         .from("gigs")
         .insert({
           user_id: user.id,
-          band_id: request?.band_id,
+          band_id: request?.band_id || null,
           date: gigDate.toISOString(),
           venue: venueAddress,
           venue_name: venueName || null,
@@ -243,7 +245,7 @@ export function AvailabilityRequestResults({ requestId, onBack }: AvailabilityRe
             <div className="text-center py-8 text-muted-foreground">
               <Users className="h-12 w-12 mx-auto mb-2 opacity-50" />
               <p>No responses yet</p>
-              <p className="text-sm">Waiting for band members to submit their availability</p>
+              <p className="text-sm">Waiting for artists to submit their availability</p>
             </div>
           ) : (
             <>

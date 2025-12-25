@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { detectFaceAndCrop, loadImage } from "@/utils/imageCropping";
 import { Browser } from '@capacitor/browser';
 import { Capacitor } from '@capacitor/core';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { YouTubePlayer, getYoutubeVideoId } from "@/components/YouTubePlayer";
@@ -633,21 +634,35 @@ const ProfileSetup = () => {
   // Ref for day button elements (for touch detection)
   const dayButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
+  // Haptic feedback helper
+  const triggerHaptic = async (style: ImpactStyle = ImpactStyle.Light) => {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        await Haptics.impact({ style });
+      } catch (error) {
+        console.log('Haptics not available:', error);
+      }
+    }
+  };
+
   // Drag handlers for 7-day preview
-  const handleDragStart = (idx: number) => {
+  const handleDragStart = async (idx: number) => {
     setIsDragging(true);
     setDragStartIndex(idx);
     setDragEndIndex(idx);
+    await triggerHaptic(ImpactStyle.Medium);
   };
 
-  const handleDragEnter = (idx: number) => {
-    if (isDragging) {
+  const handleDragEnter = async (idx: number) => {
+    if (isDragging && dragEndIndex !== idx) {
       setDragEndIndex(idx);
+      await triggerHaptic(ImpactStyle.Light);
     }
   };
 
   const handleDragEnd = async () => {
     if (isDragging && dragStartIndex !== null && dragEndIndex !== null) {
+      await triggerHaptic(ImpactStyle.Heavy);
       await setRangeAvailability(dragStartIndex, dragEndIndex, selectedQuickStatus);
     }
     setIsDragging(false);
@@ -656,12 +671,12 @@ const ProfileSetup = () => {
   };
 
   // Touch handlers for mobile drag support
-  const handleTouchStart = (idx: number, e: React.TouchEvent) => {
+  const handleTouchStart = async (idx: number, e: React.TouchEvent) => {
     e.preventDefault();
-    handleDragStart(idx);
+    await handleDragStart(idx);
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
+  const handleTouchMove = async (e: React.TouchEvent) => {
     if (!isDragging) return;
     
     const touch = e.touches[0];
@@ -681,6 +696,7 @@ const ProfileSetup = () => {
         ) {
           if (dragEndIndex !== i) {
             setDragEndIndex(i);
+            await triggerHaptic(ImpactStyle.Light);
           }
           break;
         }

@@ -24,6 +24,7 @@ import {
   Mail
 } from "lucide-react";
 import { BandInvitationManager } from "@/components/BandInvitationManager";
+import { ArtistAvailabilityManager } from "@/components/ArtistAvailabilityManager";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -780,6 +781,14 @@ export default function BookingManager() {
               )}
             </CardContent>
           </Card>
+        )}
+
+        {/* Artist Availability Management */}
+        {managedArtists.length > 0 && (
+          <ArtistAvailabilityManager 
+            managedArtists={managedArtists}
+            onViewResponses={(requestId) => setViewingResponsesForRequest(requestId)}
+          />
         )}
 
         {/* Location Tracking */}

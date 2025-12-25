@@ -61,7 +61,8 @@ export type Database = {
       }
       availability_requests: {
         Row: {
-          band_id: string
+          band_id: string | null
+          booking_manager_id: string | null
           created_at: string
           created_by: string
           description: string | null
@@ -69,11 +70,13 @@ export type Database = {
           id: string
           start_date: string
           status: string
+          target_artist_ids: string[] | null
           title: string
           updated_at: string
         }
         Insert: {
-          band_id: string
+          band_id?: string | null
+          booking_manager_id?: string | null
           created_at?: string
           created_by: string
           description?: string | null
@@ -81,11 +84,13 @@ export type Database = {
           id?: string
           start_date: string
           status?: string
+          target_artist_ids?: string[] | null
           title: string
           updated_at?: string
         }
         Update: {
-          band_id?: string
+          band_id?: string | null
+          booking_manager_id?: string | null
           created_at?: string
           created_by?: string
           description?: string | null
@@ -93,6 +98,7 @@ export type Database = {
           id?: string
           start_date?: string
           status?: string
+          target_artist_ids?: string[] | null
           title?: string
           updated_at?: string
         }

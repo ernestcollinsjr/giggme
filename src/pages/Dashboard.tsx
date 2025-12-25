@@ -607,6 +607,9 @@ const Dashboard = () => {
 
   const handleInviteResponse = async (inviteId: string, newStatus: string, enableLocationSharing: boolean = false) => {
     try {
+      // Get the invite details before updating
+      const invite = gigInvites.find(inv => inv.id === inviteId);
+      
       const { error } = await supabase
         .from("gig_members")
         .update({ 
@@ -616,6 +619,23 @@ const Dashboard = () => {
         .eq("id", inviteId);
 
       if (error) throw error;
+
+      // Send email notification to band leader
+      if (invite && (newStatus === "accepted" || newStatus === "declined")) {
+        try {
+          await supabase.functions.invoke("notify-gig-response", {
+            body: {
+              gig_id: invite.gig_id,
+              member_id: user?.id,
+              member_name: profile?.name || "A band member",
+              status: newStatus,
+            },
+          });
+        } catch (emailError) {
+          console.error("Failed to send email notification:", emailError);
+          // Don't fail the main action if email fails
+        }
+      }
 
       if (newStatus === "accepted" && enableLocationSharing) {
         toast({

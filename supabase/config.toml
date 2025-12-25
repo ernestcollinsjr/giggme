@@ -15,6 +15,9 @@ verify_jwt = false
 [functions.notify-availability-request]
 verify_jwt = true
 
+[functions.notify-gig-response]
+verify_jwt = true
+
 [functions.send-rider]
 verify_jwt = false
 

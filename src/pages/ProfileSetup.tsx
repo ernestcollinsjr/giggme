@@ -65,6 +65,7 @@ const ProfileSetup = () => {
   const [newGenre, setNewGenre] = useState("");
   const [availabilityStatus, setAvailabilityStatus] = useState("available");
   const [todayCalendarStatus, setTodayCalendarStatus] = useState<string | null>(null);
+  const [weekAvailability, setWeekAvailability] = useState<{date: string; status: string | null}[]>([]);
   const [travelDistance, setTravelDistance] = useState<string>("");
   const [yearsExperience, setYearsExperience] = useState<string>("");
   const [unionMemberships, setUnionMemberships] = useState<string[]>([]);
@@ -99,20 +100,30 @@ const ProfileSetup = () => {
           .eq("user_id", user.id)
           .single();
         
-        // Fetch today's availability from calendar
-        const today = new Date().toISOString().split('T')[0];
-        const { data: todayAvailability } = await supabase
-          .from("member_availability")
-          .select("status")
-          .eq("user_id", user.id)
-          .eq("date", today)
-          .maybeSingle();
+        // Fetch next 7 days availability from calendar
+        const today = new Date();
+        const next7Days = Array.from({ length: 7 }, (_, i) => {
+          const d = new Date(today);
+          d.setDate(today.getDate() + i);
+          return d.toISOString().split('T')[0];
+        });
         
-        if (todayAvailability) {
-          setTodayCalendarStatus(todayAvailability.status);
-        } else {
-          setTodayCalendarStatus(null);
-        }
+        const { data: weekData } = await supabase
+          .from("member_availability")
+          .select("date, status")
+          .eq("user_id", user.id)
+          .in("date", next7Days);
+        
+        // Map to array with all 7 days
+        const weekMap = new Map(weekData?.map(d => [d.date, d.status]) || []);
+        const weekAvail = next7Days.map(date => ({
+          date,
+          status: weekMap.get(date) || null
+        }));
+        setWeekAvailability(weekAvail);
+        
+        // Set today's status from the first day
+        setTodayCalendarStatus(weekAvail[0]?.status || null);
         
         if (profile) {
           setName(profile.name || "");
@@ -526,6 +537,10 @@ const ProfileSetup = () => {
       }
 
       setTodayCalendarStatus(status);
+      // Update week availability for today (first item)
+      setWeekAvailability(prev => prev.map((day, idx) => 
+        idx === 0 ? { ...day, status } : day
+      ));
       toast({ title: `Today marked as ${status}` });
     } catch (error) {
       console.error('Error setting today availability:', error);
@@ -1278,28 +1293,58 @@ const ProfileSetup = () => {
 
                 <div className="space-y-3">
                   <Label className="text-xs">Today's Availability Status</Label>
-                  <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 border">
-                    {todayCalendarStatus === 'available' ? (
-                      <>
-                        <span className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
-                        <span className="text-sm font-medium text-green-600">Available</span>
-                      </>
-                    ) : todayCalendarStatus === 'unavailable' ? (
-                      <>
-                        <span className="w-3 h-3 rounded-full bg-red-500" />
-                        <span className="text-sm font-medium text-red-600">Unavailable</span>
-                      </>
-                    ) : todayCalendarStatus === 'tentative' ? (
-                      <>
-                        <span className="w-3 h-3 rounded-full bg-yellow-500" />
-                        <span className="text-sm font-medium text-yellow-600">Tentative</span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="w-3 h-3 rounded-full bg-muted-foreground/30" />
-                        <span className="text-sm text-muted-foreground">Not set for today</span>
-                      </>
-                    )}
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border">
+                    <div className="flex items-center gap-2">
+                      {todayCalendarStatus === 'available' ? (
+                        <>
+                          <span className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
+                          <span className="text-sm font-medium text-green-600">Available</span>
+                        </>
+                      ) : todayCalendarStatus === 'unavailable' ? (
+                        <>
+                          <span className="w-3 h-3 rounded-full bg-red-500" />
+                          <span className="text-sm font-medium text-red-600">Unavailable</span>
+                        </>
+                      ) : todayCalendarStatus === 'tentative' ? (
+                        <>
+                          <span className="w-3 h-3 rounded-full bg-yellow-500" />
+                          <span className="text-sm font-medium text-yellow-600">Tentative</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="w-3 h-3 rounded-full bg-muted-foreground/30" />
+                          <span className="text-sm text-muted-foreground">Not set</span>
+                        </>
+                      )}
+                    </div>
+                    
+                    {/* 7-day preview bar */}
+                    <div className="flex items-center gap-1 ml-auto">
+                      <span className="text-xs text-muted-foreground mr-1">Next 7 days:</span>
+                      {weekAvailability.map((day, idx) => {
+                        const dayLabel = new Date(day.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' }).charAt(0);
+                        return (
+                          <div 
+                            key={day.date} 
+                            className="flex flex-col items-center"
+                            title={`${new Date(day.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}: ${day.status || 'Not set'}`}
+                          >
+                            <span className="text-[10px] text-muted-foreground">{dayLabel}</span>
+                            <div 
+                              className={`w-4 h-4 rounded-sm ${
+                                day.status === 'available' 
+                                  ? 'bg-green-500' 
+                                  : day.status === 'unavailable' 
+                                    ? 'bg-red-500' 
+                                    : day.status === 'tentative' 
+                                      ? 'bg-yellow-500' 
+                                      : 'bg-muted-foreground/20'
+                              } ${idx === 0 ? 'ring-2 ring-primary ring-offset-1' : ''}`}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                   <div className="flex gap-2">
                     <Button

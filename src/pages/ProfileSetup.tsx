@@ -827,11 +827,10 @@ const ProfileSetup = () => {
                           className="flex items-center gap-3 p-2 border rounded-lg bg-muted/50"
                         >
                           {thumbnail ? (
-                            <a 
-                              href={link} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="shrink-0 relative group"
+                            <button 
+                              type="button"
+                              onClick={() => window.open(link, '_blank', 'noopener,noreferrer')}
+                              className="shrink-0 relative group cursor-pointer"
                             >
                               <img 
                                 src={thumbnail} 
@@ -841,11 +840,15 @@ const ProfileSetup = () => {
                               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center">
                                 <Youtube className="h-6 w-6 text-white" />
                               </div>
-                            </a>
+                            </button>
                           ) : (
-                            <div className="w-24 h-14 bg-muted rounded-md flex items-center justify-center shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => window.open(link, '_blank', 'noopener,noreferrer')}
+                              className="w-24 h-14 bg-muted rounded-md flex items-center justify-center shrink-0 cursor-pointer"
+                            >
                               <Youtube className="h-6 w-6 text-red-500" />
-                            </div>
+                            </button>
                           )}
                           <span className="flex-1 text-sm truncate">{link}</span>
                           <Button

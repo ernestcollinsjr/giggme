@@ -27,6 +27,7 @@ import VenueDashboard from "./pages/VenueDashboard";
 import EntertainerMarketplace from "./pages/EntertainerMarketplace";
 import EntertainerDashboard from "./pages/EntertainerDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import Notifications from "./pages/Notifications";
 
 const queryClient = new QueryClient();
 
@@ -59,6 +60,7 @@ const App = () => (
             <Route path="/entertainers" element={<EntertainerMarketplace />} />
             <Route path="/entertainer-dashboard" element={<EntertainerDashboard />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/notifications" element={<Notifications />} />
             <Route path="/open" element={<OpenExternal />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

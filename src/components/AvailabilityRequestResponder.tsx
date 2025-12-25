@@ -251,6 +251,24 @@ export function AvailabilityRequestResponder() {
                     }}
                   />
                 </div>
+                {selected.length > 0 && (
+                  <div className="mt-3 p-3 bg-muted/50 rounded-lg">
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Selected dates:</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {selected
+                        .sort((a, b) => a.getTime() - b.getTime())
+                        .map((date) => (
+                          <Badge 
+                            key={date.toISOString()} 
+                            variant="secondary"
+                            className="text-xs"
+                          >
+                            {format(date, "MMM d")}
+                          </Badge>
+                        ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>

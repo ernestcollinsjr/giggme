@@ -11,7 +11,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Music, Briefcase, MapPin, Calendar as CalendarIcon, Crown, LogOut, ListMusic, User as UserIcon, Plus, Loader2, Play, Pause, FileText, Search, Shield } from "lucide-react";
+import { Music, Briefcase, MapPin, Calendar as CalendarIcon, Crown, LogOut, ListMusic, User as UserIcon, Plus, Loader2, Play, Pause, FileText, Search, Shield, Filter } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
 import { BandAssistant } from "@/components/BandAssistant";
@@ -143,6 +144,7 @@ const Dashboard = () => {
   const [locationSharingConsent, setLocationSharingConsent] = useState(true);
   const [activeGigsWithSharing, setActiveGigsWithSharing] = useState<string[]>([]);
   const [setlists, setSetlists] = useState<Setlist[]>([]);
+  const [showPendingGigsOnly, setShowPendingGigsOnly] = useState(false);
   const [playingAudio, setPlayingAudio] = useState<HTMLAudioElement | null>(null);
   const [playingSongId, setPlayingSongId] = useState<string | null>(null);
   const [playingVideo, setPlayingVideo] = useState<{ videoId: string; title: string } | null>(null);
@@ -1590,16 +1592,35 @@ const Dashboard = () => {
                 onClick={() => navigate("/bookings")}
               >
                 <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <Briefcase className="h-4 w-4 text-primary" />
-                    Upcoming Gigs
-                  </CardTitle>
-                  <CardDescription className="text-xs">
-                    {filteredGigs.length > 0 ? `${filteredGigs.length} booked` : "No gigs yet"}
-                  </CardDescription>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2 text-lg">
+                        <Briefcase className="h-4 w-4 text-primary" />
+                        Upcoming Gigs
+                      </CardTitle>
+                      <CardDescription className="text-xs">
+                        {filteredGigs.length > 0 ? `${filteredGigs.length} booked` : "No gigs yet"}
+                      </CardDescription>
+                    </div>
+                    <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                      <Filter className="h-3 w-3 text-muted-foreground" />
+                      <Label htmlFor="pending-gigs-filter" className="text-[10px] text-muted-foreground cursor-pointer">
+                        Pending
+                      </Label>
+                      <Switch
+                        id="pending-gigs-filter"
+                        checked={showPendingGigsOnly}
+                        onCheckedChange={setShowPendingGigsOnly}
+                        className="scale-75"
+                      />
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  {filteredGigs.slice(0, 2).map((gig) => (
+                  {filteredGigs
+                    .filter(gig => !showPendingGigsOnly || (gigResponseCounts[gig.id]?.pending > 0))
+                    .slice(0, 2)
+                    .map((gig) => (
                     <div key={gig.id} className="p-2 border rounded-md text-sm">
                       <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
                         <CalendarIcon className="h-3 w-3" />

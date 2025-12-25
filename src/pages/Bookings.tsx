@@ -12,7 +12,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar as CalendarIcon, Clock, MapPin, Plus, Trash2, Music, Navigation, Users, Send, Pencil } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Calendar as CalendarIcon, Clock, MapPin, Plus, Trash2, Music, Navigation, Users, Send, Pencil, Filter } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import BottomNav from "@/components/BottomNav";
@@ -60,6 +61,7 @@ const Bookings = () => {
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [currentGigForInvite, setCurrentGigForInvite] = useState<string | null>(null);
+  const [showPendingOnly, setShowPendingOnly] = useState(false);
   
   // Form state
   const [date, setDate] = useState<Date>();
@@ -892,11 +894,28 @@ const Bookings = () => {
 
         <Card className="border-border/50 shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Music className="h-5 w-5 text-primary" />
-              Scheduled Gigs
-            </CardTitle>
-            <CardDescription>Upcoming performances and bookings</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Music className="h-5 w-5 text-primary" />
+                  Scheduled Gigs
+                </CardTitle>
+                <CardDescription>Upcoming performances and bookings</CardDescription>
+              </div>
+              {userRole === "band_leader" && (
+                <div className="flex items-center gap-2">
+                  <Filter className="h-4 w-4 text-muted-foreground" />
+                  <Label htmlFor="pending-filter" className="text-sm text-muted-foreground cursor-pointer">
+                    Pending only
+                  </Label>
+                  <Switch
+                    id="pending-filter"
+                    checked={showPendingOnly}
+                    onCheckedChange={setShowPendingOnly}
+                  />
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             {gigs.length === 0 ? (
@@ -905,7 +924,9 @@ const Bookings = () => {
               </p>
             ) : (
               <div className="space-y-3">
-                {gigs.map((gig) => (
+                {gigs
+                  .filter(gig => !showPendingOnly || (gigResponseCounts[gig.id]?.pending > 0))
+                  .map((gig) => (
                   <div key={gig.id} className="p-4 border rounded-lg">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">

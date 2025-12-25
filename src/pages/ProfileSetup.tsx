@@ -66,6 +66,7 @@ const ProfileSetup = () => {
   const [availabilityStatus, setAvailabilityStatus] = useState("available");
   const [todayCalendarStatus, setTodayCalendarStatus] = useState<string | null>(null);
   const [weekAvailability, setWeekAvailability] = useState<{date: string; status: string | null}[]>([]);
+  const [selectedQuickStatus, setSelectedQuickStatus] = useState<'available' | 'unavailable' | 'tentative'>('available');
   const [travelDistance, setTravelDistance] = useState<string>("");
   const [yearsExperience, setYearsExperience] = useState<string>("");
   const [unionMemberships, setUnionMemberships] = useState<string[]>([]);
@@ -501,51 +502,81 @@ const ProfileSetup = () => {
     setUnionMemberships((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Quick-set today's availability
-  const setTodayAvailability = async (status: 'available' | 'unavailable' | 'tentative') => {
+  // Set availability for any date
+  const setDateAvailability = async (dateStr: string, status: 'available' | 'unavailable' | 'tentative') => {
     try {
       if (!user) {
         toast({ title: "Please log in", variant: "destructive" });
         return;
       }
-
-      const today = new Date().toISOString().split('T')[0];
       
-      // Check if there's an existing entry for today
+      // Check if there's an existing entry for this date
       const { data: existing } = await supabase
         .from('member_availability')
-        .select('id')
+        .select('id, status')
         .eq('user_id', user.id)
-        .eq('date', today)
+        .eq('date', dateStr)
         .maybeSingle();
 
-      if (existing) {
-        // Update existing
-        const { error } = await supabase
-          .from('member_availability')
-          .update({ status })
-          .eq('id', existing.id);
+      const today = new Date().toISOString().split('T')[0];
 
-        if (error) throw error;
+      if (existing) {
+        // If same status, remove it (toggle off)
+        if (existing.status === status) {
+          const { error } = await supabase
+            .from('member_availability')
+            .delete()
+            .eq('id', existing.id);
+
+          if (error) throw error;
+          
+          // Update week availability
+          setWeekAvailability(prev => prev.map(day => 
+            day.date === dateStr ? { ...day, status: null } : day
+          ));
+          if (dateStr === today) setTodayCalendarStatus(null);
+          toast({ title: `Availability cleared for ${new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}` });
+        } else {
+          // Update to new status
+          const { error } = await supabase
+            .from('member_availability')
+            .update({ status })
+            .eq('id', existing.id);
+
+          if (error) throw error;
+          
+          // Update week availability
+          setWeekAvailability(prev => prev.map(day => 
+            day.date === dateStr ? { ...day, status } : day
+          ));
+          if (dateStr === today) setTodayCalendarStatus(status);
+          toast({ title: `${new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} marked as ${status}` });
+        }
       } else {
         // Insert new
         const { error } = await supabase
           .from('member_availability')
-          .insert({ user_id: user.id, date: today, status });
+          .insert({ user_id: user.id, date: dateStr, status });
 
         if (error) throw error;
+        
+        // Update week availability
+        setWeekAvailability(prev => prev.map(day => 
+          day.date === dateStr ? { ...day, status } : day
+        ));
+        if (dateStr === today) setTodayCalendarStatus(status);
+        toast({ title: `${new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} marked as ${status}` });
       }
-
-      setTodayCalendarStatus(status);
-      // Update week availability for today (first item)
-      setWeekAvailability(prev => prev.map((day, idx) => 
-        idx === 0 ? { ...day, status } : day
-      ));
-      toast({ title: `Today marked as ${status}` });
     } catch (error) {
-      console.error('Error setting today availability:', error);
+      console.error('Error setting availability:', error);
       toast({ title: "Error updating availability", variant: "destructive" });
     }
+  };
+
+  // Quick-set today's availability
+  const setTodayAvailability = async (status: 'available' | 'unavailable' | 'tentative') => {
+    const today = new Date().toISOString().split('T')[0];
+    await setDateAvailability(today, status);
   };
 
   // Calculate profile completeness
@@ -1323,60 +1354,76 @@ const ProfileSetup = () => {
                       <span className="text-xs text-muted-foreground mr-1">Next 7 days:</span>
                       {weekAvailability.map((day, idx) => {
                         const dayLabel = new Date(day.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' }).charAt(0);
+                        const dayNum = new Date(day.date + 'T00:00:00').getDate();
                         return (
-                          <div 
-                            key={day.date} 
-                            className="flex flex-col items-center"
-                            title={`${new Date(day.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}: ${day.status || 'Not set'}`}
+                          <button 
+                            key={day.date}
+                            type="button"
+                            onClick={() => setDateAvailability(day.date, selectedQuickStatus)}
+                            className="flex flex-col items-center cursor-pointer hover:scale-110 transition-transform"
+                            title={`Click to set ${selectedQuickStatus} for ${new Date(day.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}`}
                           >
                             <span className="text-[10px] text-muted-foreground">{dayLabel}</span>
                             <div 
-                              className={`w-4 h-4 rounded-sm ${
+                              className={`w-5 h-5 rounded-sm flex items-center justify-center text-[9px] font-medium text-white ${
                                 day.status === 'available' 
                                   ? 'bg-green-500' 
                                   : day.status === 'unavailable' 
                                     ? 'bg-red-500' 
                                     : day.status === 'tentative' 
                                       ? 'bg-yellow-500' 
-                                      : 'bg-muted-foreground/20'
-                              } ${idx === 0 ? 'ring-2 ring-primary ring-offset-1' : ''}`}
-                            />
-                          </div>
+                                      : 'bg-muted-foreground/20 text-muted-foreground'
+                              } ${idx === 0 ? 'ring-2 ring-primary ring-offset-1' : ''} hover:ring-2 hover:ring-offset-1 hover:ring-muted-foreground`}
+                            >
+                              {dayNum}
+                            </div>
+                          </button>
                         );
                       })}
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={todayCalendarStatus === 'available' ? 'default' : 'outline'}
-                      className={todayCalendarStatus === 'available' ? 'bg-green-500 hover:bg-green-600' : ''}
-                      onClick={() => setTodayAvailability('available')}
-                    >
-                      <Check className="h-3 w-3 mr-1" />
-                      Available
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={todayCalendarStatus === 'tentative' ? 'default' : 'outline'}
-                      className={todayCalendarStatus === 'tentative' ? 'bg-yellow-500 hover:bg-yellow-600' : ''}
-                      onClick={() => setTodayAvailability('tentative')}
-                    >
-                      <HelpCircle className="h-3 w-3 mr-1" />
-                      Tentative
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={todayCalendarStatus === 'unavailable' ? 'default' : 'outline'}
-                      className={todayCalendarStatus === 'unavailable' ? 'bg-red-500 hover:bg-red-600' : ''}
-                      onClick={() => setTodayAvailability('unavailable')}
-                    >
-                      <X className="h-3 w-3 mr-1" />
-                      Unavailable
-                    </Button>
+                  
+                  {/* Status selector for quick-set */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">Click days to set:</span>
+                    <div className="flex gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedQuickStatus('available')}
+                        className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-all ${
+                          selectedQuickStatus === 'available'
+                            ? 'bg-green-500 text-white'
+                            : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                        }`}
+                      >
+                        <Check className="h-3 w-3" />
+                        Available
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedQuickStatus('tentative')}
+                        className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-all ${
+                          selectedQuickStatus === 'tentative'
+                            ? 'bg-yellow-500 text-white'
+                            : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                        }`}
+                      >
+                        <HelpCircle className="h-3 w-3" />
+                        Tentative
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedQuickStatus('unavailable')}
+                        className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-all ${
+                          selectedQuickStatus === 'unavailable'
+                            ? 'bg-red-500 text-white'
+                            : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                        }`}
+                      >
+                        <X className="h-3 w-3" />
+                        Unavailable
+                      </button>
+                    </div>
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Quick-set for today or use the calendar below for other dates

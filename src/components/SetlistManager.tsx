@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useBand } from "@/contexts/BandContext";
@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Music, Plus, Trash2, Upload, Link as LinkIcon, ChevronUp, ChevronDown, FileText } from "lucide-react";
+import { Music, Plus, Trash2, Upload, Link as LinkIcon, ChevronUp, ChevronDown, FileText, GripVertical } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -57,6 +57,17 @@ export const SetlistManager = () => {
   const [uploading, setUploading] = useState(false);
   const [playingVideo, setPlayingVideo] = useState<{ videoId: string; title: string } | null>(null);
   const [fetchingVideoInfo, setFetchingVideoInfo] = useState(false);
+  
+  // Drag and drop state
+  const [draggedSongIndex, setDraggedSongIndex] = useState<number | null>(null);
+  const [draggedSetNum, setDraggedSetNum] = useState<number | null>(null);
+  const [draggedSetlistId, setDraggedSetlistId] = useState<string | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [insertionIndex, setInsertionIndex] = useState<number | null>(null);
+  const [ghostPosition, setGhostPosition] = useState<{ x: number; y: number } | null>(null);
+  const [isTouchDragging, setIsTouchDragging] = useState(false);
+  const [recentlyReordered, setRecentlyReordered] = useState<string | null>(null);
+  const songItemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
     fetchBands();
@@ -559,6 +570,119 @@ export const SetlistManager = () => {
     }
   };
 
+  // Drag and drop handlers
+  const handleDragStart = (setlistId: string, setNum: number, index: number, e: React.DragEvent) => {
+    setDraggedSongIndex(index);
+    setDraggedSetNum(setNum);
+    setDraggedSetlistId(setlistId);
+    const img = new Image();
+    img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+    e.dataTransfer.setDragImage(img, 0, 0);
+    setGhostPosition({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleDrag = (e: React.DragEvent) => {
+    if (e.clientX === 0 && e.clientY === 0) return;
+    setGhostPosition({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    setDragOverIndex(index);
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const midpoint = rect.top + rect.height / 2;
+    const insertBefore = e.clientY < midpoint;
+    setInsertionIndex(insertBefore ? index : index + 1);
+  };
+
+  const handleDragEnd = async () => {
+    if (draggedSongIndex !== null && insertionIndex !== null && draggedSetlistId && draggedSetNum !== null) {
+      const setlist = setlists.find(s => s.id === draggedSetlistId);
+      if (setlist) {
+        const setSongs = setlist.songs.filter(s => s.set_number === draggedSetNum);
+        
+        if (draggedSongIndex !== insertionIndex && draggedSongIndex !== insertionIndex - 1) {
+          const draggedSong = setSongs[draggedSongIndex];
+          if (draggedSong) {
+            setRecentlyReordered(draggedSong.id);
+            setTimeout(() => setRecentlyReordered(null), 300);
+            
+            // Reorder songs
+            const newOrdered = [...setSongs];
+            const [removed] = newOrdered.splice(draggedSongIndex, 1);
+            const adjustedIndex = insertionIndex > draggedSongIndex ? insertionIndex - 1 : insertionIndex;
+            newOrdered.splice(adjustedIndex, 0, removed);
+            
+            // Update order_index in database
+            try {
+              for (let i = 0; i < newOrdered.length; i++) {
+                await supabase
+                  .from("setlist_songs")
+                  .update({ order_index: i })
+                  .eq("id", newOrdered[i].id);
+              }
+              toast({ title: "Song order updated" });
+              fetchSetlists();
+            } catch (error: any) {
+              toast({ variant: "destructive", title: "Error reordering songs", description: error.message });
+            }
+          }
+        }
+      }
+    }
+
+    setDraggedSongIndex(null);
+    setDraggedSetNum(null);
+    setDraggedSetlistId(null);
+    setDragOverIndex(null);
+    setIsTouchDragging(false);
+    setGhostPosition(null);
+    setInsertionIndex(null);
+  };
+
+  // Touch handlers for mobile
+  const handleTouchStart = useCallback((setlistId: string, setNum: number, index: number, e: React.TouchEvent) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    setDraggedSongIndex(index);
+    setDraggedSetNum(setNum);
+    setDraggedSetlistId(setlistId);
+    setIsTouchDragging(true);
+    setGhostPosition({ x: touch.clientX, y: touch.clientY });
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (draggedSongIndex === null || !isTouchDragging) return;
+    const touch = e.touches[0];
+    setGhostPosition({ x: touch.clientX, y: touch.clientY });
+
+    const elementAtTouch = document.elementFromPoint(touch.clientX, touch.clientY);
+    for (let i = 0; i < songItemRefs.current.length; i++) {
+      const ref = songItemRefs.current[i];
+      if (ref && (ref === elementAtTouch || ref.contains(elementAtTouch as Node))) {
+        if (i !== dragOverIndex) setDragOverIndex(i);
+        const rect = ref.getBoundingClientRect();
+        const midpoint = rect.top + rect.height / 2;
+        const insertBefore = touch.clientY < midpoint;
+        setInsertionIndex(insertBefore ? i : i + 1);
+        break;
+      }
+    }
+  }, [draggedSongIndex, dragOverIndex, isTouchDragging]);
+
+  const handleTouchEnd = useCallback(() => {
+    handleDragEnd();
+  }, [draggedSongIndex, dragOverIndex, draggedSetlistId, draggedSetNum, insertionIndex, setlists]);
+
+  const getDraggedSongTitle = () => {
+    if (draggedSongIndex === null || draggedSetlistId === null || draggedSetNum === null) return '';
+    const setlist = setlists.find(s => s.id === draggedSetlistId);
+    if (!setlist) return '';
+    const setSongs = setlist.songs.filter(s => s.set_number === draggedSetNum);
+    const draggedSong = setSongs[draggedSongIndex];
+    return draggedSong ? draggedSong.title : '';
+  };
+
   if (loading) {
     return <div className="text-muted-foreground">Loading setlists...</div>;
   }
@@ -792,9 +916,21 @@ export const SetlistManager = () => {
                         {setSongs.map((song, index) => (
                           <div
                             key={song.id}
-                            className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-slate-100 dark:bg-slate-800/20"
+                            ref={(el) => { songItemRefs.current[index] = el; }}
+                            draggable
+                            onDragStart={(e) => handleDragStart(setlist.id, setNum, index, e)}
+                            onDrag={handleDrag}
+                            onDragOver={(e) => handleDragOver(e, index)}
+                            onDragEnd={handleDragEnd}
+                            onTouchStart={(e) => handleTouchStart(setlist.id, setNum, index, e)}
+                            onTouchMove={handleTouchMove}
+                            onTouchEnd={handleTouchEnd}
+                            className={`flex items-center justify-between py-1.5 px-2 rounded-lg bg-slate-100 dark:bg-slate-800/20 cursor-grab active:cursor-grabbing transition-all ${
+                              dragOverIndex === index && draggedSetlistId === setlist.id && draggedSetNum === setNum ? 'ring-2 ring-primary' : ''
+                            } ${recentlyReordered === song.id ? 'bg-primary/20' : ''}`}
                           >
                             <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                              <GripVertical className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                               <span className="text-xs text-muted-foreground font-medium w-4 shrink-0">
                                 {index + 1}
                               </span>
@@ -820,14 +956,11 @@ export const SetlistManager = () => {
                                          size="sm"
                                          className="h-6 text-[10px] px-1.5 py-0"
                                          onClick={async () => {
-                                           // Try local extraction first
                                            const localVideoId = song.audio_url ? extractVideoId(song.audio_url) : null;
                                            if (localVideoId) {
                                              setPlayingVideo({ videoId: localVideoId, title: song.title });
                                              return;
                                            }
-
-                                           // Fallback to backend for search URLs
                                            try {
                                              const { data } = await supabase.functions.invoke('fetch-youtube', {
                                                body: { url: song.audio_url }
@@ -878,26 +1011,6 @@ export const SetlistManager = () => {
                               </div>
                             </div>
                             <div className="flex items-center gap-1 shrink-0">
-                              <div className="flex flex-col gap-0.5">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-5 w-5"
-                                  onClick={() => moveSongUp(setlist.id, song.id, setNum, index)}
-                                  disabled={index === 0}
-                                >
-                                  <ChevronUp className="h-2.5 w-2.5" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-5 w-5"
-                                  onClick={() => moveSongDown(setlist.id, song.id, setNum, index)}
-                                  disabled={index === setSongs.length - 1}
-                                >
-                                  <ChevronDown className="h-2.5 w-2.5" />
-                                </Button>
-                              </div>
                               <Select
                                 value={song.set_number.toString()}
                                 onValueChange={(value) => moveSongToSet(song.id, parseInt(value))}
@@ -931,6 +1044,19 @@ export const SetlistManager = () => {
             </CardContent>
           </Card>
         ))
+      )}
+
+      {/* Drag ghost element */}
+      {ghostPosition && (draggedSongIndex !== null) && (
+        <div
+          className="fixed pointer-events-none z-50 bg-primary/90 text-primary-foreground px-3 py-1.5 rounded-lg shadow-lg text-sm font-medium"
+          style={{
+            left: ghostPosition.x + 10,
+            top: ghostPosition.y + 10,
+          }}
+        >
+          {getDraggedSongTitle()}
+        </div>
       )}
 
       {playingVideo && (

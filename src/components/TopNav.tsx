@@ -31,40 +31,46 @@ export const TopNav = ({ userRole }: TopNavProps) => {
     { path: "/bookings", label: "Gigs", icon: Calendar },
     { path: "/rehearsals", label: "Rehearsals", icon: Music },
     { path: "/setlist", label: "Setlists", icon: ListMusic },
-    { path: "/chat", label: "Messages", icon: MessageSquare },
+    { path: "/profile-setup", label: "Profile", icon: User },
   ];
 
   const bookingManagerLinks = [
     { path: "/dashboard", label: "Dashboard", icon: Home },
     { path: "/booking-manager", label: "Roster", icon: Briefcase },
     { path: "/artists", label: "Discover", icon: Search },
-    { path: "/chat", label: "Messages", icon: MessageSquare },
+    { path: "/profile-setup", label: "Profile", icon: User },
   ];
 
   const artistLinks = [
     { path: "/dashboard", label: "Dashboard", icon: Home },
     { path: "/artist-profile", label: "My Profile", icon: User },
     { path: "/artists", label: "Browse Artists", icon: Users },
-    { path: "/chat", label: "Messages", icon: MessageSquare },
+    { path: "/profile-setup", label: "Profile", icon: User },
   ];
 
   const tourManagerLinks = [
     { path: "/dashboard", label: "Dashboard", icon: Home },
     { path: "/tours", label: "Tours", icon: MapPin },
-    { path: "/chat", label: "Messages", icon: MessageSquare },
+    { path: "/profile-setup", label: "Profile", icon: User },
   ];
 
   const venueOwnerLinks = [
     { path: "/venue-dashboard", label: "Dashboard", icon: Home },
     { path: "/entertainers", label: "Find Entertainment", icon: Search },
-    { path: "/chat", label: "Messages", icon: MessageSquare },
+    { path: "/profile-setup", label: "Profile", icon: User },
   ];
 
   const superAdminLinks = [
     { path: "/dashboard", label: "Dashboard", icon: Home },
     { path: "/admin", label: "Admin", icon: Shield },
     { path: "/bookings", label: "Gigs", icon: Calendar },
-    { path: "/chat", label: "Messages", icon: MessageSquare },
+    { path: "/profile-setup", label: "Profile", icon: User },
+  ];
+
+  const bandMemberLinks = [
+    { path: "/dashboard", label: "Dashboard", icon: Home },
+    { path: "/setlist", label: "Setlists", icon: ListMusic },
+    { path: "/profile-setup", label: "Profile", icon: User },
   ];
 
   const getLinks = () => {
@@ -73,6 +79,8 @@ export const TopNav = ({ userRole }: TopNavProps) => {
         return superAdminLinks;
       case "band_leader":
         return bandLeaderLinks;
+      case "band_member":
+        return bandMemberLinks;
       case "booking_manager":
         return bookingManagerLinks;
       case "artist":

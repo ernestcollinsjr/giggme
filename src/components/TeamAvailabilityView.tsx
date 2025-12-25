@@ -118,11 +118,11 @@ export function TeamAvailabilityView({ bandId }: TeamAvailabilityViewProps) {
   const getStatusIcon = (status: string | undefined) => {
     switch (status) {
       case 'available':
-        return <div className="h-6 w-6 rounded-full bg-[hsl(var(--chart-2))] flex items-center justify-center"><Check className="h-3 w-3 text-white" /></div>;
+        return <div className="h-6 w-6 rounded-full bg-green-500 flex items-center justify-center"><Check className="h-3 w-3 text-white" /></div>;
       case 'unavailable':
-        return <div className="h-6 w-6 rounded-full bg-destructive flex items-center justify-center"><X className="h-3 w-3 text-white" /></div>;
+        return <div className="h-6 w-6 rounded-full bg-red-500 flex items-center justify-center"><X className="h-3 w-3 text-white" /></div>;
       case 'tentative':
-        return <div className="h-6 w-6 rounded-full bg-[hsl(var(--chart-4))] flex items-center justify-center"><HelpCircle className="h-3 w-3 text-white" /></div>;
+        return <div className="h-6 w-6 rounded-full bg-yellow-500 flex items-center justify-center"><HelpCircle className="h-3 w-3 text-white" /></div>;
       default:
         return <div className="h-6 w-6 rounded-full bg-muted" />;
     }
@@ -189,15 +189,15 @@ export function TeamAvailabilityView({ bandId }: TeamAvailabilityViewProps) {
             {/* Legend */}
             <div className="flex flex-wrap gap-4 justify-center text-sm pb-2 border-b">
               <div className="flex items-center gap-1.5">
-                <div className="h-4 w-4 rounded-full bg-[hsl(var(--chart-2))]" />
+                <div className="h-4 w-4 rounded-full bg-green-500" />
                 <span className="text-muted-foreground">Available</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="h-4 w-4 rounded-full bg-destructive" />
+                <div className="h-4 w-4 rounded-full bg-red-500" />
                 <span className="text-muted-foreground">Unavailable</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="h-4 w-4 rounded-full bg-[hsl(var(--chart-4))]" />
+                <div className="h-4 w-4 rounded-full bg-yellow-500" />
                 <span className="text-muted-foreground">Tentative</span>
               </div>
               <div className="flex items-center gap-1.5">

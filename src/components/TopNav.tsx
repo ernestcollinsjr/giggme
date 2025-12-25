@@ -11,12 +11,13 @@ import {
   User,
   Search,
   MapPin,
-  Zap
+  Zap,
+  Shield
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TopNavProps {
-  userRole: "band_leader" | "band_member" | "booking_manager" | "artist" | "tour_manager" | "venue_owner";
+  userRole: "band_leader" | "band_member" | "booking_manager" | "artist" | "tour_manager" | "venue_owner" | "super_admin";
 }
 
 export const TopNav = ({ userRole }: TopNavProps) => {
@@ -59,8 +60,17 @@ export const TopNav = ({ userRole }: TopNavProps) => {
     { path: "/chat", label: "Messages", icon: MessageSquare },
   ];
 
+  const superAdminLinks = [
+    { path: "/dashboard", label: "Dashboard", icon: Home },
+    { path: "/admin", label: "Admin", icon: Shield },
+    { path: "/bookings", label: "Gigs", icon: Calendar },
+    { path: "/chat", label: "Messages", icon: MessageSquare },
+  ];
+
   const getLinks = () => {
     switch (userRole) {
+      case "super_admin":
+        return superAdminLinks;
       case "band_leader":
         return bandLeaderLinks;
       case "booking_manager":

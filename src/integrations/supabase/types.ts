@@ -1200,6 +1200,7 @@ export type Database = {
         Args: { earliest_time: string; gig_date: string }
         Returns: boolean
       }
+      is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       is_tour_manager: {
         Args: { _tour_id: string; _user_id: string }
         Returns: boolean

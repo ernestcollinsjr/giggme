@@ -11,7 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Music, Briefcase, MapPin, Calendar as CalendarIcon, Crown, LogOut, ListMusic, User as UserIcon, Plus, Loader2, Play, Pause, FileText, Search } from "lucide-react";
+import { Music, Briefcase, MapPin, Calendar as CalendarIcon, Crown, LogOut, ListMusic, User as UserIcon, Plus, Loader2, Play, Pause, FileText, Search, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
 import { BandAssistant } from "@/components/BandAssistant";
@@ -109,7 +109,7 @@ interface Setlist {
   songs: SetlistSong[];
 }
 
-type UserRole = "band_leader" | "band_member" | "booking_manager" | "artist" | "tour_manager";
+type UserRole = "band_leader" | "band_member" | "booking_manager" | "artist" | "tour_manager" | "super_admin";
 
 const Dashboard = () => {
   const navigate = useNavigate();

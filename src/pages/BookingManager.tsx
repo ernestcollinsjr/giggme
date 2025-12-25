@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { BookingManagerClientLocations } from "@/components/BookingManagerClientLocations";
+import { AvailabilityRequestManager } from "@/components/AvailabilityRequestManager";
+import { AvailabilityRequestResults } from "@/components/AvailabilityRequestResults";
 import { useToast } from "@/hooks/use-toast";
 import { TopNav } from "@/components/TopNav";
 import { 
@@ -17,9 +19,11 @@ import {
   X,
   Search,
   ArrowLeft,
-  UserPlus
+  UserPlus,
+  CalendarCheck
 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Profile {
   id: string;
@@ -56,6 +60,8 @@ export default function BookingManager() {
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [groupMessage, setGroupMessage] = useState("");
   const [gigRequestMessage, setGigRequestMessage] = useState("");
+  const [selectedBandForAvailability, setSelectedBandForAvailability] = useState<string>("");
+  const [viewingResponsesForRequest, setViewingResponsesForRequest] = useState<string | null>(null);
 
   useEffect(() => {
     checkRole();
@@ -513,6 +519,59 @@ export default function BookingManager() {
             )}
           </CardContent>
         </Card>
+
+        {/* Availability Management */}
+        {managedBands.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CalendarCheck className="h-5 w-5" />
+                Band Availability Management
+              </CardTitle>
+              <CardDescription>
+                Request and view availability from band members
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-4">
+                <label className="text-sm font-medium">Select Band:</label>
+                <Select 
+                  value={selectedBandForAvailability} 
+                  onValueChange={(value) => {
+                    setSelectedBandForAvailability(value);
+                    setViewingResponsesForRequest(null);
+                  }}
+                >
+                  <SelectTrigger className="w-[280px]">
+                    <SelectValue placeholder="Choose a band to manage" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {managedBands.map((band) => (
+                      <SelectItem key={band.id} value={band.id}>
+                        {band.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {selectedBandForAvailability && (
+                <div className="grid lg:grid-cols-2 gap-6">
+                  <AvailabilityRequestManager 
+                    bandId={selectedBandForAvailability}
+                    onViewResponses={(requestId) => setViewingResponsesForRequest(requestId)}
+                  />
+                  {viewingResponsesForRequest && (
+                    <AvailabilityRequestResults 
+                      requestId={viewingResponsesForRequest}
+                      onBack={() => setViewingResponsesForRequest(null)}
+                    />
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Location Tracking */}
         <BookingManagerClientLocations />

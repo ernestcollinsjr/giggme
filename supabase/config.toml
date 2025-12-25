@@ -3,6 +3,9 @@ project_id = "pgvfeolxgufldpwyheqf"
 [functions.band-assistant]
 verify_jwt = true
 
+[functions.cleanup-past-events]
+verify_jwt = false
+
 [functions.fetch-youtube]
 verify_jwt = true
 

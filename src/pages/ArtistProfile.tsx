@@ -9,10 +9,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Plus, Trash2, Youtube, ArrowLeft } from "lucide-react";
+import { Upload, Plus, Trash2, Youtube, ArrowLeft, Loader2 } from "lucide-react";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
 import { TopNav } from "@/components/TopNav";
 import { AvailabilityCalendar } from "@/components/AvailabilityCalendar";
+import { detectFaceAndCrop, loadImage } from "@/utils/imageCropping";
 
 interface ArtistProfile {
   id: string;
@@ -109,6 +110,8 @@ const ArtistProfile = () => {
 
   const MAX_PHOTOS = 8;
 
+  const PHOTO_SIZE = 512; // Target size for profile photos (512x512)
+
   const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -128,12 +131,23 @@ const ArtistProfile = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      // Show processing toast
+      toast({
+        title: "Processing photo...",
+        description: "Optimizing and cropping your image. This may take a moment.",
+      });
+
+      // Load and process the image with AI face detection and cropping
+      const imageElement = await loadImage(file);
+      const processedBlob = await detectFaceAndCrop(imageElement, PHOTO_SIZE);
+      
+      // Convert blob to file for upload
+      const fileName = `${user.id}-${Date.now()}.jpg`;
+      const processedFile = new File([processedBlob], fileName, { type: 'image/jpeg' });
 
       const { error: uploadError } = await supabase.storage
         .from("profile-photos")
-        .upload(fileName, file);
+        .upload(fileName, processedFile);
 
       if (uploadError) {
         console.error("Upload error:", uploadError);
@@ -154,8 +168,12 @@ const ArtistProfile = () => {
       if (updateError) throw updateError;
 
       setProfile({ ...profile!, photo_urls: newPhotoUrls });
-      toast({ title: "Success", description: `Photo uploaded (${newPhotoUrls.length}/${MAX_PHOTOS})` });
+      toast({ 
+        title: "Photo uploaded!", 
+        description: `Optimized and saved (${newPhotoUrls.length}/${MAX_PHOTOS})` 
+      });
     } catch (error: any) {
+      console.error("Photo upload error:", error);
       toast({
         title: "Error uploading photo",
         description: error.message || "An unexpected error occurred",
@@ -342,9 +360,17 @@ const ArtistProfile = () => {
                 
                 {/* Upload Button */}
                 {(profile?.photo_urls?.length || 0) < MAX_PHOTOS && (
-                  <Label htmlFor="photo-upload" className="cursor-pointer">
-                    <div className="h-20 w-20 rounded-full border-2 border-dashed border-muted-foreground/50 flex items-center justify-center hover:border-primary transition-colors">
-                      <Plus className="h-6 w-6 text-muted-foreground" />
+                  <Label htmlFor="photo-upload" className={uploadingPhoto ? "cursor-wait" : "cursor-pointer"}>
+                    <div className={`h-20 w-20 rounded-full border-2 border-dashed flex items-center justify-center transition-colors ${
+                      uploadingPhoto 
+                        ? "border-primary bg-primary/10" 
+                        : "border-muted-foreground/50 hover:border-primary"
+                    }`}>
+                      {uploadingPhoto ? (
+                        <Loader2 className="h-6 w-6 text-primary animate-spin" />
+                      ) : (
+                        <Plus className="h-6 w-6 text-muted-foreground" />
+                      )}
                     </div>
                     <Input
                       id="photo-upload"
@@ -359,7 +385,10 @@ const ArtistProfile = () => {
               </div>
               
               {uploadingPhoto && (
-                <p className="text-sm text-muted-foreground">Uploading...</p>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Processing with AI face detection & compression...</span>
+                </div>
               )}
             </CardContent>
           </Card>

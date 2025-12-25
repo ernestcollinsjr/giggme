@@ -21,6 +21,7 @@ import { PlaceAutocomplete } from "@/components/PlaceAutocomplete";
 import { GigTemplateSelector } from "@/components/GigTemplateSelector";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import { sendGigPushNotifications } from "@/utils/sendGigPushNotification";
 
 interface Gig {
   id: string;
@@ -324,6 +325,15 @@ const Bookings = () => {
 
         if (inviteError) throw inviteError;
 
+        // Send push notifications to invited members
+        sendGigPushNotifications({
+          gigId: newGig.id,
+          memberIds: selectedMembers,
+          venueName: venueName.trim() || null,
+          venue: venue.trim(),
+          gigDate: new Date(newGig.date),
+        });
+
         toast({
           title: "Gig added & invites sent",
           description: `Successfully scheduled gig and invited ${selectedMembers.length} member(s).`,
@@ -404,6 +414,18 @@ const Bookings = () => {
         .insert(invites);
 
       if (error) throw error;
+
+      // Send push notifications to newly invited members
+      const gig = gigs.find(g => g.id === currentGigForInvite);
+      if (gig && newMembers.length > 0) {
+        sendGigPushNotifications({
+          gigId: currentGigForInvite,
+          memberIds: newMembers,
+          venueName: gig.venue_name,
+          venue: gig.venue,
+          gigDate: new Date(gig.date),
+        });
+      }
 
       const skippedCount = selectedMembers.length - newMembers.length;
       toast({

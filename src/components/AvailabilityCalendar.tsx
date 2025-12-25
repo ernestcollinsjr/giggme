@@ -119,17 +119,17 @@ export function AvailabilityCalendar({ userId, readOnly = false }: AvailabilityC
 
   const modifiersStyles = {
     available: {
-      backgroundColor: 'hsl(var(--chart-2))',
+      backgroundColor: 'rgb(34 197 94)', // green-500
       color: 'white',
       borderRadius: '50%',
     },
     unavailable: {
-      backgroundColor: 'hsl(var(--destructive))',
+      backgroundColor: 'rgb(239 68 68)', // red-500
       color: 'white',
       borderRadius: '50%',
     },
     tentative: {
-      backgroundColor: 'hsl(var(--chart-4))',
+      backgroundColor: 'rgb(234 179 8)', // yellow-500
       color: 'white',
       borderRadius: '50%',
     },
@@ -151,7 +151,7 @@ export function AvailabilityCalendar({ userId, readOnly = false }: AvailabilityC
               className={cn(
                 "flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all",
                 selectedStatus === 'available'
-                  ? "bg-[hsl(var(--chart-2))] text-white"
+                  ? "bg-green-500 text-white"
                   : "bg-muted text-muted-foreground hover:bg-muted/80"
               )}
             >
@@ -163,7 +163,7 @@ export function AvailabilityCalendar({ userId, readOnly = false }: AvailabilityC
               className={cn(
                 "flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all",
                 selectedStatus === 'unavailable'
-                  ? "bg-destructive text-destructive-foreground"
+                  ? "bg-red-500 text-white"
                   : "bg-muted text-muted-foreground hover:bg-muted/80"
               )}
             >
@@ -175,7 +175,7 @@ export function AvailabilityCalendar({ userId, readOnly = false }: AvailabilityC
               className={cn(
                 "flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all",
                 selectedStatus === 'tentative'
-                  ? "bg-[hsl(var(--chart-4))] text-white"
+                  ? "bg-yellow-500 text-white"
                   : "bg-muted text-muted-foreground hover:bg-muted/80"
               )}
             >
@@ -198,15 +198,15 @@ export function AvailabilityCalendar({ userId, readOnly = false }: AvailabilityC
 
         <div className="flex flex-wrap gap-3 justify-center text-sm">
           <div className="flex items-center gap-1.5">
-            <div className="h-3 w-3 rounded-full bg-[hsl(var(--chart-2))]" />
+            <div className="h-3 w-3 rounded-full bg-green-500" />
             <span className="text-muted-foreground">Available</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="h-3 w-3 rounded-full bg-destructive" />
+            <div className="h-3 w-3 rounded-full bg-red-500" />
             <span className="text-muted-foreground">Unavailable</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="h-3 w-3 rounded-full bg-[hsl(var(--chart-4))]" />
+            <div className="h-3 w-3 rounded-full bg-yellow-500" />
             <span className="text-muted-foreground">Tentative</span>
           </div>
         </div>

@@ -71,6 +71,7 @@ const ProfileSetup = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartIndex, setDragStartIndex] = useState<number | null>(null);
   const [dragEndIndex, setDragEndIndex] = useState<number | null>(null);
+  const [pulsingIndex, setPulsingIndex] = useState<number | null>(null);
   const [travelDistance, setTravelDistance] = useState<string>("");
   const [yearsExperience, setYearsExperience] = useState<string>("");
   const [unionMemberships, setUnionMemberships] = useState<string[]>([]);
@@ -645,23 +646,37 @@ const ProfileSetup = () => {
     }
   };
 
+  // Visual pulse animation for haptic feedback
+  const triggerPulse = (idx: number) => {
+    setPulsingIndex(idx);
+    setTimeout(() => setPulsingIndex(null), 150);
+  };
+
   // Drag handlers for 7-day preview
   const handleDragStart = async (idx: number) => {
     setIsDragging(true);
     setDragStartIndex(idx);
     setDragEndIndex(idx);
+    triggerPulse(idx);
     await triggerHaptic(ImpactStyle.Medium);
   };
 
   const handleDragEnter = async (idx: number) => {
     if (isDragging && dragEndIndex !== idx) {
       setDragEndIndex(idx);
+      triggerPulse(idx);
       await triggerHaptic(ImpactStyle.Light);
     }
   };
 
   const handleDragEnd = async () => {
     if (isDragging && dragStartIndex !== null && dragEndIndex !== null) {
+      // Pulse all selected items on release
+      const minIdx = Math.min(dragStartIndex, dragEndIndex);
+      const maxIdx = Math.max(dragStartIndex, dragEndIndex);
+      for (let i = minIdx; i <= maxIdx; i++) {
+        triggerPulse(i);
+      }
       await triggerHaptic(ImpactStyle.Heavy);
       await setRangeAvailability(dragStartIndex, dragEndIndex, selectedQuickStatus);
     }
@@ -696,6 +711,7 @@ const ProfileSetup = () => {
         ) {
           if (dragEndIndex !== i) {
             setDragEndIndex(i);
+            triggerPulse(i);
             await triggerHaptic(ImpactStyle.Light);
           }
           break;
@@ -1505,6 +1521,7 @@ const ProfileSetup = () => {
                         const dayLabel = new Date(day.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' }).charAt(0);
                         const dayNum = new Date(day.date + 'T00:00:00').getDate();
                         const inDragRange = isInDragRange(idx);
+                        const isPulsing = pulsingIndex === idx;
                         return (
                           <button 
                             key={day.date}
@@ -1518,18 +1535,22 @@ const ProfileSetup = () => {
                             onMouseUp={handleDragEnd}
                             onTouchStart={(e) => handleTouchStart(idx, e)}
                             onClick={() => !isDragging && setDateAvailability(day.date, selectedQuickStatus)}
-                            className="flex flex-col items-center cursor-pointer hover:scale-110 transition-transform touch-none"
+                            className={`flex flex-col items-center cursor-pointer transition-transform touch-none ${
+                              isPulsing ? 'scale-125' : 'hover:scale-110'
+                            }`}
                             title={`Click or drag to set ${selectedQuickStatus}`}
                           >
                             <span className="text-[10px] text-muted-foreground">{dayLabel}</span>
                             <div 
-                              className={`w-6 h-6 sm:w-5 sm:h-5 rounded-sm flex items-center justify-center text-[10px] sm:text-[9px] font-medium text-white transition-all ${
+                              className={`w-6 h-6 sm:w-5 sm:h-5 rounded-sm flex items-center justify-center text-[10px] sm:text-[9px] font-medium text-white transition-all duration-150 ${
+                                isPulsing ? 'scale-110 shadow-lg' : ''
+                              } ${
                                 inDragRange
                                   ? selectedQuickStatus === 'available'
-                                    ? 'bg-green-500 ring-2 ring-green-300'
+                                    ? 'bg-green-500 ring-2 ring-green-300 shadow-green-500/50'
                                     : selectedQuickStatus === 'unavailable'
-                                      ? 'bg-red-500 ring-2 ring-red-300'
-                                      : 'bg-yellow-500 ring-2 ring-yellow-300'
+                                      ? 'bg-red-500 ring-2 ring-red-300 shadow-red-500/50'
+                                      : 'bg-yellow-500 ring-2 ring-yellow-300 shadow-yellow-500/50'
                                   : day.status === 'available' 
                                     ? 'bg-green-500' 
                                     : day.status === 'unavailable' 
@@ -1537,7 +1558,7 @@ const ProfileSetup = () => {
                                       : day.status === 'tentative' 
                                         ? 'bg-yellow-500' 
                                         : 'bg-muted-foreground/20 text-muted-foreground'
-                              } ${idx === 0 ? 'ring-2 ring-primary ring-offset-1' : ''} hover:ring-2 hover:ring-offset-1 hover:ring-muted-foreground`}
+                              } ${idx === 0 && !inDragRange ? 'ring-2 ring-primary ring-offset-1' : ''} ${!inDragRange ? 'hover:ring-2 hover:ring-offset-1 hover:ring-muted-foreground' : ''}`}
                             >
                               {dayNum}
                             </div>

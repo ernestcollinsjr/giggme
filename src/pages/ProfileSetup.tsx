@@ -12,6 +12,8 @@ import { User } from "@supabase/supabase-js";
 import { LogOut, Crown, Music, Briefcase, Mail, Loader2, Youtube, Facebook, Instagram, Twitter, Globe, Plus, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { detectFaceAndCrop, loadImage } from "@/utils/imageCropping";
+import { Browser } from '@capacitor/browser';
+import { Capacitor } from '@capacitor/core';
 import type { Json } from "@/integrations/supabase/types";
 
 interface SocialLinks {
@@ -392,14 +394,22 @@ const ProfileSetup = () => {
     { key: "tiktok" as keyof SocialLinks, label: "TikTok", icon: Globe, placeholder: "https://tiktok.com/@yourprofile" },
   ];
 
-  const openExternalLink = (url: string) => {
-    const a = document.createElement("a");
-    a.href = url;
-    a.target = "_blank";
-    a.rel = "noopener noreferrer";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+  const openExternalLink = async (url: string) => {
+    try {
+      if (Capacitor.isNativePlatform()) {
+        await Browser.open({ url });
+      } else {
+        const a = document.createElement("a");
+        a.href = url;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    } catch {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
   };
 
   if (!hasRole) {

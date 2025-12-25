@@ -9,8 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
-import { CalendarPlus, Calendar, Users, Loader2, Eye, Trash2, Mail, MessageSquare } from "lucide-react";
+import { CalendarPlus, Calendar, Users, Loader2, Eye, Trash2, Mail, MessageSquare, FolderPlus, Folder } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface AvailabilityRequest {
   id: string;
@@ -35,6 +36,13 @@ interface BandMember {
   };
 }
 
+interface MemberGroup {
+  id: string;
+  band_id: string;
+  name: string;
+  member_ids: string[];
+}
+
 interface AvailabilityRequestManagerProps {
   bandId: string;
   onViewResponses?: (requestId: string) => void;
@@ -47,6 +55,10 @@ export function AvailabilityRequestManager({ bandId, onViewResponses }: Availabi
   const [creating, setCreating] = useState(false);
   const [bandMembers, setBandMembers] = useState<BandMember[]>([]);
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const [memberGroups, setMemberGroups] = useState<MemberGroup[]>([]);
+  const [newGroupName, setNewGroupName] = useState("");
+  const [savingGroup, setSavingGroup] = useState(false);
+  const [manageGroupsOpen, setManageGroupsOpen] = useState(false);
   
   // Form state
   const [title, setTitle] = useState("");
@@ -59,6 +71,7 @@ export function AvailabilityRequestManager({ bandId, onViewResponses }: Availabi
   useEffect(() => {
     fetchRequests();
     fetchBandMembers();
+    fetchMemberGroups();
   }, [bandId]);
 
   const fetchBandMembers = async () => {
@@ -85,6 +98,88 @@ export function AvailabilityRequestManager({ bandId, onViewResponses }: Availabi
       setSelectedMembers(members.map(m => m.member_id));
     } catch (error) {
       console.error("Error fetching band members:", error);
+    }
+  };
+
+  const fetchMemberGroups = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("member_groups")
+        .select("*")
+        .eq("band_id", bandId)
+        .order("name");
+
+      if (error) throw error;
+      setMemberGroups((data || []) as MemberGroup[]);
+    } catch (error) {
+      console.error("Error fetching member groups:", error);
+    }
+  };
+
+  const handleSaveGroup = async () => {
+    if (!newGroupName.trim()) {
+      toast({ title: "Please enter a group name", variant: "destructive" });
+      return;
+    }
+    if (selectedMembers.length === 0) {
+      toast({ title: "Please select at least one member", variant: "destructive" });
+      return;
+    }
+
+    setSavingGroup(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase
+        .from("member_groups")
+        .insert({
+          band_id: bandId,
+          name: newGroupName.trim(),
+          member_ids: selectedMembers,
+          created_by: user.id
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setMemberGroups(prev => [...prev, data as MemberGroup].sort((a, b) => a.name.localeCompare(b.name)));
+      setNewGroupName("");
+      toast({ title: `Group "${newGroupName.trim()}" saved!` });
+    } catch (error: any) {
+      console.error("Error saving group:", error);
+      toast({ title: "Error saving group", description: error.message, variant: "destructive" });
+    } finally {
+      setSavingGroup(false);
+    }
+  };
+
+  const handleDeleteGroup = async (groupId: string) => {
+    try {
+      const { error } = await supabase
+        .from("member_groups")
+        .delete()
+        .eq("id", groupId);
+
+      if (error) throw error;
+
+      setMemberGroups(prev => prev.filter(g => g.id !== groupId));
+      toast({ title: "Group deleted" });
+    } catch (error: any) {
+      console.error("Error deleting group:", error);
+      toast({ title: "Error deleting group", variant: "destructive" });
+    }
+  };
+
+  const handleSelectGroup = (groupId: string) => {
+    const group = memberGroups.find(g => g.id === groupId);
+    if (group) {
+      // Filter to only include members that are still in the band
+      const validMemberIds = group.member_ids.filter(id => 
+        bandMembers.some(m => m.member_id === id)
+      );
+      setSelectedMembers(validMemberIds);
     }
   };
 
@@ -368,6 +463,26 @@ export function AvailabilityRequestManager({ bandId, onViewResponses }: Availabi
                       </Button>
                     </div>
                   </div>
+
+                  {/* Group Selection Dropdown */}
+                  {memberGroups.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <Folder className="h-4 w-4 text-muted-foreground" />
+                      <Select onValueChange={handleSelectGroup}>
+                        <SelectTrigger className="flex-1 h-8">
+                          <SelectValue placeholder="Load from saved group..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {memberGroups.map((group) => (
+                            <SelectItem key={group.id} value={group.id}>
+                              {group.name} ({group.member_ids.length} members)
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
                   {bandMembers.length === 0 ? (
                     <p className="text-sm text-muted-foreground">No band members found</p>
                   ) : (
@@ -400,9 +515,48 @@ export function AvailabilityRequestManager({ bandId, onViewResponses }: Availabi
                       ))}
                     </div>
                   )}
-                  <p className="text-xs text-muted-foreground">
-                    {selectedMembers.length} of {bandMembers.length} member(s) selected
-                  </p>
+
+                  {/* Save Current Selection as Group */}
+                  <div className="flex items-center gap-2 pt-2">
+                    <Input
+                      placeholder="New group name..."
+                      value={newGroupName}
+                      onChange={(e) => setNewGroupName(e.target.value)}
+                      className="flex-1 h-8 text-sm"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleSaveGroup}
+                      disabled={savingGroup || selectedMembers.length === 0}
+                      className="gap-1 h-8"
+                    >
+                      {savingGroup ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <FolderPlus className="h-3 w-3" />
+                      )}
+                      Save Group
+                    </Button>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-muted-foreground">
+                      {selectedMembers.length} of {bandMembers.length} member(s) selected
+                    </p>
+                    {memberGroups.length > 0 && (
+                      <Button
+                        type="button"
+                        variant="link"
+                        size="sm"
+                        onClick={() => setManageGroupsOpen(true)}
+                        className="text-xs h-auto p-0"
+                      >
+                        Manage Groups
+                      </Button>
+                    )}
+                  </div>
                 </div>
 
                 <div className="space-y-3 pt-2 border-t">
@@ -521,6 +675,62 @@ export function AvailabilityRequestManager({ bandId, onViewResponses }: Availabi
           </div>
         )}
       </CardContent>
+
+      {/* Manage Groups Dialog */}
+      <Dialog open={manageGroupsOpen} onOpenChange={setManageGroupsOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Folder className="h-5 w-5" />
+              Manage Member Groups
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 max-h-[400px] overflow-y-auto">
+            {memberGroups.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No groups saved yet. Create groups from the availability request form.
+              </p>
+            ) : (
+              memberGroups.map((group) => {
+                const memberNames = group.member_ids
+                  .map(id => bandMembers.find(m => m.member_id === id)?.profiles.name)
+                  .filter(Boolean);
+                return (
+                  <div
+                    key={group.id}
+                    className="p-3 border rounded-lg flex items-start justify-between gap-3"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium">{group.name}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {group.member_ids.length} member(s)
+                      </p>
+                      {memberNames.length > 0 && (
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                          {memberNames.join(", ")}
+                        </p>
+                      )}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteGroup(group.id)}
+                      className="text-destructive hover:text-destructive shrink-0"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                );
+              })
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setManageGroupsOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

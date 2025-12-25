@@ -48,12 +48,22 @@ interface ManagedBand extends Band {
   added_at: string;
 }
 
+interface ManagedArtist {
+  id: string;
+  artist_id: string;
+  group_type: string;
+  notes: string | null;
+  created_at: string;
+  profile: Profile;
+}
+
 export default function BookingManager() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [availableBands, setAvailableBands] = useState<Band[]>([]);
   const [managedBands, setManagedBands] = useState<ManagedBand[]>([]);
+  const [managedArtists, setManagedArtists] = useState<ManagedArtist[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [smsDialogOpen, setSmsDialogOpen] = useState(false);
@@ -64,10 +74,14 @@ export default function BookingManager() {
   const [gigRequestMessage, setGigRequestMessage] = useState("");
   const [selectedBandForAvailability, setSelectedBandForAvailability] = useState<string>("");
   const [viewingResponsesForRequest, setViewingResponsesForRequest] = useState<string | null>(null);
+  const [addArtistDialogOpen, setAddArtistDialogOpen] = useState(false);
+  const [selectedArtistToAdd, setSelectedArtistToAdd] = useState<Profile | null>(null);
+  const [artistGroupType, setArtistGroupType] = useState("solo");
 
   useEffect(() => {
     checkRole();
     fetchManagedBands();
+    fetchManagedArtists();
     fetchAvailableBands();
     fetchProfiles();
   }, []);
@@ -124,6 +138,47 @@ export default function BookingManager() {
       setManagedBands(formatted);
     } catch (error: any) {
       console.error("Error fetching managed bands:", error);
+    }
+  };
+
+  const fetchManagedArtists = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("booking_manager_artists")
+        .select("*")
+        .eq("booking_manager_id", user.id);
+
+      if (error) throw error;
+
+      // Fetch profile data for each artist
+      const artistIds = data?.map(a => a.artist_id) || [];
+      if (artistIds.length === 0) {
+        setManagedArtists([]);
+        return;
+      }
+
+      const { data: profilesData } = await supabase
+        .from("profiles")
+        .select("id, name, instrument, photo_urls, email")
+        .in("id", artistIds);
+
+      const formatted = data?.map((item: any) => ({
+        ...item,
+        profile: profilesData?.find(p => p.id === item.artist_id) || {
+          id: item.artist_id,
+          name: "Unknown",
+          instrument: null,
+          photo_urls: null,
+          email: "",
+        },
+      })) || [];
+
+      setManagedArtists(formatted);
+    } catch (error: any) {
+      console.error("Error fetching managed artists:", error);
     }
   };
 
@@ -245,6 +300,69 @@ export default function BookingManager() {
     }
   };
 
+  const addArtistToRoster = async () => {
+    if (!selectedArtistToAdd) return;
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from("booking_manager_artists")
+        .insert({
+          booking_manager_id: user.id,
+          artist_id: selectedArtistToAdd.id,
+          group_type: artistGroupType,
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `${selectedArtistToAdd.name} added to your roster`,
+      });
+
+      setAddArtistDialogOpen(false);
+      setSelectedArtistToAdd(null);
+      setArtistGroupType("solo");
+      fetchManagedArtists();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const removeArtistFromRoster = async (artistId: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from("booking_manager_artists")
+        .delete()
+        .eq("booking_manager_id", user.id)
+        .eq("artist_id", artistId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Artist removed from your roster",
+      });
+
+      fetchManagedArtists();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   const sendGroupMessage = async () => {
     if (!groupMessage.trim()) return;
 
@@ -302,12 +420,74 @@ export default function BookingManager() {
           </Button>
         </div>
 
+        {/* Managed Artists (Solo, Duo, Trio) */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <UsersIcon className="h-5 w-5" />
+              My Artists ({managedArtists.length} Solo/Duo/Trio)
+            </CardTitle>
+            <CardDescription>Individual artists, duos, and trios you manage</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {managedArtists.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">
+                No individual artists in your roster yet. Click on an artist below to add them.
+              </p>
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {managedArtists.map((artist) => (
+                  <Card key={artist.id} className="border-primary/20">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full overflow-hidden bg-muted">
+                            {artist.profile.photo_urls?.[0] ? (
+                              <img
+                                src={artist.profile.photo_urls[0]}
+                                alt={artist.profile.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <UsersIcon className="h-5 w-5 text-muted-foreground" />
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <CardTitle className="text-sm">{artist.profile.name}</CardTitle>
+                            <Badge variant="secondary" className="text-xs mt-1">
+                              {artist.group_type}
+                            </Badge>
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeArtistFromRoster(artist.artist_id)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    {artist.profile.instrument && (
+                      <CardContent className="pt-0">
+                        <p className="text-xs text-muted-foreground">{artist.profile.instrument}</p>
+                      </CardContent>
+                    )}
+                  </Card>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Managed Bands */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Music className="h-5 w-5" />
-              My Roster ({managedBands.length} Bands)
+              My Bands ({managedBands.length})
             </CardTitle>
             <CardDescription>Bands you currently manage</CardDescription>
           </CardHeader>
@@ -479,44 +659,65 @@ export default function BookingManager() {
               </p>
             ) : (
               <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-1.5">
-                {filteredProfiles.map((profile) => (
-                  <div
-                    key={profile.id}
-                    className="relative flex flex-col items-center p-1.5 border-[0.5px] border-border rounded-md hover:shadow-md hover:border-primary hover:bg-primary/5 transition-all bg-card group"
-                  >
-                    <button
-                      onClick={() => {
-                        setSelectedProfile(profile);
-                        setIndividualSmsOpen(true);
-                      }}
-                      className="absolute top-0.5 right-0.5 opacity-0 group-hover:opacity-100 transition-opacity p-0.5 bg-primary text-primary-foreground rounded-sm hover:bg-primary/90 z-10"
-                      title="Text Artist"
+                {filteredProfiles.map((profile) => {
+                  const isManaged = managedArtists.some(a => a.artist_id === profile.id);
+                  return (
+                    <div
+                      key={profile.id}
+                      className={`relative flex flex-col items-center p-1.5 border-[0.5px] border-border rounded-md hover:shadow-md hover:border-primary hover:bg-primary/5 transition-all bg-card group ${isManaged ? 'border-primary/40 bg-primary/5' : ''}`}
                     >
-                      <MessageSquare className="h-2.5 w-2.5" />
-                    </button>
-                    <div className="w-10 h-10 rounded-full overflow-hidden bg-muted mb-1">
-                      {profile.photo_urls && profile.photo_urls[0] ? (
-                        <img
-                          src={profile.photo_urls[0]}
-                          alt={profile.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <UsersIcon className="h-5 w-5 text-muted-foreground" />
+                      {/* Add to Roster button */}
+                      {!isManaged && (
+                        <button
+                          onClick={() => {
+                            setSelectedArtistToAdd(profile);
+                            setAddArtistDialogOpen(true);
+                          }}
+                          className="absolute top-0.5 left-0.5 opacity-0 group-hover:opacity-100 transition-opacity p-0.5 bg-green-600 text-white rounded-sm hover:bg-green-700 z-10"
+                          title="Add to Roster"
+                        >
+                          <Plus className="h-2.5 w-2.5" />
+                        </button>
+                      )}
+                      {isManaged && (
+                        <div className="absolute top-0.5 left-0.5 p-0.5 bg-primary text-primary-foreground rounded-sm z-10" title="In your roster">
+                          <UsersIcon className="h-2.5 w-2.5" />
                         </div>
                       )}
-                    </div>
-                    <p className="text-[10px] text-center font-medium truncate w-full px-0.5">
-                      {profile.name}
-                    </p>
-                    {profile.instrument && (
-                      <p className="text-[9px] text-center text-muted-foreground truncate w-full px-0.5">
-                        {profile.instrument}
+                      <button
+                        onClick={() => {
+                          setSelectedProfile(profile);
+                          setIndividualSmsOpen(true);
+                        }}
+                        className="absolute top-0.5 right-0.5 opacity-0 group-hover:opacity-100 transition-opacity p-0.5 bg-primary text-primary-foreground rounded-sm hover:bg-primary/90 z-10"
+                        title="Text Artist"
+                      >
+                        <MessageSquare className="h-2.5 w-2.5" />
+                      </button>
+                      <div className="w-10 h-10 rounded-full overflow-hidden bg-muted mb-1">
+                        {profile.photo_urls && profile.photo_urls[0] ? (
+                          <img
+                            src={profile.photo_urls[0]}
+                            alt={profile.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <UsersIcon className="h-5 w-5 text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-center font-medium truncate w-full px-0.5">
+                        {profile.name}
                       </p>
-                    )}
-                  </div>
-                ))}
+                      {profile.instrument && (
+                        <p className="text-[9px] text-center text-muted-foreground truncate w-full px-0.5">
+                          {profile.instrument}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </CardContent>
@@ -595,6 +796,44 @@ export default function BookingManager() {
             </DialogHeader>
             <Input placeholder="Type your message..." />
             <Button>Send Message</Button>
+          </DialogContent>
+        </Dialog>
+
+        {/* Add Artist to Roster Dialog */}
+        <Dialog open={addArtistDialogOpen} onOpenChange={setAddArtistDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add {selectedArtistToAdd?.name} to Roster</DialogTitle>
+              <DialogDescription>
+                Select the type of act for this artist
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 pt-2">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Act Type</label>
+                <Select value={artistGroupType} onValueChange={setArtistGroupType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select act type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="solo">Solo Artist</SelectItem>
+                    <SelectItem value="duo">Duo</SelectItem>
+                    <SelectItem value="trio">Trio</SelectItem>
+                    <SelectItem value="quartet">Quartet</SelectItem>
+                    <SelectItem value="ensemble">Ensemble</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => setAddArtistDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={addArtistToRoster}>
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Add to Roster
+                </Button>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
         </div>

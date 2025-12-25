@@ -555,6 +555,20 @@ const ProfileSetup = () => {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="email">Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                value={user?.email || ""}
+                disabled
+                className="bg-muted"
+              />
+              <p className="text-xs text-muted-foreground">
+                Email is linked to your account and cannot be changed here.
+              </p>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="phoneNumber">Phone Number (for SMS reminders)</Label>
               <Input
                 id="phoneNumber"

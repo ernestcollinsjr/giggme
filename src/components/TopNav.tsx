@@ -103,37 +103,34 @@ export const TopNav = ({ userRole }: TopNavProps) => {
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 max-w-screen-2xl items-center justify-between">
-        <div className="flex items-center">
-          <Link to="/" className="flex items-center gap-2 mr-6 hover:opacity-80 transition-opacity">
-            <div className="bg-primary rounded-lg p-1.5">
-              <Zap className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="font-bold text-lg hidden sm:inline">GigMe</span>
-          </Link>
-          <div className="flex gap-1 md:gap-2">
-            {links.map((link) => {
-              const Icon = link.icon;
-              return (
-                <Button
-                  key={link.path}
-                  variant={isActive(link.path) ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => navigate(link.path)}
-                  className={cn(
-                    "gap-2 transition-all",
-                    isActive(link.path) && "shadow-sm"
-                  )}
-                >
-                  <Icon className="h-4 w-4" />
-                  <span className="hidden sm:inline">{link.label}</span>
-                </Button>
-              );
-            })}
+        {/* Left side - Logo only */}
+        <Link to="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <div className="bg-primary rounded-lg p-1.5">
+            <Zap className="h-5 w-5 text-primary-foreground" />
           </div>
-        </div>
+          <span className="font-bold text-lg hidden sm:inline">GigMe</span>
+        </Link>
         
-        {/* Right side - Profile & Logout */}
+        {/* Right side - Nav links, Profile & Logout */}
         <div className="flex items-center gap-2">
+          {links.map((link) => {
+            const Icon = link.icon;
+            return (
+              <Button
+                key={link.path}
+                variant={isActive(link.path) ? "default" : "ghost"}
+                size="sm"
+                onClick={() => navigate(link.path)}
+                className={cn(
+                  "gap-2 transition-all",
+                  isActive(link.path) && "shadow-sm"
+                )}
+              >
+                <Icon className="h-4 w-4" />
+                <span className="hidden sm:inline">{link.label}</span>
+              </Button>
+            );
+          })}
           <Button
             variant={isActive("/profile-setup") ? "default" : "ghost"}
             size="sm"

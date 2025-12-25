@@ -127,6 +127,7 @@ const Dashboard = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [rehearsals, setRehearsals] = useState<Rehearsal[]>([]);
   const [gigs, setGigs] = useState<Gig[]>([]);
+  const [gigResponseCounts, setGigResponseCounts] = useState<Record<string, { pending: number; accepted: number; declined: number }>>({});
   const [gigInvites, setGigInvites] = useState<GigInvite[]>([]);
   const [bands, setBands] = useState<Band[]>([]);
   const [loading, setLoading] = useState(true);
@@ -240,6 +241,26 @@ const Dashboard = () => {
           .order("date", { ascending: true });
         
         setGigs(gigData || []);
+        
+        // Fetch gig member response counts
+        if (gigData && gigData.length > 0) {
+          const gigIds = gigData.map((g: any) => g.id);
+          const { data: responses } = await supabase
+            .from('gig_members')
+            .select('gig_id, status')
+            .in('gig_id', gigIds);
+          
+          const counts: Record<string, { pending: number; accepted: number; declined: number }> = {};
+          responses?.forEach((r: any) => {
+            if (!counts[r.gig_id]) {
+              counts[r.gig_id] = { pending: 0, accepted: 0, declined: 0 };
+            }
+            if (r.status === 'pending') counts[r.gig_id].pending++;
+            else if (r.status === 'accepted') counts[r.gig_id].accepted++;
+            else if (r.status === 'declined') counts[r.gig_id].declined++;
+          });
+          setGigResponseCounts(counts);
+        }
       }
       
       // Fetch pending gig invites for band members only
@@ -376,6 +397,7 @@ const Dashboard = () => {
         async (payload) => {
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             const update = payload.new as { member_id: string; status: string; gig_id: string };
+            const oldData = payload.old as { status?: string } | null;
             
             // Only notify for gigs that belong to this band leader
             const { data: gigData } = await supabase
@@ -386,6 +408,26 @@ const Dashboard = () => {
               .single();
             
             if (!gigData) return;
+            
+            // Update the response counts
+            setGigResponseCounts(prev => {
+              const current = prev[update.gig_id] || { pending: 0, accepted: 0, declined: 0 };
+              const updated = { ...current };
+              
+              // Decrement old status count if this is an update
+              if (payload.eventType === 'UPDATE' && oldData?.status) {
+                if (oldData.status === 'pending') updated.pending = Math.max(0, updated.pending - 1);
+                else if (oldData.status === 'accepted') updated.accepted = Math.max(0, updated.accepted - 1);
+                else if (oldData.status === 'declined') updated.declined = Math.max(0, updated.declined - 1);
+              }
+              
+              // Increment new status count
+              if (update.status === 'pending') updated.pending++;
+              else if (update.status === 'accepted') updated.accepted++;
+              else if (update.status === 'declined') updated.declined++;
+              
+              return { ...prev, [update.gig_id]: updated };
+            });
             
             // Get member name
             const { data: profile } = await supabase
@@ -1567,6 +1609,25 @@ const Dashboard = () => {
                         })}
                       </div>
                       <p className="font-medium truncate">{gig.venue}</p>
+                      {gigResponseCounts[gig.id] && (
+                        <div className="flex items-center gap-1 mt-1 flex-wrap">
+                          {gigResponseCounts[gig.id].pending > 0 && (
+                            <Badge variant="outline" className="text-[10px] px-1 py-0 bg-yellow-50 text-yellow-700 border-yellow-200">
+                              ⏳ {gigResponseCounts[gig.id].pending}
+                            </Badge>
+                          )}
+                          {gigResponseCounts[gig.id].accepted > 0 && (
+                            <Badge variant="outline" className="text-[10px] px-1 py-0 bg-green-50 text-green-700 border-green-200">
+                              ✅ {gigResponseCounts[gig.id].accepted}
+                            </Badge>
+                          )}
+                          {gigResponseCounts[gig.id].declined > 0 && (
+                            <Badge variant="outline" className="text-[10px] px-1 py-0 bg-red-50 text-red-700 border-red-200">
+                              ❌ {gigResponseCounts[gig.id].declined}
+                            </Badge>
+                          )}
+                        </div>
+                      )}
                     </div>
                   ))}
                   {filteredGigs.length === 0 && (

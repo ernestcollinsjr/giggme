@@ -1624,6 +1624,9 @@ const Dashboard = () => {
 
         {userRole === "artist" && (
           <div className="space-y-6">
+            {/* Availability Requests for Artists */}
+            <AvailabilityRequestResponder />
+
             <Card className="border-border/50 shadow-lg bg-gradient-to-br from-primary/5 to-secondary/5">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">

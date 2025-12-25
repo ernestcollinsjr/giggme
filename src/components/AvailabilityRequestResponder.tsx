@@ -12,13 +12,16 @@ import { format, eachDayOfInterval, isBefore, startOfDay } from "date-fns";
 
 interface AvailabilityRequest {
   id: string;
-  band_id: string;
+  band_id: string | null;
+  booking_manager_id: string | null;
+  target_artist_ids: string[] | null;
   title: string;
   description: string | null;
   start_date: string;
   end_date: string;
   status: string;
   created_at: string;
+  source?: 'band' | 'booking_manager';
 }
 
 interface AvailabilityResponse {
@@ -46,34 +49,56 @@ export function AvailabilityRequestResponder() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Get user's band memberships
+      const allRequests: AvailabilityRequest[] = [];
+
+      // Get user's band memberships and fetch band-based requests
       const { data: memberships } = await supabase
         .from("band_members")
         .select("band_id")
         .eq("member_id", user.id);
 
-      if (!memberships || memberships.length === 0) {
-        setLoading(false);
-        return;
+      if (memberships && memberships.length > 0) {
+        const bandIds = memberships.map(m => m.band_id);
+
+        // Fetch open requests for those bands
+        const { data: bandRequests, error } = await supabase
+          .from("availability_requests")
+          .select("*")
+          .in("band_id", bandIds)
+          .eq("status", "open")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        if (bandRequests) {
+          allRequests.push(...bandRequests.map(r => ({ ...r, source: 'band' as const })));
+        }
       }
 
-      const bandIds = memberships.map(m => m.band_id);
-
-      // Fetch open requests for those bands
-      const { data: requestsData, error } = await supabase
+      // Fetch booking manager requests targeting this artist
+      const { data: artistRequests, error: artistError } = await supabase
         .from("availability_requests")
         .select("*")
-        .in("band_id", bandIds)
+        .contains("target_artist_ids", [user.id])
         .eq("status", "open")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (artistError) {
+        console.error("Error fetching artist requests:", artistError);
+      } else if (artistRequests) {
+        allRequests.push(...artistRequests.map(r => ({ ...r, source: 'booking_manager' as const })));
+      }
 
-      setRequests(requestsData || []);
+      // Remove duplicates by id
+      const uniqueRequests = Array.from(
+        new Map(allRequests.map(r => [r.id, r])).values()
+      );
+
+      setRequests(uniqueRequests);
 
       // Fetch existing responses
-      if (requestsData && requestsData.length > 0) {
-        const requestIds = requestsData.map(r => r.id);
+      if (uniqueRequests.length > 0) {
+        const requestIds = uniqueRequests.map(r => r.id);
         const { data: responsesData } = await supabase
           .from("availability_responses")
           .select("*")
@@ -190,7 +215,7 @@ export function AvailabilityRequestResponder() {
           Availability Requests
         </CardTitle>
         <CardDescription>
-          Your band leader is asking for your availability
+          Respond to availability requests from band leaders and booking managers
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -206,8 +231,11 @@ export function AvailabilityRequestResponder() {
             <div key={request.id} className="border rounded-lg p-4 space-y-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <h4 className="font-medium">{request.title}</h4>
+                    <Badge variant="outline" className="text-xs">
+                      {request.source === 'booking_manager' ? 'From Booking Manager' : 'From Band'}
+                    </Badge>
                     {hasResponse && (
                       <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                         <Check className="h-3 w-3 mr-1" />
@@ -215,6 +243,12 @@ export function AvailabilityRequestResponder() {
                       </Badge>
                     )}
                   </div>
+                  <p className="text-sm text-muted-foreground">
+                    {format(new Date(request.start_date), "MMM d")} - {format(new Date(request.end_date), "MMM d, yyyy")}
+                  </p>
+                  {request.description && (
+                    <p className="text-sm text-muted-foreground mt-1">{request.description}</p>
+                  )}
                   <p className="text-sm text-muted-foreground">
                     {format(new Date(request.start_date), "MMM d")} - {format(new Date(request.end_date), "MMM d, yyyy")}
                   </p>

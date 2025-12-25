@@ -18,7 +18,8 @@ import {
   Shield,
   LogOut,
   Sun,
-  Moon
+  Moon,
+  Bell
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -51,34 +52,41 @@ export const TopNav = ({ userRole }: TopNavProps) => {
     { path: "/bookings", label: "Gigs", icon: Calendar },
     { path: "/rehearsals", label: "Rehearsals", icon: Music },
     { path: "/setlist", label: "Setlists", icon: ListMusic },
+    { path: "/notifications", label: "Alerts", icon: Bell },
   ];
 
   const bookingManagerLinks = [
     { path: "/booking-manager", label: "Roster", icon: Briefcase },
     { path: "/artists", label: "Discover", icon: Search },
+    { path: "/notifications", label: "Alerts", icon: Bell },
   ];
 
   const artistLinks = [
     { path: "/artist-profile", label: "My Profile", icon: User },
     { path: "/artists", label: "Browse Artists", icon: Users },
+    { path: "/notifications", label: "Notifications", icon: Bell },
   ];
 
   const tourManagerLinks = [
     { path: "/tours", label: "Tours", icon: MapPin },
+    { path: "/notifications", label: "Alerts", icon: Bell },
   ];
 
   const venueOwnerLinks = [
     { path: "/venue-dashboard", label: "Dashboard", icon: Home },
     { path: "/entertainers", label: "Find Entertainment", icon: Search },
+    { path: "/notifications", label: "Alerts", icon: Bell },
   ];
 
   const superAdminLinks = [
     { path: "/admin", label: "Admin", icon: Shield },
     { path: "/bookings", label: "Gigs", icon: Calendar },
+    { path: "/notifications", label: "Alerts", icon: Bell },
   ];
 
   const bandMemberLinks = [
     { path: "/setlist", label: "Setlists", icon: ListMusic },
+    { path: "/notifications", label: "Notifications", icon: Bell },
   ];
 
   const getLinks = () => {

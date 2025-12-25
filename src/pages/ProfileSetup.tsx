@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "@supabase/supabase-js";
-import { LogOut, Crown, Music, Briefcase, Mail, Loader2, Youtube, Facebook, Instagram, Twitter, Globe, Plus, Trash2, Wrench, Tag, MapPin, Clock, Play, X, Check, HelpCircle } from "lucide-react";
+import { LogOut, Crown, Music, Briefcase, Mail, Loader2, Youtube, Facebook, Instagram, Twitter, Globe, Plus, Trash2, Wrench, Tag, MapPin, Clock, Play, X, Check, HelpCircle, Volume2, VolumeX } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { detectFaceAndCrop, loadImage } from "@/utils/imageCropping";
 import { Browser } from '@capacitor/browser';
@@ -73,6 +73,11 @@ const ProfileSetup = () => {
   const [dragEndIndex, setDragEndIndex] = useState<number | null>(null);
   const [pulsingIndex, setPulsingIndex] = useState<number | null>(null);
   const [showSaveConfirmation, setShowSaveConfirmation] = useState(false);
+  const [soundEffectsEnabled, setSoundEffectsEnabled] = useState(() => {
+    const saved = localStorage.getItem('soundEffectsEnabled');
+    return saved !== null ? saved === 'true' : true;
+  });
+  const audioContextRef = useRef<AudioContext | null>(null);
   const [travelDistance, setTravelDistance] = useState<string>("");
   const [yearsExperience, setYearsExperience] = useState<string>("");
   const [unionMemberships, setUnionMemberships] = useState<string[]>([]);
@@ -656,9 +661,51 @@ const ProfileSetup = () => {
     setTimeout(() => setPulsingIndex(null), 150);
   };
 
+  // Play confirmation sound effect
+  const playConfirmationSound = () => {
+    if (!soundEffectsEnabled) return;
+    
+    try {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      const ctx = audioContextRef.current;
+      
+      // Create a pleasant "ding" sound
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(880, ctx.currentTime); // A5 note
+      oscillator.frequency.setValueAtTime(1320, ctx.currentTime + 0.1); // E6 note
+      
+      gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+      
+      oscillator.start(ctx.currentTime);
+      oscillator.stop(ctx.currentTime + 0.4);
+    } catch (error) {
+      console.log('Audio not supported:', error);
+    }
+  };
+
+  // Toggle sound effects
+  const toggleSoundEffects = () => {
+    const newValue = !soundEffectsEnabled;
+    setSoundEffectsEnabled(newValue);
+    localStorage.setItem('soundEffectsEnabled', String(newValue));
+    if (newValue) {
+      playConfirmationSound(); // Play a preview when enabling
+    }
+  };
+
   // Save confirmation animation
   const triggerSaveConfirmation = () => {
     setShowSaveConfirmation(true);
+    playConfirmationSound();
     setTimeout(() => setShowSaveConfirmation(false), 1500);
   };
 
@@ -1492,7 +1539,26 @@ const ProfileSetup = () => {
                 </div>
 
                 <div className="space-y-3 relative">
-                  <Label className="text-xs">Today's Availability Status</Label>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs">Today's Availability Status</Label>
+                    <button
+                      type="button"
+                      onClick={toggleSoundEffects}
+                      className={`flex items-center gap-1 text-xs px-2 py-1 rounded-md transition-colors ${
+                        soundEffectsEnabled 
+                          ? 'bg-primary/10 text-primary hover:bg-primary/20' 
+                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                      }`}
+                      title={soundEffectsEnabled ? 'Sound effects on' : 'Sound effects off'}
+                    >
+                      {soundEffectsEnabled ? (
+                        <Volume2 className="h-3 w-3" />
+                      ) : (
+                        <VolumeX className="h-3 w-3" />
+                      )}
+                      <span className="hidden sm:inline">{soundEffectsEnabled ? 'Sound On' : 'Sound Off'}</span>
+                    </button>
+                  </div>
                   
                   {/* Save confirmation animation */}
                   {showSaveConfirmation && (

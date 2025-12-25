@@ -618,11 +618,17 @@ export function AvailabilityRequestManager({ bandId, onViewResponses }: Availabi
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <h4 className="font-medium truncate">{request.title}</h4>
                         <Badge variant={request.status === "open" ? "default" : "secondary"}>
                           {request.status}
                         </Badge>
+                        {request.response_count !== undefined && request.response_count > 0 && (
+                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                            <Users className="h-3 w-3 mr-1" />
+                            {request.response_count} response{request.response_count !== 1 ? "s" : ""}
+                          </Badge>
+                        )}
                       </div>
                       <p className="text-sm text-muted-foreground">
                         {format(new Date(request.start_date), "MMM d")} - {format(new Date(request.end_date), "MMM d, yyyy")}
@@ -633,10 +639,6 @@ export function AvailabilityRequestManager({ bandId, onViewResponses }: Availabi
                           {request.description}
                         </p>
                       )}
-                      <div className="flex items-center gap-1 mt-2 text-sm">
-                        <Users className="h-4 w-4" />
-                        <span>{request.response_count} response{request.response_count !== 1 ? "s" : ""}</span>
-                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       {onViewResponses && (

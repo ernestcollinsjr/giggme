@@ -40,6 +40,7 @@ interface AvailabilityRequest {
   status: string;
   created_at: string;
   target_artist_ids: string[];
+  response_count?: number;
 }
 
 interface ArtistAvailabilityManagerProps {
@@ -83,7 +84,29 @@ export const ArtistAvailabilityManager = ({
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setRequests(data || []);
+
+      // Get response counts for each request
+      if (data && data.length > 0) {
+        const requestIds = data.map(r => r.id);
+        const { data: responseCounts } = await supabase
+          .from("availability_responses")
+          .select("request_id")
+          .in("request_id", requestIds);
+
+        const countMap = new Map<string, number>();
+        responseCounts?.forEach(r => {
+          countMap.set(r.request_id, (countMap.get(r.request_id) || 0) + 1);
+        });
+
+        const requestsWithCounts = data.map(r => ({
+          ...r,
+          response_count: countMap.get(r.id) || 0
+        }));
+
+        setRequests(requestsWithCounts);
+      } else {
+        setRequests([]);
+      }
     } catch (error: any) {
       console.error("Error fetching requests:", error);
     } finally {
@@ -407,13 +430,19 @@ export const ArtistAvailabilityManager = ({
                 className="flex items-center justify-between p-3 border rounded-lg"
               >
                 <div className="flex-1">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <p className="font-medium">{request.title}</p>
                     <Badge
                       variant={request.status === "open" ? "default" : "secondary"}
                     >
                       {request.status}
                     </Badge>
+                    {request.response_count !== undefined && request.response_count > 0 && (
+                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                        <Users className="h-3 w-3 mr-1" />
+                        {request.response_count} response{request.response_count !== 1 ? "s" : ""}
+                      </Badge>
+                    )}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
                     {new Date(request.start_date).toLocaleDateString()} -{" "}

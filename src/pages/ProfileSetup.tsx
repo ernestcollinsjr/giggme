@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "@supabase/supabase-js";
-import { LogOut, Crown, Music, Briefcase, Mail, Loader2, Youtube, Facebook, Instagram, Twitter, Globe, Plus, Trash2, Wrench, Tag, MapPin, Clock, Play, X, Check, HelpCircle, Volume2, VolumeX } from "lucide-react";
+import { LogOut, Crown, Music, Briefcase, Mail, Loader2, Youtube, Facebook, Instagram, Twitter, Globe, Plus, Trash2, Wrench, Tag, MapPin, Clock, Play, X, Check, HelpCircle, Volume2, VolumeX, Undo2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { detectFaceAndCrop, loadImage } from "@/utils/imageCropping";
 import { Browser } from '@capacitor/browser';
@@ -78,6 +78,9 @@ const ProfileSetup = () => {
     return saved !== null ? saved === 'true' : true;
   });
   const audioContextRef = useRef<AudioContext | null>(null);
+  const [undoData, setUndoData] = useState<{availability: {date: string; status: string | null}[], todayStatus: string | null} | null>(null);
+  const [showUndo, setShowUndo] = useState(false);
+  const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [travelDistance, setTravelDistance] = useState<string>("");
   const [yearsExperience, setYearsExperience] = useState<string>("");
   const [unionMemberships, setUnionMemberships] = useState<string[]>([]);
@@ -651,6 +654,10 @@ const ProfileSetup = () => {
   const clearAllWeekAvailability = async () => {
     if (!user || weekAvailability.length === 0) return;
     
+    // Store current state for undo
+    const previousAvailability = [...weekAvailability];
+    const previousTodayStatus = todayCalendarStatus;
+    
     try {
       const today = new Date().toISOString().split('T')[0];
       const datesToClear = weekAvailability.map(d => d.date);
@@ -670,11 +677,62 @@ const ProfileSetup = () => {
       // Update today's status if in range
       if (datesToClear.includes(today)) setTodayCalendarStatus(null);
       
+      // Store undo data and show undo button
+      setUndoData({ availability: previousAvailability, todayStatus: previousTodayStatus });
+      setShowUndo(true);
+      
+      // Clear any existing timeout
+      if (undoTimeoutRef.current) clearTimeout(undoTimeoutRef.current);
+      
+      // Hide undo button after 5 seconds
+      undoTimeoutRef.current = setTimeout(() => {
+        setShowUndo(false);
+        setUndoData(null);
+      }, 5000);
+      
       triggerSaveConfirmation();
       toast({ title: "Week availability cleared" });
     } catch (error) {
       console.error('Error clearing availability:', error);
       toast({ title: "Error clearing availability", variant: "destructive" });
+    }
+  };
+
+  // Undo clear availability
+  const undoClearAvailability = async () => {
+    if (!user || !undoData) return;
+    
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Restore each day's availability
+      for (const day of undoData.availability) {
+        if (day.status) {
+          await supabase
+            .from('member_availability')
+            .upsert({
+              user_id: user.id,
+              date: day.date,
+              status: day.status,
+              updated_at: new Date().toISOString()
+            }, { onConflict: 'user_id,date' });
+        }
+      }
+      
+      // Restore local state
+      setWeekAvailability(undoData.availability);
+      setTodayCalendarStatus(undoData.todayStatus);
+      
+      // Hide undo button
+      setShowUndo(false);
+      setUndoData(null);
+      if (undoTimeoutRef.current) clearTimeout(undoTimeoutRef.current);
+      
+      triggerSaveConfirmation();
+      toast({ title: "Availability restored" });
+    } catch (error) {
+      console.error('Error restoring availability:', error);
+      toast({ title: "Error restoring availability", variant: "destructive" });
     }
   };
 
@@ -1781,6 +1839,18 @@ const ProfileSetup = () => {
                       <Trash2 className="h-3 w-3" />
                       Clear All
                     </button>
+                    
+                    {/* Undo button - appears after clearing */}
+                    {showUndo && (
+                      <button
+                        type="button"
+                        onClick={undoClearAvailability}
+                        className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-all animate-fade-in shadow-md"
+                      >
+                        <Undo2 className="h-3 w-3" />
+                        Undo
+                      </button>
+                    )}
                   </div>
                   
                   <p className="text-xs text-muted-foreground">

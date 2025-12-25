@@ -247,6 +247,33 @@ export type Database = {
         }
         Relationships: []
       }
+      booking_manager_artists: {
+        Row: {
+          artist_id: string
+          booking_manager_id: string
+          created_at: string
+          group_type: string | null
+          id: string
+          notes: string | null
+        }
+        Insert: {
+          artist_id: string
+          booking_manager_id: string
+          created_at?: string
+          group_type?: string | null
+          id?: string
+          notes?: string | null
+        }
+        Update: {
+          artist_id?: string
+          booking_manager_id?: string
+          created_at?: string
+          group_type?: string | null
+          id?: string
+          notes?: string | null
+        }
+        Relationships: []
+      }
       booking_manager_bands: {
         Row: {
           band_id: string

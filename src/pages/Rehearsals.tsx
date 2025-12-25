@@ -301,21 +301,22 @@ const Rehearsals = () => {
               </CardTitle>
               <CardDescription>Add a new rehearsal to your calendar</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Date</Label>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">Date</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
+                        size="sm"
                         className={cn(
-                          "w-full justify-start text-left font-normal",
+                          "w-full justify-start text-left font-normal h-9",
                           !date && "text-muted-foreground"
                         )}
                       >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {date ? format(date, "PPP") : <span>Pick a date</span>}
+                        <CalendarIcon className="mr-1 h-3 w-3" />
+                        {date ? format(date, "MM/dd/yy") : <span>Pick date</span>}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
@@ -330,81 +331,85 @@ const Rehearsals = () => {
                   </Popover>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="startTime">Start Time</Label>
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="startTime"
-                        type="time"
-                        value={startTime}
-                        onChange={(e) => setStartTime(e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="endTime">End Time</Label>
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="endTime"
-                        type="time"
-                        value={endTime}
-                        onChange={(e) => setEndTime(e.target.value)}
-                      />
-                    </div>
+                <div className="space-y-1">
+                  <Label htmlFor="startTime" className="text-xs">Start</Label>
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-3 w-3 text-muted-foreground" />
+                    <Input
+                      id="startTime"
+                      type="time"
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
+                      className="h-9"
+                    />
                   </div>
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="venue">Venue</Label>
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <PlaceAutocomplete
-                    value={venue}
-                    onChange={(value, placeDetails) => {
-                      setVenue(value);
-                      if (placeDetails?.geometry?.location) {
-                        setVenueLat(placeDetails.geometry.location.lat());
-                        setVenueLng(placeDetails.geometry.location.lng());
-                      }
-                    }}
-                    placeholder="Start typing a venue name or address..."
+                <div className="space-y-1">
+                  <Label htmlFor="endTime" className="text-xs">End</Label>
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-3 w-3 text-muted-foreground" />
+                    <Input
+                      id="endTime"
+                      type="time"
+                      value={endTime}
+                      onChange={(e) => setEndTime(e.target.value)}
+                      className="h-9"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <Label htmlFor="venueContactPerson" className="text-xs">Contact (Optional)</Label>
+                  <Input
+                    id="venueContactPerson"
+                    placeholder="John, 555-1234"
+                    value={venueContactPerson}
+                    onChange={(e) => setVenueContactPerson(e.target.value)}
+                    className="h-9"
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="notes">Notes (Optional)</Label>
-                <Textarea
+              <div className="grid md:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="venue" className="text-xs">Venue</Label>
+                  <div className="flex items-center gap-1">
+                    <MapPin className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                    <PlaceAutocomplete
+                      value={venue}
+                      onChange={(value, placeDetails) => {
+                        setVenue(value);
+                        if (placeDetails?.geometry?.location) {
+                          setVenueLat(placeDetails.geometry.location.lat());
+                          setVenueLng(placeDetails.geometry.location.lng());
+                        }
+                      }}
+                      placeholder="Venue name or address..."
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <Label htmlFor="foodProvided" className="text-xs">Food Provided (Optional)</Label>
+                  <Input
+                    id="foodProvided"
+                    placeholder="e.g., Dinner included"
+                    value={foodProvided}
+                    onChange={(e) => setFoodProvided(e.target.value)}
+                    className="h-9"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="notes" className="text-xs">Notes (Optional)</Label>
+                <Input
                   id="notes"
-                  placeholder="Any additional information or reminders..."
+                  placeholder="Any additional info..."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  rows={3}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="foodProvided">Food Provided (Optional)</Label>
-                <Input
-                  id="foodProvided"
-                  placeholder="e.g., Dinner included, Refreshments only..."
-                  value={foodProvided}
-                  onChange={(e) => setFoodProvided(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="venueContactPerson">Venue Contact Person (Optional)</Label>
-                <Input
-                  id="venueContactPerson"
-                  placeholder="e.g., John Smith, 555-1234..."
-                  value={venueContactPerson}
-                  onChange={(e) => setVenueContactPerson(e.target.value)}
+                  className="h-9"
                 />
               </div>
 

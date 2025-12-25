@@ -9,11 +9,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "@supabase/supabase-js";
-import { LogOut, Crown, Music, Briefcase, Mail, Loader2, Youtube, Facebook, Instagram, Twitter, Globe, Plus, Trash2 } from "lucide-react";
+import { LogOut, Crown, Music, Briefcase, Mail, Loader2, Youtube, Facebook, Instagram, Twitter, Globe, Plus, Trash2, Wrench, Tag, MapPin, Clock, Play, X } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { detectFaceAndCrop, loadImage } from "@/utils/imageCropping";
 import { Browser } from '@capacitor/browser';
 import { Capacitor } from '@capacitor/core';
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { YouTubePlayer, getYoutubeVideoId } from "@/components/YouTubePlayer";
 import type { Json } from "@/integrations/supabase/types";
 
 interface SocialLinks {
@@ -50,6 +53,22 @@ const ProfileSetup = () => {
   const [socialLinks, setSocialLinks] = useState<SocialLinks>({});
   const [youtubeLinks, setYoutubeLinks] = useState<string[]>([]);
   const [newYoutubeLink, setNewYoutubeLink] = useState("");
+  
+  // New profile fields
+  const [equipment, setEquipment] = useState<string[]>([]);
+  const [newEquipment, setNewEquipment] = useState("");
+  const [skills, setSkills] = useState<string[]>([]);
+  const [newSkill, setNewSkill] = useState("");
+  const [genres, setGenres] = useState<string[]>([]);
+  const [newGenre, setNewGenre] = useState("");
+  const [availabilityStatus, setAvailabilityStatus] = useState("available");
+  const [travelDistance, setTravelDistance] = useState<string>("");
+  const [yearsExperience, setYearsExperience] = useState<string>("");
+  const [unionMemberships, setUnionMemberships] = useState<string[]>([]);
+  const [newUnion, setNewUnion] = useState("");
+  
+  // Video player state
+  const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
   
   // Email sending state
   const [showEmailDialog, setShowEmailDialog] = useState(false);
@@ -92,6 +111,15 @@ const ProfileSetup = () => {
           // Load social links and youtube links
           setSocialLinks((profile.social_links as SocialLinks) || {});
           setYoutubeLinks(profile.youtube_links || []);
+          
+          // Load new profile fields
+          setEquipment(profile.equipment || []);
+          setSkills(profile.skills || []);
+          setGenres(profile.genres || []);
+          setAvailabilityStatus(profile.availability_status || "available");
+          setTravelDistance(profile.travel_distance?.toString() || "");
+          setYearsExperience(profile.years_experience?.toString() || "");
+          setUnionMemberships(profile.union_memberships || []);
           
           // Format member since date
           if (profile.created_at) {
@@ -272,6 +300,13 @@ const ProfileSetup = () => {
         photo_urls: uploadedPhotoUrls,
         social_links: socialLinks as Json,
         youtube_links: youtubeLinks,
+        equipment,
+        skills,
+        genres,
+        availability_status: availabilityStatus,
+        travel_distance: travelDistance ? parseInt(travelDistance) : null,
+        years_experience: yearsExperience ? parseInt(yearsExperience) : null,
+        union_memberships: unionMemberships,
         updated_at: new Date().toISOString(),
       };
 
@@ -384,6 +419,81 @@ const ProfileSetup = () => {
     }
     return null;
   };
+
+  // Equipment management
+  const addEquipment = () => {
+    if (!newEquipment.trim()) return;
+    if (!equipment.includes(newEquipment.trim())) {
+      setEquipment((prev) => [...prev, newEquipment.trim()]);
+    }
+    setNewEquipment("");
+  };
+
+  const removeEquipment = (index: number) => {
+    setEquipment((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Skills management
+  const addSkill = () => {
+    if (!newSkill.trim()) return;
+    if (!skills.includes(newSkill.trim())) {
+      setSkills((prev) => [...prev, newSkill.trim()]);
+    }
+    setNewSkill("");
+  };
+
+  const removeSkill = (index: number) => {
+    setSkills((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Genres management
+  const addGenre = () => {
+    if (!newGenre.trim()) return;
+    if (!genres.includes(newGenre.trim())) {
+      setGenres((prev) => [...prev, newGenre.trim()]);
+    }
+    setNewGenre("");
+  };
+
+  const removeGenre = (index: number) => {
+    setGenres((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Union management
+  const addUnion = () => {
+    if (!newUnion.trim()) return;
+    if (!unionMemberships.includes(newUnion.trim())) {
+      setUnionMemberships((prev) => [...prev, newUnion.trim()]);
+    }
+    setNewUnion("");
+  };
+
+  const removeUnion = (index: number) => {
+    setUnionMemberships((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Calculate profile completeness
+  const calculateProfileCompleteness = (): number => {
+    const fields = [
+      !!name,
+      !!bio,
+      !!email,
+      !!phoneNumber,
+      photoPreviews.some(p => p),
+      Object.values(socialLinks).some(v => v),
+      youtubeLinks.length > 0,
+      equipment.length > 0,
+      skills.length > 0,
+      genres.length > 0,
+      !!instrument,
+      !!yearsExperience,
+    ];
+    
+    const filledCount = fields.filter(Boolean).length;
+    return Math.round((filledCount / fields.length) * 100);
+  };
+
+  const profileCompleteness = calculateProfileCompleteness();
 
   const socialPlatforms = [
     { key: "facebook" as keyof SocialLinks, label: "Facebook", icon: Facebook, placeholder: "https://facebook.com/yourprofile" },
@@ -517,6 +627,24 @@ const ProfileSetup = () => {
         </CardHeader>
         
         <CardContent>
+          {/* Profile Completeness Indicator */}
+          {(role === "band_leader" || role === "band_member" || role === "artist") && (
+            <div className="mb-6 p-4 bg-muted/50 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <Label className="text-sm font-medium">Profile Completeness</Label>
+                <span className={`text-sm font-bold ${profileCompleteness === 100 ? 'text-green-500' : profileCompleteness >= 70 ? 'text-yellow-500' : 'text-muted-foreground'}`}>
+                  {profileCompleteness}%
+                </span>
+              </div>
+              <Progress value={profileCompleteness} className="h-2" />
+              {profileCompleteness < 100 && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  Complete your profile to increase visibility to venues and managers
+                </p>
+              )}
+            </div>
+          )}
+          
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <div className="flex items-start gap-6">
@@ -852,50 +980,300 @@ const ProfileSetup = () => {
                   <div className="space-y-3">
                     {youtubeLinks.map((link, index) => {
                       const thumbnail = getYoutubeThumbnail(link);
+                      const videoId = getYoutubeVideoId(link);
+                      const isPlaying = playingVideoId === videoId;
+                      
                       return (
                         <div
                           key={index}
-                          className="flex items-center gap-3 p-2 border rounded-lg bg-muted/50"
+                          className="border rounded-lg bg-muted/50 overflow-hidden"
                         >
-                          {thumbnail ? (
-                            <button 
-                              type="button"
-                              onClick={() => openExternalLink(link)}
-                              className="shrink-0 relative group cursor-pointer"
-                            >
-                              <img 
-                                src={thumbnail} 
-                                alt="Video thumbnail" 
-                                className="w-24 h-14 object-cover rounded-md"
-                              />
-                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center">
-                                <Youtube className="h-6 w-6 text-white" />
+                          {isPlaying && videoId ? (
+                            <div className="p-2">
+                              <div className="flex justify-end mb-2">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setPlayingVideoId(null)}
+                                >
+                                  <X className="h-4 w-4 mr-1" />
+                                  Close
+                                </Button>
                               </div>
-                            </button>
+                              <YouTubePlayer videoId={videoId} title="Video" inline />
+                            </div>
                           ) : (
-                            <button
-                              type="button"
-                              onClick={() => openExternalLink(link)}
-                              className="w-24 h-14 bg-muted rounded-md flex items-center justify-center shrink-0 cursor-pointer"
-                            >
-                              <Youtube className="h-6 w-6 text-red-500" />
-                            </button>
+                            <div className="flex items-center gap-3 p-2">
+                              {thumbnail ? (
+                                <button 
+                                  type="button"
+                                  onClick={() => videoId && setPlayingVideoId(videoId)}
+                                  className="shrink-0 relative group cursor-pointer"
+                                >
+                                  <img 
+                                    src={thumbnail} 
+                                    alt="Video thumbnail" 
+                                    className="w-24 h-14 object-cover rounded-md"
+                                  />
+                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center">
+                                    <Play className="h-6 w-6 text-white" />
+                                  </div>
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => videoId && setPlayingVideoId(videoId)}
+                                  className="w-24 h-14 bg-muted rounded-md flex items-center justify-center shrink-0 cursor-pointer"
+                                >
+                                  <Youtube className="h-6 w-6 text-red-500" />
+                                </button>
+                              )}
+                              <span className="flex-1 text-sm truncate">{link}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => removeYoutubeLink(index)}
+                                className="shrink-0 h-8 w-8"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           )}
-                          <span className="flex-1 text-sm truncate">{link}</span>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => removeYoutubeLink(index)}
-                            className="shrink-0 h-8 w-8"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
                         </div>
                       );
                     })}
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Equipment List */}
+            {(role === "band_leader" || role === "band_member" || role === "artist") && (
+              <div className="space-y-4 pt-4 border-t">
+                <div>
+                  <Label className="flex items-center gap-2">
+                    <Wrench className="h-4 w-4" />
+                    Equipment & Gear
+                  </Label>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    List your instruments, amps, mics, and other equipment
+                  </p>
+                </div>
+                
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="e.g., Fender Stratocaster, Roland JC-120..."
+                    value={newEquipment}
+                    onChange={(e) => setNewEquipment(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addEquipment())}
+                  />
+                  <Button type="button" onClick={addEquipment} size="icon" variant="outline">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                {equipment.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {equipment.map((item, index) => (
+                      <Badge key={index} variant="secondary" className="gap-1 pr-1">
+                        {item}
+                        <button
+                          type="button"
+                          onClick={() => removeEquipment(index)}
+                          className="ml-1 hover:bg-destructive/20 rounded-full p-0.5"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Skills & Abilities */}
+            {(role === "band_leader" || role === "band_member" || role === "artist") && (
+              <div className="space-y-4 pt-4 border-t">
+                <div>
+                  <Label className="flex items-center gap-2">
+                    <Tag className="h-4 w-4" />
+                    Skills & Abilities
+                  </Label>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Add skills like sight-reading, improvisation, composition
+                  </p>
+                </div>
+                
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="e.g., Sight-reading, Improvisation, Arranging..."
+                    value={newSkill}
+                    onChange={(e) => setNewSkill(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addSkill())}
+                  />
+                  <Button type="button" onClick={addSkill} size="icon" variant="outline">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                {skills.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {skills.map((item, index) => (
+                      <Badge key={index} variant="outline" className="gap-1 pr-1">
+                        {item}
+                        <button
+                          type="button"
+                          onClick={() => removeSkill(index)}
+                          className="ml-1 hover:bg-destructive/20 rounded-full p-0.5"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Genres */}
+            {(role === "band_leader" || role === "band_member" || role === "artist") && (
+              <div className="space-y-4 pt-4 border-t">
+                <div>
+                  <Label className="flex items-center gap-2">
+                    <Music className="h-4 w-4" />
+                    Genres
+                  </Label>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Musical genres you specialize in
+                  </p>
+                </div>
+                
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="e.g., Jazz, Blues, R&B, Rock..."
+                    value={newGenre}
+                    onChange={(e) => setNewGenre(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addGenre())}
+                  />
+                  <Button type="button" onClick={addGenre} size="icon" variant="outline">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                {genres.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {genres.map((item, index) => (
+                      <Badge key={index} className="gap-1 pr-1 bg-primary/10 text-primary hover:bg-primary/20">
+                        {item}
+                        <button
+                          type="button"
+                          onClick={() => removeGenre(index)}
+                          className="ml-1 hover:bg-destructive/20 rounded-full p-0.5"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Professional Details */}
+            {(role === "band_leader" || role === "band_member" || role === "artist") && (
+              <div className="space-y-4 pt-4 border-t">
+                <Label className="flex items-center gap-2">
+                  <Briefcase className="h-4 w-4" />
+                  Professional Details
+                </Label>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="yearsExperience" className="text-xs">Years of Experience</Label>
+                    <Input
+                      id="yearsExperience"
+                      type="number"
+                      min="0"
+                      placeholder="e.g., 10"
+                      value={yearsExperience}
+                      onChange={(e) => setYearsExperience(e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="travelDistance" className="text-xs">Max Travel (miles)</Label>
+                    <Input
+                      id="travelDistance"
+                      type="number"
+                      min="0"
+                      placeholder="e.g., 100"
+                      value={travelDistance}
+                      onChange={(e) => setTravelDistance(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs">Availability Status</Label>
+                  <Select value={availabilityStatus} onValueChange={setAvailabilityStatus}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="available">
+                        <span className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-green-500" />
+                          Available for Gigs
+                        </span>
+                      </SelectItem>
+                      <SelectItem value="busy">
+                        <span className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-yellow-500" />
+                          Limited Availability
+                        </span>
+                      </SelectItem>
+                      <SelectItem value="unavailable">
+                        <span className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-red-500" />
+                          Not Available
+                        </span>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs">Union Memberships</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="e.g., AFM Local 47, SAG-AFTRA..."
+                      value={newUnion}
+                      onChange={(e) => setNewUnion(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addUnion())}
+                    />
+                    <Button type="button" onClick={addUnion} size="icon" variant="outline">
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  {unionMemberships.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {unionMemberships.map((item, index) => (
+                        <Badge key={index} variant="secondary" className="gap-1 pr-1">
+                          {item}
+                          <button
+                            type="button"
+                            onClick={() => removeUnion(index)}
+                            className="ml-1 hover:bg-destructive/20 rounded-full p-0.5"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
             

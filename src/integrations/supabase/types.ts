@@ -557,9 +557,12 @@ export type Database = {
       }
       profiles: {
         Row: {
+          availability_status: string | null
           bio: string | null
           created_at: string | null
           email: string
+          equipment: string[] | null
+          genres: string[] | null
           id: string
           instrument: Database["public"]["Enums"]["instrument_type"] | null
           location_lat: number | null
@@ -568,15 +571,22 @@ export type Database = {
           phone_number: string | null
           photo_urls: string[] | null
           rider_notes: string | null
+          skills: string[] | null
           social_links: Json | null
           timezone: string | null
+          travel_distance: number | null
+          union_memberships: string[] | null
           updated_at: string | null
+          years_experience: number | null
           youtube_links: string[] | null
         }
         Insert: {
+          availability_status?: string | null
           bio?: string | null
           created_at?: string | null
           email: string
+          equipment?: string[] | null
+          genres?: string[] | null
           id: string
           instrument?: Database["public"]["Enums"]["instrument_type"] | null
           location_lat?: number | null
@@ -585,15 +595,22 @@ export type Database = {
           phone_number?: string | null
           photo_urls?: string[] | null
           rider_notes?: string | null
+          skills?: string[] | null
           social_links?: Json | null
           timezone?: string | null
+          travel_distance?: number | null
+          union_memberships?: string[] | null
           updated_at?: string | null
+          years_experience?: number | null
           youtube_links?: string[] | null
         }
         Update: {
+          availability_status?: string | null
           bio?: string | null
           created_at?: string | null
           email?: string
+          equipment?: string[] | null
+          genres?: string[] | null
           id?: string
           instrument?: Database["public"]["Enums"]["instrument_type"] | null
           location_lat?: number | null
@@ -602,9 +619,13 @@ export type Database = {
           phone_number?: string | null
           photo_urls?: string[] | null
           rider_notes?: string | null
+          skills?: string[] | null
           social_links?: Json | null
           timezone?: string | null
+          travel_distance?: number | null
+          union_memberships?: string[] | null
           updated_at?: string | null
+          years_experience?: number | null
           youtube_links?: string[] | null
         }
         Relationships: []

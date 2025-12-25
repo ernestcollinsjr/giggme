@@ -17,6 +17,7 @@ import { Capacitor } from '@capacitor/core';
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { YouTubePlayer, getYoutubeVideoId } from "@/components/YouTubePlayer";
+import { AvailabilityCalendar } from "@/components/AvailabilityCalendar";
 import type { Json } from "@/integrations/supabase/types";
 
 interface SocialLinks {
@@ -1276,6 +1277,11 @@ const ProfileSetup = () => {
                 </div>
               </div>
             )}
+
+            {/* Availability Calendar */}
+            <div className="pt-4">
+              <AvailabilityCalendar />
+            </div>
             
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Saving..." : "Save Profile"}

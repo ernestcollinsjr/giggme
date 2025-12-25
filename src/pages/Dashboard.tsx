@@ -176,6 +176,11 @@ const Dashboard = () => {
   
   // Availability request state
   const [viewingRequestId, setViewingRequestId] = useState<string | null>(null);
+  
+  // Booking manager state
+  const [managedBands, setManagedBands] = useState<Band[]>([]);
+  const [selectedManagedBandId, setSelectedManagedBandId] = useState<string>("");
+  const [bmViewingRequestId, setBmViewingRequestId] = useState<string | null>(null);
 
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -315,6 +320,25 @@ const Dashboard = () => {
           })) || [];
           
           setProfiles(profilesWithAvailability);
+        }
+        
+        // Fetch managed bands for booking manager
+        const { data: managedBandLinks } = await supabase
+          .from("booking_manager_bands")
+          .select("band_id")
+          .eq("booking_manager_id", user.id);
+        
+        if (managedBandLinks && managedBandLinks.length > 0) {
+          const bandIds = managedBandLinks.map(link => link.band_id);
+          const { data: bandsData } = await supabase
+            .from("bands")
+            .select("*")
+            .in("id", bandIds);
+          
+          setManagedBands(bandsData || []);
+          if (bandsData && bandsData.length > 0) {
+            setSelectedManagedBandId(bandsData[0].id);
+          }
         }
       }
     }
@@ -1506,40 +1530,96 @@ const Dashboard = () => {
         )}
 
         {userRole === "booking_manager" && (
-          <Card className="border-border/50 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Briefcase className="h-5 w-5 text-primary" />
-                Booking Manager Dashboard
-              </CardTitle>
-              <CardDescription>
-                Manage your roster and discover new talent
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <Button
-                  variant="default"
-                  onClick={() => navigate("/booking-manager")}
-                  className="h-20 text-lg"
-                >
-                  <UsersIcon className="mr-2 h-5 w-5" />
-                  Manage Roster & Artists
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => navigate("/artists")}
-                  className="h-20 text-lg"
-                >
-                  <Search className="mr-2 h-5 w-5" />
-                  Discover New Artists
-                </Button>
-              </div>
-              <p className="text-sm text-muted-foreground text-center mt-4">
-                Add bands to your roster, browse artists, and track locations during gigs!
-              </p>
-            </CardContent>
-          </Card>
+          <div className="space-y-6">
+            <Card className="border-border/50 shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Briefcase className="h-5 w-5 text-primary" />
+                  Booking Manager Dashboard
+                </CardTitle>
+                <CardDescription>
+                  Manage your roster and discover new talent
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Button
+                    variant="default"
+                    onClick={() => navigate("/booking-manager")}
+                    className="h-20 text-lg"
+                  >
+                    <UsersIcon className="mr-2 h-5 w-5" />
+                    Manage Roster & Artists
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate("/artists")}
+                    className="h-20 text-lg"
+                  >
+                    <Search className="mr-2 h-5 w-5" />
+                    Discover New Artists
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground text-center mt-4">
+                  Add bands to your roster, browse artists, and track locations during gigs!
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Availability Management for Booking Managers */}
+            {managedBands.length > 0 && (
+              <Card className="border-border/50 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CalendarIcon className="h-5 w-5 text-primary" />
+                    Band Availability Management
+                  </CardTitle>
+                  <CardDescription>
+                    Request and view availability from band members
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {managedBands.length > 1 && (
+                    <div className="flex items-center gap-4">
+                      <label className="text-sm font-medium">Select Band:</label>
+                      <select
+                        value={selectedManagedBandId}
+                        onChange={(e) => {
+                          setSelectedManagedBandId(e.target.value);
+                          setBmViewingRequestId(null);
+                        }}
+                        className="flex h-9 w-[280px] rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                      >
+                        {managedBands.map((band) => (
+                          <option key={band.id} value={band.id}>
+                            {band.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  {managedBands.length === 1 && (
+                    <p className="text-sm font-medium">Managing: {managedBands[0].name}</p>
+                  )}
+
+                  {selectedManagedBandId && (
+                    <div className="grid lg:grid-cols-2 gap-6">
+                      <AvailabilityRequestManager 
+                        bandId={selectedManagedBandId}
+                        onViewResponses={(requestId) => setBmViewingRequestId(requestId)}
+                      />
+                      {bmViewingRequestId && (
+                        <AvailabilityRequestResults 
+                          requestId={bmViewingRequestId}
+                          onBack={() => setBmViewingRequestId(null)}
+                        />
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+          </div>
         )}
 
         {userRole === "artist" && (

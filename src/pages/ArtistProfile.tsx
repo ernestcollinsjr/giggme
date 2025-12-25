@@ -107,9 +107,21 @@ const ArtistProfile = () => {
     }
   };
 
+  const MAX_PHOTOS = 8;
+
   const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    const currentPhotoCount = profile?.photo_urls?.length || 0;
+    if (currentPhotoCount >= MAX_PHOTOS) {
+      toast({
+        title: "Limit Reached",
+        description: `You can upload a maximum of ${MAX_PHOTOS} profile photos. Please remove one before adding another.`,
+        variant: "destructive",
+      });
+      return;
+    }
 
     setUploadingPhoto(true);
     try {
@@ -123,7 +135,10 @@ const ArtistProfile = () => {
         .from("profile-photos")
         .upload(fileName, file);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+        throw new Error(uploadError.message || "Failed to upload photo");
+      }
 
       const { data: { publicUrl } } = supabase.storage
         .from("profile-photos")
@@ -139,15 +154,40 @@ const ArtistProfile = () => {
       if (updateError) throw updateError;
 
       setProfile({ ...profile!, photo_urls: newPhotoUrls });
-      toast({ title: "Success", description: "Photo uploaded successfully" });
+      toast({ title: "Success", description: `Photo uploaded (${newPhotoUrls.length}/${MAX_PHOTOS})` });
+    } catch (error: any) {
+      toast({
+        title: "Error uploading photo",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handleRemovePhoto = async (indexToRemove: number) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const newPhotoUrls = profile?.photo_urls?.filter((_, i) => i !== indexToRemove) || [];
+
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ photo_urls: newPhotoUrls })
+        .eq("id", user.id);
+
+      if (updateError) throw updateError;
+
+      setProfile({ ...profile!, photo_urls: newPhotoUrls });
+      toast({ title: "Success", description: "Photo removed" });
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
-    } finally {
-      setUploadingPhoto(false);
     }
   };
 
@@ -275,20 +315,36 @@ const ArtistProfile = () => {
           {/* Profile Photo Section */}
           <Card>
             <CardHeader>
-              <CardTitle>Profile Photo</CardTitle>
-              <CardDescription>Upload your professional headshot</CardDescription>
+              <CardTitle>Profile Photos</CardTitle>
+              <CardDescription>
+                Upload up to {MAX_PHOTOS} professional photos ({profile?.photo_urls?.length || 0}/{MAX_PHOTOS})
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center gap-4">
-                <Avatar className="h-24 w-24">
-                  <AvatarImage src={profile?.photo_urls?.[0]} />
-                  <AvatarFallback>{profile?.name?.[0]}</AvatarFallback>
-                </Avatar>
-                <div>
+              {/* Photo Grid */}
+              <div className="grid grid-cols-4 gap-4">
+                {profile?.photo_urls?.map((url, index) => (
+                  <div key={index} className="relative group">
+                    <Avatar className="h-20 w-20">
+                      <AvatarImage src={url} className="object-cover" />
+                      <AvatarFallback>{index + 1}</AvatarFallback>
+                    </Avatar>
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="absolute -top-2 -right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => handleRemovePhoto(index)}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+                
+                {/* Upload Button */}
+                {(profile?.photo_urls?.length || 0) < MAX_PHOTOS && (
                   <Label htmlFor="photo-upload" className="cursor-pointer">
-                    <div className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
-                      <Upload className="h-4 w-4" />
-                      Upload Photo
+                    <div className="h-20 w-20 rounded-full border-2 border-dashed border-muted-foreground/50 flex items-center justify-center hover:border-primary transition-colors">
+                      <Plus className="h-6 w-6 text-muted-foreground" />
                     </div>
                     <Input
                       id="photo-upload"
@@ -299,8 +355,12 @@ const ArtistProfile = () => {
                       disabled={uploadingPhoto}
                     />
                   </Label>
-                </div>
+                )}
               </div>
+              
+              {uploadingPhoto && (
+                <p className="text-sm text-muted-foreground">Uploading...</p>
+              )}
             </CardContent>
           </Card>
 

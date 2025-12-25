@@ -63,11 +63,15 @@ export const SetlistManager = () => {
   const [draggedSetNum, setDraggedSetNum] = useState<number | null>(null);
   const [draggedSetlistId, setDraggedSetlistId] = useState<string | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [draggedAvailableSongId, setDraggedAvailableSongId] = useState<string | null>(null);
+  const [isDraggingOverSelectedArea, setIsDraggingOverSelectedArea] = useState(false);
   const [insertionIndex, setInsertionIndex] = useState<number | null>(null);
   const [ghostPosition, setGhostPosition] = useState<{ x: number; y: number } | null>(null);
   const [isTouchDragging, setIsTouchDragging] = useState(false);
   const [recentlyReordered, setRecentlyReordered] = useState<string | null>(null);
   const songItemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const dragContainerRef = useRef<HTMLDivElement | null>(null);
+  const selectedSongsAreaRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     fetchBands();

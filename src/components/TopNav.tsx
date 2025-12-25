@@ -2,6 +2,7 @@ import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useTheme } from "next-themes";
 import { 
   Home, 
   Calendar, 
@@ -15,7 +16,9 @@ import {
   MapPin,
   Zap,
   Shield,
-  LogOut
+  LogOut,
+  Sun,
+  Moon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +30,7 @@ export const TopNav = ({ userRole }: TopNavProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const { theme, setTheme } = useTheme();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -111,8 +115,16 @@ export const TopNav = ({ userRole }: TopNavProps) => {
           <span className="font-bold text-lg hidden sm:inline">GigMe</span>
         </Link>
         
-        {/* Right side - Nav links, Profile & Logout */}
+        {/* Right side - Nav links, Theme toggle, Profile & Logout */}
         <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="gap-2"
+          >
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </Button>
           {links.map((link) => {
             const Icon = link.icon;
             return (

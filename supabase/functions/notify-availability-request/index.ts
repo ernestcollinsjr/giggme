@@ -15,6 +15,7 @@ interface NotificationRequest {
   start_date: string;
   end_date: string;
   notify_via: ('email' | 'sms')[];
+  member_ids?: string[]; // Optional: if provided, only notify these members
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -38,7 +39,8 @@ const handler = async (req: Request): Promise<Response> => {
       description, 
       start_date, 
       end_date,
-      notify_via = ['email', 'sms']
+      notify_via = ['email', 'sms'],
+      member_ids
     }: NotificationRequest = await req.json();
 
     console.log(`Processing availability request notification for ${request_id}`);
@@ -58,17 +60,24 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Band not found');
     }
 
-    const { data: members, error: membersError } = await supabase
+    let membersQuery = supabase
       .from('band_members')
       .select('member_id, profiles:member_id(id, name, email, phone_number)')
       .eq('band_id', band_id);
+
+    // If member_ids are provided, filter to only those members
+    if (member_ids && member_ids.length > 0) {
+      membersQuery = membersQuery.in('member_id', member_ids);
+    }
+
+    const { data: members, error: membersError } = await membersQuery;
 
     if (membersError) {
       console.error('Error fetching band members:', membersError);
       throw new Error('Failed to fetch band members');
     }
 
-    console.log(`Found ${members?.length || 0} band members to notify`);
+    console.log(`Found ${members?.length || 0} band members to notify (filtered: ${member_ids ? 'yes' : 'no'})`);
 
     const results = { emails_sent: 0, emails_failed: 0, sms_sent: 0, sms_failed: 0 };
 

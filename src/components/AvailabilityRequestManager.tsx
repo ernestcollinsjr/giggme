@@ -24,6 +24,17 @@ interface AvailabilityRequest {
   response_count?: number;
 }
 
+interface BandMember {
+  id: string;
+  member_id: string;
+  profiles: {
+    id: string;
+    name: string;
+    email: string;
+    phone_number: string | null;
+  };
+}
+
 interface AvailabilityRequestManagerProps {
   bandId: string;
   onViewResponses?: (requestId: string) => void;
@@ -34,6 +45,8 @@ export function AvailabilityRequestManager({ bandId, onViewResponses }: Availabi
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [bandMembers, setBandMembers] = useState<BandMember[]>([]);
+  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   
   // Form state
   const [title, setTitle] = useState("");
@@ -45,7 +58,35 @@ export function AvailabilityRequestManager({ bandId, onViewResponses }: Availabi
 
   useEffect(() => {
     fetchRequests();
+    fetchBandMembers();
   }, [bandId]);
+
+  const fetchBandMembers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("band_members")
+        .select(`
+          id,
+          member_id,
+          profiles (
+            id,
+            name,
+            email,
+            phone_number
+          )
+        `)
+        .eq("band_id", bandId);
+
+      if (error) throw error;
+      
+      const members = ((data || []) as unknown as BandMember[]).filter(m => m.profiles);
+      setBandMembers(members);
+      // Select all members by default
+      setSelectedMembers(members.map(m => m.member_id));
+    } catch (error) {
+      console.error("Error fetching band members:", error);
+    }
+  };
 
   const fetchRequests = async () => {
     try {
@@ -92,6 +133,11 @@ export function AvailabilityRequestManager({ bandId, onViewResponses }: Availabi
       return;
     }
 
+    if (selectedMembers.length === 0) {
+      toast({ title: "Please select at least one member", variant: "destructive" });
+      return;
+    }
+
     if (new Date(endDate) < new Date(startDate)) {
       toast({ title: "End date must be after start date", variant: "destructive" });
       return;
@@ -135,7 +181,8 @@ export function AvailabilityRequestManager({ bandId, onViewResponses }: Availabi
                 description: description || undefined,
                 start_date: startDate,
                 end_date: endDate,
-                notify_via
+                notify_via,
+                member_ids: selectedMembers
               }
             }
           );
@@ -176,6 +223,7 @@ export function AvailabilityRequestManager({ bandId, onViewResponses }: Availabi
       setEndDate("");
       setNotifyEmail(true);
       setNotifySms(true);
+      setSelectedMembers(bandMembers.map(m => m.member_id));
       setDialogOpen(false);
     } catch (error: any) {
       console.error("Error creating request:", error);
@@ -255,7 +303,7 @@ export function AvailabilityRequestManager({ bandId, onViewResponses }: Availabi
               <DialogHeader>
                 <DialogTitle>Request Member Availability</DialogTitle>
               </DialogHeader>
-              <div className="space-y-4">
+              <div className="space-y-4 max-h-[70vh] overflow-y-auto">
                 <div>
                   <Label htmlFor="title">Title *</Label>
                   <Input
@@ -294,6 +342,69 @@ export function AvailabilityRequestManager({ bandId, onViewResponses }: Availabi
                     />
                   </div>
                 </div>
+                
+                {/* Member Selection */}
+                <div className="space-y-3 pt-2 border-t">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-medium">Select Members *</Label>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedMembers(bandMembers.map(m => m.member_id))}
+                        className="text-xs h-7"
+                      >
+                        Select All
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedMembers([])}
+                        className="text-xs h-7"
+                      >
+                        Clear
+                      </Button>
+                    </div>
+                  </div>
+                  {bandMembers.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No band members found</p>
+                  ) : (
+                    <div className="space-y-2 max-h-[150px] overflow-y-auto border rounded-md p-2">
+                      {bandMembers.map((member) => (
+                        <div key={member.member_id} className="flex items-center gap-2">
+                          <Checkbox
+                            id={`member-${member.member_id}`}
+                            checked={selectedMembers.includes(member.member_id)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedMembers(prev => [...prev, member.member_id]);
+                              } else {
+                                setSelectedMembers(prev => prev.filter(id => id !== member.member_id));
+                              }
+                            }}
+                          />
+                          <Label 
+                            htmlFor={`member-${member.member_id}`} 
+                            className="text-sm font-normal cursor-pointer flex-1"
+                          >
+                            {member.profiles.name}
+                            {member.profiles.email && (
+                              <span className="text-muted-foreground ml-2 text-xs">
+                                ({member.profiles.email})
+                              </span>
+                            )}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    {selectedMembers.length} of {bandMembers.length} member(s) selected
+                  </p>
+                </div>
+
                 <div className="space-y-3 pt-2 border-t">
                   <Label className="text-sm font-medium">Notify Members Via</Label>
                   <div className="flex gap-6">

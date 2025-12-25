@@ -597,12 +597,12 @@ export default function BookingManager() {
                   <DialogTrigger asChild>
                     <Button size="sm" variant="outline" className="gap-2">
                       <CalendarIcon className="h-4 w-4" />
-                      Group Gig Request
+                      Gig Request
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Send Group Gig Request</DialogTitle>
+                      <DialogTitle>Send Gig Request</DialogTitle>
                       <DialogDescription>
                         Send a gig request to all unbooked artists
                       </DialogDescription>

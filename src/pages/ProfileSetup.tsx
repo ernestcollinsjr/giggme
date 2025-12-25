@@ -641,6 +641,12 @@ const ProfileSetup = () => {
     }
   };
 
+  // Set all week to a specific status
+  const setAllWeekAvailability = async (status: 'available' | 'unavailable' | 'tentative') => {
+    if (!user || weekAvailability.length === 0) return;
+    await setRangeAvailability(0, weekAvailability.length - 1, status);
+  };
+
   // Ref for day button elements (for touch detection)
   const dayButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
@@ -1707,6 +1713,36 @@ const ProfileSetup = () => {
                       </button>
                     </div>
                   </div>
+                  
+                  {/* Bulk action buttons */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs text-muted-foreground">Bulk:</span>
+                    <button
+                      type="button"
+                      onClick={() => setAllWeekAvailability('available')}
+                      className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-green-500/10 text-green-600 hover:bg-green-500/20 transition-colors border border-green-500/30"
+                    >
+                      <Check className="h-3 w-3" />
+                      All Available
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAllWeekAvailability('unavailable')}
+                      className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-red-500/10 text-red-600 hover:bg-red-500/20 transition-colors border border-red-500/30"
+                    >
+                      <X className="h-3 w-3" />
+                      All Unavailable
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAllWeekAvailability('tentative')}
+                      className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20 transition-colors border border-yellow-500/30"
+                    >
+                      <HelpCircle className="h-3 w-3" />
+                      All Tentative
+                    </button>
+                  </div>
+                  
                   <p className="text-xs text-muted-foreground">
                     Click or drag across days to set availability. Use the calendar below for more options.
                   </p>

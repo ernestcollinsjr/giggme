@@ -9,8 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar as CalendarIcon, Clock, MapPin, Plus, Trash2, Navigation } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, MapPin, Plus, Trash2, Navigation, Pencil } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import BottomNav from "@/components/BottomNav";
@@ -50,6 +51,19 @@ const Rehearsals = () => {
   const [foodProvided, setFoodProvided] = useState("");
   const [venueContactPerson, setVenueContactPerson] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Edit state
+  const [editingRehearsal, setEditingRehearsal] = useState<Rehearsal | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editDate, setEditDate] = useState<Date>();
+  const [editStartTime, setEditStartTime] = useState("12:00");
+  const [editEndTime, setEditEndTime] = useState("14:00");
+  const [editVenue, setEditVenue] = useState("");
+  const [editVenueLat, setEditVenueLat] = useState<number | null>(null);
+  const [editVenueLng, setEditVenueLng] = useState<number | null>(null);
+  const [editNotes, setEditNotes] = useState("");
+  const [editFoodProvided, setEditFoodProvided] = useState("");
+  const [editVenueContactPerson, setEditVenueContactPerson] = useState("");
 
   useEffect(() => {
     checkAuthAndFetchData();
@@ -182,6 +196,72 @@ const Rehearsals = () => {
         title: "Failed to delete rehearsal",
         description: error.message,
       });
+    }
+  };
+
+  const openEditDialog = (rehearsal: Rehearsal) => {
+    setEditingRehearsal(rehearsal);
+    const rehearsalDate = new Date(rehearsal.date);
+    setEditDate(rehearsalDate);
+    setEditStartTime(format(rehearsalDate, "HH:mm"));
+    setEditEndTime(rehearsal.end_time || "14:00");
+    setEditVenue(rehearsal.venue);
+    setEditVenueLat(rehearsal.venue_lat);
+    setEditVenueLng(rehearsal.venue_lng);
+    setEditNotes(rehearsal.notes || "");
+    setEditFoodProvided(rehearsal.food_provided || "");
+    setEditVenueContactPerson(rehearsal.venue_contact_person || "");
+    setEditDialogOpen(true);
+  };
+
+  const handleUpdateRehearsal = async () => {
+    if (!editingRehearsal || !editDate || !editVenue.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Missing information",
+        description: "Please select a date and enter a venue.",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const [hours, minutes] = editStartTime.split(":").map(Number);
+      const rehearsalDateTime = new Date(editDate);
+      rehearsalDateTime.setHours(hours, minutes, 0, 0);
+
+      const { error } = await supabase
+        .from("rehearsals")
+        .update({
+          date: rehearsalDateTime.toISOString(),
+          end_time: editEndTime,
+          venue: editVenue.trim(),
+          venue_lat: editVenueLat,
+          venue_lng: editVenueLng,
+          notes: editNotes.trim() || null,
+          food_provided: editFoodProvided.trim() || null,
+          venue_contact_person: editVenueContactPerson.trim() || null,
+        })
+        .eq("id", editingRehearsal.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Rehearsal updated",
+        description: "The rehearsal has been updated successfully.",
+      });
+
+      setEditDialogOpen(false);
+      setEditingRehearsal(null);
+      checkAuthAndFetchData();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Failed to update rehearsal",
+        description: error.message,
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -398,13 +478,22 @@ const Rehearsals = () => {
                         )}
                       </div>
                       {isBandLeader && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteRehearsal(rehearsal.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
+                        <div className="flex flex-col gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openEditDialog(rehearsal)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteRehearsal(rehearsal.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -414,6 +503,106 @@ const Rehearsals = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Edit Rehearsal Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Rehearsal</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !editDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {editDate ? format(editDate, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={editDate}
+                    onSelect={setEditDate}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-2">
+                <Label>Start Time</Label>
+                <Input
+                  type="time"
+                  value={editStartTime}
+                  onChange={(e) => setEditStartTime(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>End Time</Label>
+                <Input
+                  type="time"
+                  value={editEndTime}
+                  onChange={(e) => setEditEndTime(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Venue</Label>
+              <PlaceAutocomplete
+                value={editVenue}
+                onChange={(value, placeDetails) => {
+                  setEditVenue(value);
+                  if (placeDetails?.geometry?.location) {
+                    setEditVenueLat(placeDetails.geometry.location.lat());
+                    setEditVenueLng(placeDetails.geometry.location.lng());
+                  }
+                }}
+                placeholder="Start typing a venue..."
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Notes</Label>
+              <Textarea
+                value={editNotes}
+                onChange={(e) => setEditNotes(e.target.value)}
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Food Provided</Label>
+              <Input
+                value={editFoodProvided}
+                onChange={(e) => setEditFoodProvided(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Venue Contact Person</Label>
+              <Input
+                value={editVenueContactPerson}
+                onChange={(e) => setEditVenueContactPerson(e.target.value)}
+              />
+            </div>
+
+            <Button onClick={handleUpdateRehearsal} disabled={isSubmitting} className="w-full">
+              Save Changes
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <BottomNav />
     </div>

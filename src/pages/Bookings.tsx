@@ -99,6 +99,51 @@ const Bookings = () => {
     checkAuthAndFetchData();
   }, []);
 
+  // Real-time updates for gig member responses
+  useEffect(() => {
+    if (userRole !== "band_leader") return;
+
+    const channel = supabase
+      .channel('gig-members-bookings')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'gig_members'
+        },
+        async (payload) => {
+          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+            const update = payload.new as { member_id: string; status: string; gig_id: string };
+            
+            // Check if this gig is in our current list
+            const matchingGig = gigs.find(g => g.id === update.gig_id);
+            if (!matchingGig) return;
+            
+            // Get member name
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('name')
+              .eq('id', update.member_id)
+              .single();
+            
+            const memberName = profile?.name || 'A member';
+            const statusEmoji = update.status === 'accepted' ? '✅' : update.status === 'declined' ? '❌' : '⏳';
+            
+            toast({
+              title: "Gig RSVP Update",
+              description: `${statusEmoji} ${memberName} has ${update.status} the gig at ${matchingGig.venue_name || matchingGig.venue}`,
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userRole, gigs, toast]);
+
   const checkAuthAndFetchData = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     

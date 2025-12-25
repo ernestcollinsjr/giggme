@@ -80,7 +80,9 @@ const ProfileSetup = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
   const [undoData, setUndoData] = useState<{availability: {date: string; status: string | null}[], todayStatus: string | null} | null>(null);
   const [showUndo, setShowUndo] = useState(false);
+  const [undoCountdown, setUndoCountdown] = useState(5);
   const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const undoIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [travelDistance, setTravelDistance] = useState<string>("");
   const [yearsExperience, setYearsExperience] = useState<string>("");
   const [unionMemberships, setUnionMemberships] = useState<string[]>([]);
@@ -680,14 +682,28 @@ const ProfileSetup = () => {
       // Store undo data and show undo button
       setUndoData({ availability: previousAvailability, todayStatus: previousTodayStatus });
       setShowUndo(true);
+      setUndoCountdown(5);
       
-      // Clear any existing timeout
+      // Clear any existing timers
       if (undoTimeoutRef.current) clearTimeout(undoTimeoutRef.current);
+      if (undoIntervalRef.current) clearInterval(undoIntervalRef.current);
+      
+      // Start countdown interval
+      undoIntervalRef.current = setInterval(() => {
+        setUndoCountdown(prev => {
+          if (prev <= 1) {
+            if (undoIntervalRef.current) clearInterval(undoIntervalRef.current);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
       
       // Hide undo button after 5 seconds
       undoTimeoutRef.current = setTimeout(() => {
         setShowUndo(false);
         setUndoData(null);
+        if (undoIntervalRef.current) clearInterval(undoIntervalRef.current);
       }, 5000);
       
       triggerSaveConfirmation();
@@ -727,6 +743,7 @@ const ProfileSetup = () => {
       setShowUndo(false);
       setUndoData(null);
       if (undoTimeoutRef.current) clearTimeout(undoTimeoutRef.current);
+      if (undoIntervalRef.current) clearInterval(undoIntervalRef.current);
       
       triggerSaveConfirmation();
       toast({ title: "Availability restored" });
@@ -1845,10 +1862,13 @@ const ProfileSetup = () => {
                       <button
                         type="button"
                         onClick={undoClearAvailability}
-                        className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-all animate-fade-in shadow-md"
+                        className="flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-all animate-fade-in shadow-md"
                       >
                         <Undo2 className="h-3 w-3" />
                         Undo
+                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-primary-foreground/20 text-[10px] font-bold">
+                          {undoCountdown}
+                        </span>
                       </button>
                     )}
                   </div>

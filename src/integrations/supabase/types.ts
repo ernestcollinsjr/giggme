@@ -390,6 +390,10 @@ export type Database = {
           id: string
           location_sharing_enabled: boolean | null
           member_id: string
+          replaced_by: string | null
+          replacement_reason: string | null
+          replacement_triggered: boolean | null
+          response_deadline: string | null
           status: string
           updated_at: string
         }
@@ -399,6 +403,10 @@ export type Database = {
           id?: string
           location_sharing_enabled?: boolean | null
           member_id: string
+          replaced_by?: string | null
+          replacement_reason?: string | null
+          replacement_triggered?: boolean | null
+          response_deadline?: string | null
           status?: string
           updated_at?: string
         }
@@ -408,6 +416,10 @@ export type Database = {
           id?: string
           location_sharing_enabled?: boolean | null
           member_id?: string
+          replaced_by?: string | null
+          replacement_reason?: string | null
+          replacement_triggered?: boolean | null
+          response_deadline?: string | null
           status?: string
           updated_at?: string
         }
@@ -417,6 +429,13 @@ export type Database = {
             columns: ["gig_id"]
             isOneToOne: false
             referencedRelation: "gigs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gig_members_replaced_by_fkey"
+            columns: ["replaced_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -497,6 +516,7 @@ export type Database = {
           notes: string | null
           payment_amount: number | null
           payment_status: string | null
+          response_deadline_hours: number | null
           sound_check_time: string | null
           sound_man_info: string | null
           status: Database["public"]["Enums"]["gig_status"] | null
@@ -520,6 +540,7 @@ export type Database = {
           notes?: string | null
           payment_amount?: number | null
           payment_status?: string | null
+          response_deadline_hours?: number | null
           sound_check_time?: string | null
           sound_man_info?: string | null
           status?: Database["public"]["Enums"]["gig_status"] | null
@@ -543,6 +564,7 @@ export type Database = {
           notes?: string | null
           payment_amount?: number | null
           payment_status?: string | null
+          response_deadline_hours?: number | null
           sound_check_time?: string | null
           sound_man_info?: string | null
           status?: Database["public"]["Enums"]["gig_status"] | null

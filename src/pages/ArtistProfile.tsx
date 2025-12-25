@@ -326,7 +326,7 @@ const ArtistProfile = () => {
         </Button>
 
         <h1 className="text-4xl font-bold mb-8 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-          Artist/Musician Profile
+          {profile?.name || "Artist"}{artistProfile?.genre ? ` - ${artistProfile.genre}` : ""} Profile
         </h1>
 
         <div className="space-y-6">

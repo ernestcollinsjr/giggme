@@ -24,6 +24,7 @@ import { MessageInbox } from "@/components/MessageInbox";
 import { Checkbox } from "@/components/ui/checkbox";
 import { BandMemberRoster } from "@/components/BandMemberRoster";
 import { BandInvitationManager } from "@/components/BandInvitationManager";
+import { BandProfileEditor } from "@/components/BandProfileEditor";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
 import RoleSwitcher from "@/components/RoleSwitcher";
 import { MessageSquare, Send, Users as UsersIcon } from "lucide-react";
@@ -1191,10 +1192,13 @@ const Dashboard = () => {
                   <TabsContent key={band.id} value={band.id}>
                     <Card className="border-border/50 shadow-lg">
                       <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <Music className="h-5 w-5 text-primary" />
-                          {band.name}
-                        </CardTitle>
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="flex items-center gap-2">
+                            <Music className="h-5 w-5 text-primary" />
+                            {band.name}
+                          </CardTitle>
+                          <BandProfileEditor bandId={band.id} bandName={band.name} />
+                        </div>
                         {band.description && (
                           <CardDescription>{band.description}</CardDescription>
                         )}

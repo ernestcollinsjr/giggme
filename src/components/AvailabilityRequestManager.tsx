@@ -7,8 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
-import { CalendarPlus, Calendar, Users, Loader2, Eye, Trash2 } from "lucide-react";
+import { CalendarPlus, Calendar, Users, Loader2, Eye, Trash2, Mail, MessageSquare } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 
 interface AvailabilityRequest {
@@ -38,6 +39,8 @@ export function AvailabilityRequestManager({ bandId, onViewResponses }: Availabi
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [startDate, setStartDate] = useState("");
+  const [notifyEmail, setNotifyEmail] = useState(true);
+  const [notifySms, setNotifySms] = useState(true);
   const [endDate, setEndDate] = useState("");
 
   useEffect(() => {
@@ -115,14 +118,64 @@ export function AvailabilityRequestManager({ bandId, onViewResponses }: Availabi
 
       if (error) throw error;
 
+      // Send notifications to band members
+      const notify_via: ('email' | 'sms')[] = [];
+      if (notifyEmail) notify_via.push('email');
+      if (notifySms) notify_via.push('sms');
+
+      if (notify_via.length > 0) {
+        try {
+          const { data: notifyResult, error: notifyError } = await supabase.functions.invoke(
+            'notify-availability-request',
+            {
+              body: {
+                request_id: data.id,
+                band_id: bandId,
+                title,
+                description: description || undefined,
+                start_date: startDate,
+                end_date: endDate,
+                notify_via
+              }
+            }
+          );
+
+          if (notifyError) {
+            console.error('Notification error:', notifyError);
+            toast({ 
+              title: "Request created, but notifications failed", 
+              description: "Members can still see the request in their dashboard",
+              variant: "destructive" 
+            });
+          } else {
+            console.log('Notification results:', notifyResult);
+            const methods = [];
+            if (notifyResult?.results?.emails_sent > 0) methods.push(`${notifyResult.results.emails_sent} email(s)`);
+            if (notifyResult?.results?.sms_sent > 0) methods.push(`${notifyResult.results.sms_sent} SMS`);
+            
+            toast({ 
+              title: "Availability request created!", 
+              description: methods.length > 0 
+                ? `Notified members via ${methods.join(' and ')}`
+                : "Members will see it in their dashboard"
+            });
+          }
+        } catch (notifyErr) {
+          console.error('Error sending notifications:', notifyErr);
+        }
+      } else {
+        toast({ title: "Availability request created!" });
+      }
+
       setRequests(prev => [{ ...data, response_count: 0 }, ...prev]);
-      toast({ title: "Availability request sent to band members!" });
       
       // Reset form
       setTitle("");
       setDescription("");
       setStartDate("");
       setEndDate("");
+      setNotifyEmail(true);
+      setNotifySms(true);
       setDialogOpen(false);
     } catch (error: any) {
       console.error("Error creating request:", error);
@@ -239,6 +292,33 @@ export function AvailabilityRequestManager({ bandId, onViewResponses }: Availabi
                       value={endDate}
                       onChange={(e) => setEndDate(e.target.value)}
                     />
+                  </div>
+                </div>
+                <div className="space-y-3 pt-2 border-t">
+                  <Label className="text-sm font-medium">Notify Members Via</Label>
+                  <div className="flex gap-6">
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="notify-email"
+                        checked={notifyEmail}
+                        onCheckedChange={(checked) => setNotifyEmail(checked === true)}
+                      />
+                      <Label htmlFor="notify-email" className="flex items-center gap-1.5 text-sm font-normal cursor-pointer">
+                        <Mail className="h-4 w-4" />
+                        Email
+                      </Label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="notify-sms"
+                        checked={notifySms}
+                        onCheckedChange={(checked) => setNotifySms(checked === true)}
+                      />
+                      <Label htmlFor="notify-sms" className="flex items-center gap-1.5 text-sm font-normal cursor-pointer">
+                        <MessageSquare className="h-4 w-4" />
+                        SMS
+                      </Label>
+                    </div>
                   </div>
                 </div>
               </div>

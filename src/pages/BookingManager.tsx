@@ -784,12 +784,10 @@ export default function BookingManager() {
         )}
 
         {/* Artist Availability Management */}
-        {managedArtists.length > 0 && (
-          <ArtistAvailabilityManager 
-            managedArtists={managedArtists}
-            onViewResponses={(requestId) => setViewingResponsesForRequest(requestId)}
-          />
-        )}
+        <ArtistAvailabilityManager 
+          managedArtists={managedArtists}
+          onViewResponses={(requestId) => setViewingResponsesForRequest(requestId)}
+        />
 
         {/* Location Tracking */}
         <BookingManagerClientLocations />

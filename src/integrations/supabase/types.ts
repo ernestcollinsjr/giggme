@@ -568,8 +568,10 @@ export type Database = {
           phone_number: string | null
           photo_urls: string[] | null
           rider_notes: string | null
+          social_links: Json | null
           timezone: string | null
           updated_at: string | null
+          youtube_links: string[] | null
         }
         Insert: {
           bio?: string | null
@@ -583,8 +585,10 @@ export type Database = {
           phone_number?: string | null
           photo_urls?: string[] | null
           rider_notes?: string | null
+          social_links?: Json | null
           timezone?: string | null
           updated_at?: string | null
+          youtube_links?: string[] | null
         }
         Update: {
           bio?: string | null
@@ -598,8 +602,10 @@ export type Database = {
           phone_number?: string | null
           photo_urls?: string[] | null
           rider_notes?: string | null
+          social_links?: Json | null
           timezone?: string | null
           updated_at?: string | null
+          youtube_links?: string[] | null
         }
         Relationships: []
       }

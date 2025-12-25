@@ -1205,13 +1205,15 @@ const Dashboard = () => {
               </Card>
             ) : (
               <Tabs value={selectedBandId || bands[0]?.id} onValueChange={setSelectedBandId}>
-                <TabsList className="bg-transparent border-0 p-0 h-auto gap-2">
-                  {bands.map((band) => (
-                    <TabsTrigger key={band.id} value={band.id} className="border-2 border-border shadow-sm">
-                      {band.name}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
+                <div className="overflow-x-auto pb-2 -mx-1 px-1">
+                  <TabsList className="bg-transparent border-0 p-0 h-auto gap-2 flex-nowrap inline-flex">
+                    {bands.map((band) => (
+                      <TabsTrigger key={band.id} value={band.id} className="border-2 border-border shadow-sm whitespace-nowrap shrink-0">
+                        {band.name}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </div>
                 {bands.map((band) => (
                   <TabsContent key={band.id} value={band.id}>
                     <Card className="border-border/50 shadow-lg">

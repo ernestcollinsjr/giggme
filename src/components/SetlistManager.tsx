@@ -609,7 +609,7 @@ export const SetlistManager = () => {
           const draggedSong = setSongs[draggedSongIndex];
           if (draggedSong) {
             setRecentlyReordered(draggedSong.id);
-            setTimeout(() => setRecentlyReordered(null), 300);
+            setTimeout(() => setRecentlyReordered(null), 600);
             
             // Reorder songs
             const newOrdered = [...setSongs];
@@ -944,7 +944,7 @@ export const SetlistManager = () => {
                                 dragOverIndex === index && draggedSetlistId === setlist.id && draggedSetNum === setNum && draggedSongIndex !== index
                                   ? 'transform translate-y-1' 
                                   : ''
-                              } ${recentlyReordered === song.id ? 'bg-primary/20 animate-[pulse_0.3s_ease-in-out]' : ''}`}
+                              } ${recentlyReordered === song.id ? 'animate-spring-settle bg-primary/10 ring-2 ring-primary/30' : ''}`}
                             >
                             <div className="flex items-center gap-1.5 flex-1 min-w-0">
                               <GripVertical className="h-3.5 w-3.5 text-muted-foreground shrink-0" />

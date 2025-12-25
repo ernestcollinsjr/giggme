@@ -1111,30 +1111,6 @@ const Dashboard = () => {
           </div>
           <LivePresence />
         </div>
-        <div className="flex items-center gap-4">
-          <Avatar className="h-16 w-16 border-2 border-primary">
-            <AvatarImage src={profile?.photo_urls?.[0] || undefined} alt={profile?.name} />
-            <AvatarFallback className="text-lg font-semibold bg-primary/10">
-              {profile?.name?.charAt(0)?.toUpperCase() || "U"}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Welcome, {profile?.name}
-            </h1>
-            <Badge variant="secondary" className="mt-2">
-              {userRole === "booking_manager" 
-                ? "Booking Manager" 
-                : userRole === "band_leader"
-                ? "Band Leader"
-                : userRole === "artist"
-                ? "Artist/Musician"
-                : userRole === "tour_manager"
-                ? "Tour/Road Manager"
-                : "Band Member"}
-            </Badge>
-          </div>
-        </div>
 
         <RoleSwitcher currentRole={userRole} onRoleChange={checkAuth} />
 

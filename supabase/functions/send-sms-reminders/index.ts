@@ -22,6 +22,20 @@ interface Profile {
   phone_number: string;
 }
 
+interface NotificationPrefs {
+  sms_enabled: boolean;
+  push_enabled: boolean;
+  reminder_1_day: boolean;
+  reminder_day_of: boolean;
+}
+
+interface PushToken {
+  id: string;
+  user_id: string;
+  token: string;
+  platform: string;
+}
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -40,12 +54,10 @@ const handler = async (req: Request): Promise<Response> => {
     const twilioAuthToken = Deno.env.get('TWILIO_AUTH_TOKEN');
     const twilioPhoneNumber = Deno.env.get('TWILIO_PHONE_NUMBER');
 
-    if (!twilioAccountSid || !twilioAuthToken || !twilioPhoneNumber) {
-      console.error('Twilio credentials not configured');
-      return new Response(
-        JSON.stringify({ error: 'Twilio credentials not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    const hasTwilio = twilioAccountSid && twilioAuthToken && twilioPhoneNumber;
+    
+    if (!hasTwilio) {
+      console.log('Twilio credentials not configured - will only send push notifications');
     }
 
     const now = new Date();
@@ -58,11 +70,23 @@ const handler = async (req: Request): Promise<Response> => {
       const oneHourEvents = await fetchEvents(supabase, event_type, oneHourFromNow, fifteenMinutesFromNow, 1);
       
       for (const event of oneDayEvents) {
-        await sendReminders(supabase, event, event_type, '1 day', twilioAccountSid, twilioAuthToken, twilioPhoneNumber);
+        await sendReminders(
+          supabase, 
+          event, 
+          event_type, 
+          '1 day', 
+          hasTwilio ? { accountSid: twilioAccountSid!, authToken: twilioAuthToken!, phoneNumber: twilioPhoneNumber! } : null
+        );
       }
       
       for (const event of oneHourEvents) {
-        await sendReminders(supabase, event, event_type, '1 hour', twilioAccountSid, twilioAuthToken, twilioPhoneNumber);
+        await sendReminders(
+          supabase, 
+          event, 
+          event_type, 
+          '1 hour', 
+          hasTwilio ? { accountSid: twilioAccountSid!, authToken: twilioAuthToken!, phoneNumber: twilioPhoneNumber! } : null
+        );
       }
 
       return new Response(
@@ -80,15 +104,17 @@ const handler = async (req: Request): Promise<Response> => {
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Error in send-sms-reminders function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 };
 
+// deno-lint-ignore no-explicit-any
 async function fetchEvents(
   supabase: any,
   eventType: string,
@@ -117,14 +143,43 @@ async function fetchEvents(
   return data || [];
 }
 
+// deno-lint-ignore no-explicit-any
+async function getUserNotificationPrefs(
+  supabase: any,
+  userId: string
+): Promise<NotificationPrefs> {
+  const { data, error } = await supabase
+    .from('notification_preferences')
+    .select('sms_enabled, push_enabled, reminder_1_day, reminder_day_of')
+    .eq('user_id', userId)
+    .single();
+
+  if (error || !data) {
+    // Default preferences
+    return {
+      sms_enabled: true,
+      push_enabled: true,
+      reminder_1_day: true,
+      reminder_day_of: true,
+    };
+  }
+
+  const prefs = data as { sms_enabled?: boolean; push_enabled?: boolean; reminder_1_day?: boolean; reminder_day_of?: boolean };
+  return {
+    sms_enabled: prefs.sms_enabled ?? true,
+    push_enabled: prefs.push_enabled ?? true,
+    reminder_1_day: prefs.reminder_1_day ?? true,
+    reminder_day_of: prefs.reminder_day_of ?? true,
+  };
+}
+
+// deno-lint-ignore no-explicit-any
 async function sendReminders(
   supabase: any,
   event: EventReminder,
   eventType: string,
   timeframe: string,
-  accountSid: string,
-  authToken: string,
-  fromNumber: string
+  twilioConfig: { accountSid: string; authToken: string; phoneNumber: string } | null
 ) {
   console.log(`Sending ${timeframe} reminders for ${eventType} ${event.id}`);
   
@@ -143,8 +198,10 @@ async function sendReminders(
     }
 
     members = gigMembers
+      // deno-lint-ignore no-explicit-any
       ?.map((gm: any) => gm.profiles)
-      .filter((p: any) => p && p.phone_number) || [];
+      // deno-lint-ignore no-explicit-any
+      .filter((p: any): p is Profile => p !== null) || [];
   } else {
     const { data: profiles, error: profileError } = await supabase
       .from('profiles')
@@ -157,7 +214,7 @@ async function sendReminders(
       return;
     }
 
-    members = profiles || [];
+    members = (profiles || []) as Profile[];
   }
 
   console.log(`Found ${members.length} members to notify`);
@@ -173,23 +230,120 @@ async function sendReminders(
   const timeInfo = event.loading_time || event.sound_check_time || event.end_time || '';
   const timeText = timeInfo ? ` at ${timeInfo}` : '';
   
-  const message = `🎵 Reminder: ${eventType === 'gig' ? 'Gig' : 'Rehearsal'} in ${timeframe}!\n\n` +
+  const smsMessage = `🎵 Reminder: ${eventType === 'gig' ? 'Gig' : 'Rehearsal'} in ${timeframe}!\n\n` +
     `📅 ${eventDate}\n` +
     `📍 ${venueName}${timeText}\n\n` +
     `See you there!`;
 
+  const pushTitle = `${eventType === 'gig' ? 'Gig' : 'Rehearsal'} in ${timeframe}!`;
+  const pushBody = `${eventDate} at ${venueName}${timeText}`;
+
   for (const member of members) {
     try {
-      await sendTwilioSMS(
-        member.phone_number,
-        message,
-        accountSid,
-        authToken,
-        fromNumber
-      );
-      console.log(`SMS sent to ${member.name} (${member.phone_number})`);
+      // Get user's notification preferences
+      const prefs = await getUserNotificationPrefs(supabase, member.id);
+      
+      // Check if user wants reminders for this timeframe
+      const wantsReminder = timeframe === '1 day' ? prefs.reminder_1_day : prefs.reminder_day_of;
+      
+      if (!wantsReminder) {
+        console.log(`User ${member.name} has disabled ${timeframe} reminders`);
+        continue;
+      }
+
+      // Send SMS if enabled and Twilio is configured
+      if (prefs.sms_enabled && twilioConfig && member.phone_number) {
+        try {
+          await sendTwilioSMS(
+            member.phone_number,
+            smsMessage,
+            twilioConfig.accountSid,
+            twilioConfig.authToken,
+            twilioConfig.phoneNumber
+          );
+          console.log(`SMS sent to ${member.name} (${member.phone_number})`);
+        } catch (smsError) {
+          console.error(`Failed to send SMS to ${member.name}:`, smsError);
+        }
+      }
+
+      // Send push notification if enabled
+      if (prefs.push_enabled) {
+        try {
+          await sendPushNotification(supabase, member.id, pushTitle, pushBody, event.id, eventType);
+          console.log(`Push notification sent to ${member.name}`);
+        } catch (pushError) {
+          console.error(`Failed to send push to ${member.name}:`, pushError);
+        }
+      }
     } catch (error) {
-      console.error(`Failed to send SMS to ${member.name}:`, error);
+      console.error(`Failed to process notifications for ${member.name}:`, error);
+    }
+  }
+}
+
+// deno-lint-ignore no-explicit-any
+async function sendPushNotification(
+  supabase: any,
+  userId: string,
+  title: string,
+  body: string,
+  eventId: string,
+  eventType: string
+): Promise<void> {
+  // Get user's push tokens
+  const { data: tokens, error: tokensError } = await supabase
+    .from('push_tokens')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('platform', 'web');
+
+  if (tokensError) {
+    console.error('Error fetching push tokens:', tokensError);
+    return;
+  }
+
+  if (!tokens || tokens.length === 0) {
+    console.log(`No push tokens found for user ${userId}`);
+    return;
+  }
+
+  const payload = JSON.stringify({
+    title,
+    body,
+    url: eventType === 'gig' ? '/dashboard' : '/rehearsals',
+    eventId,
+    eventType,
+  });
+
+  for (const tokenRecord of tokens as PushToken[]) {
+    try {
+      const subscription = JSON.parse(tokenRecord.token);
+      
+      // Send to the push endpoint
+      const response = await fetch(subscription.endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'TTL': '86400',
+        },
+        body: payload,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Push failed:', response.status, errorText);
+        
+        // Remove stale tokens
+        if (response.status === 404 || response.status === 410) {
+          await supabase.from('push_tokens').delete().eq('id', tokenRecord.id);
+          console.log('Removed stale push token:', tokenRecord.id);
+        }
+      } else {
+        console.log(`Push sent successfully to token ${tokenRecord.id}`);
+      }
+    } catch (error) {
+      console.error(`Error sending push to token ${tokenRecord.id}:`, error);
     }
   }
 }

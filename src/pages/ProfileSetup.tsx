@@ -368,6 +368,21 @@ const ProfileSetup = () => {
     setYoutubeLinks((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const getYoutubeThumbnail = (url: string): string | null => {
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+      /youtube\.com\/shorts\/([^&\n?#]+)/,
+    ];
+    
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match && match[1]) {
+        return `https://img.youtube.com/vi/${match[1]}/mqdefault.jpg`;
+      }
+    }
+    return null;
+  };
+
   const socialPlatforms = [
     { key: "facebook" as keyof SocialLinks, label: "Facebook", icon: Facebook, placeholder: "https://facebook.com/yourprofile" },
     { key: "instagram" as keyof SocialLinks, label: "Instagram", icon: Instagram, placeholder: "https://instagram.com/yourprofile" },
@@ -803,25 +818,48 @@ const ProfileSetup = () => {
                 </div>
 
                 {youtubeLinks.length > 0 && (
-                  <div className="space-y-2">
-                    {youtubeLinks.map((link, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center gap-2 p-2 border rounded-lg bg-muted/50"
-                      >
-                        <Youtube className="h-4 w-4 text-red-500 shrink-0" />
-                        <span className="flex-1 text-sm truncate">{link}</span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeYoutubeLink(index)}
-                          className="shrink-0 h-8 w-8"
+                  <div className="space-y-3">
+                    {youtubeLinks.map((link, index) => {
+                      const thumbnail = getYoutubeThumbnail(link);
+                      return (
+                        <div
+                          key={index}
+                          className="flex items-center gap-3 p-2 border rounded-lg bg-muted/50"
                         >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
+                          {thumbnail ? (
+                            <a 
+                              href={link} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="shrink-0 relative group"
+                            >
+                              <img 
+                                src={thumbnail} 
+                                alt="Video thumbnail" 
+                                className="w-24 h-14 object-cover rounded-md"
+                              />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center">
+                                <Youtube className="h-6 w-6 text-white" />
+                              </div>
+                            </a>
+                          ) : (
+                            <div className="w-24 h-14 bg-muted rounded-md flex items-center justify-center shrink-0">
+                              <Youtube className="h-6 w-6 text-red-500" />
+                            </div>
+                          )}
+                          <span className="flex-1 text-sm truncate">{link}</span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeYoutubeLink(index)}
+                            className="shrink-0 h-8 w-8"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>

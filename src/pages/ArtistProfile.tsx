@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload, Plus, Trash2, Youtube, ArrowLeft } from "lucide-react";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
 import { TopNav } from "@/components/TopNav";
+import { AvailabilityCalendar } from "@/components/AvailabilityCalendar";
 
 interface ArtistProfile {
   id: string;
@@ -433,6 +434,9 @@ const ArtistProfile = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Availability Calendar */}
+          <AvailabilityCalendar />
 
           {/* Save Button */}
           <Button onClick={handleSaveProfile} disabled={saving} className="w-full" size="lg">

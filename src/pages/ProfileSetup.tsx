@@ -25,6 +25,7 @@ const ProfileSetup = () => {
   const [bio, setBio] = useState("");
   const [instrument, setInstrument] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [email, setEmail] = useState("");
   const [riderNotes, setRiderNotes] = useState("");
   const [timezone, setTimezone] = useState("America/Chicago");
   const [photoFiles, setPhotoFiles] = useState<(File | null)[]>([null, null, null, null]);
@@ -64,6 +65,7 @@ const ProfileSetup = () => {
           setBio(profile.bio || "");
           setInstrument(profile.instrument || "");
           setPhoneNumber(profile.phone_number || "");
+          setEmail(profile.email || "");
           setRiderNotes(profile.rider_notes || "");
           setTimezone(profile.timezone || "America/Chicago");
           const urls = profile.photo_urls || [];
@@ -241,6 +243,7 @@ const ProfileSetup = () => {
         id: user.id,
         name,
         bio,
+        email,
         instrument: (role === "band_leader" || role === "band_member" ? instrument : null) as any,
         phone_number: phoneNumber || null,
         rider_notes: riderNotes,
@@ -559,13 +562,11 @@ const ProfileSetup = () => {
               <Input
                 id="email"
                 type="email"
-                value={user?.email || ""}
-                disabled
-                className="bg-muted"
+                placeholder="your@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
               />
-              <p className="text-xs text-muted-foreground">
-                Email is linked to your account and cannot be changed here.
-              </p>
             </div>
 
             <div className="space-y-2">

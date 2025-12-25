@@ -332,6 +332,7 @@ const Bookings = () => {
           venueName: venueName.trim() || null,
           venue: venue.trim(),
           gigDate: new Date(newGig.date),
+          bandId: selectedBandId,
         });
 
         toast({
@@ -424,6 +425,7 @@ const Bookings = () => {
           venueName: gig.venue_name,
           venue: gig.venue,
           gigDate: new Date(gig.date),
+          bandId: selectedBandId,
         });
       }
 

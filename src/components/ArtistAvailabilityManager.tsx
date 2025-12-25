@@ -83,15 +83,23 @@ export const ArtistAvailabilityManager = ({
         (payload) => {
           console.log('New availability response received:', payload);
           // Update the response count for the affected request
-          setRequests(prev => prev.map(request => {
-            if (request.id === payload.new.request_id) {
-              return {
-                ...request,
-                response_count: (request.response_count || 0) + 1
-              };
-            }
-            return request;
-          }));
+          setRequests(prev => {
+            const updatedRequests = prev.map(request => {
+              if (request.id === payload.new.request_id) {
+                // Show toast for this request
+                toast({
+                  title: "New Availability Response",
+                  description: `An artist responded to "${request.title}"`,
+                });
+                return {
+                  ...request,
+                  response_count: (request.response_count || 0) + 1
+                };
+              }
+              return request;
+            });
+            return updatedRequests;
+          });
         }
       )
       .subscribe();

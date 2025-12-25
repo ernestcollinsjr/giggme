@@ -79,6 +79,7 @@ const Bookings = () => {
   const [foodProvided, setFoodProvided] = useState("");
   const [venueContactPerson, setVenueContactPerson] = useState("");
   const [soundManInfo, setSoundManInfo] = useState("");
+  const [responseDeadlineHours, setResponseDeadlineHours] = useState("2");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Edit gig state
@@ -313,10 +314,16 @@ const Bookings = () => {
 
       // Auto-invite selected members
       if (selectedMembers.length > 0 && newGig) {
+        // Calculate response deadline
+        const deadlineHours = parseInt(responseDeadlineHours) || 2;
+        const responseDeadline = new Date();
+        responseDeadline.setHours(responseDeadline.getHours() + deadlineHours);
+
         const invites = selectedMembers.map(memberId => ({
           gig_id: newGig.id,
           member_id: memberId,
           status: 'pending',
+          response_deadline: responseDeadline.toISOString(),
         }));
 
         const { error: inviteError } = await supabase
@@ -404,10 +411,15 @@ const Bookings = () => {
         return;
       }
 
+      // Calculate response deadline (default 2 hours for additional invites)
+      const responseDeadline = new Date();
+      responseDeadline.setHours(responseDeadline.getHours() + 2);
+
       const invites = newMembers.map(memberId => ({
         gig_id: currentGigForInvite,
         member_id: memberId,
         status: 'pending',
+        response_deadline: responseDeadline.toISOString(),
       }));
 
       const { error } = await supabase
@@ -874,6 +886,32 @@ const Bookings = () => {
                   <Users className="h-4 w-4" />
                   Invite Band Members (Optional)
                 </Label>
+                
+                {/* Response Deadline Selector */}
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex-1">
+                    <Label htmlFor="responseDeadline" className="text-xs text-muted-foreground">
+                      Response deadline
+                    </Label>
+                    <Select value={responseDeadlineHours} onValueChange={setResponseDeadlineHours}>
+                      <SelectTrigger id="responseDeadline" className="h-8 mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">1 hour</SelectItem>
+                        <SelectItem value="2">2 hours</SelectItem>
+                        <SelectItem value="4">4 hours</SelectItem>
+                        <SelectItem value="8">8 hours</SelectItem>
+                        <SelectItem value="24">24 hours</SelectItem>
+                        <SelectItem value="48">48 hours</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <p className="text-xs text-muted-foreground max-w-[140px]">
+                    Auto-replacement if no response
+                  </p>
+                </div>
                 {bandMembers.length === 0 ? (
                   <p className="text-xs text-muted-foreground">No band members available to invite</p>
                 ) : (

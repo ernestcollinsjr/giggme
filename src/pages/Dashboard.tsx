@@ -28,6 +28,7 @@ import { BandInvitationManager } from "@/components/BandInvitationManager";
 import { TeamAvailabilityView } from "@/components/TeamAvailabilityView";
 import { AvailabilityRequestManager } from "@/components/AvailabilityRequestManager";
 import { AvailabilityRequestResults } from "@/components/AvailabilityRequestResults";
+import { GigResponseCountdown } from "@/components/GigResponseCountdown";
 import { AvailabilityRequestResponder } from "@/components/AvailabilityRequestResponder";
 import { BandProfileEditor } from "@/components/BandProfileEditor";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
@@ -83,6 +84,7 @@ interface GigInvite {
   gig_id: string;
   member_id: string;
   status: string;
+  response_deadline: string | null;
   gigs: {
     id: string;
     date: string;
@@ -274,6 +276,7 @@ const Dashboard = () => {
             gig_id,
             member_id,
             status,
+            response_deadline,
             gigs (
               id,
               date,
@@ -1426,6 +1429,12 @@ const Dashboard = () => {
                               })}
                             </div>
                             <h4 className="font-semibold">{invite.gigs.venue}</h4>
+                            {invite.response_deadline && (
+                              <GigResponseCountdown 
+                                deadline={invite.response_deadline} 
+                                className="mt-2"
+                              />
+                            )}
                             {invite.gigs.notes && (
                               <p className="text-sm text-muted-foreground mt-1">{invite.gigs.notes}</p>
                             )}

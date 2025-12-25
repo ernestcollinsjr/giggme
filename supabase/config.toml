@@ -3,6 +3,9 @@ project_id = "pgvfeolxgufldpwyheqf"
 [functions.band-assistant]
 verify_jwt = true
 
+[functions.check-response-deadlines]
+verify_jwt = false
+
 [functions.cleanup-past-events]
 verify_jwt = false
 

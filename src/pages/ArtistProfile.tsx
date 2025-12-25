@@ -340,10 +340,10 @@ const ArtistProfile = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Photo Grid */}
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-4 gap-2">
                 {profile?.photo_urls?.map((url, index) => (
                   <div key={index} className="relative group">
-                    <div className="h-20 w-20 rounded-lg overflow-hidden bg-muted">
+                    <div className="h-28 w-28 rounded-lg overflow-hidden bg-muted">
                       <img src={url} alt={`Photo ${index + 1}`} className="h-full w-full object-cover" />
                     </div>
                     <Button
@@ -360,7 +360,7 @@ const ArtistProfile = () => {
                 {/* Upload Button */}
                 {(profile?.photo_urls?.length || 0) < MAX_PHOTOS && (
                   <Label htmlFor="photo-upload" className={uploadingPhoto ? "cursor-wait" : "cursor-pointer"}>
-                    <div className={`h-20 w-20 rounded-lg border-2 border-dashed flex items-center justify-center transition-colors ${
+                    <div className={`h-28 w-28 rounded-lg border-2 border-dashed flex items-center justify-center transition-colors ${
                       uploadingPhoto 
                         ? "border-primary bg-primary/10" 
                         : "border-muted-foreground/50 hover:border-primary"

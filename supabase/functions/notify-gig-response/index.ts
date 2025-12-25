@@ -156,6 +156,138 @@ async function createInAppNotification(
   }
 }
 
+// Helper to send notifications to a recipient
+async function notifyRecipient(
+  supabase: any,
+  recipientId: string,
+  recipientProfile: { email: string; name: string; phone_number?: string },
+  gig: { venue: string; venue_name?: string; date: string },
+  memberName: string,
+  status: string,
+  gigId: string,
+  recipientType: string
+): Promise<{ emailSent: boolean; smsSent: boolean; pushSent: boolean }> {
+  // Get recipient's notification preferences
+  const { data: notifPrefs } = await supabase
+    .from("notification_preferences")
+    .select("email_enabled, sms_enabled, push_enabled")
+    .eq("user_id", recipientId)
+    .single();
+
+  const emailEnabled = notifPrefs?.email_enabled ?? true;
+  const smsEnabled = notifPrefs?.sms_enabled ?? true;
+  const pushEnabled = notifPrefs?.push_enabled ?? true;
+
+  console.log(`${recipientType} notification preferences - Email: ${emailEnabled}, SMS: ${smsEnabled}, Push: ${pushEnabled}`);
+
+  const venueName = gig.venue_name || gig.venue;
+  const gigDate = new Date(gig.date).toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  const shortDate = new Date(gig.date).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+
+  const statusEmoji = status === "accepted" ? "✅" : status === "declined" ? "❌" : "⏳";
+  const statusText = status === "accepted" ? "accepted" : status === "declined" ? "declined" : "is pending on";
+  const statusColor = status === "accepted" ? "#22c55e" : status === "declined" ? "#ef4444" : "#eab308";
+
+  // Send push notification if enabled
+  let pushSent = false;
+  if (pushEnabled) {
+    const pushTitle = `${statusEmoji} Gig RSVP Update`;
+    const pushBody = `${memberName} has ${statusText} the gig at ${venueName} on ${shortDate}`;
+    pushSent = await sendPushNotification(
+      supabase,
+      recipientId,
+      pushTitle,
+      pushBody,
+      '/bookings',
+      { type: 'gig_response', gig_id: gigId }
+    );
+  }
+
+  // Create in-app notification (always create)
+  await createInAppNotification(
+    supabase,
+    recipientId,
+    `${statusEmoji} Gig RSVP Update`,
+    `${memberName} has ${statusText} the gig at ${venueName} on ${shortDate}`,
+    'gig_response',
+    gigId
+  );
+
+  // Send email notification if enabled
+  let emailSent = false;
+  if (emailEnabled) {
+    console.log(`Sending email to ${recipientProfile.email} (${recipientType})`);
+    try {
+      const emailResponse = await resend.emails.send({
+        from: "GigSync <onboarding@resend.dev>",
+        to: [recipientProfile.email],
+        subject: `${statusEmoji} ${memberName} has ${statusText} the gig at ${venueName}`,
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          </head>
+          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f5;">
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+              <div style="background-color: white; border-radius: 12px; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <h1 style="margin: 0 0 24px; font-size: 24px; color: #18181b;">Gig RSVP Update</h1>
+                
+                <div style="background-color: ${statusColor}15; border-left: 4px solid ${statusColor}; padding: 16px; border-radius: 0 8px 8px 0; margin-bottom: 24px;">
+                  <p style="margin: 0; font-size: 18px; color: #18181b;">
+                    <strong>${memberName}</strong> has <strong style="color: ${statusColor};">${statusText}</strong> the gig
+                  </p>
+                </div>
+                
+                <div style="background-color: #f4f4f5; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+                  <h2 style="margin: 0 0 12px; font-size: 14px; text-transform: uppercase; color: #71717a; letter-spacing: 0.5px;">Gig Details</h2>
+                  <p style="margin: 0 0 8px; font-size: 16px; color: #18181b;">
+                    <strong>📍 Venue:</strong> ${venueName}
+                  </p>
+                  <p style="margin: 0; font-size: 16px; color: #18181b;">
+                    <strong>📅 Date:</strong> ${gigDate}
+                  </p>
+                </div>
+                
+                <p style="margin: 0; font-size: 14px; color: #71717a;">
+                  You're receiving this email because you're the ${recipientType} for this gig.
+                </p>
+              </div>
+              
+              <p style="text-align: center; margin-top: 20px; font-size: 12px; color: #a1a1aa;">
+                Sent by GigSync
+              </p>
+            </div>
+          </body>
+          </html>
+        `,
+      });
+      console.log("Email sent successfully:", emailResponse);
+      emailSent = true;
+    } catch (emailError) {
+      console.error("Failed to send email:", emailError);
+    }
+  }
+
+  // Send SMS notification if enabled and phone number is available
+  let smsSent = false;
+  if (smsEnabled && recipientProfile.phone_number) {
+    const smsMessage = `${statusEmoji} GigSync: ${memberName} has ${statusText} your gig at ${venueName} on ${shortDate}.`;
+    smsSent = await sendSMS(recipientProfile.phone_number, smsMessage);
+  }
+
+  return { emailSent, smsSent, pushSent };
+}
+
 const handler = async (req: Request): Promise<Response> => {
   console.log("notify-gig-response function called");
 
@@ -171,10 +303,10 @@ const handler = async (req: Request): Promise<Response> => {
     const { gig_id, member_id, member_name, status }: GigResponseRequest = await req.json();
     console.log(`Processing response: ${member_name} ${status} gig ${gig_id}`);
 
-    // Get gig details
+    // Get gig details including band_id
     const { data: gig, error: gigError } = await supabase
       .from("gigs")
-      .select("venue, venue_name, date, user_id")
+      .select("venue, venue_name, date, user_id, band_id")
       .eq("id", gig_id)
       .single();
 
@@ -201,135 +333,69 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Get band leader's notification preferences
-    const { data: notifPrefs } = await supabase
-      .from("notification_preferences")
-      .select("email_enabled, sms_enabled, push_enabled")
-      .eq("user_id", gig.user_id)
-      .single();
+    // Track all notification results
+    const results: { recipient: string; emailSent: boolean; smsSent: boolean; pushSent: boolean }[] = [];
 
-    // Default to enabled if no preferences set
-    const emailEnabled = notifPrefs?.email_enabled ?? true;
-    const smsEnabled = notifPrefs?.sms_enabled ?? true;
-    const pushEnabled = notifPrefs?.push_enabled ?? true;
-
-    console.log(`Notification preferences - Email: ${emailEnabled}, SMS: ${smsEnabled}, Push: ${pushEnabled}`);
-
-    const venueName = gig.venue_name || gig.venue;
-    const gigDate = new Date(gig.date).toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-    const shortDate = new Date(gig.date).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-
-    const statusEmoji = status === "accepted" ? "✅" : status === "declined" ? "❌" : "⏳";
-    const statusText = status === "accepted" ? "accepted" : status === "declined" ? "declined" : "is pending on";
-    const statusColor = status === "accepted" ? "#22c55e" : status === "declined" ? "#ef4444" : "#eab308";
-
-    // Send push notification if enabled
-    let pushSent = false;
-    if (pushEnabled) {
-      const pushTitle = `${statusEmoji} Gig RSVP Update`;
-      const pushBody = `${member_name} has ${statusText} the gig at ${venueName} on ${shortDate}`;
-      pushSent = await sendPushNotification(
-        supabase,
-        gig.user_id,
-        pushTitle,
-        pushBody,
-        '/bookings',
-        { type: 'gig_response', gig_id }
-      );
-    } else {
-      console.log("Push notifications disabled for this user");
-    }
-
-    // Create in-app notification (always create)
-    await createInAppNotification(
+    // Notify band leader
+    console.log("Notifying band leader:", gig.user_id);
+    const leaderResult = await notifyRecipient(
       supabase,
       gig.user_id,
-      `${statusEmoji} Gig RSVP Update`,
-      `${member_name} has ${statusText} the gig at ${venueName} on ${shortDate}`,
-      'gig_response',
-      gig_id
+      bandLeader,
+      gig,
+      member_name,
+      status,
+      gig_id,
+      "band leader"
     );
+    results.push({ recipient: "band_leader", ...leaderResult });
 
-    // Send email notification if enabled
-    let emailSent = false;
-    if (emailEnabled) {
-      console.log(`Sending email to ${bandLeader.email}`);
-      try {
-        const emailResponse = await resend.emails.send({
-          from: "GigSync <onboarding@resend.dev>",
-          to: [bandLeader.email],
-          subject: `${statusEmoji} ${member_name} has ${statusText} the gig at ${venueName}`,
-          html: `
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <meta charset="utf-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            </head>
-            <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f5;">
-              <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-                <div style="background-color: white; border-radius: 12px; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                  <h1 style="margin: 0 0 24px; font-size: 24px; color: #18181b;">Gig RSVP Update</h1>
-                  
-                  <div style="background-color: ${statusColor}15; border-left: 4px solid ${statusColor}; padding: 16px; border-radius: 0 8px 8px 0; margin-bottom: 24px;">
-                    <p style="margin: 0; font-size: 18px; color: #18181b;">
-                      <strong>${member_name}</strong> has <strong style="color: ${statusColor};">${statusText}</strong> the gig
-                    </p>
-                  </div>
-                  
-                  <div style="background-color: #f4f4f5; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
-                    <h2 style="margin: 0 0 12px; font-size: 14px; text-transform: uppercase; color: #71717a; letter-spacing: 0.5px;">Gig Details</h2>
-                    <p style="margin: 0 0 8px; font-size: 16px; color: #18181b;">
-                      <strong>📍 Venue:</strong> ${venueName}
-                    </p>
-                    <p style="margin: 0; font-size: 16px; color: #18181b;">
-                      <strong>📅 Date:</strong> ${gigDate}
-                    </p>
-                  </div>
-                  
-                  <p style="margin: 0; font-size: 14px; color: #71717a;">
-                    You're receiving this email because you're the band leader for this gig.
-                  </p>
-                </div>
-                
-                <p style="text-align: center; margin-top: 20px; font-size: 12px; color: #a1a1aa;">
-                  Sent by GigSync
-                </p>
-              </div>
-            </body>
-            </html>
-          `,
-        });
-        console.log("Email sent successfully:", emailResponse);
-        emailSent = true;
-      } catch (emailError) {
-        console.error("Failed to send email:", emailError);
+    // Find and notify booking managers if band has any
+    if (gig.band_id) {
+      const { data: bookingManagerBands, error: bmError } = await supabase
+        .from("booking_manager_bands")
+        .select("booking_manager_id")
+        .eq("band_id", gig.band_id);
+
+      if (!bmError && bookingManagerBands && bookingManagerBands.length > 0) {
+        console.log(`Found ${bookingManagerBands.length} booking manager(s) for this band`);
+        
+        for (const bmBand of bookingManagerBands) {
+          // Skip if booking manager is the same as band leader
+          if (bmBand.booking_manager_id === gig.user_id) {
+            console.log("Skipping booking manager (same as band leader)");
+            continue;
+          }
+
+          // Get booking manager's profile
+          const { data: bmProfile, error: bmProfileError } = await supabase
+            .from("profiles")
+            .select("email, name, phone_number")
+            .eq("id", bmBand.booking_manager_id)
+            .single();
+
+          if (!bmProfileError && bmProfile) {
+            console.log("Notifying booking manager:", bmBand.booking_manager_id);
+            const bmResult = await notifyRecipient(
+              supabase,
+              bmBand.booking_manager_id,
+              bmProfile,
+              gig,
+              member_name,
+              status,
+              gig_id,
+              "booking manager"
+            );
+            results.push({ recipient: `booking_manager_${bmBand.booking_manager_id}`, ...bmResult });
+          }
+        }
+      } else {
+        console.log("No booking managers found for this band");
       }
-    } else {
-      console.log("Email notifications disabled for this user");
-    }
-
-    // Send SMS notification if enabled and phone number is available
-    let smsSent = false;
-    if (smsEnabled && bandLeader.phone_number) {
-      const smsMessage = `${statusEmoji} GigSync: ${member_name} has ${statusText} your gig at ${venueName} on ${shortDate}.`;
-      smsSent = await sendSMS(bandLeader.phone_number, smsMessage);
-    } else if (!smsEnabled) {
-      console.log("SMS notifications disabled for this user");
-    } else {
-      console.log("No phone number available for band leader, skipping SMS");
     }
 
     return new Response(
-      JSON.stringify({ success: true, emailSent, smsSent, pushSent }),
+      JSON.stringify({ success: true, results }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   } catch (error: any) {

@@ -180,6 +180,7 @@ export function AvailabilityRequestResults({ requestId, onBack }: AvailabilityRe
           venueName: venueName || null,
           venue: venueAddress,
           gigDate: new Date(selectedDate),
+          bandId: request?.band_id || null,
         });
       }
 

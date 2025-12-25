@@ -12,6 +12,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { toast } from "@/hooks/use-toast";
 import { Calendar, Users, Loader2, Check, X, ArrowLeft, CalendarPlus } from "lucide-react";
 import { format, eachDayOfInterval, parseISO } from "date-fns";
+import { sendGigPushNotifications } from "@/utils/sendGigPushNotification";
 
 interface AvailabilityRequest {
   id: string;
@@ -171,6 +172,15 @@ export function AvailabilityRequestResults({ requestId, onBack }: AvailabilityRe
           .insert(memberInserts);
 
         if (membersError) throw membersError;
+
+        // Send push notifications to invited members
+        sendGigPushNotifications({
+          gigId: gig.id,
+          memberIds: selectedMembers,
+          venueName: venueName || null,
+          venue: venueAddress,
+          gigDate: new Date(selectedDate),
+        });
       }
 
       toast({ 

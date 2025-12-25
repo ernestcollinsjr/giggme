@@ -20,8 +20,10 @@ import {
   Search,
   ArrowLeft,
   UserPlus,
-  CalendarCheck
+  CalendarCheck,
+  Mail
 } from "lucide-react";
+import { BandInvitationManager } from "@/components/BandInvitationManager";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -556,17 +558,23 @@ export default function BookingManager() {
               </div>
 
               {selectedBandForAvailability && (
-                <div className="grid lg:grid-cols-2 gap-6">
-                  <AvailabilityRequestManager 
-                    bandId={selectedBandForAvailability}
-                    onViewResponses={(requestId) => setViewingResponsesForRequest(requestId)}
-                  />
-                  {viewingResponsesForRequest && (
-                    <AvailabilityRequestResults 
-                      requestId={viewingResponsesForRequest}
-                      onBack={() => setViewingResponsesForRequest(null)}
+                <div className="space-y-6">
+                  <div className="grid lg:grid-cols-2 gap-6">
+                    <AvailabilityRequestManager 
+                      bandId={selectedBandForAvailability}
+                      onViewResponses={(requestId) => setViewingResponsesForRequest(requestId)}
                     />
-                  )}
+                    {viewingResponsesForRequest && (
+                      <AvailabilityRequestResults 
+                        requestId={viewingResponsesForRequest}
+                        onBack={() => setViewingResponsesForRequest(null)}
+                      />
+                    )}
+                  </div>
+                  <BandInvitationManager 
+                    bandId={selectedBandForAvailability}
+                    bandName={managedBands.find(b => b.id === selectedBandForAvailability)?.name || "Band"}
+                  />
                 </div>
               )}
             </CardContent>

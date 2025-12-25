@@ -72,6 +72,7 @@ const ProfileSetup = () => {
   const [dragStartIndex, setDragStartIndex] = useState<number | null>(null);
   const [dragEndIndex, setDragEndIndex] = useState<number | null>(null);
   const [pulsingIndex, setPulsingIndex] = useState<number | null>(null);
+  const [showSaveConfirmation, setShowSaveConfirmation] = useState(false);
   const [travelDistance, setTravelDistance] = useState<string>("");
   const [yearsExperience, setYearsExperience] = useState<string>("");
   const [unionMemberships, setUnionMemberships] = useState<string[]>([]);
@@ -555,6 +556,7 @@ const ProfileSetup = () => {
             day.date === dateStr ? { ...day, status } : day
           ));
           if (dateStr === today) setTodayCalendarStatus(status);
+          triggerSaveConfirmation();
           toast({ title: `${new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} marked as ${status}` });
         }
       } else {
@@ -570,6 +572,7 @@ const ProfileSetup = () => {
           day.date === dateStr ? { ...day, status } : day
         ));
         if (dateStr === today) setTodayCalendarStatus(status);
+        triggerSaveConfirmation();
         toast({ title: `${new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} marked as ${status}` });
       }
     } catch (error) {
@@ -625,6 +628,7 @@ const ProfileSetup = () => {
       if (todayInRange) setTodayCalendarStatus(status);
 
       const count = datesToUpdate.length;
+      triggerSaveConfirmation();
       toast({ title: `${count} day${count > 1 ? 's' : ''} marked as ${status}` });
     } catch (error) {
       console.error('Error setting range availability:', error);
@@ -650,6 +654,12 @@ const ProfileSetup = () => {
   const triggerPulse = (idx: number) => {
     setPulsingIndex(idx);
     setTimeout(() => setPulsingIndex(null), 150);
+  };
+
+  // Save confirmation animation
+  const triggerSaveConfirmation = () => {
+    setShowSaveConfirmation(true);
+    setTimeout(() => setShowSaveConfirmation(false), 1500);
   };
 
   // Drag handlers for 7-day preview
@@ -1481,9 +1491,30 @@ const ProfileSetup = () => {
                   </div>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-3 relative">
                   <Label className="text-xs">Today's Availability Status</Label>
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border">
+                  
+                  {/* Save confirmation animation */}
+                  {showSaveConfirmation && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                      <div className="relative">
+                        {/* Sparkles */}
+                        <div className="absolute -top-2 -left-2 w-2 h-2 bg-yellow-400 rounded-full animate-ping" style={{ animationDuration: '0.5s' }} />
+                        <div className="absolute -top-1 -right-3 w-1.5 h-1.5 bg-green-400 rounded-full animate-ping" style={{ animationDuration: '0.6s', animationDelay: '0.1s' }} />
+                        <div className="absolute -bottom-1 -left-3 w-1.5 h-1.5 bg-blue-400 rounded-full animate-ping" style={{ animationDuration: '0.5s', animationDelay: '0.2s' }} />
+                        <div className="absolute -bottom-2 -right-2 w-2 h-2 bg-purple-400 rounded-full animate-ping" style={{ animationDuration: '0.6s' }} />
+                        <div className="absolute top-1 right-3 w-1 h-1 bg-pink-400 rounded-full animate-ping" style={{ animationDuration: '0.4s', animationDelay: '0.15s' }} />
+                        <div className="absolute bottom-1 left-3 w-1 h-1 bg-cyan-400 rounded-full animate-ping" style={{ animationDuration: '0.45s', animationDelay: '0.1s' }} />
+                        
+                        {/* Main checkmark */}
+                        <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center shadow-lg shadow-green-500/50 animate-scale-in">
+                          <Check className="h-7 w-7 text-white" strokeWidth={3} />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className={`flex items-center gap-3 p-3 rounded-lg bg-muted/50 border transition-opacity ${showSaveConfirmation ? 'opacity-30' : ''}`}>
                     <div className="flex items-center gap-2">
                       {todayCalendarStatus === 'available' ? (
                         <>

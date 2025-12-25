@@ -55,6 +55,8 @@ const Notifications = () => {
   });
 
   useEffect(() => {
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -105,11 +107,39 @@ const Notifications = () => {
         setNotifications(notificationsData);
       }
 
+      // Subscribe to real-time notifications
+      channel = supabase
+        .channel('notifications-realtime')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${user.id}`,
+          },
+          (payload) => {
+            const newNotification = payload.new as Notification;
+            setNotifications((prev) => [newNotification, ...prev]);
+            toast({
+              title: newNotification.title,
+              description: newNotification.message,
+            });
+          }
+        )
+        .subscribe();
+
       setLoading(false);
     };
 
     init();
-  }, [navigate]);
+
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [navigate, toast]);
 
   const updatePreference = async (key: keyof NotificationPrefs, value: boolean) => {
     setSaving(true);

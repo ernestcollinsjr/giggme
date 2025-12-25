@@ -1085,25 +1085,32 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/10 pb-20">
       <TopNav userRole={userRole} />
       <div className="max-w-4xl mx-auto p-4 space-y-6">
-        {/* Profile & Logout - Top Row */}
-        <div className="flex items-center justify-end gap-3">
-          <LivePresence />
-          {userRole === "artist" && (
-            <Button variant="outline" size="sm" onClick={() => navigate("/artist-profile")}>
-              Edit Profile
-            </Button>
-          )}
-          <Button variant="outline" size="sm" onClick={() => navigate("/profile-setup")} className="gap-2">
-            <UserIcon className="h-4 w-4" />
-            Profile
-          </Button>
-          <Button variant="destructive" size="sm" onClick={handleLogout} className="gap-2">
-            <LogOut className="h-4 w-4" />
-            Logout
-          </Button>
-        </div>
-
         {/* Welcome Section */}
+        <div className="flex items-center gap-4">
+          <Avatar className="h-16 w-16 border-2 border-primary">
+            <AvatarImage src={profile?.photo_urls?.[0] || undefined} alt={profile?.name} />
+            <AvatarFallback className="text-lg font-semibold bg-primary/10">
+              {profile?.name?.charAt(0)?.toUpperCase() || "U"}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              Welcome, {profile?.name}
+            </h1>
+            <Badge variant="secondary" className="mt-2">
+              {userRole === "booking_manager" 
+                ? "Booking Manager" 
+                : userRole === "band_leader"
+                ? "Band Leader"
+                : userRole === "artist"
+                ? "Artist/Musician"
+                : userRole === "tour_manager"
+                ? "Tour/Road Manager"
+                : "Band Member"}
+            </Badge>
+          </div>
+          <LivePresence />
+        </div>
         <div className="flex items-center gap-4">
           <Avatar className="h-16 w-16 border-2 border-primary">
             <AvatarImage src={profile?.photo_urls?.[0] || undefined} alt={profile?.name} />

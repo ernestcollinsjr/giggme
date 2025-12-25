@@ -445,11 +445,58 @@ const Bookings = () => {
                   <MapPin className="h-4 w-4 text-muted-foreground" />
                   <PlaceAutocomplete
                     value={venue}
-                    onChange={(value, placeDetails) => {
+                    onChange={async (value, placeDetails) => {
                       setVenue(value);
+                      let lat: number | null = null;
+                      let lng: number | null = null;
+                      let placeName: string | null = null;
+                      
                       if (placeDetails?.geometry?.location) {
-                        setVenueLat(placeDetails.geometry.location.lat());
-                        setVenueLng(placeDetails.geometry.location.lng());
+                        lat = placeDetails.geometry.location.lat();
+                        lng = placeDetails.geometry.location.lng();
+                        setVenueLat(lat);
+                        setVenueLng(lng);
+                      }
+                      
+                      // Extract venue name from place details
+                      if (placeDetails?.name) {
+                        placeName = placeDetails.name;
+                        setVenueName(placeName);
+                      }
+                      
+                      // Auto-save as template if venue has coordinates
+                      if (value && lat && lng) {
+                        try {
+                          const { data: { user } } = await supabase.auth.getUser();
+                          if (!user) return;
+                          
+                          // Check if template already exists for this venue
+                          const { data: existingTemplates } = await supabase
+                            .from("gig_templates")
+                            .select("id")
+                            .eq("user_id", user.id)
+                            .eq("venue", value)
+                            .limit(1);
+                          
+                          // Only create if no existing template
+                          if (!existingTemplates || existingTemplates.length === 0) {
+                            await supabase.from("gig_templates").insert({
+                              user_id: user.id,
+                              name: placeName || value.split(",")[0],
+                              venue: value,
+                              venue_name: placeName,
+                              venue_lat: lat,
+                              venue_lng: lng,
+                            });
+                            
+                            toast({
+                              title: "Venue saved",
+                              description: "This venue has been saved as a template for quick access.",
+                            });
+                          }
+                        } catch (error) {
+                          console.error("Failed to auto-save template:", error);
+                        }
                       }
                     }}
                     placeholder="Start typing a venue address..."

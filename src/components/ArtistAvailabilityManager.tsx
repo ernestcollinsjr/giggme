@@ -69,6 +69,36 @@ export const ArtistAvailabilityManager = ({
 
   useEffect(() => {
     fetchRequests();
+
+    // Subscribe to real-time updates for availability responses
+    const channel = supabase
+      .channel('availability-responses-artist-manager')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'availability_responses'
+        },
+        (payload) => {
+          console.log('New availability response received:', payload);
+          // Update the response count for the affected request
+          setRequests(prev => prev.map(request => {
+            if (request.id === payload.new.request_id) {
+              return {
+                ...request,
+                response_count: (request.response_count || 0) + 1
+              };
+            }
+            return request;
+          }));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchRequests = async () => {

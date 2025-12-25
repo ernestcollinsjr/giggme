@@ -12,7 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar as CalendarIcon, Clock, MapPin, Plus, Trash2, Music, Navigation, Users, Send } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, MapPin, Plus, Trash2, Music, Navigation, Users, Send, Pencil } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import BottomNav from "@/components/BottomNav";
@@ -76,6 +76,24 @@ const Bookings = () => {
   const [venueContactPerson, setVenueContactPerson] = useState("");
   const [soundManInfo, setSoundManInfo] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Edit gig state
+  const [editingGig, setEditingGig] = useState<Gig | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editDate, setEditDate] = useState<Date>();
+  const [editShowTime, setEditShowTime] = useState("19:00");
+  const [editEndTime, setEditEndTime] = useState("23:00");
+  const [editLoadingTime, setEditLoadingTime] = useState("");
+  const [editSoundCheckTime, setEditSoundCheckTime] = useState("");
+  const [editVenueName, setEditVenueName] = useState("");
+  const [editVenue, setEditVenue] = useState("");
+  const [editVenueLat, setEditVenueLat] = useState<number | null>(null);
+  const [editVenueLng, setEditVenueLng] = useState<number | null>(null);
+  const [editNotes, setEditNotes] = useState("");
+  const [editAttire, setEditAttire] = useState("");
+  const [editFoodProvided, setEditFoodProvided] = useState("");
+  const [editVenueContactPerson, setEditVenueContactPerson] = useState("");
+  const [editSoundManInfo, setEditSoundManInfo] = useState("");
 
   useEffect(() => {
     checkAuthAndFetchData();
@@ -339,6 +357,82 @@ const Bookings = () => {
         title: "Failed to delete gig",
         description: error.message,
       });
+    }
+  };
+
+  const openEditGigDialog = (gig: Gig) => {
+    setEditingGig(gig);
+    const gigDate = new Date(gig.date);
+    setEditDate(gigDate);
+    setEditShowTime(format(gigDate, "HH:mm"));
+    setEditEndTime(gig.end_time || "23:00");
+    setEditLoadingTime(gig.loading_time || "");
+    setEditSoundCheckTime(gig.sound_check_time || "");
+    setEditVenueName(gig.venue_name || "");
+    setEditVenue(gig.venue);
+    setEditVenueLat(gig.venue_lat);
+    setEditVenueLng(gig.venue_lng);
+    setEditNotes(gig.notes || "");
+    setEditAttire(gig.attire || "");
+    setEditFoodProvided(gig.food_provided || "");
+    setEditVenueContactPerson(gig.venue_contact_person || "");
+    setEditSoundManInfo(gig.sound_man_info || "");
+    setEditDialogOpen(true);
+  };
+
+  const handleUpdateGig = async () => {
+    if (!editingGig || !editDate || !editVenue.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Missing information",
+        description: "Please select a date and enter a venue.",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const [hours, minutes] = editShowTime.split(":").map(Number);
+      const gigDateTime = new Date(editDate);
+      gigDateTime.setHours(hours, minutes, 0, 0);
+
+      const { error } = await supabase
+        .from("gigs")
+        .update({
+          date: gigDateTime.toISOString(),
+          end_time: editEndTime,
+          loading_time: editLoadingTime.trim() || null,
+          sound_check_time: editSoundCheckTime.trim() || null,
+          venue_name: editVenueName.trim() || null,
+          venue: editVenue.trim(),
+          venue_lat: editVenueLat,
+          venue_lng: editVenueLng,
+          notes: editNotes.trim() || null,
+          attire: editAttire.trim() || null,
+          food_provided: editFoodProvided.trim() || null,
+          venue_contact_person: editVenueContactPerson.trim() || null,
+          sound_man_info: editSoundManInfo.trim() || null,
+        })
+        .eq("id", editingGig.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Gig updated",
+        description: "The gig has been updated successfully.",
+      });
+
+      setEditDialogOpen(false);
+      setEditingGig(null);
+      checkAuthAndFetchData();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Failed to update gig",
+        description: error.message,
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -814,6 +908,14 @@ const Bookings = () => {
                       </div>
                       {isBandLeader && (
                         <div className="flex flex-col gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openEditGigDialog(gig)}
+                          >
+                            <Pencil className="h-4 w-4 mr-2" />
+                            Edit
+                          </Button>
                           <Dialog open={inviteDialogOpen && currentGigForInvite === gig.id} onOpenChange={(open) => {
                             setInviteDialogOpen(open);
                             if (!open) {
@@ -901,6 +1003,150 @@ const Bookings = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Edit Gig Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Gig</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !editDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {editDate ? format(editDate, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={editDate}
+                    onSelect={setEditDate}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-2">
+                <Label>Show Time</Label>
+                <Input
+                  type="time"
+                  value={editShowTime}
+                  onChange={(e) => setEditShowTime(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>End Time</Label>
+                <Input
+                  type="time"
+                  value={editEndTime}
+                  onChange={(e) => setEditEndTime(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-2">
+                <Label>Load-in Time</Label>
+                <Input
+                  type="time"
+                  value={editLoadingTime}
+                  onChange={(e) => setEditLoadingTime(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Sound Check</Label>
+                <Input
+                  type="time"
+                  value={editSoundCheckTime}
+                  onChange={(e) => setEditSoundCheckTime(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Venue Name</Label>
+              <Input
+                value={editVenueName}
+                onChange={(e) => setEditVenueName(e.target.value)}
+                placeholder="e.g., Blue Note Jazz Club"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Venue Address</Label>
+              <PlaceAutocomplete
+                value={editVenue}
+                onChange={(value, placeDetails) => {
+                  setEditVenue(value);
+                  if (placeDetails?.geometry?.location) {
+                    setEditVenueLat(placeDetails.geometry.location.lat());
+                    setEditVenueLng(placeDetails.geometry.location.lng());
+                  }
+                }}
+                placeholder="Start typing an address..."
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Notes</Label>
+              <Textarea
+                value={editNotes}
+                onChange={(e) => setEditNotes(e.target.value)}
+                rows={2}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Attire</Label>
+              <Input
+                value={editAttire}
+                onChange={(e) => setEditAttire(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Food Provided</Label>
+              <Input
+                value={editFoodProvided}
+                onChange={(e) => setEditFoodProvided(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Venue Contact Person</Label>
+              <Input
+                value={editVenueContactPerson}
+                onChange={(e) => setEditVenueContactPerson(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Sound Man Info</Label>
+              <Input
+                value={editSoundManInfo}
+                onChange={(e) => setEditSoundManInfo(e.target.value)}
+              />
+            </div>
+
+            <Button onClick={handleUpdateGig} disabled={isSubmitting} className="w-full">
+              Save Changes
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <BottomNav />
     </div>

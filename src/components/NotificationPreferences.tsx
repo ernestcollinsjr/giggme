@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Bell, Mail, MessageSquare, Loader2 } from "lucide-react";
+import { Bell, Mail, MessageSquare, Smartphone, Loader2 } from "lucide-react";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 interface NotificationPrefs {
   id?: string;
@@ -18,6 +19,7 @@ interface NotificationPrefs {
 
 export const NotificationPreferences = () => {
   const { toast } = useToast();
+  const { isSupported, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [prefs, setPrefs] = useState<NotificationPrefs>({
@@ -184,6 +186,34 @@ export const NotificationPreferences = () => {
               disabled={saving}
             />
           </div>
+
+          {isSupported && (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Smartphone className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <Label htmlFor="push-notifications" className="cursor-pointer">
+                    Push Notifications
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Receive browser push notifications
+                  </p>
+                </div>
+              </div>
+              <Switch
+                id="push-notifications"
+                checked={isSubscribed}
+                onCheckedChange={async (checked) => {
+                  if (checked) {
+                    await subscribe();
+                  } else {
+                    await unsubscribe();
+                  }
+                }}
+                disabled={pushLoading}
+              />
+            </div>
+          )}
         </div>
 
         {/* Reminder Settings */}

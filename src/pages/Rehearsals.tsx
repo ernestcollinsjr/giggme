@@ -434,47 +434,48 @@ const Rehearsals = () => {
                 {rehearsals.map((rehearsal) => (
                   <div key={rehearsal.id} className="p-4 border rounded-lg">
                     <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                          <CalendarIcon className="h-4 w-4" />
-                          {format(new Date(rehearsal.date), "PPP")}
+                      <div className="flex-1 space-y-1">
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <CalendarIcon className="h-4 w-4" />
+                            {format(new Date(rehearsal.date), "PPP")}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-4 w-4" />
+                            {format(new Date(rehearsal.date), "p")}
+                            {rehearsal.end_time && ` - ${rehearsal.end_time}`}
+                          </span>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                          <Clock className="h-4 w-4" />
-                          {format(new Date(rehearsal.date), "p")}
-                          {rehearsal.end_time && ` - ${rehearsal.end_time}`}
-                        </div>
-                        <div className="flex items-center gap-2 mb-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <MapPin className="h-4 w-4 text-primary" />
                           <h4 className="font-semibold">{rehearsal.venue}</h4>
                           {rehearsal.venue_lat && rehearsal.venue_lng && (
                             <Button
                               variant="ghost"
                               size="sm"
+                              className="h-7 px-2"
                               onClick={() => {
                                 const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${rehearsal.venue_lat},${rehearsal.venue_lng}`;
                                 window.open(mapsUrl, '_blank');
                               }}
                             >
-                              <Navigation className="h-4 w-4 mr-1" />
+                              <Navigation className="h-3 w-3 mr-1" />
                               Navigate
                             </Button>
                           )}
+                          {rehearsal.notes && (
+                            <span className="text-sm text-muted-foreground">• {rehearsal.notes}</span>
+                          )}
                         </div>
-                        {rehearsal.notes && (
-                          <p className="text-sm text-muted-foreground mt-2">
-                            {rehearsal.notes}
-                          </p>
-                        )}
-                        {rehearsal.food_provided && (
-                          <p className="text-sm text-muted-foreground mt-2">
-                            <span className="font-medium">Food Provided:</span> {rehearsal.food_provided}
-                          </p>
-                        )}
-                        {rehearsal.venue_contact_person && (
-                          <p className="text-sm text-muted-foreground mt-2">
-                            <span className="font-medium">Venue Contact Person:</span> {rehearsal.venue_contact_person}
-                          </p>
+                        {(rehearsal.food_provided || rehearsal.venue_contact_person) && (
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                            {rehearsal.food_provided && (
+                              <span><span className="font-medium">Food:</span> {rehearsal.food_provided}</span>
+                            )}
+                            {rehearsal.venue_contact_person && (
+                              <span><span className="font-medium">Contact:</span> {rehearsal.venue_contact_person}</span>
+                            )}
+                          </div>
                         )}
                       </div>
                       {isBandLeader && (

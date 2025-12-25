@@ -106,18 +106,6 @@ const RoleSwitcher = ({ currentRole, onRoleChange }: RoleSwitcherProps) => {
 
   return (
     <div className="space-y-6">
-      <Card className="border-dashed border-2 border-primary/30">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <RefreshCw className="h-5 w-5" />
-            Test Different Roles
-          </CardTitle>
-          <CardDescription>
-            Switch roles to test different features (Development Tool)
-          </CardDescription>
-        </CardHeader>
-      </Card>
-
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         {roles.map((role) => {
           const Icon = role.icon;

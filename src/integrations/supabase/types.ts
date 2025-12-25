@@ -1219,6 +1219,7 @@ export type Database = {
         | "artist"
         | "tour_manager"
         | "venue_owner"
+        | "super_admin"
       booking_status:
         | "pending"
         | "confirmed"
@@ -1371,6 +1372,7 @@ export const Constants = {
         "artist",
         "tour_manager",
         "venue_owner",
+        "super_admin",
       ],
       booking_status: [
         "pending",

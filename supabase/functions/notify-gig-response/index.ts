@@ -58,6 +58,104 @@ async function sendSMS(to: string, message: string): Promise<boolean> {
   }
 }
 
+// Send push notification
+async function sendPushNotification(
+  supabase: any,
+  userId: string,
+  title: string,
+  body: string,
+  url: string,
+  data: Record<string, any>
+): Promise<boolean> {
+  try {
+    // Get user's push tokens
+    const { data: tokens, error: tokensError } = await supabase
+      .from('push_tokens')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('platform', 'web');
+
+    if (tokensError || !tokens || tokens.length === 0) {
+      console.log('No push tokens found for user', userId);
+      return false;
+    }
+
+    const payload = JSON.stringify({
+      title,
+      body,
+      url,
+      ...data,
+    });
+
+    for (const tokenRecord of tokens) {
+      try {
+        const subscription = JSON.parse(tokenRecord.token);
+        const endpoint = subscription.endpoint;
+
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'TTL': '86400',
+          },
+          body: payload,
+        });
+
+        if (!response.ok) {
+          const text = await response.text();
+          console.error('Push failed:', response.status, text);
+          
+          // Remove stale tokens
+          if (response.status === 404 || response.status === 410) {
+            await supabase.from('push_tokens').delete().eq('id', tokenRecord.id);
+            console.log('Removed stale token:', tokenRecord.id);
+          }
+        } else {
+          console.log('Push sent successfully to token:', tokenRecord.id);
+        }
+      } catch (error) {
+        console.error('Error sending push to token:', tokenRecord.id, error);
+      }
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Failed to send push notification:', error);
+    return false;
+  }
+}
+
+// Create in-app notification
+async function createInAppNotification(
+  supabase: any,
+  userId: string,
+  title: string,
+  message: string,
+  type: string,
+  relatedId: string
+): Promise<boolean> {
+  try {
+    const { error } = await supabase.from('notifications').insert({
+      user_id: userId,
+      title,
+      message,
+      type,
+      related_id: relatedId,
+    });
+
+    if (error) {
+      console.error('Failed to create in-app notification:', error);
+      return false;
+    }
+
+    console.log('In-app notification created for user:', userId);
+    return true;
+  } catch (error) {
+    console.error('Error creating in-app notification:', error);
+    return false;
+  }
+}
+
 const handler = async (req: Request): Promise<Response> => {
   console.log("notify-gig-response function called");
 
@@ -106,15 +204,16 @@ const handler = async (req: Request): Promise<Response> => {
     // Get band leader's notification preferences
     const { data: notifPrefs } = await supabase
       .from("notification_preferences")
-      .select("email_enabled, sms_enabled")
+      .select("email_enabled, sms_enabled, push_enabled")
       .eq("user_id", gig.user_id)
       .single();
 
     // Default to enabled if no preferences set
     const emailEnabled = notifPrefs?.email_enabled ?? true;
     const smsEnabled = notifPrefs?.sms_enabled ?? true;
+    const pushEnabled = notifPrefs?.push_enabled ?? true;
 
-    console.log(`Notification preferences - Email: ${emailEnabled}, SMS: ${smsEnabled}`);
+    console.log(`Notification preferences - Email: ${emailEnabled}, SMS: ${smsEnabled}, Push: ${pushEnabled}`);
 
     const venueName = gig.venue_name || gig.venue;
     const gigDate = new Date(gig.date).toLocaleDateString("en-US", {
@@ -131,6 +230,33 @@ const handler = async (req: Request): Promise<Response> => {
     const statusEmoji = status === "accepted" ? "✅" : status === "declined" ? "❌" : "⏳";
     const statusText = status === "accepted" ? "accepted" : status === "declined" ? "declined" : "is pending on";
     const statusColor = status === "accepted" ? "#22c55e" : status === "declined" ? "#ef4444" : "#eab308";
+
+    // Send push notification if enabled
+    let pushSent = false;
+    if (pushEnabled) {
+      const pushTitle = `${statusEmoji} Gig RSVP Update`;
+      const pushBody = `${member_name} has ${statusText} the gig at ${venueName} on ${shortDate}`;
+      pushSent = await sendPushNotification(
+        supabase,
+        gig.user_id,
+        pushTitle,
+        pushBody,
+        '/bookings',
+        { type: 'gig_response', gig_id }
+      );
+    } else {
+      console.log("Push notifications disabled for this user");
+    }
+
+    // Create in-app notification (always create)
+    await createInAppNotification(
+      supabase,
+      gig.user_id,
+      `${statusEmoji} Gig RSVP Update`,
+      `${member_name} has ${statusText} the gig at ${venueName} on ${shortDate}`,
+      'gig_response',
+      gig_id
+    );
 
     // Send email notification if enabled
     let emailSent = false;
@@ -203,7 +329,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, emailSent, smsSent }),
+      JSON.stringify({ success: true, emailSent, smsSent, pushSent }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   } catch (error: any) {

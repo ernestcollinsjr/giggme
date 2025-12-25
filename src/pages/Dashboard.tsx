@@ -1118,19 +1118,7 @@ const Dashboard = () => {
           <div className="space-y-4">
             <div className="space-y-3">
               <h2 className="text-xl font-semibold">My Bands</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <Button size="sm" variant="outline" className="gap-1.5" onClick={() => navigate("/bookings")}>
-                  <CalendarIcon className="h-4 w-4" />
-                  <span className="hidden xs:inline">Add</span> Gig
-                </Button>
-                <Button size="sm" variant="outline" className="gap-1.5" onClick={() => navigate("/rehearsals")}>
-                  <Music className="h-4 w-4" />
-                  Rehearsal
-                </Button>
-                <Button size="sm" variant="outline" className="gap-1.5" onClick={() => navigate("/setlist")}>
-                  <ListMusic className="h-4 w-4" />
-                  Setlist
-                </Button>
+              <div className="flex gap-2">
                 <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                   <DialogTrigger asChild>
                     <Button size="sm" variant="outline" className="gap-1.5">

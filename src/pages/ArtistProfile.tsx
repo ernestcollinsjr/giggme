@@ -343,10 +343,9 @@ const ArtistProfile = () => {
               <div className="grid grid-cols-4 gap-4">
                 {profile?.photo_urls?.map((url, index) => (
                   <div key={index} className="relative group">
-                    <Avatar className="h-20 w-20">
-                      <AvatarImage src={url} className="object-cover" />
-                      <AvatarFallback>{index + 1}</AvatarFallback>
-                    </Avatar>
+                    <div className="h-20 w-20 rounded-lg overflow-hidden bg-muted">
+                      <img src={url} alt={`Photo ${index + 1}`} className="h-full w-full object-cover" />
+                    </div>
                     <Button
                       variant="destructive"
                       size="icon"
@@ -361,7 +360,7 @@ const ArtistProfile = () => {
                 {/* Upload Button */}
                 {(profile?.photo_urls?.length || 0) < MAX_PHOTOS && (
                   <Label htmlFor="photo-upload" className={uploadingPhoto ? "cursor-wait" : "cursor-pointer"}>
-                    <div className={`h-20 w-20 rounded-full border-2 border-dashed flex items-center justify-center transition-colors ${
+                    <div className={`h-20 w-20 rounded-lg border-2 border-dashed flex items-center justify-center transition-colors ${
                       uploadingPhoto 
                         ? "border-primary bg-primary/10" 
                         : "border-muted-foreground/50 hover:border-primary"

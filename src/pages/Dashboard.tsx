@@ -24,6 +24,7 @@ import { MessageInbox } from "@/components/MessageInbox";
 import { Checkbox } from "@/components/ui/checkbox";
 import { BandMemberRoster } from "@/components/BandMemberRoster";
 import { BandInvitationManager } from "@/components/BandInvitationManager";
+import { TeamAvailabilityView } from "@/components/TeamAvailabilityView";
 import { BandProfileEditor } from "@/components/BandProfileEditor";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
 import RoleSwitcher from "@/components/RoleSwitcher";
@@ -1208,6 +1209,9 @@ const Dashboard = () => {
                         <BandInvitationManager bandId={band.id} bandName={band.name} />
                       </CardContent>
                     </Card>
+                    
+                    {/* Team Availability View */}
+                    <TeamAvailabilityView bandId={band.id} />
                   </TabsContent>
                 ))}
               </Tabs>

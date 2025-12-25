@@ -44,26 +44,22 @@ export const TopNav = ({ userRole }: TopNavProps) => {
   };
 
   const bandLeaderLinks = [
-    { path: "/dashboard", label: "Dashboard", icon: Home },
     { path: "/bookings", label: "Gigs", icon: Calendar },
     { path: "/rehearsals", label: "Rehearsals", icon: Music },
     { path: "/setlist", label: "Setlists", icon: ListMusic },
   ];
 
   const bookingManagerLinks = [
-    { path: "/dashboard", label: "Dashboard", icon: Home },
     { path: "/booking-manager", label: "Roster", icon: Briefcase },
     { path: "/artists", label: "Discover", icon: Search },
   ];
 
   const artistLinks = [
-    { path: "/dashboard", label: "Dashboard", icon: Home },
     { path: "/artist-profile", label: "My Profile", icon: User },
     { path: "/artists", label: "Browse Artists", icon: Users },
   ];
 
   const tourManagerLinks = [
-    { path: "/dashboard", label: "Dashboard", icon: Home },
     { path: "/tours", label: "Tours", icon: MapPin },
   ];
 
@@ -73,13 +69,11 @@ export const TopNav = ({ userRole }: TopNavProps) => {
   ];
 
   const superAdminLinks = [
-    { path: "/dashboard", label: "Dashboard", icon: Home },
     { path: "/admin", label: "Admin", icon: Shield },
     { path: "/bookings", label: "Gigs", icon: Calendar },
   ];
 
   const bandMemberLinks = [
-    { path: "/dashboard", label: "Dashboard", icon: Home },
     { path: "/setlist", label: "Setlists", icon: ListMusic },
   ];
 
@@ -100,7 +94,7 @@ export const TopNav = ({ userRole }: TopNavProps) => {
       case "venue_owner":
         return venueOwnerLinks;
       default:
-        return [{ path: "/dashboard", label: "Dashboard", icon: Home }];
+        return [];
     }
   };
 

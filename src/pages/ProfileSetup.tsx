@@ -9,9 +9,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "@supabase/supabase-js";
-import { LogOut, Crown, Music, Briefcase, Mail, Loader2 } from "lucide-react";
+import { LogOut, Crown, Music, Briefcase, Mail, Loader2, Youtube, Facebook, Instagram, Twitter, Globe, Plus, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { detectFaceAndCrop, loadImage } from "@/utils/imageCropping";
+import type { Json } from "@/integrations/supabase/types";
+
+interface SocialLinks {
+  facebook?: string;
+  instagram?: string;
+  twitter?: string;
+  website?: string;
+  spotify?: string;
+  tiktok?: string;
+}
 
 const ProfileSetup = () => {
   const navigate = useNavigate();
@@ -33,6 +43,11 @@ const ProfileSetup = () => {
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const [processingPhoto, setProcessingPhoto] = useState<number | null>(null);
   const [memberSince, setMemberSince] = useState<string>("");
+  
+  // Social media state
+  const [socialLinks, setSocialLinks] = useState<SocialLinks>({});
+  const [youtubeLinks, setYoutubeLinks] = useState<string[]>([]);
+  const [newYoutubeLink, setNewYoutubeLink] = useState("");
   
   // Email sending state
   const [showEmailDialog, setShowEmailDialog] = useState(false);
@@ -71,6 +86,10 @@ const ProfileSetup = () => {
           const urls = profile.photo_urls || [];
           setPhotoUrls(urls);
           setPhotoPreviews(urls.length > 0 ? [...urls, "", "", "", ""].slice(0, 4) : ["", "", "", ""]);
+          
+          // Load social links and youtube links
+          setSocialLinks((profile.social_links as SocialLinks) || {});
+          setYoutubeLinks(profile.youtube_links || []);
           
           // Format member since date
           if (profile.created_at) {
@@ -249,6 +268,8 @@ const ProfileSetup = () => {
         rider_notes: riderNotes,
         timezone,
         photo_urls: uploadedPhotoUrls,
+        social_links: socialLinks as Json,
+        youtube_links: youtubeLinks,
         updated_at: new Date().toISOString(),
       };
 
@@ -320,7 +341,42 @@ const ProfileSetup = () => {
     }
   };
 
-  // Show role selection if user hasn't selected a role yet
+  const handleSocialLinkChange = (platform: keyof SocialLinks, value: string) => {
+    setSocialLinks((prev) => ({
+      ...prev,
+      [platform]: value,
+    }));
+  };
+
+  const addYoutubeLink = () => {
+    if (!newYoutubeLink.trim()) return;
+    
+    if (!newYoutubeLink.includes("youtube.com") && !newYoutubeLink.includes("youtu.be")) {
+      toast({
+        variant: "destructive",
+        title: "Invalid URL",
+        description: "Please enter a valid YouTube URL.",
+      });
+      return;
+    }
+
+    setYoutubeLinks((prev) => [...prev, newYoutubeLink.trim()]);
+    setNewYoutubeLink("");
+  };
+
+  const removeYoutubeLink = (index: number) => {
+    setYoutubeLinks((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const socialPlatforms = [
+    { key: "facebook" as keyof SocialLinks, label: "Facebook", icon: Facebook, placeholder: "https://facebook.com/yourprofile" },
+    { key: "instagram" as keyof SocialLinks, label: "Instagram", icon: Instagram, placeholder: "https://instagram.com/yourprofile" },
+    { key: "twitter" as keyof SocialLinks, label: "X (Twitter)", icon: Twitter, placeholder: "https://x.com/yourprofile" },
+    { key: "website" as keyof SocialLinks, label: "Website", icon: Globe, placeholder: "https://yourwebsite.com" },
+    { key: "spotify" as keyof SocialLinks, label: "Spotify", icon: Music, placeholder: "https://open.spotify.com/artist/..." },
+    { key: "tiktok" as keyof SocialLinks, label: "TikTok", icon: Globe, placeholder: "https://tiktok.com/@yourprofile" },
+  ];
+
   if (!hasRole) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-primary/10">
@@ -690,6 +746,86 @@ const ProfileSetup = () => {
                 rows={4}
               />
             </div>
+
+            {/* Social Media Links */}
+            {(role === "band_leader" || role === "band_member" || role === "artist") && (
+              <div className="space-y-4 pt-4 border-t">
+                <div>
+                  <Label className="flex items-center gap-2">
+                    <Globe className="h-4 w-4" />
+                    Social Media Links
+                  </Label>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Add your social media profiles to help venues and fans find you
+                  </p>
+                </div>
+                <div className="grid gap-3">
+                  {socialPlatforms.map((platform) => {
+                    const Icon = platform.icon;
+                    return (
+                      <div key={platform.key} className="flex items-center gap-3">
+                        <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <Input
+                          placeholder={platform.placeholder}
+                          value={socialLinks[platform.key] || ""}
+                          onChange={(e) => handleSocialLinkChange(platform.key, e.target.value)}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* YouTube Links */}
+            {(role === "band_leader" || role === "band_member" || role === "artist") && (
+              <div className="space-y-4 pt-4 border-t">
+                <div>
+                  <Label className="flex items-center gap-2">
+                    <Youtube className="h-4 w-4 text-red-500" />
+                    YouTube Videos
+                  </Label>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Showcase your performances with YouTube links
+                  </p>
+                </div>
+                
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="https://youtube.com/watch?v=..."
+                    value={newYoutubeLink}
+                    onChange={(e) => setNewYoutubeLink(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addYoutubeLink())}
+                  />
+                  <Button type="button" onClick={addYoutubeLink} size="icon" variant="outline">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                {youtubeLinks.length > 0 && (
+                  <div className="space-y-2">
+                    {youtubeLinks.map((link, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center gap-2 p-2 border rounded-lg bg-muted/50"
+                      >
+                        <Youtube className="h-4 w-4 text-red-500 shrink-0" />
+                        <span className="flex-1 text-sm truncate">{link}</span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeYoutubeLink(index)}
+                          className="shrink-0 h-8 w-8"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
             
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Saving..." : "Save Profile"}

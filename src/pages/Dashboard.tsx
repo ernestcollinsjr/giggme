@@ -1131,24 +1131,24 @@ const Dashboard = () => {
 
         {userRole === "band_leader" && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between gap-2">
+            <div className="space-y-3">
               <h2 className="text-xl font-semibold">My Bands</h2>
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" className="gap-2" onClick={() => navigate("/bookings")}>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <Button size="sm" variant="outline" className="gap-1.5" onClick={() => navigate("/bookings")}>
                   <CalendarIcon className="h-4 w-4" />
-                  Add Gig
+                  <span className="hidden xs:inline">Add</span> Gig
                 </Button>
-                <Button size="sm" variant="outline" className="gap-2" onClick={() => navigate("/rehearsals")}>
+                <Button size="sm" variant="outline" className="gap-1.5" onClick={() => navigate("/rehearsals")}>
                   <Music className="h-4 w-4" />
-                  Add Rehearsal
+                  Rehearsal
                 </Button>
-                <Button size="sm" variant="outline" className="gap-2" onClick={() => navigate("/setlist")}>
+                <Button size="sm" variant="outline" className="gap-1.5" onClick={() => navigate("/setlist")}>
                   <ListMusic className="h-4 w-4" />
-                  Add Setlist
+                  Setlist
                 </Button>
                 <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button size="sm" variant="outline" className="gap-2">
+                    <Button size="sm" variant="outline" className="gap-1.5">
                       <Plus className="h-4 w-4" />
                       New Band
                     </Button>

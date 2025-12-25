@@ -7,8 +7,9 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Bell, Mail, MessageSquare, Smartphone, Loader2, Send, Clock, FileCheck, Settings, History } from "lucide-react";
+import { Bell, Mail, MessageSquare, Smartphone, Loader2, Send, Clock, FileCheck, Settings, History, Check, CheckCheck, Filter } from "lucide-react";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { TopNav } from "@/components/TopNav";
 import BottomNav from "@/components/BottomNav";
@@ -34,6 +35,7 @@ interface Notification {
 }
 
 type UserRole = "band_leader" | "band_member" | "booking_manager" | "artist" | "tour_manager" | "venue_owner" | "super_admin" | null;
+type FilterType = "all" | "unread" | "read";
 
 const Notifications = () => {
   const navigate = useNavigate();
@@ -45,6 +47,8 @@ const Notifications = () => {
   const [userRole, setUserRole] = useState<UserRole>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [filter, setFilter] = useState<FilterType>("all");
+  const [markingRead, setMarkingRead] = useState<string | null>(null);
   const [prefs, setPrefs] = useState<NotificationPrefs>({
     email_enabled: true,
     sms_enabled: true,
@@ -186,6 +190,80 @@ const Notifications = () => {
       setSaving(false);
     }
   };
+
+  const markAsRead = async (notificationId: string) => {
+    setMarkingRead(notificationId);
+    try {
+      const { error } = await supabase
+        .from("notifications")
+        .update({ is_read: true })
+        .eq("id", notificationId);
+
+      if (error) throw error;
+
+      setNotifications((prev) =>
+        prev.map((n) =>
+          n.id === notificationId ? { ...n, is_read: true } : n
+        )
+      );
+
+      toast({
+        title: "Marked as read",
+        description: "Notification has been marked as read.",
+      });
+    } catch (error: any) {
+      console.error("Error marking notification as read:", error);
+      toast({
+        variant: "destructive",
+        title: "Failed to update",
+        description: error.message,
+      });
+    } finally {
+      setMarkingRead(null);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    const unreadIds = notifications.filter((n) => !n.is_read).map((n) => n.id);
+    if (unreadIds.length === 0) return;
+
+    setMarkingRead("all");
+    try {
+      const { error } = await supabase
+        .from("notifications")
+        .update({ is_read: true })
+        .in("id", unreadIds);
+
+      if (error) throw error;
+
+      setNotifications((prev) =>
+        prev.map((n) => ({ ...n, is_read: true }))
+      );
+
+      toast({
+        title: "All marked as read",
+        description: `${unreadIds.length} notifications marked as read.`,
+      });
+    } catch (error: any) {
+      console.error("Error marking all as read:", error);
+      toast({
+        variant: "destructive",
+        title: "Failed to update",
+        description: error.message,
+      });
+    } finally {
+      setMarkingRead(null);
+    }
+  };
+
+  const filteredNotifications = notifications.filter((n) => {
+    if (filter === "all") return true;
+    if (filter === "unread") return !n.is_read;
+    if (filter === "read") return n.is_read;
+    return true;
+  });
+
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   const sendTestNotification = async () => {
     setSendingTest(true);
@@ -480,39 +558,111 @@ const Notifications = () => {
           <TabsContent value="history">
             <Card className="border-border/50">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <History className="h-5 w-5 text-primary" />
-                  Notification History
-                </CardTitle>
-                <CardDescription>
-                  Recent notifications sent to you
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <History className="h-5 w-5 text-primary" />
+                      Notification History
+                      {unreadCount > 0 && (
+                        <Badge variant="destructive" className="ml-2">
+                          {unreadCount} unread
+                        </Badge>
+                      )}
+                    </CardTitle>
+                    <CardDescription>
+                      Recent notifications sent to you
+                    </CardDescription>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Select value={filter} onValueChange={(value: FilterType) => setFilter(value)}>
+                      <SelectTrigger className="w-[130px]">
+                        <Filter className="h-4 w-4 mr-2" />
+                        <SelectValue placeholder="Filter" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All</SelectItem>
+                        <SelectItem value="unread">Unread</SelectItem>
+                        <SelectItem value="read">Read</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {unreadCount > 0 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={markAllAsRead}
+                        disabled={markingRead === "all"}
+                        className="gap-2"
+                      >
+                        {markingRead === "all" ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <CheckCheck className="h-4 w-4" />
+                        )}
+                        <span className="hidden sm:inline">Mark all read</span>
+                      </Button>
+                    )}
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
-                {notifications.length === 0 ? (
+                {filteredNotifications.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>No notifications yet</p>
-                    <p className="text-sm">You'll see your notification history here</p>
+                    <p>{filter === "all" ? "No notifications yet" : `No ${filter} notifications`}</p>
+                    <p className="text-sm">
+                      {filter === "all" 
+                        ? "You'll see your notification history here" 
+                        : "Try changing the filter to see other notifications"}
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {notifications.map((notification) => (
+                    {filteredNotifications.map((notification) => (
                       <div
                         key={notification.id}
-                        className="flex items-start gap-3 p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                        className={`flex items-start gap-3 p-4 rounded-lg transition-colors cursor-pointer ${
+                          notification.is_read 
+                            ? "bg-muted/30 hover:bg-muted/50" 
+                            : "bg-primary/5 hover:bg-primary/10 border-l-4 border-primary"
+                        }`}
+                        onClick={() => !notification.is_read && markAsRead(notification.id)}
                       >
                         <span className="text-2xl">{getNotificationIcon(notification.type)}</span>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium">{notification.title}</p>
+                          <p className={`font-medium ${!notification.is_read ? "text-foreground" : "text-muted-foreground"}`}>
+                            {notification.title}
+                          </p>
                           <p className="text-sm text-muted-foreground">{notification.message}</p>
                           <p className="text-xs text-muted-foreground mt-1">
                             {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                           </p>
                         </div>
-                        <Badge variant="outline" className="shrink-0">
-                          sent
-                        </Badge>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {notification.is_read ? (
+                            <Badge variant="outline" className="text-muted-foreground">
+                              <Check className="h-3 w-3 mr-1" />
+                              read
+                            </Badge>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                markAsRead(notification.id);
+                              }}
+                              disabled={markingRead === notification.id}
+                              className="gap-1 text-xs"
+                            >
+                              {markingRead === notification.id ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                              ) : (
+                                <Check className="h-3 w-3" />
+                              )}
+                              Mark read
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>

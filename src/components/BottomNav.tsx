@@ -66,7 +66,6 @@ const BottomNav = () => {
 
   const navItems = [
     { icon: Home, label: "Dashboard", path: "/dashboard" },
-    { icon: User, label: "Profile", path: "/profile-setup" },
     { icon: MessageCircle, label: "Chat", path: "/chat", badge: unreadCount },
     { 
       icon: userRole === "tour_manager" ? CalendarIcon : Briefcase, 

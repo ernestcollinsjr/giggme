@@ -647,6 +647,37 @@ const ProfileSetup = () => {
     await setRangeAvailability(0, weekAvailability.length - 1, status);
   };
 
+  // Clear all week availability
+  const clearAllWeekAvailability = async () => {
+    if (!user || weekAvailability.length === 0) return;
+    
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const datesToClear = weekAvailability.map(d => d.date);
+      
+      // Delete all availability records for the week
+      const { error } = await supabase
+        .from('member_availability')
+        .delete()
+        .eq('user_id', user.id)
+        .in('date', datesToClear);
+      
+      if (error) throw error;
+      
+      // Update local state
+      setWeekAvailability(prev => prev.map(day => ({ ...day, status: null })));
+      
+      // Update today's status if in range
+      if (datesToClear.includes(today)) setTodayCalendarStatus(null);
+      
+      triggerSaveConfirmation();
+      toast({ title: "Week availability cleared" });
+    } catch (error) {
+      console.error('Error clearing availability:', error);
+      toast({ title: "Error clearing availability", variant: "destructive" });
+    }
+  };
+
   // Ref for day button elements (for touch detection)
   const dayButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
@@ -1740,6 +1771,15 @@ const ProfileSetup = () => {
                     >
                       <HelpCircle className="h-3 w-3" />
                       All Tentative
+                    </button>
+                    <div className="w-px h-4 bg-border" />
+                    <button
+                      type="button"
+                      onClick={clearAllWeekAvailability}
+                      className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors border border-border"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                      Clear All
                     </button>
                   </div>
                   

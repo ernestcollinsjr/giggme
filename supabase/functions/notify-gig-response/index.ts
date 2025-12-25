@@ -103,6 +103,19 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Get band leader's notification preferences
+    const { data: notifPrefs } = await supabase
+      .from("notification_preferences")
+      .select("email_enabled, sms_enabled")
+      .eq("user_id", gig.user_id)
+      .single();
+
+    // Default to enabled if no preferences set
+    const emailEnabled = notifPrefs?.email_enabled ?? true;
+    const smsEnabled = notifPrefs?.sms_enabled ?? true;
+
+    console.log(`Notification preferences - Email: ${emailEnabled}, SMS: ${smsEnabled}`);
+
     const venueName = gig.venue_name || gig.venue;
     const gigDate = new Date(gig.date).toLocaleDateString("en-US", {
       weekday: "long",
@@ -119,66 +132,72 @@ const handler = async (req: Request): Promise<Response> => {
     const statusText = status === "accepted" ? "accepted" : status === "declined" ? "declined" : "is pending on";
     const statusColor = status === "accepted" ? "#22c55e" : status === "declined" ? "#ef4444" : "#eab308";
 
-    // Send email notification
-    console.log(`Sending email to ${bandLeader.email}`);
+    // Send email notification if enabled
     let emailSent = false;
-    try {
-      const emailResponse = await resend.emails.send({
-        from: "GigSync <onboarding@resend.dev>",
-        to: [bandLeader.email],
-        subject: `${statusEmoji} ${member_name} has ${statusText} the gig at ${venueName}`,
-        html: `
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          </head>
-          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f5;">
-            <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-              <div style="background-color: white; border-radius: 12px; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                <h1 style="margin: 0 0 24px; font-size: 24px; color: #18181b;">Gig RSVP Update</h1>
-                
-                <div style="background-color: ${statusColor}15; border-left: 4px solid ${statusColor}; padding: 16px; border-radius: 0 8px 8px 0; margin-bottom: 24px;">
-                  <p style="margin: 0; font-size: 18px; color: #18181b;">
-                    <strong>${member_name}</strong> has <strong style="color: ${statusColor};">${statusText}</strong> the gig
+    if (emailEnabled) {
+      console.log(`Sending email to ${bandLeader.email}`);
+      try {
+        const emailResponse = await resend.emails.send({
+          from: "GigSync <onboarding@resend.dev>",
+          to: [bandLeader.email],
+          subject: `${statusEmoji} ${member_name} has ${statusText} the gig at ${venueName}`,
+          html: `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            </head>
+            <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f5;">
+              <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="background-color: white; border-radius: 12px; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                  <h1 style="margin: 0 0 24px; font-size: 24px; color: #18181b;">Gig RSVP Update</h1>
+                  
+                  <div style="background-color: ${statusColor}15; border-left: 4px solid ${statusColor}; padding: 16px; border-radius: 0 8px 8px 0; margin-bottom: 24px;">
+                    <p style="margin: 0; font-size: 18px; color: #18181b;">
+                      <strong>${member_name}</strong> has <strong style="color: ${statusColor};">${statusText}</strong> the gig
+                    </p>
+                  </div>
+                  
+                  <div style="background-color: #f4f4f5; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+                    <h2 style="margin: 0 0 12px; font-size: 14px; text-transform: uppercase; color: #71717a; letter-spacing: 0.5px;">Gig Details</h2>
+                    <p style="margin: 0 0 8px; font-size: 16px; color: #18181b;">
+                      <strong>📍 Venue:</strong> ${venueName}
+                    </p>
+                    <p style="margin: 0; font-size: 16px; color: #18181b;">
+                      <strong>📅 Date:</strong> ${gigDate}
+                    </p>
+                  </div>
+                  
+                  <p style="margin: 0; font-size: 14px; color: #71717a;">
+                    You're receiving this email because you're the band leader for this gig.
                   </p>
                 </div>
                 
-                <div style="background-color: #f4f4f5; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
-                  <h2 style="margin: 0 0 12px; font-size: 14px; text-transform: uppercase; color: #71717a; letter-spacing: 0.5px;">Gig Details</h2>
-                  <p style="margin: 0 0 8px; font-size: 16px; color: #18181b;">
-                    <strong>📍 Venue:</strong> ${venueName}
-                  </p>
-                  <p style="margin: 0; font-size: 16px; color: #18181b;">
-                    <strong>📅 Date:</strong> ${gigDate}
-                  </p>
-                </div>
-                
-                <p style="margin: 0; font-size: 14px; color: #71717a;">
-                  You're receiving this email because you're the band leader for this gig.
+                <p style="text-align: center; margin-top: 20px; font-size: 12px; color: #a1a1aa;">
+                  Sent by GigSync
                 </p>
               </div>
-              
-              <p style="text-align: center; margin-top: 20px; font-size: 12px; color: #a1a1aa;">
-                Sent by GigSync
-              </p>
-            </div>
-          </body>
-          </html>
-        `,
-      });
-      console.log("Email sent successfully:", emailResponse);
-      emailSent = true;
-    } catch (emailError) {
-      console.error("Failed to send email:", emailError);
+            </body>
+            </html>
+          `,
+        });
+        console.log("Email sent successfully:", emailResponse);
+        emailSent = true;
+      } catch (emailError) {
+        console.error("Failed to send email:", emailError);
+      }
+    } else {
+      console.log("Email notifications disabled for this user");
     }
 
-    // Send SMS notification if phone number is available
+    // Send SMS notification if enabled and phone number is available
     let smsSent = false;
-    if (bandLeader.phone_number) {
+    if (smsEnabled && bandLeader.phone_number) {
       const smsMessage = `${statusEmoji} GigSync: ${member_name} has ${statusText} your gig at ${venueName} on ${shortDate}.`;
       smsSent = await sendSMS(bandLeader.phone_number, smsMessage);
+    } else if (!smsEnabled) {
+      console.log("SMS notifications disabled for this user");
     } else {
       console.log("No phone number available for band leader, skipping SMS");
     }

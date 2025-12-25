@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { YouTubePlayer, getYoutubeVideoId } from "@/components/YouTubePlayer";
 import { AvailabilityCalendar } from "@/components/AvailabilityCalendar";
+import { NotificationPreferences } from "@/components/NotificationPreferences";
 import type { Json } from "@/integrations/supabase/types";
 
 interface SocialLinks {
@@ -1282,6 +1283,13 @@ const ProfileSetup = () => {
             <div className="pt-4">
               <AvailabilityCalendar />
             </div>
+
+            {/* Notification Preferences */}
+            {(role === "band_leader" || role === "booking_manager" || role === "tour_manager") && (
+              <div className="pt-4">
+                <NotificationPreferences />
+              </div>
+            )}
             
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Saving..." : "Save Profile"}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -630,6 +630,9 @@ const ProfileSetup = () => {
     }
   };
 
+  // Ref for day button elements (for touch detection)
+  const dayButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
   // Drag handlers for 7-day preview
   const handleDragStart = (idx: number) => {
     setIsDragging(true);
@@ -650,6 +653,43 @@ const ProfileSetup = () => {
     setIsDragging(false);
     setDragStartIndex(null);
     setDragEndIndex(null);
+  };
+
+  // Touch handlers for mobile drag support
+  const handleTouchStart = (idx: number, e: React.TouchEvent) => {
+    e.preventDefault();
+    handleDragStart(idx);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+    
+    const touch = e.touches[0];
+    const touchX = touch.clientX;
+    const touchY = touch.clientY;
+    
+    // Find which button the touch is currently over
+    for (let i = 0; i < dayButtonRefs.current.length; i++) {
+      const btn = dayButtonRefs.current[i];
+      if (btn) {
+        const rect = btn.getBoundingClientRect();
+        if (
+          touchX >= rect.left &&
+          touchX <= rect.right &&
+          touchY >= rect.top &&
+          touchY <= rect.bottom
+        ) {
+          if (dragEndIndex !== i) {
+            setDragEndIndex(i);
+          }
+          break;
+        }
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    handleDragEnd();
   };
 
   // Helper to check if index is in drag range
@@ -1436,11 +1476,13 @@ const ProfileSetup = () => {
                       )}
                     </div>
                     
-                    {/* 7-day preview bar with drag support */}
+                    {/* 7-day preview bar with drag/touch support */}
                     <div 
-                      className="flex items-center gap-1 ml-auto select-none"
+                      className="flex items-center gap-1 ml-auto select-none touch-none"
                       onMouseLeave={handleDragEnd}
                       onMouseUp={handleDragEnd}
+                      onTouchMove={handleTouchMove}
+                      onTouchEnd={handleTouchEnd}
                     >
                       <span className="text-xs text-muted-foreground mr-1">Next 7 days:</span>
                       {weekAvailability.map((day, idx) => {
@@ -1450,6 +1492,7 @@ const ProfileSetup = () => {
                         return (
                           <button 
                             key={day.date}
+                            ref={(el) => { dayButtonRefs.current[idx] = el; }}
                             type="button"
                             onMouseDown={(e) => {
                               e.preventDefault();
@@ -1457,13 +1500,14 @@ const ProfileSetup = () => {
                             }}
                             onMouseEnter={() => handleDragEnter(idx)}
                             onMouseUp={handleDragEnd}
+                            onTouchStart={(e) => handleTouchStart(idx, e)}
                             onClick={() => !isDragging && setDateAvailability(day.date, selectedQuickStatus)}
-                            className="flex flex-col items-center cursor-pointer hover:scale-110 transition-transform"
+                            className="flex flex-col items-center cursor-pointer hover:scale-110 transition-transform touch-none"
                             title={`Click or drag to set ${selectedQuickStatus}`}
                           >
                             <span className="text-[10px] text-muted-foreground">{dayLabel}</span>
                             <div 
-                              className={`w-5 h-5 rounded-sm flex items-center justify-center text-[9px] font-medium text-white transition-all ${
+                              className={`w-6 h-6 sm:w-5 sm:h-5 rounded-sm flex items-center justify-center text-[10px] sm:text-[9px] font-medium text-white transition-all ${
                                 inDragRange
                                   ? selectedQuickStatus === 'available'
                                     ? 'bg-green-500 ring-2 ring-green-300'

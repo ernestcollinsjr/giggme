@@ -9,7 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Plus, Trash2, Youtube, ArrowLeft, Loader2 } from "lucide-react";
+import { Upload, Plus, Trash2, Youtube, ArrowLeft, Loader2, Mail, Phone, MessageCircle } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
 import { TopNav } from "@/components/TopNav";
 import { AvailabilityCalendar } from "@/components/AvailabilityCalendar";
@@ -32,6 +33,8 @@ interface Profile {
   name: string;
   bio: string | null;
   photo_urls: string[];
+  email?: string;
+  phone_number?: string | null;
 }
 
 const ArtistProfile = () => {
@@ -346,9 +349,73 @@ const ArtistProfile = () => {
           {isOwnProfile ? "Back to Dashboard" : "Back to Artists"}
         </Button>
 
-        <h1 className="text-4xl font-bold mb-8 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-          {profile?.name || "Artist"}{artistProfile?.genre ? ` - ${artistProfile.genre}` : ""} Profile
-        </h1>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            {profile?.name || "Artist"}{artistProfile?.genre ? ` - ${artistProfile.genre}` : ""} Profile
+          </h1>
+          
+          {/* Contact Artist Button - Only show when viewing another artist's profile */}
+          {!isOwnProfile && (
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="flex items-center gap-2">
+                  <MessageCircle className="h-4 w-4" />
+                  Contact Artist
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Contact {profile?.name}</DialogTitle>
+                  <DialogDescription>
+                    Get in touch with this artist for booking inquiries.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 pt-4">
+                  {profile?.email && (
+                    <div className="flex items-center gap-3 p-3 border rounded-lg">
+                      <Mail className="h-5 w-5 text-primary" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">Email</p>
+                        <a 
+                          href={`mailto:${profile.email}`} 
+                          className="font-medium text-primary hover:underline"
+                        >
+                          {profile.email}
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                  {profile?.phone_number && (
+                    <div className="flex items-center gap-3 p-3 border rounded-lg">
+                      <Phone className="h-5 w-5 text-primary" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">Phone</p>
+                        <a 
+                          href={`tel:${profile.phone_number}`} 
+                          className="font-medium text-primary hover:underline"
+                        >
+                          {profile.phone_number}
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                  {!profile?.email && !profile?.phone_number && (
+                    <p className="text-center text-muted-foreground py-4">
+                      This artist hasn't added contact information yet.
+                    </p>
+                  )}
+                  <Button 
+                    className="w-full" 
+                    onClick={() => navigate(`/chat?recipient=${userId}`)}
+                  >
+                    <MessageCircle className="mr-2 h-4 w-4" />
+                    Send Direct Message
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
 
         <div className="space-y-6">
           {/* Profile Photo Section */}

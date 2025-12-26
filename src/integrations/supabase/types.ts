@@ -1116,29 +1116,56 @@ export type Database = {
       }
       setlists: {
         Row: {
+          address: string | null
           band_id: string | null
           band_leader_id: string
+          call_time: string | null
           created_at: string
           description: string | null
+          event_date: string | null
+          event_time: string | null
           id: string
+          music_leader_id: string | null
+          notes: string | null
+          rehearsal_call_time: string | null
+          rehearsal_date: string | null
+          rehearsal_time: string | null
           title: string
           updated_at: string
         }
         Insert: {
+          address?: string | null
           band_id?: string | null
           band_leader_id: string
+          call_time?: string | null
           created_at?: string
           description?: string | null
+          event_date?: string | null
+          event_time?: string | null
           id?: string
+          music_leader_id?: string | null
+          notes?: string | null
+          rehearsal_call_time?: string | null
+          rehearsal_date?: string | null
+          rehearsal_time?: string | null
           title: string
           updated_at?: string
         }
         Update: {
+          address?: string | null
           band_id?: string | null
           band_leader_id?: string
+          call_time?: string | null
           created_at?: string
           description?: string | null
+          event_date?: string | null
+          event_time?: string | null
           id?: string
+          music_leader_id?: string | null
+          notes?: string | null
+          rehearsal_call_time?: string | null
+          rehearsal_date?: string | null
+          rehearsal_time?: string | null
           title?: string
           updated_at?: string
         }
@@ -1148,6 +1175,13 @@ export type Database = {
             columns: ["band_id"]
             isOneToOne: false
             referencedRelation: "bands"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "setlists_music_leader_id_fkey"
+            columns: ["music_leader_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]

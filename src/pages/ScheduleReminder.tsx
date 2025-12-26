@@ -16,7 +16,8 @@ import {
   Calendar as CalendarIcon,
   Clock,
   Users as UsersIcon,
-  Send
+  Send,
+  X
 } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
@@ -82,12 +83,13 @@ export default function ScheduleReminder() {
   const [customDate, setCustomDate] = useState<Date | undefined>();
   const [customTime, setCustomTime] = useState("09:00");
   
-  // Event details
+  // Event details - now supports multiple dates
   const [eventNameState, setEventNameState] = useState(eventName);
-  const [eventDate, setEventDate] = useState<Date | undefined>(
-    eventDateParam ? new Date(eventDateParam) : undefined
+  const [eventDates, setEventDates] = useState<Date[]>(
+    eventDateParam ? [new Date(eventDateParam)] : []
   );
   const [message, setMessage] = useState("");
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -234,8 +236,8 @@ export default function ScheduleReminder() {
       return;
     }
 
-    if (!eventDate) {
-      toast({ variant: "destructive", title: "Event date required" });
+    if (eventDates.length === 0) {
+      toast({ variant: "destructive", title: "At least one event date required" });
       return;
     }
 
@@ -259,29 +261,32 @@ export default function ScheduleReminder() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      // Create a reminder for each selected date
+      const reminders = eventDates.map(date => ({
+        user_id: user.id,
+        event_type: eventType,
+        event_id: eventId || null,
+        event_name: eventNameState,
+        event_date: date.toISOString(),
+        reminder_times: isRelative ? selectedReminderTimes : [],
+        is_relative: isRelative,
+        custom_datetime: !isRelative && customDate 
+          ? new Date(`${format(customDate, "yyyy-MM-dd")}T${customTime}`).toISOString() 
+          : null,
+        target_member_ids: selectedMemberIds,
+        target_groups: selectedGroupIds,
+        message: message || null,
+      }));
+
       const { error } = await supabase
         .from("scheduled_reminders")
-        .insert({
-          user_id: user.id,
-          event_type: eventType,
-          event_id: eventId || null,
-          event_name: eventNameState,
-          event_date: eventDate.toISOString(),
-          reminder_times: isRelative ? selectedReminderTimes : [],
-          is_relative: isRelative,
-          custom_datetime: !isRelative && customDate 
-            ? new Date(`${format(customDate, "yyyy-MM-dd")}T${customTime}`).toISOString() 
-            : null,
-          target_member_ids: selectedMemberIds,
-          target_groups: selectedGroupIds,
-          message: message || null,
-        });
+        .insert(reminders);
 
       if (error) throw error;
 
       toast({
-        title: "Reminder scheduled!",
-        description: `Reminder set for ${selectedMemberIds.length} member(s)`,
+        title: "Reminder(s) scheduled!",
+        description: `${eventDates.length} reminder(s) set for ${selectedMemberIds.length} member(s)`,
       });
 
       navigate(-1);
@@ -436,30 +441,56 @@ export default function ScheduleReminder() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Event Date</Label>
-                  <Popover>
+                  <Label>Event Date(s)</Label>
+                  <p className="text-xs text-muted-foreground">Select multiple dates for recurring events</p>
+                  <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
                         className={cn(
                           "w-full justify-start text-left font-normal",
-                          !eventDate && "text-muted-foreground"
+                          eventDates.length === 0 && "text-muted-foreground"
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {eventDate ? format(eventDate, "PPP") : "Pick a date"}
+                        {eventDates.length === 0 
+                          ? "Pick date(s)" 
+                          : `${eventDates.length} date(s) selected`}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
-                        mode="single"
-                        selected={eventDate}
-                        onSelect={setEventDate}
+                        mode="multiple"
+                        selected={eventDates}
+                        onSelect={(dates) => setEventDates(dates || [])}
                         initialFocus
                         className="pointer-events-auto"
                       />
                     </PopoverContent>
                   </Popover>
+                  {/* Display selected dates */}
+                  {eventDates.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {eventDates
+                        .sort((a, b) => a.getTime() - b.getTime())
+                        .map((date, idx) => (
+                          <Badge 
+                            key={idx} 
+                            variant="secondary" 
+                            className="text-xs flex items-center gap-1"
+                          >
+                            {format(date, "MMM d")}
+                            <button
+                              type="button"
+                              onClick={() => setEventDates(prev => prev.filter((_, i) => i !== idx))}
+                              className="ml-1 hover:text-destructive"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </Badge>
+                        ))}
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -582,16 +613,23 @@ export default function ScheduleReminder() {
               </CardContent>
             </Card>
 
-            {/* Event Date Display */}
-            {eventDate && (
+            {/* Event Dates Display */}
+            {eventDates.length > 0 && (
               <div className="p-4 rounded-lg bg-muted/50 border">
-                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                <p className="text-sm text-muted-foreground flex items-center gap-2 mb-2">
                   <CalendarIcon className="h-4 w-4" />
-                  Event Date:
+                  Event Date(s):
                 </p>
-                <p className="font-semibold text-primary">
-                  {format(eventDate, "EEEE, MMMM d, yyyy")}
-                </p>
+                <div className="flex flex-wrap gap-2">
+                  {eventDates
+                    .sort((a, b) => a.getTime() - b.getTime())
+                    .map((date, idx) => (
+                      <span key={idx} className="font-semibold text-primary text-sm">
+                        {format(date, "EEE, MMM d")}
+                        {idx < eventDates.length - 1 && ", "}
+                      </span>
+                    ))}
+                </div>
               </div>
             )}
 

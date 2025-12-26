@@ -29,6 +29,7 @@ import EntertainerDashboard from "./pages/EntertainerDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import Notifications from "./pages/Notifications";
 import ScheduleReminder from "./pages/ScheduleReminder";
+import SharedSetlist from "./pages/SharedSetlist";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +65,7 @@ const App = () => (
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/schedule-reminder" element={<ScheduleReminder />} />
+            <Route path="/shared-setlist/:token" element={<SharedSetlist />} />
             <Route path="/open" element={<OpenExternal />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

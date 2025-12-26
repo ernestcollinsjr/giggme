@@ -12,6 +12,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 
 interface ArtistWithProfile {
   id: string;
+  user_id: string;
   stage_name: string | null;
   genre: string | null;
   years_experience: number | null;
@@ -284,7 +285,11 @@ const ArtistsDiscovery = () => {
                     </div>
                   )}
 
-                  <Button variant="outline" className="w-full mt-4">
+                  <Button 
+                    variant="outline" 
+                    className="w-full mt-4"
+                    onClick={() => navigate(`/artist-profile/${artist.user_id}`)}
+                  >
                     View Full Profile
                   </Button>
                 </CardContent>

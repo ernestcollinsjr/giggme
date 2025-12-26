@@ -1340,7 +1340,7 @@ const Dashboard = () => {
                 {bands.map((band) => (
                   <TabsContent key={band.id} value={band.id}>
                     <Card className="border-border/50 shadow-lg">
-                      <CardHeader>
+                      <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
                           <CardTitle className="flex items-center gap-2">
                             <Music className="h-5 w-5 text-primary" />
@@ -1352,27 +1352,88 @@ const Dashboard = () => {
                           <CardDescription>{band.description}</CardDescription>
                         )}
                       </CardHeader>
-                      <CardContent className="space-y-4">
-                        <BandMemberRoster bandId={band.id} />
-                        <BandInvitationManager bandId={band.id} bandName={band.name} />
+                      <CardContent className="pt-0">
+                        <Tabs defaultValue="overview" className="w-full">
+                          <TabsList className="w-full justify-start bg-muted/50 mb-4">
+                            <TabsTrigger value="overview" className="flex-1 sm:flex-none">
+                              <Briefcase className="h-4 w-4 mr-1.5" />
+                              Overview
+                            </TabsTrigger>
+                            <TabsTrigger value="team" className="flex-1 sm:flex-none">
+                              <UsersIcon className="h-4 w-4 mr-1.5" />
+                              Team
+                            </TabsTrigger>
+                            <TabsTrigger value="availability" className="flex-1 sm:flex-none">
+                              <CalendarIcon className="h-4 w-4 mr-1.5" />
+                              Availability
+                            </TabsTrigger>
+                          </TabsList>
+                          
+                          <TabsContent value="overview" className="mt-0 space-y-4">
+                            <div className="grid gap-4">
+                              <div className="p-4 rounded-lg bg-muted/30 border">
+                                <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+                                  <Music className="h-4 w-4 text-primary" />
+                                  Band Info
+                                </h4>
+                                <p className="text-sm text-muted-foreground">
+                                  {band.description || "No description set. Edit your band profile to add one."}
+                                </p>
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => navigate("/bookings")}
+                                  className="gap-1.5"
+                                >
+                                  <Briefcase className="h-4 w-4" />
+                                  View Gigs
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => navigate("/rehearsals")}
+                                  className="gap-1.5"
+                                >
+                                  <CalendarIcon className="h-4 w-4" />
+                                  Rehearsals
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => navigate("/setlist")}
+                                  className="gap-1.5"
+                                >
+                                  <ListMusic className="h-4 w-4" />
+                                  Setlists
+                                </Button>
+                              </div>
+                            </div>
+                          </TabsContent>
+                          
+                          <TabsContent value="team" className="mt-0 space-y-4">
+                            <BandMemberRoster bandId={band.id} />
+                            <BandInvitationManager bandId={band.id} bandName={band.name} />
+                          </TabsContent>
+                          
+                          <TabsContent value="availability" className="mt-0 space-y-4">
+                            {viewingRequestId ? (
+                              <AvailabilityRequestResults 
+                                requestId={viewingRequestId} 
+                                onBack={() => setViewingRequestId(null)} 
+                              />
+                            ) : (
+                              <AvailabilityRequestManager 
+                                bandId={band.id} 
+                                onViewResponses={(requestId) => setViewingRequestId(requestId)} 
+                              />
+                            )}
+                            <TeamAvailabilityView bandId={band.id} />
+                          </TabsContent>
+                        </Tabs>
                       </CardContent>
                     </Card>
-                    
-                    {/* Availability Request Section */}
-                    {viewingRequestId ? (
-                      <AvailabilityRequestResults 
-                        requestId={viewingRequestId} 
-                        onBack={() => setViewingRequestId(null)} 
-                      />
-                    ) : (
-                      <AvailabilityRequestManager 
-                        bandId={band.id} 
-                        onViewResponses={(requestId) => setViewingRequestId(requestId)} 
-                      />
-                    )}
-                    
-                    {/* Team Availability View */}
-                    <TeamAvailabilityView bandId={band.id} />
                   </TabsContent>
                 ))}
               </Tabs>

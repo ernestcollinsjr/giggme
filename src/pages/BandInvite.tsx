@@ -116,6 +116,17 @@ const BandInvite = () => {
 
       if (updateError) throw updateError;
 
+      // Notify band leader via edge function (fire and forget)
+      supabase.functions.invoke("notify-invitation-accepted", {
+        body: {
+          invitationId: invitation.id,
+          acceptedByName: user.user_metadata?.name || "",
+          acceptedByEmail: user.email || "",
+        },
+      }).catch((err) => {
+        console.error("Failed to send notification to band leader:", err);
+      });
+
       toast({
         title: "Success!",
         description: `You've accepted the invitation to ${invitation.bands.name}! The band leader will assign you to the band.`,

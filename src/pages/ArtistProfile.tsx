@@ -9,12 +9,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Plus, Trash2, Youtube, ArrowLeft, Loader2, Mail, Phone, MessageCircle, DollarSign } from "lucide-react";
+import { Upload, Plus, Trash2, Youtube, ArrowLeft, Loader2, Mail, Phone, MessageCircle, DollarSign, History, TrendingUp } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
 import { TopNav } from "@/components/TopNav";
 import { AvailabilityCalendar } from "@/components/AvailabilityCalendar";
 import { detectFaceAndCrop, loadImage } from "@/utils/imageCropping";
+import { format } from "date-fns";
 
 interface PaymentMethods {
   venmo?: string;
@@ -44,6 +45,15 @@ interface Profile {
   phone_number?: string | null;
 }
 
+interface Tip {
+  id: string;
+  tipper_name: string | null;
+  amount: number;
+  payment_method: string;
+  note: string | null;
+  created_at: string;
+}
+
 const ArtistProfile = () => {
   const navigate = useNavigate();
   const { userId } = useParams<{ userId: string }>();
@@ -56,10 +66,81 @@ const ArtistProfile = () => {
   const [youtubeTitle, setYoutubeTitle] = useState("");
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [isOwnProfile, setIsOwnProfile] = useState(true);
+  const [tips, setTips] = useState<Tip[]>([]);
+  const [newTip, setNewTip] = useState({ tipper_name: "", amount: "", payment_method: "venmo", note: "" });
+  const [addingTip, setAddingTip] = useState(false);
 
   useEffect(() => {
     fetchProfiles();
   }, [userId]);
+
+  useEffect(() => {
+    if (isOwnProfile) {
+      fetchTips();
+    }
+  }, [isOwnProfile]);
+
+  const fetchTips = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("artist_tips")
+        .select("*")
+        .eq("artist_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setTips(data || []);
+    } catch (error: any) {
+      console.error("Error fetching tips:", error);
+    }
+  };
+
+  const handleAddTip = async () => {
+    if (!newTip.amount || parseFloat(newTip.amount) <= 0) {
+      toast({ title: "Error", description: "Please enter a valid amount", variant: "destructive" });
+      return;
+    }
+
+    setAddingTip(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { error } = await supabase.from("artist_tips").insert({
+        artist_id: user.id,
+        tipper_name: newTip.tipper_name || null,
+        amount: parseFloat(newTip.amount),
+        payment_method: newTip.payment_method,
+        note: newTip.note || null,
+      });
+
+      if (error) throw error;
+
+      setNewTip({ tipper_name: "", amount: "", payment_method: "venmo", note: "" });
+      fetchTips();
+      toast({ title: "Success", description: "Tip recorded successfully" });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setAddingTip(false);
+    }
+  };
+
+  const handleDeleteTip = async (tipId: string) => {
+    try {
+      const { error } = await supabase.from("artist_tips").delete().eq("id", tipId);
+      if (error) throw error;
+      setTips(tips.filter(t => t.id !== tipId));
+      toast({ title: "Success", description: "Tip deleted" });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
+
+  const totalTips = tips.reduce((sum, tip) => sum + Number(tip.amount), 0);
 
   const fetchProfiles = async () => {
     try {
@@ -752,6 +833,118 @@ const ArtistProfile = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Tip History - Only for own profile */}
+          {isOwnProfile && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <History className="h-5 w-5" />
+                  Tip History
+                </CardTitle>
+                <CardDescription>Track tips and payments you've received</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Summary */}
+                <div className="flex items-center gap-4 p-4 bg-primary/10 rounded-lg">
+                  <TrendingUp className="h-8 w-8 text-primary" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Tips Received</p>
+                    <p className="text-2xl font-bold text-primary">${totalTips.toFixed(2)}</p>
+                  </div>
+                  <div className="ml-auto text-right">
+                    <p className="text-sm text-muted-foreground">Total Transactions</p>
+                    <p className="text-xl font-semibold">{tips.length}</p>
+                  </div>
+                </div>
+
+                {/* Add New Tip */}
+                <div className="p-4 border rounded-lg space-y-3">
+                  <p className="font-medium">Record a New Tip</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Input
+                      placeholder="Tipper name (optional)"
+                      value={newTip.tipper_name}
+                      onChange={(e) => setNewTip({ ...newTip, tipper_name: e.target.value })}
+                    />
+                    <Input
+                      type="number"
+                      placeholder="Amount ($)"
+                      value={newTip.amount}
+                      onChange={(e) => setNewTip({ ...newTip, amount: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <select
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      value={newTip.payment_method}
+                      onChange={(e) => setNewTip({ ...newTip, payment_method: e.target.value })}
+                    >
+                      <option value="venmo">Venmo</option>
+                      <option value="cashapp">Cash App</option>
+                      <option value="applepay">Apple Pay</option>
+                      <option value="cash">Cash</option>
+                      <option value="other">Other</option>
+                    </select>
+                    <Input
+                      placeholder="Note (optional)"
+                      value={newTip.note}
+                      onChange={(e) => setNewTip({ ...newTip, note: e.target.value })}
+                    />
+                  </div>
+                  <Button onClick={handleAddTip} disabled={addingTip} className="w-full">
+                    {addingTip ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
+                    Add Tip
+                  </Button>
+                </div>
+
+                <Separator />
+
+                {/* Tip List */}
+                <div className="space-y-2 max-h-80 overflow-y-auto">
+                  {tips.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8">No tips recorded yet</p>
+                  ) : (
+                    tips.map((tip) => (
+                      <div key={tip.id} className="flex items-center gap-3 p-3 border rounded-lg group">
+                        <div className={`h-8 w-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+                          tip.payment_method === 'venmo' ? 'bg-[#3D95CE]' :
+                          tip.payment_method === 'cashapp' ? 'bg-[#00D632]' :
+                          tip.payment_method === 'applepay' ? 'bg-foreground' :
+                          'bg-muted-foreground'
+                        }`}>
+                          {tip.payment_method === 'venmo' ? 'V' :
+                           tip.payment_method === 'cashapp' ? '$' :
+                           tip.payment_method === 'applepay' ? '' :
+                           tip.payment_method === 'cash' ? '💵' : '?'}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">${Number(tip.amount).toFixed(2)}</span>
+                            {tip.tipper_name && (
+                              <span className="text-sm text-muted-foreground">from {tip.tipper_name}</span>
+                            )}
+                          </div>
+                          {tip.note && <p className="text-sm text-muted-foreground truncate">{tip.note}</p>}
+                          <p className="text-xs text-muted-foreground">
+                            {format(new Date(tip.created_at), "MMM d, yyyy 'at' h:mm a")}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => handleDeleteTip(tip.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Availability Calendar - Only show for own profile */}
           {isOwnProfile && <AvailabilityCalendar />}

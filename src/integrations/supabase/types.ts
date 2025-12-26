@@ -1016,6 +1016,60 @@ export type Database = {
           },
         ]
       }
+      scheduled_reminders: {
+        Row: {
+          created_at: string
+          custom_datetime: string | null
+          event_date: string
+          event_id: string | null
+          event_name: string
+          event_type: string
+          id: string
+          is_relative: boolean
+          message: string | null
+          reminder_times: string[]
+          status: string
+          target_groups: string[]
+          target_member_ids: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          custom_datetime?: string | null
+          event_date: string
+          event_id?: string | null
+          event_name: string
+          event_type: string
+          id?: string
+          is_relative?: boolean
+          message?: string | null
+          reminder_times?: string[]
+          status?: string
+          target_groups?: string[]
+          target_member_ids?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          custom_datetime?: string | null
+          event_date?: string
+          event_id?: string | null
+          event_name?: string
+          event_type?: string
+          id?: string
+          is_relative?: boolean
+          message?: string | null
+          reminder_times?: string[]
+          status?: string
+          target_groups?: string[]
+          target_member_ids?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       setlist_songs: {
         Row: {
           artist: string | null

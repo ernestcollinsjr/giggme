@@ -21,7 +21,8 @@ import {
   ArrowLeft,
   UserPlus,
   CalendarCheck,
-  Mail
+  Mail,
+  Bell
 } from "lucide-react";
 import { BandInvitationManager } from "@/components/BandInvitationManager";
 import { ArtistAvailabilityManager } from "@/components/ArtistAvailabilityManager";
@@ -415,10 +416,16 @@ export default function BookingManager() {
               <p className="text-muted-foreground">Manage your roster and discover new talent</p>
             </div>
           </div>
-          <Button onClick={() => navigate("/artists")} className="gap-2">
-            <Search className="h-4 w-4" />
-            Discover Artists
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => navigate("/schedule-reminder?type=custom")} variant="outline" className="gap-2">
+              <Bell className="h-4 w-4" />
+              Schedule Reminder
+            </Button>
+            <Button onClick={() => navigate("/artists")} className="gap-2">
+              <Search className="h-4 w-4" />
+              Discover Artists
+            </Button>
+          </div>
         </div>
 
         {/* Managed Artists (Solo, Duo, Trio) */}

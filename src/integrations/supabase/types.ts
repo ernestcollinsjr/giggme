@@ -191,6 +191,7 @@ export type Database = {
           expires_at: string
           id: string
           invited_by: string
+          recipient_name: string | null
           status: string
           token: string
         }
@@ -201,6 +202,7 @@ export type Database = {
           expires_at?: string
           id?: string
           invited_by: string
+          recipient_name?: string | null
           status?: string
           token?: string
         }
@@ -211,6 +213,7 @@ export type Database = {
           expires_at?: string
           id?: string
           invited_by?: string
+          recipient_name?: string | null
           status?: string
           token?: string
         }

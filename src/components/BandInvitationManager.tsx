@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 interface Invitation {
   id: string;
   email: string;
+  recipient_name: string | null;
   status: string;
   token: string;
   created_at: string;
@@ -30,6 +31,7 @@ interface BandInvitationManagerProps {
 
 export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManagerProps) => {
   const { toast } = useToast();
+  const [recipientName, setRecipientName] = useState("");
   const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
@@ -101,6 +103,15 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
       return;
     }
 
+    if (!recipientName.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter the recipient's name.",
+      });
+      return;
+    }
+
     setSending(true);
 
     try {
@@ -125,6 +136,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
         .insert({
           band_id: bandId,
           email: email.toLowerCase().trim(),
+          recipient_name: recipientName.trim(),
           invited_by: user.id,
         })
         .select()
@@ -141,6 +153,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
       const { error: emailError } = await supabase.functions.invoke("send-band-invite", {
         body: {
           recipientEmail: email.toLowerCase().trim(),
+          recipientName: recipientName.trim(),
           bandName: bandName,
           inviteToken: invitation.token,
           bandLeaderName: profile?.name || "Band Leader",
@@ -151,9 +164,10 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
 
       toast({
         title: "Invitation sent!",
-        description: `An invitation has been sent to ${email}`,
+        description: `An invitation has been sent to ${recipientName.trim()}`,
       });
 
+      setRecipientName("");
       setEmail("");
       fetchInvitations();
     } catch (error: any) {
@@ -284,9 +298,20 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
       </CardHeader>
       <CardContent className="space-y-6">
         <form onSubmit={handleSendInvite} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
-            <div className="flex gap-2">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="recipient-name">Recipient Name</Label>
+              <Input
+                id="recipient-name"
+                type="text"
+                placeholder="John Smith"
+                value={recipientName}
+                onChange={(e) => setRecipientName(e.target.value)}
+                disabled={sending}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address</Label>
               <Input
                 id="email"
                 type="email"
@@ -295,15 +320,16 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={sending}
               />
-              <Button type="submit" disabled={sending}>
-                {sending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Mail className="h-4 w-4" />
-                )}
-              </Button>
             </div>
           </div>
+          <Button type="submit" disabled={sending} className="w-full sm:w-auto">
+            {sending ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <Mail className="h-4 w-4 mr-2" />
+            )}
+            Send Invitation
+          </Button>
         </form>
 
         {loading ? (
@@ -324,7 +350,10 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
                     className="flex items-center justify-between p-3 border rounded-lg bg-primary/5"
                   >
                     <div className="flex-1">
-                      <p className="font-medium">{invite.email}</p>
+                      <p className="font-medium">{invite.recipient_name || invite.email}</p>
+                      {invite.recipient_name && (
+                        <p className="text-xs text-muted-foreground">{invite.email}</p>
+                      )}
                       <p className="text-xs text-muted-foreground">
                         Accepted • Waiting to be added to band
                       </p>
@@ -359,7 +388,10 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
                     className="flex items-center justify-between p-3 border rounded-lg"
                   >
                     <div className="flex-1">
-                      <p className="font-medium">{invite.email}</p>
+                      <p className="font-medium">{invite.recipient_name || invite.email}</p>
+                      {invite.recipient_name && (
+                        <p className="text-xs text-muted-foreground">{invite.email}</p>
+                      )}
                       <p className="text-xs text-muted-foreground">
                         Pending • Expires {new Date(invite.expires_at).toLocaleDateString()}
                       </p>

@@ -1132,6 +1132,8 @@ export type Database = {
           rehearsal_time: string | null
           title: string
           updated_at: string
+          venue_lat: number | null
+          venue_lng: number | null
         }
         Insert: {
           address?: string | null
@@ -1150,6 +1152,8 @@ export type Database = {
           rehearsal_time?: string | null
           title: string
           updated_at?: string
+          venue_lat?: number | null
+          venue_lng?: number | null
         }
         Update: {
           address?: string | null
@@ -1168,6 +1172,8 @@ export type Database = {
           rehearsal_time?: string | null
           title?: string
           updated_at?: string
+          venue_lat?: number | null
+          venue_lng?: number | null
         }
         Relationships: [
           {

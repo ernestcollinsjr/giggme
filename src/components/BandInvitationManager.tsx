@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Mail, Copy, Trash2, UserPlus } from "lucide-react";
+import { Loader2, Mail, Copy, Trash2, UserPlus, RefreshCw } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -78,6 +78,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
   const [selectedInvitation, setSelectedInvitation] = useState<Invitation | null>(null);
   const [addingToBand, setAddingToBand] = useState(false);
   const [highlightedInvitationId, setHighlightedInvitationId] = useState<string | null>(null);
+  const [resendingId, setResendingId] = useState<string | null>(null);
   const previousInvitationsRef = useRef<Invitation[]>([]);
 
   useEffect(() => {
@@ -369,9 +370,75 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
     }
   };
 
-  const pendingInvitations = invitations.filter(inv => inv.status === "pending");
-  const acceptedInvitations = invitations.filter(inv => inv.status === "accepted");
+  const resendInvitation = async (invite: Invitation) => {
+    setResendingId(invite.id);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
 
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("name")
+        .eq("id", user.id)
+        .single();
+
+      // Delete the old invitation
+      await supabase
+        .from("band_invitations")
+        .delete()
+        .eq("id", invite.id);
+
+      // Create new invitation with same details
+      const { data: newInvitation, error: inviteError } = await supabase
+        .from("band_invitations")
+        .insert({
+          band_id: bandId,
+          email: invite.email,
+          recipient_name: invite.recipient_name,
+          invited_by: user.id,
+        })
+        .select()
+        .single();
+
+      if (inviteError) throw inviteError;
+
+      // Send email via edge function
+      await supabase.functions.invoke("send-band-invite", {
+        body: {
+          recipientEmail: invite.email,
+          recipientName: invite.recipient_name || "",
+          bandName: bandName,
+          inviteToken: newInvitation.token,
+          bandLeaderName: profile?.name || "Band Leader",
+        },
+      });
+
+      toast({
+        title: "Invitation resent!",
+        description: `A new invitation has been sent to ${invite.recipient_name || invite.email}`,
+      });
+
+      fetchInvitations();
+    } catch (error: any) {
+      console.error("Error resending invitation:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to resend invitation.",
+      });
+    } finally {
+      setResendingId(null);
+    }
+  };
+
+  const pendingInvitations = invitations.filter(inv => 
+    inv.status === "pending" && new Date(inv.expires_at) > new Date()
+  );
+  const acceptedInvitations = invitations.filter(inv => inv.status === "accepted");
+  const expiredInvitations = invitations.filter(inv => 
+    inv.status === "pending" && new Date(inv.expires_at) <= new Date()
+  );
   return (
     <Card>
       <CardHeader>
@@ -507,11 +574,58 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
                   </div>
                 ))}
               </div>
-            ) : acceptedInvitations.length === 0 ? (
+            ) : acceptedInvitations.length === 0 && expiredInvitations.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">
                 No pending invitations
               </p>
             ) : null}
+
+            {expiredInvitations.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="font-semibold text-sm text-muted-foreground">Expired Invitations</h4>
+                <p className="text-xs text-muted-foreground mb-2">
+                  These invitations have expired. Click resend to send a new one.
+                </p>
+                {expiredInvitations.map((invite) => (
+                  <div
+                    key={invite.id}
+                    className="flex items-center justify-between p-3 border rounded-lg border-dashed opacity-70"
+                  >
+                    <div className="flex-1">
+                      <p className="font-medium">{invite.recipient_name || invite.email}</p>
+                      {invite.recipient_name && (
+                        <p className="text-xs text-muted-foreground">{invite.email}</p>
+                      )}
+                      <p className="text-xs text-destructive">
+                        Expired {new Date(invite.expires_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => resendInvitation(invite)}
+                        disabled={resendingId === invite.id}
+                      >
+                        {resendingId === invite.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                        ) : (
+                          <RefreshCw className="h-4 w-4 mr-1" />
+                        )}
+                        Resend
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => deleteInvitation(invite.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </>
         )}
       </CardContent>

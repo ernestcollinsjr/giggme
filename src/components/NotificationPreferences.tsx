@@ -5,8 +5,9 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Bell, Mail, MessageSquare, Smartphone, Loader2, Send, Volume2, VolumeX } from "lucide-react";
+import { Bell, Mail, MessageSquare, Smartphone, Loader2, Send, Volume2, VolumeX, Play } from "lucide-react";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { useSoundPreference } from "@/hooks/useSoundPreference";
 
 interface NotificationPrefs {
   id?: string;
@@ -22,6 +23,7 @@ interface NotificationPrefs {
 export const NotificationPreferences = () => {
   const { toast } = useToast();
   const { isSupported, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
+  const { playTestSound } = useSoundPreference();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [sendingTest, setSendingTest] = useState(false);
@@ -168,12 +170,23 @@ export const NotificationPreferences = () => {
                 </p>
               </div>
             </div>
-            <Switch
-              id="sound-muted"
-              checked={!prefs.sound_muted}
-              onCheckedChange={(checked) => updatePreference("sound_muted", !checked)}
-              disabled={saving}
-            />
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={playTestSound}
+                className="mr-2"
+              >
+                <Play className="h-3 w-3 mr-1" />
+                Test
+              </Button>
+              <Switch
+                id="sound-muted"
+                checked={!prefs.sound_muted}
+                onCheckedChange={(checked) => updatePreference("sound_muted", !checked)}
+                disabled={saving}
+              />
+            </div>
           </div>
         </div>
 

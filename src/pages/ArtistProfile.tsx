@@ -9,12 +9,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Plus, Trash2, Youtube, ArrowLeft, Loader2, Mail, Phone, MessageCircle } from "lucide-react";
+import { Upload, Plus, Trash2, Youtube, ArrowLeft, Loader2, Mail, Phone, MessageCircle, DollarSign } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
 import { TopNav } from "@/components/TopNav";
 import { AvailabilityCalendar } from "@/components/AvailabilityCalendar";
 import { detectFaceAndCrop, loadImage } from "@/utils/imageCropping";
+
+interface PaymentMethods {
+  venmo?: string;
+  cashapp?: string;
+  applepay?: string;
+}
 
 interface ArtistProfile {
   id: string;
@@ -27,6 +33,7 @@ interface ArtistProfile {
   youtube_videos: Array<{ url: string; title: string }>;
   social_links: { [key: string]: string };
   achievements: string[];
+  payment_methods: PaymentMethods;
 }
 
 interface Profile {
@@ -105,6 +112,7 @@ const ArtistProfile = () => {
           ...artistData,
           youtube_videos: (artistData.youtube_videos as any) || [],
           social_links: (artistData.social_links as any) || {},
+          payment_methods: (artistData.payment_methods as PaymentMethods) || {},
         });
       } else if (viewingOwnProfile && user) {
         // Only create artist profile if viewing own profile
@@ -119,6 +127,7 @@ const ArtistProfile = () => {
           ...newArtistProfile,
           youtube_videos: (newArtistProfile.youtube_videos as any) || [],
           social_links: (newArtistProfile.social_links as any) || {},
+          payment_methods: (newArtistProfile.payment_methods as PaymentMethods) || {},
         });
       }
     } catch (error: any) {
@@ -261,6 +270,7 @@ const ArtistProfile = () => {
           rate_range: artistProfile?.rate_range,
           achievements: artistProfile?.achievements,
           social_links: artistProfile?.social_links,
+          payment_methods: artistProfile?.payment_methods as Record<string, string> | undefined,
         })
         .eq("user_id", user.id);
 
@@ -570,6 +580,120 @@ const ArtistProfile = () => {
                   />
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Payment Methods */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DollarSign className="h-5 w-5" />
+                Payment Methods
+              </CardTitle>
+              {isOwnProfile ? (
+                <CardDescription>Add your payment handles for tips and payments from venues</CardDescription>
+              ) : (
+                <CardDescription>Send tips or payments to this artist</CardDescription>
+              )}
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {isOwnProfile ? (
+                <>
+                  <div>
+                    <Label htmlFor="venmo">Venmo Username</Label>
+                    <Input
+                      id="venmo"
+                      value={artistProfile?.payment_methods?.venmo || ""}
+                      onChange={(e) => setArtistProfile({ 
+                        ...artistProfile!, 
+                        payment_methods: { ...artistProfile?.payment_methods, venmo: e.target.value } 
+                      })}
+                      placeholder="@your-venmo-username"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="cashapp">Cash App Username</Label>
+                    <Input
+                      id="cashapp"
+                      value={artistProfile?.payment_methods?.cashapp || ""}
+                      onChange={(e) => setArtistProfile({ 
+                        ...artistProfile!, 
+                        payment_methods: { ...artistProfile?.payment_methods, cashapp: e.target.value } 
+                      })}
+                      placeholder="$your-cashapp-tag"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="applepay">Apple Pay / Phone Number</Label>
+                    <Input
+                      id="applepay"
+                      value={artistProfile?.payment_methods?.applepay || ""}
+                      onChange={(e) => setArtistProfile({ 
+                        ...artistProfile!, 
+                        payment_methods: { ...artistProfile?.payment_methods, applepay: e.target.value } 
+                      })}
+                      placeholder="Phone number for Apple Pay"
+                    />
+                  </div>
+                </>
+              ) : (
+                <div className="space-y-3">
+                  {artistProfile?.payment_methods?.venmo && (
+                    <div className="flex items-center gap-3 p-3 border rounded-lg">
+                      <div className="h-8 w-8 rounded-full bg-[#3D95CE] flex items-center justify-center">
+                        <span className="text-white font-bold text-sm">V</span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm text-muted-foreground">Venmo</p>
+                        <p className="font-medium">{artistProfile.payment_methods.venmo}</p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => window.open(`https://venmo.com/${artistProfile.payment_methods.venmo?.replace('@', '')}`, '_blank')}
+                      >
+                        Open Venmo
+                      </Button>
+                    </div>
+                  )}
+                  {artistProfile?.payment_methods?.cashapp && (
+                    <div className="flex items-center gap-3 p-3 border rounded-lg">
+                      <div className="h-8 w-8 rounded-full bg-[#00D632] flex items-center justify-center">
+                        <span className="text-white font-bold text-sm">$</span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm text-muted-foreground">Cash App</p>
+                        <p className="font-medium">{artistProfile.payment_methods.cashapp}</p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => window.open(`https://cash.app/${artistProfile.payment_methods.cashapp?.replace('$', '')}`, '_blank')}
+                      >
+                        Open Cash App
+                      </Button>
+                    </div>
+                  )}
+                  {artistProfile?.payment_methods?.applepay && (
+                    <div className="flex items-center gap-3 p-3 border rounded-lg">
+                      <div className="h-8 w-8 rounded-full bg-foreground flex items-center justify-center">
+                        <span className="text-background font-bold text-sm"></span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm text-muted-foreground">Apple Pay</p>
+                        <p className="font-medium">{artistProfile.payment_methods.applepay}</p>
+                      </div>
+                    </div>
+                  )}
+                  {!artistProfile?.payment_methods?.venmo && 
+                   !artistProfile?.payment_methods?.cashapp && 
+                   !artistProfile?.payment_methods?.applepay && (
+                    <p className="text-center text-muted-foreground py-4">
+                      This artist hasn't added payment methods yet.
+                    </p>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
 

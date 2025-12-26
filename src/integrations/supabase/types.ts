@@ -21,6 +21,7 @@ export type Database = {
           created_at: string | null
           genre: string | null
           id: string
+          payment_methods: Json | null
           rate_range: string | null
           social_links: Json | null
           stage_name: string | null
@@ -35,6 +36,7 @@ export type Database = {
           created_at?: string | null
           genre?: string | null
           id?: string
+          payment_methods?: Json | null
           rate_range?: string | null
           social_links?: Json | null
           stage_name?: string | null
@@ -49,6 +51,7 @@ export type Database = {
           created_at?: string | null
           genre?: string | null
           id?: string
+          payment_methods?: Json | null
           rate_range?: string | null
           social_links?: Json | null
           stage_name?: string | null

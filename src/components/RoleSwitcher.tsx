@@ -16,6 +16,9 @@ const RoleSwitcher = ({ currentRole, onRoleChange }: RoleSwitcherProps) => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  
+  // Band members cannot change their own role - only Band Leaders and Booking Managers can assign roles
+  const canSwitchRole = currentRole !== "band_member";
 
   const roles = [
     {
@@ -103,6 +106,14 @@ const RoleSwitcher = ({ currentRole, onRoleChange }: RoleSwitcherProps) => {
       setLoading(false);
     }
   };
+
+  if (!canSwitchRole) {
+    return (
+      <div className="p-4 text-center text-muted-foreground">
+        <p className="text-sm">Your role is assigned by your Band Leader or Booking Manager.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

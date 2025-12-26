@@ -68,6 +68,8 @@ export const SetlistManager = () => {
   const [rehearsalTime, setRehearsalTime] = useState("");
   const [rehearsalCallTime, setRehearsalCallTime] = useState("");
   const [eventAddress, setEventAddress] = useState("");
+  const [venueLat, setVenueLat] = useState<number | null>(null);
+  const [venueLng, setVenueLng] = useState<number | null>(null);
   const [eventNotes, setEventNotes] = useState("");
   const [bandMembers, setBandMembers] = useState<{ id: string; name: string }[]>([]);
   const [musicLeaderId, setMusicLeaderId] = useState<string>("");
@@ -235,6 +237,8 @@ export const SetlistManager = () => {
     setRehearsalTime("");
     setRehearsalCallTime("");
     setEventAddress("");
+    setVenueLat(null);
+    setVenueLng(null);
     setEventNotes("");
     setMusicLeaderId("");
     setBandMembers([]);
@@ -275,6 +279,8 @@ export const SetlistManager = () => {
         rehearsal_time: rehearsalTime || null,
         rehearsal_call_time: rehearsalCallTime || null,
         address: eventAddress || null,
+        venue_lat: venueLat,
+        venue_lng: venueLng,
         notes: eventNotes || null,
         music_leader_id: musicLeaderId || null,
       });
@@ -892,7 +898,19 @@ export const SetlistManager = () => {
                   <Label htmlFor="address">Address</Label>
                   <PlaceAutocomplete
                     value={eventAddress}
-                    onChange={(value) => setEventAddress(value)}
+                    onChange={(value, placeDetails) => {
+                      setEventAddress(value);
+                      if (placeDetails?.geometry?.location) {
+                        const lat = typeof placeDetails.geometry.location.lat === 'function' 
+                          ? placeDetails.geometry.location.lat() 
+                          : placeDetails.geometry.location.lat;
+                        const lng = typeof placeDetails.geometry.location.lng === 'function' 
+                          ? placeDetails.geometry.location.lng() 
+                          : placeDetails.geometry.location.lng;
+                        setVenueLat(lat as number);
+                        setVenueLng(lng as number);
+                      }
+                    }}
                     placeholder="Search for venue or address"
                   />
                 </div>

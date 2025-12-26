@@ -61,19 +61,36 @@ const ArtistsDiscovery = () => {
 
   const fetchArtists = async () => {
     try {
-      const { data, error } = await supabase
+      // Fetch artist profiles
+      const { data: artistData, error: artistError } = await supabase
         .from("artist_profiles")
-        .select(`
-          *,
-          profile:profiles!artist_profiles_user_id_fkey (
-            name,
-            bio,
-            photo_urls
-          )
-        `);
+        .select("*");
 
-      if (error) throw error;
-      setArtists(data as any);
+      if (artistError) throw artistError;
+
+      // Fetch all profiles for the artists
+      const userIds = artistData?.map((a) => a.user_id) || [];
+      const { data: profilesData, error: profilesError } = await supabase
+        .from("profiles")
+        .select("id, name, bio, photo_urls")
+        .in("id", userIds);
+
+      if (profilesError) throw profilesError;
+
+      // Combine the data
+      const combined = artistData?.map((artist) => {
+        const profile = profilesData?.find((p) => p.id === artist.user_id);
+        return {
+          ...artist,
+          profile: {
+            name: profile?.name || "Unknown",
+            bio: profile?.bio || null,
+            photo_urls: profile?.photo_urls || [],
+          },
+        };
+      }) || [];
+
+      setArtists(combined as unknown as ArtistWithProfile[]);
     } catch (error: any) {
       console.error("Error fetching artists:", error);
     } finally {

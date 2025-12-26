@@ -8,42 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Mail, Copy, Trash2, UserPlus, RefreshCw } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-// Play a pleasant notification sound using Web Audio API
-const playNotificationSound = () => {
-  try {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    
-    // Create a pleasant two-tone chime
-    const playTone = (frequency: number, startTime: number, duration: number) => {
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      oscillator.frequency.value = frequency;
-      oscillator.type = 'sine';
-      
-      gainNode.gain.setValueAtTime(0, startTime);
-      gainNode.gain.linearRampToValueAtTime(0.3, startTime + 0.05);
-      gainNode.gain.linearRampToValueAtTime(0, startTime + duration);
-      
-      oscillator.start(startTime);
-      oscillator.stop(startTime + duration);
-    };
-    
-    const now = audioContext.currentTime;
-    playTone(523.25, now, 0.15); // C5
-    playTone(659.25, now + 0.1, 0.15); // E5
-    playTone(783.99, now + 0.2, 0.2); // G5
-    
-    // Clean up after sounds finish
-    setTimeout(() => audioContext.close(), 1000);
-  } catch (error) {
-    console.log('Could not play notification sound:', error);
-  }
-};
+import { useSoundPreference } from "@/hooks/useSoundPreference";
 
 interface Invitation {
   id: string;
@@ -67,6 +32,7 @@ interface BandInvitationManagerProps {
 
 export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManagerProps) => {
   const { toast } = useToast();
+  const { playNotificationSound } = useSoundPreference();
   const [recipientName, setRecipientName] = useState("");
   const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);

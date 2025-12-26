@@ -5,7 +5,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Bell, Mail, MessageSquare, Smartphone, Loader2, Send } from "lucide-react";
+import { Bell, Mail, MessageSquare, Smartphone, Loader2, Send, Volume2, VolumeX } from "lucide-react";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 interface NotificationPrefs {
@@ -16,6 +16,7 @@ interface NotificationPrefs {
   reminder_1_week: boolean;
   reminder_1_day: boolean;
   reminder_day_of: boolean;
+  sound_muted: boolean;
 }
 
 export const NotificationPreferences = () => {
@@ -31,6 +32,7 @@ export const NotificationPreferences = () => {
     reminder_1_week: true,
     reminder_1_day: true,
     reminder_day_of: true,
+    sound_muted: false,
   });
 
   useEffect(() => {
@@ -62,6 +64,7 @@ export const NotificationPreferences = () => {
           reminder_1_week: data.reminder_1_week ?? true,
           reminder_1_day: data.reminder_1_day ?? true,
           reminder_day_of: data.reminder_day_of ?? true,
+          sound_muted: (data as any).sound_muted ?? false,
         });
       }
     } catch (error) {
@@ -143,8 +146,39 @@ export const NotificationPreferences = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Notification Channels */}
+        {/* Sound Settings */}
         <div className="space-y-4">
+          <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+            Sound Settings
+          </h4>
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {prefs.sound_muted ? (
+                <VolumeX className="h-4 w-4 text-muted-foreground" />
+              ) : (
+                <Volume2 className="h-4 w-4 text-muted-foreground" />
+              )}
+              <div>
+                <Label htmlFor="sound-muted" className="cursor-pointer">
+                  Notification Sounds
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Play sounds for real-time notifications
+                </p>
+              </div>
+            </div>
+            <Switch
+              id="sound-muted"
+              checked={!prefs.sound_muted}
+              onCheckedChange={(checked) => updatePreference("sound_muted", !checked)}
+              disabled={saving}
+            />
+          </div>
+        </div>
+
+        {/* Notification Channels */}
+        <div className="space-y-4 pt-4 border-t">
           <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
             Notification Channels
           </h4>

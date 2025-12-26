@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
+import { PlaceAutocomplete } from "@/components/PlaceAutocomplete";
 
 interface Song {
   id: string;
@@ -889,11 +890,10 @@ export const SetlistManager = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <Label htmlFor="address">Address</Label>
-                  <Input
-                    id="address"
+                  <PlaceAutocomplete
                     value={eventAddress}
-                    onChange={(e) => setEventAddress(e.target.value)}
-                    placeholder="Enter location address"
+                    onChange={(value) => setEventAddress(value)}
+                    placeholder="Search for venue or address"
                   />
                 </div>
                 <div>

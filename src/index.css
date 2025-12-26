@@ -69,11 +69,12 @@ All colors MUST be HSL.
 
 /* Google Places Autocomplete dropdown - must appear above dialogs/modals */
 .pac-container {
-  z-index: 10000 !important;
+  z-index: 2147483647 !important;
   background-color: hsl(var(--popover)) !important;
   border: 1px solid hsl(var(--border)) !important;
   border-radius: var(--radius) !important;
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
+  pointer-events: auto !important;
 }
 
 .pac-item {
@@ -81,6 +82,7 @@ All colors MUST be HSL.
   cursor: pointer !important;
   color: hsl(var(--foreground)) !important;
   border-top: 1px solid hsl(var(--border)) !important;
+  pointer-events: auto !important;
 }
 
 .pac-item:first-child {
@@ -97,4 +99,24 @@ All colors MUST be HSL.
 
 .pac-matched {
   font-weight: 600 !important;
+}
+
+/* Fix dialog/overlay not blocking pac-container clicks */
+[data-radix-portal] {
+  isolation: auto !important;
+}
+
+/* The Radix overlay should not capture pointer events on pac-container */
+[data-radix-dialog-overlay] {
+  pointer-events: none !important;
+}
+
+[data-radix-dialog-content] {
+  pointer-events: auto !important;
+}
+
+/* Ensure the pac-container is not blocked by any overlay */
+body > .pac-container {
+  position: fixed !important;
+  isolation: isolate !important;
 }

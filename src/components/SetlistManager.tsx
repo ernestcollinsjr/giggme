@@ -1316,8 +1316,17 @@ export const SetlistManager = () => {
               // Sort by created (newest first) - default
               return 0; // Already sorted by created_at desc from fetch
             }
-          }).map((setlist) => (
-          <Card key={setlist.id}>
+          }).map((setlist) => {
+            const isPast = setlist.event_date && (() => {
+              const eventDate = new Date(setlist.event_date);
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              eventDate.setHours(0, 0, 0, 0);
+              return eventDate < today;
+            })();
+            
+            return (
+          <Card key={setlist.id} className={isPast ? "opacity-60 bg-muted/30" : ""}>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex-1">
@@ -1705,7 +1714,8 @@ export const SetlistManager = () => {
               )}
             </CardContent>
           </Card>
-        ))
+            );
+          })
       )}
 
       {/* Smooth floating ghost card */}

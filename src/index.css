@@ -100,23 +100,3 @@ All colors MUST be HSL.
 .pac-matched {
   font-weight: 600 !important;
 }
-
-/* Fix dialog/overlay not blocking pac-container clicks */
-[data-radix-portal] {
-  isolation: auto !important;
-}
-
-/* The Radix overlay should not capture pointer events on pac-container */
-[data-radix-dialog-overlay] {
-  pointer-events: none !important;
-}
-
-[data-radix-dialog-content] {
-  pointer-events: auto !important;
-}
-
-/* Ensure the pac-container is not blocked by any overlay */
-body > .pac-container {
-  position: fixed !important;
-  isolation: isolate !important;
-}

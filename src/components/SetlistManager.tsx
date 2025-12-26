@@ -35,6 +35,7 @@ interface Band {
   id: string;
   name: string;
   description: string | null;
+  band_leader_id: string;
 }
 
 export const SetlistManager = () => {
@@ -57,6 +58,18 @@ export const SetlistManager = () => {
   const [uploading, setUploading] = useState(false);
   const [playingVideo, setPlayingVideo] = useState<{ videoId: string; title: string } | null>(null);
   const [fetchingVideoInfo, setFetchingVideoInfo] = useState(false);
+  
+  // New setlist event fields
+  const [eventDate, setEventDate] = useState("");
+  const [eventTime, setEventTime] = useState("");
+  const [callTime, setCallTime] = useState("");
+  const [rehearsalDate, setRehearsalDate] = useState("");
+  const [rehearsalTime, setRehearsalTime] = useState("");
+  const [rehearsalCallTime, setRehearsalCallTime] = useState("");
+  const [eventAddress, setEventAddress] = useState("");
+  const [eventNotes, setEventNotes] = useState("");
+  const [bandMembers, setBandMembers] = useState<{ id: string; name: string }[]>([]);
+  const [musicLeaderId, setMusicLeaderId] = useState<string>("");
   
   // Drag and drop state
   const [draggedSongIndex, setDraggedSongIndex] = useState<number | null>(null);
@@ -171,6 +184,61 @@ export const SetlistManager = () => {
     }
   };
 
+  // Fetch band members when band is selected in the dialog
+  const fetchBandMembers = async (bandId: string) => {
+    if (!bandId) {
+      setBandMembers([]);
+      return;
+    }
+    
+    try {
+      const { data: members, error } = await supabase
+        .from("band_members")
+        .select("member_id, profiles!band_members_member_id_fkey(id, name)")
+        .eq("band_id", bandId);
+      
+      if (error) throw error;
+      
+      const memberProfiles = members
+        ?.map((m: any) => m.profiles)
+        .filter((p: any): p is { id: string; name: string } => p !== null) || [];
+      
+      // Also include the band leader
+      const band = bands.find(b => b.id === bandId);
+      if (band) {
+        const { data: leaderProfile } = await supabase
+          .from("profiles")
+          .select("id, name")
+          .eq("id", (band as any).band_leader_id)
+          .maybeSingle();
+        
+        if (leaderProfile && !memberProfiles.some(m => m.id === leaderProfile.id)) {
+          memberProfiles.unshift(leaderProfile);
+        }
+      }
+      
+      setBandMembers(memberProfiles);
+    } catch (error) {
+      console.error("Error fetching band members:", error);
+    }
+  };
+
+  const resetNewSetlistForm = () => {
+    setNewSetlistTitle("");
+    setNewSetlistDescription("");
+    setNewSetlistBandId("");
+    setEventDate("");
+    setEventTime("");
+    setCallTime("");
+    setRehearsalDate("");
+    setRehearsalTime("");
+    setRehearsalCallTime("");
+    setEventAddress("");
+    setEventNotes("");
+    setMusicLeaderId("");
+    setBandMembers([]);
+  };
+
   const createSetlist = async () => {
     if (!newSetlistTitle.trim()) {
       toast({
@@ -199,6 +267,15 @@ export const SetlistManager = () => {
         description: newSetlistDescription || null,
         band_leader_id: user.id,
         band_id: newSetlistBandId,
+        event_date: eventDate ? new Date(eventDate).toISOString() : null,
+        event_time: eventTime || null,
+        call_time: callTime || null,
+        rehearsal_date: rehearsalDate ? new Date(rehearsalDate).toISOString() : null,
+        rehearsal_time: rehearsalTime || null,
+        rehearsal_call_time: rehearsalCallTime || null,
+        address: eventAddress || null,
+        notes: eventNotes || null,
+        music_leader_id: musicLeaderId || null,
       });
 
       if (error) throw error;
@@ -208,9 +285,7 @@ export const SetlistManager = () => {
         description: "Your new setlist has been created successfully",
       });
 
-      setNewSetlistTitle("");
-      setNewSetlistDescription("");
-      setNewSetlistBandId("");
+      resetNewSetlistForm();
       setShowNewSetlistDialog(false);
       setSelectedBandId(newSetlistBandId);
       fetchSetlists();
@@ -702,15 +777,33 @@ export const SetlistManager = () => {
               New Setlist
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
             <DialogHeader>
               <DialogTitle>Create New Setlist</DialogTitle>
-              <DialogDescription>Add a new setlist for your band members to access</DialogDescription>
+              <DialogDescription>Schedule an event with optional rehearsal information</DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
+              {/* Setlist Title */}
               <div>
-                <Label htmlFor="band">Select Band</Label>
-                <Select value={newSetlistBandId} onValueChange={setNewSetlistBandId}>
+                <Label htmlFor="title">Event/Gig Title *</Label>
+                <Input
+                  id="title"
+                  value={newSetlistTitle}
+                  onChange={(e) => setNewSetlistTitle(e.target.value)}
+                  placeholder="Sunday Morning Service, Concert, etc."
+                />
+              </div>
+
+              {/* Select Band */}
+              <div>
+                <Label htmlFor="band">Band/Team</Label>
+                <Select 
+                  value={newSetlistBandId} 
+                  onValueChange={(value) => {
+                    setNewSetlistBandId(value);
+                    fetchBandMembers(value);
+                  }}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Choose a band..." />
                   </SelectTrigger>
@@ -723,15 +816,115 @@ export const SetlistManager = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label htmlFor="title">Setlist for Gig below</Label>
-                <Input
-                  id="title"
-                  value={newSetlistTitle}
-                  onChange={(e) => setNewSetlistTitle(e.target.value)}
-                  placeholder="e.g., Spring 2024 Tour"
-                />
+
+              {/* Event Information Section */}
+              <div className="pt-2">
+                <h4 className="text-sm font-semibold text-primary mb-3">Event/Gig Information</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <Label htmlFor="event-date">Event Date</Label>
+                    <Input
+                      id="event-date"
+                      type="date"
+                      value={eventDate}
+                      onChange={(e) => setEventDate(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="event-time">Event Time</Label>
+                    <Input
+                      id="event-time"
+                      type="time"
+                      value={eventTime}
+                      onChange={(e) => setEventTime(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="call-time">Call Time</Label>
+                    <Input
+                      id="call-time"
+                      type="time"
+                      value={callTime}
+                      onChange={(e) => setCallTime(e.target.value)}
+                    />
+                  </div>
+                </div>
               </div>
+
+              {/* Rehearsal Information Section */}
+              <div className="pt-2">
+                <h4 className="text-sm font-semibold text-muted-foreground mb-3">Rehearsal Information (Optional)</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <Label htmlFor="rehearsal-date">Rehearsal Date</Label>
+                    <Input
+                      id="rehearsal-date"
+                      type="date"
+                      value={rehearsalDate}
+                      onChange={(e) => setRehearsalDate(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="rehearsal-time">Rehearsal Time</Label>
+                    <Input
+                      id="rehearsal-time"
+                      type="time"
+                      value={rehearsalTime}
+                      onChange={(e) => setRehearsalTime(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="rehearsal-call-time">Rehearsal Call Time</Label>
+                    <Input
+                      id="rehearsal-call-time"
+                      type="time"
+                      value={rehearsalCallTime}
+                      onChange={(e) => setRehearsalCallTime(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Address and Notes */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="address">Address</Label>
+                  <Input
+                    id="address"
+                    value={eventAddress}
+                    onChange={(e) => setEventAddress(e.target.value)}
+                    placeholder="Enter location address"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="notes">Notes</Label>
+                  <Input
+                    id="notes"
+                    value={eventNotes}
+                    onChange={(e) => setEventNotes(e.target.value)}
+                    placeholder="Enter notes"
+                  />
+                </div>
+              </div>
+
+              {/* Music Leader/Director */}
+              <div>
+                <Label htmlFor="music-leader">Music Leader/Director</Label>
+                <Select value={musicLeaderId} onValueChange={setMusicLeaderId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Leader/Director" />
+                  </SelectTrigger>
+                  <SelectContent className="z-50 bg-background">
+                    {bandMembers.map((member) => (
+                      <SelectItem key={member.id} value={member.id}>
+                        {member.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Description */}
               <div>
                 <Label htmlFor="description">Description (optional)</Label>
                 <Textarea
@@ -739,8 +932,10 @@ export const SetlistManager = () => {
                   value={newSetlistDescription}
                   onChange={(e) => setNewSetlistDescription(e.target.value)}
                   placeholder="Add any notes about this setlist..."
+                  rows={2}
                 />
               </div>
+
               <Button onClick={createSetlist} className="w-full">
                 Create Setlist
               </Button>

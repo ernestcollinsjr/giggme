@@ -39,9 +39,7 @@ export const useSoundPreference = () => {
     }
   };
 
-  const playNotificationSound = useCallback(() => {
-    if (isMuted) return;
-    
+  const playSound = useCallback(() => {
     try {
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       
@@ -72,7 +70,17 @@ export const useSoundPreference = () => {
     } catch (error) {
       console.log('Could not play notification sound:', error);
     }
-  }, [isMuted]);
+  }, []);
 
-  return { isMuted, loading, playNotificationSound, refetch: fetchSoundPreference };
+  const playNotificationSound = useCallback(() => {
+    if (isMuted) return;
+    playSound();
+  }, [isMuted, playSound]);
+
+  // Play sound for testing (ignores mute setting)
+  const playTestSound = useCallback(() => {
+    playSound();
+  }, [playSound]);
+
+  return { isMuted, loading, playNotificationSound, playTestSound, refetch: fetchSoundPreference };
 };

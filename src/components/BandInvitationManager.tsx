@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,6 +41,8 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
   const [selectedBandForMember, setSelectedBandForMember] = useState<string>("");
   const [selectedInvitation, setSelectedInvitation] = useState<Invitation | null>(null);
   const [addingToBand, setAddingToBand] = useState(false);
+  const [highlightedInvitationId, setHighlightedInvitationId] = useState<string | null>(null);
+  const previousInvitationsRef = useRef<Invitation[]>([]);
 
   useEffect(() => {
     fetchInvitations();
@@ -59,7 +61,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
         },
         (payload) => {
           console.log('Real-time invitation update:', payload);
-          fetchInvitations();
+          handleRealtimeUpdate(payload);
         }
       )
       .subscribe();
@@ -68,6 +70,31 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
       supabase.removeChannel(channel);
     };
   }, [bandId]);
+
+  const handleRealtimeUpdate = async (payload: any) => {
+    const { eventType, new: newRecord, old: oldRecord } = payload;
+    
+    // Fetch updated invitations
+    await fetchInvitations();
+    
+    // Show toast and highlight for status changes
+    if (eventType === 'UPDATE' && oldRecord?.status !== newRecord?.status) {
+      const name = newRecord.recipient_name || newRecord.email;
+      
+      if (newRecord.status === 'accepted') {
+        toast({
+          title: "🎉 Invitation Accepted!",
+          description: `${name} has accepted your invitation.`,
+        });
+        setHighlightedInvitationId(newRecord.id);
+        setTimeout(() => setHighlightedInvitationId(null), 3000);
+      }
+    } else if (eventType === 'INSERT') {
+      const name = newRecord.recipient_name || newRecord.email;
+      setHighlightedInvitationId(newRecord.id);
+      setTimeout(() => setHighlightedInvitationId(null), 3000);
+    }
+  };
 
   const fetchAllBands = async () => {
     try {
@@ -365,7 +392,11 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
                 {acceptedInvitations.map((invite) => (
                   <div
                     key={invite.id}
-                    className="flex items-center justify-between p-3 border rounded-lg bg-primary/5"
+                    className={`flex items-center justify-between p-3 border rounded-lg bg-primary/5 transition-all duration-500 ${
+                      highlightedInvitationId === invite.id 
+                        ? 'ring-2 ring-primary ring-offset-2 animate-pulse bg-primary/20' 
+                        : ''
+                    }`}
                   >
                     <div className="flex-1">
                       <p className="font-medium">{invite.recipient_name || invite.email}</p>
@@ -403,7 +434,11 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
                 {pendingInvitations.map((invite) => (
                   <div
                     key={invite.id}
-                    className="flex items-center justify-between p-3 border rounded-lg"
+                    className={`flex items-center justify-between p-3 border rounded-lg transition-all duration-500 ${
+                      highlightedInvitationId === invite.id 
+                        ? 'ring-2 ring-primary ring-offset-2 animate-pulse bg-primary/10' 
+                        : ''
+                    }`}
                   >
                     <div className="flex-1">
                       <p className="font-medium">{invite.recipient_name || invite.email}</p>

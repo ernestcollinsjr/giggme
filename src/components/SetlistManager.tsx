@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Music, Plus, Trash2, Upload, Link as LinkIcon, ChevronUp, ChevronDown, FileText, GripVertical, Bell, Pencil, Calendar, Clock, MapPin, ArrowUpDown, Filter, Archive, RotateCcw } from "lucide-react";
+import { Music, Plus, Trash2, Upload, Link as LinkIcon, ChevronUp, ChevronDown, FileText, GripVertical, Bell, Pencil, Calendar, Clock, MapPin, ArrowUpDown, Filter, Archive, RotateCcw, CheckSquare, Square } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -66,6 +66,8 @@ export const SetlistManager = () => {
   const [restoreDate, setRestoreDate] = useState("");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deletingSetlist, setDeletingSetlist] = useState<any>(null);
+  const [selectedForBulkDelete, setSelectedForBulkDelete] = useState<Set<string>>(new Set());
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const [selectedSetlist, setSelectedSetlist] = useState<string | null>(null);
   const [songTitle, setSongTitle] = useState("");
   const [songArtist, setSongArtist] = useState("");
@@ -438,6 +440,69 @@ export const SetlistManager = () => {
       toast({
         variant: "destructive",
         title: "Error deleting setlist",
+        description: error.message,
+      });
+    }
+  };
+
+  const toggleBulkDeleteSelection = (setlistId: string) => {
+    setSelectedForBulkDelete(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(setlistId)) {
+        newSet.delete(setlistId);
+      } else {
+        newSet.add(setlistId);
+      }
+      return newSet;
+    });
+  };
+
+  const getArchivedSetlistIds = () => {
+    return setlists
+      .filter(setlist => {
+        if (!setlist.event_date) return false;
+        const eventDate = new Date(setlist.event_date);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        eventDate.setHours(0, 0, 0, 0);
+        return eventDate < today;
+      })
+      .map(s => s.id);
+  };
+
+  const selectAllArchived = () => {
+    const archivedIds = getArchivedSetlistIds();
+    setSelectedForBulkDelete(new Set(archivedIds));
+  };
+
+  const clearBulkSelection = () => {
+    setSelectedForBulkDelete(new Set());
+  };
+
+  const bulkDeleteSetlists = async () => {
+    if (selectedForBulkDelete.size === 0) return;
+
+    try {
+      const idsToDelete = Array.from(selectedForBulkDelete);
+      const { error } = await supabase
+        .from("setlists")
+        .delete()
+        .in("id", idsToDelete);
+
+      if (error) throw error;
+
+      toast({
+        title: "Setlists deleted",
+        description: `${idsToDelete.length} archived setlist${idsToDelete.length > 1 ? 's have' : ' has'} been removed`,
+      });
+
+      setShowBulkDeleteDialog(false);
+      setSelectedForBulkDelete(new Set());
+      fetchSetlists();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error deleting setlists",
         description: error.message,
       });
     }
@@ -1389,7 +1454,44 @@ export const SetlistManager = () => {
           </CardContent>
         </Card>
       ) : (
-        [...setlists]
+        <>
+        {/* Bulk Delete Bar */}
+        {getArchivedSetlistIds().length > 0 && (
+          <div className="flex items-center justify-between bg-muted/50 border rounded-lg p-3 mb-4">
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-muted-foreground">
+                {selectedForBulkDelete.size > 0 ? (
+                  <>{selectedForBulkDelete.size} archived setlist{selectedForBulkDelete.size > 1 ? 's' : ''} selected</>
+                ) : (
+                  <>Select archived setlists to delete</>
+                )}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              {selectedForBulkDelete.size > 0 ? (
+                <>
+                  <Button variant="ghost" size="sm" onClick={clearBulkSelection}>
+                    Clear
+                  </Button>
+                  <Button 
+                    variant="destructive" 
+                    size="sm" 
+                    onClick={() => setShowBulkDeleteDialog(true)}
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Delete Selected
+                  </Button>
+                </>
+              ) : (
+                <Button variant="outline" size="sm" onClick={selectAllArchived}>
+                  <CheckSquare className="h-4 w-4 mr-1" />
+                  Select All Archived
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+        {[...setlists]
           .filter((setlist) => {
             if (filterBy === 'all') return true;
             if (!setlist.event_date) return filterBy === 'upcoming'; // No date = show in upcoming
@@ -1426,9 +1528,21 @@ export const SetlistManager = () => {
             })();
             
             return (
-          <Card key={setlist.id} className={`relative overflow-hidden ${isPast ? "opacity-60 bg-muted/30" : ""}`}>
+          <Card key={setlist.id} className={`relative overflow-hidden ${isPast ? "opacity-60 bg-muted/30" : ""} ${selectedForBulkDelete.has(setlist.id) ? "ring-2 ring-destructive" : ""}`}>
             {isPast && (
-              <div className="absolute top-0 right-0 z-10">
+              <div className="absolute top-0 right-0 z-10 flex items-center">
+                {/* Bulk Select Checkbox for Archived */}
+                <button
+                  onClick={() => toggleBulkDeleteSelection(setlist.id)}
+                  className="p-1.5 hover:bg-muted/80 transition-colors"
+                  title={selectedForBulkDelete.has(setlist.id) ? "Deselect" : "Select for bulk delete"}
+                >
+                  {selectedForBulkDelete.has(setlist.id) ? (
+                    <CheckSquare className="h-4 w-4 text-destructive" />
+                  ) : (
+                    <Square className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </button>
                 <div className="flex items-center gap-1 bg-muted text-muted-foreground text-xs font-medium px-3 py-1 rounded-bl-lg border-l border-b border-border">
                   <Archive className="h-3 w-3" />
                   <span>Archived</span>
@@ -1835,6 +1949,8 @@ export const SetlistManager = () => {
           </Card>
             );
           })
+        }
+        </>
       )}
 
       {/* Smooth floating ghost card */}
@@ -1887,6 +2003,26 @@ export const SetlistManager = () => {
             </Button>
             <Button variant="destructive" onClick={deleteSetlist}>
               Delete
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <Dialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete {selectedForBulkDelete.size} Archived Setlist{selectedForBulkDelete.size > 1 ? 's' : ''}</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete {selectedForBulkDelete.size} archived setlist{selectedForBulkDelete.size > 1 ? 's' : ''}? This action cannot be undone and all songs in these setlists will be removed.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button variant="outline" onClick={() => setShowBulkDeleteDialog(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={bulkDeleteSetlists}>
+              Delete All
             </Button>
           </div>
         </DialogContent>

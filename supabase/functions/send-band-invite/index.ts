@@ -11,6 +11,7 @@ const corsHeaders = {
 
 interface BandInviteRequest {
   recipientEmail: string;
+  recipientName?: string;
   bandName: string;
   inviteToken: string;
   bandLeaderName: string;
@@ -23,14 +24,16 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { recipientEmail, bandName, inviteToken, bandLeaderName }: BandInviteRequest = await req.json();
+    const { recipientEmail, recipientName, bandName, inviteToken, bandLeaderName }: BandInviteRequest = await req.json();
 
-    console.log("Sending band invite to:", recipientEmail);
+    console.log("Sending band invite to:", recipientEmail, recipientName);
 
     const configured = Deno.env.get("PUBLIC_SITE_URL") || Deno.env.get("SITE_URL") || "";
     const origin = req.headers.get("origin") || req.headers.get("referer") || "";
     const base = (configured || origin).toString().replace(/\/$/, "");
     const inviteUrl = `${base}/band-invite/${inviteToken}`;
+
+    const greeting = recipientName ? `Hello ${recipientName}!` : "Hello!";
 
     const emailResponse = await resend.emails.send({
       from: "Giggme <invites@giggme.com>",
@@ -39,7 +42,7 @@ const handler = async (req: Request): Promise<Response> => {
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h1 style="color: #333;">Band Invitation</h1>
-          <p>Hello!</p>
+          <p>${greeting}</p>
           <p>${bandLeaderName} has invited you to join <strong>${bandName}</strong>.</p>
           <p>Click the button below to accept this invitation:</p>
           <div style="text-align: center; margin: 30px 0;">

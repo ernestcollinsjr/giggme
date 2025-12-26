@@ -9,12 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Music, Plus, Trash2, Upload, Link as LinkIcon, ChevronUp, ChevronDown, FileText, GripVertical, Bell, Pencil, Calendar, Clock, MapPin, ArrowUpDown, Filter, Archive, RotateCcw, CheckSquare, Square } from "lucide-react";
+import { Music, Plus, Trash2, Upload, Link as LinkIcon, ChevronUp, ChevronDown, FileText, GripVertical, Bell, Pencil, Calendar, Clock, MapPin, ArrowUpDown, Filter, Archive, RotateCcw, CheckSquare, Square, Download } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
 import { PlaceAutocomplete } from "@/components/PlaceAutocomplete";
+import jsPDF from "jspdf";
 
 interface Song {
   id: string;
@@ -506,6 +507,107 @@ export const SetlistManager = () => {
         description: error.message,
       });
     }
+  };
+
+  const exportSetlistToPdf = (setlist: Setlist) => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let yPos = 20;
+    const lineHeight = 7;
+    const margin = 20;
+
+    // Title
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold");
+    doc.text(setlist.title, pageWidth / 2, yPos, { align: "center" });
+    yPos += 12;
+
+    // Event details
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    
+    if (setlist.event_date) {
+      const eventDate = new Date(setlist.event_date).toLocaleDateString(undefined, { 
+        weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' 
+      });
+      doc.text(`Date: ${eventDate}${setlist.event_time ? ` at ${setlist.event_time}` : ''}`, margin, yPos);
+      yPos += lineHeight;
+    }
+
+    if (setlist.call_time) {
+      doc.text(`Call Time: ${setlist.call_time}`, margin, yPos);
+      yPos += lineHeight;
+    }
+
+    if (setlist.address) {
+      doc.text(`Location: ${setlist.address}`, margin, yPos);
+      yPos += lineHeight;
+    }
+
+    if (setlist.description) {
+      yPos += 3;
+      doc.text(`Notes: ${setlist.description}`, margin, yPos);
+      yPos += lineHeight;
+    }
+
+    yPos += 5;
+
+    // Group songs by set
+    const songsBySet = setlist.songs.reduce((acc, song) => {
+      const setNum = song.set_number || 1;
+      if (!acc[setNum]) acc[setNum] = [];
+      acc[setNum].push(song);
+      return acc;
+    }, {} as Record<number, Song[]>);
+
+    const setNumbers = Object.keys(songsBySet).map(Number).sort((a, b) => a - b);
+
+    setNumbers.forEach((setNum) => {
+      const songs = songsBySet[setNum].sort((a, b) => a.order_index - b.order_index);
+      
+      // Check if we need a new page
+      if (yPos > 260) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      // Set header
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text(`Set ${setNum}`, margin, yPos);
+      yPos += 8;
+
+      // Songs
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
+      
+      songs.forEach((song, index) => {
+        if (yPos > 275) {
+          doc.addPage();
+          yPos = 20;
+        }
+
+        const songText = `${index + 1}. ${song.title}${song.artist ? ` - ${song.artist}` : ''}`;
+        doc.text(songText, margin, yPos);
+        yPos += lineHeight;
+      });
+
+      yPos += 5;
+    });
+
+    // Footer
+    doc.setFontSize(8);
+    doc.setTextColor(128);
+    doc.text(`Generated on ${new Date().toLocaleDateString()}`, pageWidth / 2, 290, { align: "center" });
+
+    // Save the PDF
+    const filename = `${setlist.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_setlist.pdf`;
+    doc.save(filename);
+
+    toast({
+      title: "PDF exported",
+      description: `Setlist saved as ${filename}`,
+    });
   };
 
   const openRestoreDialog = (setlist: any) => {
@@ -1629,6 +1731,14 @@ export const SetlistManager = () => {
                       <RotateCcw className="h-4 w-4" />
                     </Button>
                   )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => exportSetlistToPdf(setlist)}
+                    title="Export to PDF"
+                  >
+                    <Download className="h-4 w-4" />
+                  </Button>
                   <Button
                     variant="ghost"
                     size="icon"

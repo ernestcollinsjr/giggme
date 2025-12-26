@@ -50,6 +50,7 @@ const App = () => (
             <Route path="/setlist/lyrics/:songId" element={<SongLyrics />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/artist-profile" element={<ArtistProfile />} />
+            <Route path="/artist-profile/:userId" element={<ArtistProfile />} />
             <Route path="/artists" element={<ArtistsDiscovery />} />
             <Route path="/tours" element={<Tours />} />
             <Route path="/tours/:tourId" element={<TourDetail />} />

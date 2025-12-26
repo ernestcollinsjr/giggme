@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +36,7 @@ interface Profile {
 
 const ArtistProfile = () => {
   const navigate = useNavigate();
+  const { userId } = useParams<{ userId: string }>();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -44,34 +45,54 @@ const ArtistProfile = () => {
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [youtubeTitle, setYoutubeTitle] = useState("");
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [isOwnProfile, setIsOwnProfile] = useState(true);
 
   useEffect(() => {
     fetchProfiles();
-  }, []);
+  }, [userId]);
 
   const fetchProfiles = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      
+      // Determine which user's profile to load
+      const targetUserId = userId || user?.id;
+      
+      if (!targetUserId) {
         navigate("/auth");
         return;
       }
+
+      // Check if viewing own profile
+      const viewingOwnProfile = !userId || (user && userId === user.id);
+      setIsOwnProfile(viewingOwnProfile);
 
       // Fetch basic profile
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("*")
-        .eq("id", user.id)
-        .single();
+        .eq("id", targetUserId)
+        .maybeSingle();
 
       if (profileError) throw profileError;
+      
+      if (!profileData) {
+        toast({
+          title: "Profile not found",
+          description: "This artist profile does not exist.",
+          variant: "destructive",
+        });
+        navigate("/artists");
+        return;
+      }
+      
       setProfile(profileData);
 
       // Fetch artist profile
       const { data: artistData, error: artistError } = await supabase
         .from("artist_profiles")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", targetUserId)
         .maybeSingle();
 
       if (artistError && artistError.code !== "PGRST116") throw artistError;
@@ -82,8 +103,8 @@ const ArtistProfile = () => {
           youtube_videos: (artistData.youtube_videos as any) || [],
           social_links: (artistData.social_links as any) || {},
         });
-      } else {
-        // Create initial artist profile
+      } else if (viewingOwnProfile && user) {
+        // Only create artist profile if viewing own profile
         const { data: newArtistProfile, error: createError } = await supabase
           .from("artist_profiles")
           .insert([{ user_id: user.id }])
@@ -320,9 +341,9 @@ const ArtistProfile = () => {
       <TopNav userRole="artist" />
       <div className="p-6">
         <div className="max-w-4xl mx-auto">
-        <Button variant="ghost" onClick={() => navigate("/dashboard")} className="mb-6">
+        <Button variant="ghost" onClick={() => navigate(isOwnProfile ? "/dashboard" : "/artists")} className="mb-6">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Dashboard
+          {isOwnProfile ? "Back to Dashboard" : "Back to Artists"}
         </Button>
 
         <h1 className="text-4xl font-bold mb-8 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
@@ -334,9 +355,11 @@ const ArtistProfile = () => {
           <Card>
             <CardHeader>
               <CardTitle>Profile Photos</CardTitle>
-              <CardDescription>
-                Upload up to {MAX_PHOTOS} professional photos ({profile?.photo_urls?.length || 0}/{MAX_PHOTOS})
-              </CardDescription>
+              {isOwnProfile && (
+                <CardDescription>
+                  Upload up to {MAX_PHOTOS} professional photos ({profile?.photo_urls?.length || 0}/{MAX_PHOTOS})
+                </CardDescription>
+              )}
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Photo Grid */}
@@ -346,19 +369,21 @@ const ArtistProfile = () => {
                     <div className="h-28 w-28 rounded-lg overflow-hidden bg-muted">
                       <img src={url} alt={`Photo ${index + 1}`} className="h-full w-full object-cover" />
                     </div>
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      className="absolute -top-2 -right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => handleRemovePhoto(index)}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
+                    {isOwnProfile && (
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="absolute -top-2 -right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => handleRemovePhoto(index)}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    )}
                   </div>
                 ))}
                 
-                {/* Upload Button */}
-                {(profile?.photo_urls?.length || 0) < MAX_PHOTOS && (
+                {/* Upload Button - Only for own profile */}
+                {isOwnProfile && (profile?.photo_urls?.length || 0) < MAX_PHOTOS && (
                   <Label htmlFor="photo-upload" className={uploadingPhoto ? "cursor-wait" : "cursor-pointer"}>
                     <div className={`h-28 w-28 rounded-lg border-2 border-dashed flex items-center justify-center transition-colors ${
                       uploadingPhoto 
@@ -404,6 +429,7 @@ const ArtistProfile = () => {
                   id="name"
                   value={profile?.name || ""}
                   onChange={(e) => setProfile({ ...profile!, name: e.target.value })}
+                  disabled={!isOwnProfile}
                 />
               </div>
 
@@ -414,6 +440,7 @@ const ArtistProfile = () => {
                   value={artistProfile?.stage_name || ""}
                   onChange={(e) => setArtistProfile({ ...artistProfile!, stage_name: e.target.value })}
                   placeholder="Your stage name"
+                  disabled={!isOwnProfile}
                 />
               </div>
 
@@ -425,6 +452,7 @@ const ArtistProfile = () => {
                   onChange={(e) => setProfile({ ...profile!, bio: e.target.value })}
                   placeholder="Tell us about yourself..."
                   rows={5}
+                  disabled={!isOwnProfile}
                 />
               </div>
 
@@ -436,6 +464,7 @@ const ArtistProfile = () => {
                     value={artistProfile?.genre || ""}
                     onChange={(e) => setArtistProfile({ ...artistProfile!, genre: e.target.value })}
                     placeholder="Jazz, Rock, Pop, etc."
+                    disabled={!isOwnProfile}
                   />
                 </div>
 
@@ -446,6 +475,7 @@ const ArtistProfile = () => {
                     type="number"
                     value={artistProfile?.years_experience || ""}
                     onChange={(e) => setArtistProfile({ ...artistProfile!, years_experience: parseInt(e.target.value) })}
+                    disabled={!isOwnProfile}
                   />
                 </div>
               </div>
@@ -458,6 +488,7 @@ const ArtistProfile = () => {
                     value={artistProfile?.availability || ""}
                     onChange={(e) => setArtistProfile({ ...artistProfile!, availability: e.target.value })}
                     placeholder="Weekends, Full-time, etc."
+                    disabled={!isOwnProfile}
                   />
                 </div>
 
@@ -468,6 +499,7 @@ const ArtistProfile = () => {
                     value={artistProfile?.rate_range || ""}
                     onChange={(e) => setArtistProfile({ ...artistProfile!, rate_range: e.target.value })}
                     placeholder="$100-$500 per gig"
+                    disabled={!isOwnProfile}
                   />
                 </div>
               </div>
@@ -478,30 +510,35 @@ const ArtistProfile = () => {
           <Card>
             <CardHeader>
               <CardTitle>Performance Videos</CardTitle>
-              <CardDescription>Add YouTube links to your best performances</CardDescription>
+              {isOwnProfile && (
+                <CardDescription>Add YouTube links to your best performances</CardDescription>
+              )}
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <Input
-                    placeholder="YouTube URL"
-                    value={youtubeUrl}
-                    onChange={(e) => setYoutubeUrl(e.target.value)}
-                  />
-                </div>
-                <div className="flex-1">
-                  <Input
-                    placeholder="Video Title"
-                    value={youtubeTitle}
-                    onChange={(e) => setYoutubeTitle(e.target.value)}
-                  />
-                </div>
-                <Button onClick={handleAddYoutubeVideo}>
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-
-              <Separator />
+              {isOwnProfile && (
+                <>
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <Input
+                        placeholder="YouTube URL"
+                        value={youtubeUrl}
+                        onChange={(e) => setYoutubeUrl(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <Input
+                        placeholder="Video Title"
+                        value={youtubeTitle}
+                        onChange={(e) => setYoutubeTitle(e.target.value)}
+                      />
+                    </div>
+                    <Button onClick={handleAddYoutubeVideo}>
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <Separator />
+                </>
+              )}
 
               <div className="space-y-4">
                 {artistProfile?.youtube_videos?.map((video, index) => (
@@ -511,9 +548,11 @@ const ArtistProfile = () => {
                       <p className="font-medium">{video.title}</p>
                       <p className="text-sm text-muted-foreground">{video.url}</p>
                     </div>
-                    <Button variant="destructive" size="sm" onClick={() => handleRemoveVideo(index)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {isOwnProfile && (
+                      <Button variant="destructive" size="sm" onClick={() => handleRemoveVideo(index)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 ))}
                 {(!artistProfile?.youtube_videos || artistProfile.youtube_videos.length === 0) && (
@@ -523,13 +562,15 @@ const ArtistProfile = () => {
             </CardContent>
           </Card>
 
-          {/* Availability Calendar */}
-          <AvailabilityCalendar />
+          {/* Availability Calendar - Only show for own profile */}
+          {isOwnProfile && <AvailabilityCalendar />}
 
-          {/* Save Button */}
-          <Button onClick={handleSaveProfile} disabled={saving} className="w-full" size="lg">
-            {saving ? "Saving..." : "Save Profile"}
-          </Button>
+          {/* Save Button - Only for own profile */}
+          {isOwnProfile && (
+            <Button onClick={handleSaveProfile} disabled={saving} className="w-full" size="lg">
+              {saving ? "Saving..." : "Save Profile"}
+            </Button>
+          )}
         </div>
         </div>
       </div>

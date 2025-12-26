@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Music, Plus, Trash2, Upload, Link as LinkIcon, ChevronUp, ChevronDown, FileText, GripVertical, Bell, Pencil, Calendar, Clock, MapPin } from "lucide-react";
+import { Music, Plus, Trash2, Upload, Link as LinkIcon, ChevronUp, ChevronDown, FileText, GripVertical, Bell, Pencil, Calendar, Clock, MapPin, ArrowUpDown } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -53,6 +53,7 @@ export const SetlistManager = () => {
   const [bands, setBands] = useState<Band[]>([]);
   const [setlists, setSetlists] = useState<Setlist[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sortBy, setSortBy] = useState<'date' | 'name' | 'created'>('date');
   const [newSetlistTitle, setNewSetlistTitle] = useState("");
   const [newSetlistDescription, setNewSetlistDescription] = useState("");
   const [newSetlistBandId, setNewSetlistBandId] = useState<string>("");
@@ -877,15 +878,29 @@ export const SetlistManager = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <h2 className="text-2xl font-bold">Manage Setlists</h2>
-        <Dialog open={showNewSetlistDialog} onOpenChange={setShowNewSetlistDialog}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              New Setlist
-            </Button>
-          </DialogTrigger>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+            <Select value={sortBy} onValueChange={(value: 'date' | 'name' | 'created') => setSortBy(value)}>
+              <SelectTrigger className="w-[140px] h-9">
+                <SelectValue placeholder="Sort by..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="date">By Event Date</SelectItem>
+                <SelectItem value="name">By Name</SelectItem>
+                <SelectItem value="created">By Created</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <Dialog open={showNewSetlistDialog} onOpenChange={setShowNewSetlistDialog}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                New Setlist
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
             <DialogHeader>
               <DialogTitle>Create New Setlist</DialogTitle>
@@ -1247,6 +1262,7 @@ export const SetlistManager = () => {
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {setlists.length === 0 ? (
@@ -1259,7 +1275,20 @@ export const SetlistManager = () => {
           </CardContent>
         </Card>
       ) : (
-        setlists.map((setlist) => (
+        [...setlists].sort((a, b) => {
+          if (sortBy === 'name') {
+            return a.title.localeCompare(b.title);
+          } else if (sortBy === 'date') {
+            // Sort by event date, upcoming first (no date goes to end)
+            if (!a.event_date && !b.event_date) return 0;
+            if (!a.event_date) return 1;
+            if (!b.event_date) return -1;
+            return new Date(a.event_date).getTime() - new Date(b.event_date).getTime();
+          } else {
+            // Sort by created (newest first) - default
+            return 0; // Already sorted by created_at desc from fetch
+          }
+        }).map((setlist) => (
           <Card key={setlist.id}>
             <CardHeader>
               <div className="flex items-center justify-between">

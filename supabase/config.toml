@@ -21,6 +21,9 @@ verify_jwt = true
 [functions.notify-gig-response]
 verify_jwt = true
 
+[functions.process-scheduled-reminders]
+verify_jwt = false
+
 [functions.send-rider]
 verify_jwt = false
 
@@ -28,6 +31,21 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.send-manager-sms]
+verify_jwt = true
+
+[functions.send-push-notification]
+verify_jwt = true
+
+[functions.send-band-invite]
+verify_jwt = true
+
+[functions.send-tour-invite]
+verify_jwt = true
+
+[functions.create-checkout]
+verify_jwt = true
+
+[functions.check-subscription]
 verify_jwt = true
 
 [functions.text-to-speech]

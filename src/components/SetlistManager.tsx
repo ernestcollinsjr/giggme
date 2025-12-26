@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Music, Plus, Trash2, Upload, Link as LinkIcon, ChevronUp, ChevronDown, FileText, GripVertical, Bell, Pencil, Calendar, Clock, MapPin, ArrowUpDown, Filter } from "lucide-react";
+import { Music, Plus, Trash2, Upload, Link as LinkIcon, ChevronUp, ChevronDown, FileText, GripVertical, Bell, Pencil, Calendar, Clock, MapPin, ArrowUpDown, Filter, Archive } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -1326,7 +1326,15 @@ export const SetlistManager = () => {
             })();
             
             return (
-          <Card key={setlist.id} className={isPast ? "opacity-60 bg-muted/30" : ""}>
+          <Card key={setlist.id} className={`relative overflow-hidden ${isPast ? "opacity-60 bg-muted/30" : ""}`}>
+            {isPast && (
+              <div className="absolute top-0 right-0 z-10">
+                <div className="flex items-center gap-1 bg-muted text-muted-foreground text-xs font-medium px-3 py-1 rounded-bl-lg border-l border-b border-border">
+                  <Archive className="h-3 w-3" />
+                  <span>Archived</span>
+                </div>
+              </div>
+            )}
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex-1">

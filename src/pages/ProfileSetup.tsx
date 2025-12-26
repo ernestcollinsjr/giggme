@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "@supabase/supabase-js";
-import { LogOut, Crown, Music, Briefcase, Mail, Loader2, Youtube, Facebook, Instagram, Twitter, Globe, Plus, Trash2, Wrench, Tag, MapPin, Clock, Play, X, Check, HelpCircle, Volume2, VolumeX, Undo2 } from "lucide-react";
+import { LogOut, Crown, Music, Briefcase, Mail, Loader2, Youtube, Facebook, Instagram, Twitter, Globe, Plus, Trash2, Wrench, Tag, MapPin, Clock, Play, X, Check, HelpCircle, Volume2, VolumeX, Undo2, Bell, Shield, FileText } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { detectFaceAndCrop, loadImage } from "@/utils/imageCropping";
 import { Browser } from '@capacitor/browser';
@@ -20,6 +20,7 @@ import { Progress } from "@/components/ui/progress";
 import { YouTubePlayer, getYoutubeVideoId } from "@/components/YouTubePlayer";
 import { AvailabilityCalendar } from "@/components/AvailabilityCalendar";
 import { NotificationPreferences } from "@/components/NotificationPreferences";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Json } from "@/integrations/supabase/types";
 
 interface SocialLinks {
@@ -1043,16 +1044,12 @@ const ProfileSetup = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-primary/10">
       <Card className="w-full max-w-2xl border-border/50 shadow-xl">
-        <CardHeader>
+        <CardHeader className="pb-2">
           <div className="flex items-start justify-between">
             <div>
-              <CardTitle className="text-2xl">Edit Profile</CardTitle>
+              <CardTitle className="text-2xl">My Profile</CardTitle>
               <CardDescription>
-                {role === "band_leader"
-                  ? "Add your band details to help booking managers find you"
-                  : role === "band_member"
-                  ? "Add your musical details to help managers find you"
-                  : "Add your details to start connecting with bands"}
+                Manage your account information
               </CardDescription>
             </div>
             <Button variant="ghost" size="icon" onClick={handleLogout}>
@@ -1062,25 +1059,47 @@ const ProfileSetup = () => {
         </CardHeader>
         
         <CardContent>
-          {/* Profile Completeness Indicator */}
-          {(role === "band_leader" || role === "band_member" || role === "artist") && (
-            <div className="mb-6 p-4 bg-muted/50 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <Label className="text-sm font-medium">Profile Completeness</Label>
-                <span className={`text-sm font-bold ${profileCompleteness === 100 ? 'text-green-500' : profileCompleteness >= 70 ? 'text-yellow-500' : 'text-muted-foreground'}`}>
-                  {profileCompleteness}%
-                </span>
-              </div>
-              <Progress value={profileCompleteness} className="h-2" />
-              {profileCompleteness < 100 && (
-                <p className="text-xs text-muted-foreground mt-2">
-                  Complete your profile to increase visibility to venues and managers
-                </p>
-              )}
-            </div>
-          )}
+          {/* Tabbed Navigation */}
+          <Tabs defaultValue="profile" className="w-full">
+            <TabsList className="w-full grid grid-cols-4 h-auto p-1 mb-6">
+              <TabsTrigger value="profile" className="flex items-center gap-1.5 text-xs sm:text-sm py-2">
+                <Music className="h-3.5 w-3.5" />
+                <span>Profile</span>
+              </TabsTrigger>
+              <TabsTrigger value="alerts" className="flex items-center gap-1.5 text-xs sm:text-sm py-2">
+                <Bell className="h-3.5 w-3.5" />
+                <span>Alerts</span>
+              </TabsTrigger>
+              <TabsTrigger value="availability" className="flex items-center gap-1.5 text-xs sm:text-sm py-2">
+                <Clock className="h-3.5 w-3.5" />
+                <span>Availability</span>
+              </TabsTrigger>
+              <TabsTrigger value="terms" className="flex items-center gap-1.5 text-xs sm:text-sm py-2">
+                <FileText className="h-3.5 w-3.5" />
+                <span>Terms</span>
+              </TabsTrigger>
+            </TabsList>
           
-          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Profile Completeness Indicator */}
+            {(role === "band_leader" || role === "band_member" || role === "artist") && (
+              <div className="mb-6 p-4 bg-muted/50 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-sm font-medium">Profile Completeness</Label>
+                  <span className={`text-sm font-bold ${profileCompleteness === 100 ? 'text-green-500' : profileCompleteness >= 70 ? 'text-yellow-500' : 'text-muted-foreground'}`}>
+                    {profileCompleteness}%
+                  </span>
+                </div>
+                <Progress value={profileCompleteness} className="h-2" />
+                {profileCompleteness < 100 && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Complete your profile to increase visibility to venues and managers
+                  </p>
+                )}
+              </div>
+            )}
+          
+            <form onSubmit={handleSubmit}>
+              <TabsContent value="profile" className="mt-0 space-y-6">
             <div className="space-y-2">
               <div className="flex items-start gap-6">
                 <div className="flex flex-col items-center gap-3">
@@ -1289,72 +1308,6 @@ const ProfileSetup = () => {
                 </Select>
               </div>
             )}
-            
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="rider">
-                  {role === "band_leader" || role === "band_member" ? "Rider Requirements" : "Management Notes"}
-                </Label>
-                {(role === "band_leader" || role === "band_member") && riderNotes && (
-                  <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" type="button">
-                        <Mail className="h-4 w-4 mr-2" />
-                        Send Rider
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Send Rider Requirements</DialogTitle>
-                        <DialogDescription>
-                          Send your rider requirements to a venue or booking manager
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-4 pt-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="recipientName">Recipient Name (Optional)</Label>
-                          <Input
-                            id="recipientName"
-                            placeholder="e.g., John Smith"
-                            value={recipientName}
-                            onChange={(e) => setRecipientName(e.target.value)}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="recipientEmail">Recipient Email *</Label>
-                          <Input
-                            id="recipientEmail"
-                            type="email"
-                            placeholder="e.g., venue@example.com"
-                            value={recipientEmail}
-                            onChange={(e) => setRecipientEmail(e.target.value)}
-                            required
-                          />
-                        </div>
-                        <Button 
-                          onClick={handleSendRider} 
-                          disabled={sendingEmail || !recipientEmail.trim()}
-                          className="w-full"
-                        >
-                          {sendingEmail ? "Sending..." : "Send Rider Requirements"}
-                        </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                )}
-              </div>
-              <Textarea
-                id="rider"
-                placeholder={
-                  role === "band_leader" || role === "band_member"
-                    ? "Stage setup, sound requirements, green room needs, etc.\nExample: Needs quiet green room, 3 vocal mics, drum riser"
-                    : "Your approach to management, availability, preferred genres..."
-                }
-                value={riderNotes}
-                onChange={(e) => setRiderNotes(e.target.value)}
-                rows={4}
-              />
-            </div>
 
             {/* Social Media Links */}
             {(role === "band_leader" || role === "band_member" || role === "artist") && (
@@ -1611,12 +1564,19 @@ const ProfileSetup = () => {
                         </button>
                       </Badge>
                     ))}
-                  </div>
-                )}
-              </div>
-            )}
+                    </div>
+                  )}
+                </div>
+              )}
+              </TabsContent>
 
-            {/* Professional Details */}
+              {/* Alerts Tab */}
+              <TabsContent value="alerts" className="mt-0 space-y-6">
+                <NotificationPreferences />
+              </TabsContent>
+
+              {/* Availability Tab */}
+              <TabsContent value="availability" className="mt-0 space-y-6">
             {(role === "band_leader" || role === "band_member" || role === "artist") && (
               <div className="space-y-4 pt-4 border-t">
                 <Label className="flex items-center gap-2">
@@ -1915,18 +1875,98 @@ const ProfileSetup = () => {
             <div className="pt-4">
               <AvailabilityCalendar onTodayStatusChange={setTodayCalendarStatus} />
             </div>
+              </TabsContent>
 
-            {/* Notification Preferences */}
-            {(role === "band_leader" || role === "booking_manager" || role === "tour_manager") && (
-              <div className="pt-4">
-                <NotificationPreferences />
-              </div>
-            )}
-            
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Saving..." : "Save Profile"}
-            </Button>
-          </form>
+              {/* Terms Tab */}
+              <TabsContent value="terms" className="mt-0 space-y-6">
+                <div className="space-y-4">
+                  <div>
+                    <Label className="flex items-center gap-2 text-lg font-semibold">
+                      <FileText className="h-5 w-5" />
+                      {role === "band_leader" || role === "band_member" ? "Rider Requirements" : "Management Notes"}
+                    </Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Your technical and hospitality requirements for gigs
+                    </p>
+                  </div>
+                  
+                  {(role === "band_leader" || role === "band_member") && riderNotes && (
+                    <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm" type="button" className="w-full sm:w-auto">
+                          <Mail className="h-4 w-4 mr-2" />
+                          Send Rider to Venue
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Send Rider Requirements</DialogTitle>
+                          <DialogDescription>
+                            Send your rider requirements to a venue or booking manager
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4 pt-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="recipientName2">Recipient Name (Optional)</Label>
+                            <Input
+                              id="recipientName2"
+                              placeholder="e.g., John Smith"
+                              value={recipientName}
+                              onChange={(e) => setRecipientName(e.target.value)}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="recipientEmail2">Recipient Email *</Label>
+                            <Input
+                              id="recipientEmail2"
+                              type="email"
+                              placeholder="e.g., venue@example.com"
+                              value={recipientEmail}
+                              onChange={(e) => setRecipientEmail(e.target.value)}
+                              required
+                            />
+                          </div>
+                          <Button 
+                            onClick={handleSendRider} 
+                            disabled={sendingEmail || !recipientEmail.trim()}
+                            className="w-full"
+                          >
+                            {sendingEmail ? "Sending..." : "Send Rider Requirements"}
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  )}
+                  
+                  <Textarea
+                    id="rider2"
+                    placeholder={
+                      role === "band_leader" || role === "band_member"
+                        ? "Stage setup, sound requirements, green room needs, etc.\nExample: Needs quiet green room, 3 vocal mics, drum riser"
+                        : "Your approach to management, availability, preferred genres..."
+                    }
+                    value={riderNotes}
+                    onChange={(e) => setRiderNotes(e.target.value)}
+                    rows={8}
+                  />
+                  
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <h4 className="font-medium mb-2">Tips for a good rider:</h4>
+                    <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                      <li>List your technical requirements (mics, monitors, amps)</li>
+                      <li>Include stage plot or setup needs</li>
+                      <li>Mention any hospitality requests (food, drinks, green room)</li>
+                      <li>Note any special accessibility requirements</li>
+                    </ul>
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <Button type="submit" className="w-full mt-6" disabled={loading}>
+                {loading ? "Saving..." : "Save Profile"}
+              </Button>
+            </form>
+          </Tabs>
         </CardContent>
       </Card>
     </div>

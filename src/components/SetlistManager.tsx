@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Music, Plus, Trash2, Upload, Link as LinkIcon, ChevronUp, ChevronDown, FileText, GripVertical, Bell, Pencil, Calendar, Clock, MapPin, ArrowUpDown, Filter, Archive } from "lucide-react";
+import { Music, Plus, Trash2, Upload, Link as LinkIcon, ChevronUp, ChevronDown, FileText, GripVertical, Bell, Pencil, Calendar, Clock, MapPin, ArrowUpDown, Filter, Archive, RotateCcw } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -61,6 +61,9 @@ export const SetlistManager = () => {
   const [showNewSetlistDialog, setShowNewSetlistDialog] = useState(false);
   const [showEditSetlistDialog, setShowEditSetlistDialog] = useState(false);
   const [editingSetlist, setEditingSetlist] = useState<any>(null);
+  const [showRestoreDialog, setShowRestoreDialog] = useState(false);
+  const [restoringSetlist, setRestoringSetlist] = useState<any>(null);
+  const [restoreDate, setRestoreDate] = useState("");
   const [selectedSetlist, setSelectedSetlist] = useState<string | null>(null);
   const [songTitle, setSongTitle] = useState("");
   const [songArtist, setSongArtist] = useState("");
@@ -424,6 +427,53 @@ export const SetlistManager = () => {
       toast({
         variant: "destructive",
         title: "Error deleting setlist",
+        description: error.message,
+      });
+    }
+  };
+
+  const openRestoreDialog = (setlist: any) => {
+    setRestoringSetlist(setlist);
+    // Default to tomorrow's date
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    setRestoreDate(tomorrow.toISOString().split('T')[0]);
+    setShowRestoreDialog(true);
+  };
+
+  const restoreSetlist = async () => {
+    if (!restoringSetlist || !restoreDate) {
+      toast({
+        variant: "destructive",
+        title: "Date required",
+        description: "Please select a new event date",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("setlists")
+        .update({
+          event_date: new Date(restoreDate).toISOString(),
+        })
+        .eq("id", restoringSetlist.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Setlist restored",
+        description: "The setlist has been moved to the new date",
+      });
+
+      setShowRestoreDialog(false);
+      setRestoringSetlist(null);
+      setRestoreDate("");
+      fetchSetlists();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error restoring setlist",
         description: error.message,
       });
     }
@@ -1276,6 +1326,45 @@ export const SetlistManager = () => {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Restore Setlist Dialog */}
+        <Dialog open={showRestoreDialog} onOpenChange={(open) => {
+          setShowRestoreDialog(open);
+          if (!open) {
+            setRestoringSetlist(null);
+            setRestoreDate("");
+          }
+        }}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Restore Setlist</DialogTitle>
+              <DialogDescription>
+                Set a new event date to restore "{restoringSetlist?.title}" from the archive
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="restore-date">New Event Date</Label>
+                <Input
+                  id="restore-date"
+                  type="date"
+                  value={restoreDate}
+                  onChange={(e) => setRestoreDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setShowRestoreDialog(false)} className="flex-1">
+                  Cancel
+                </Button>
+                <Button onClick={restoreSetlist} className="flex-1">
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Restore
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
         </div>
       </div>
 
@@ -1404,6 +1493,17 @@ export const SetlistManager = () => {
                   )}
                 </div>
                 <div className="flex items-center gap-2">
+                  {isPast && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => openRestoreDialog(setlist)}
+                      title="Restore setlist"
+                      className="text-primary hover:text-primary"
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                    </Button>
+                  )}
                   <Button
                     variant="ghost"
                     size="icon"

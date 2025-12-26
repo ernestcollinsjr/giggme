@@ -1076,7 +1076,7 @@ const ProfileSetup = () => {
               </TabsTrigger>
               <TabsTrigger value="terms" className="flex items-center gap-1.5 text-xs sm:text-sm py-2">
                 <FileText className="h-3.5 w-3.5" />
-                <span>Terms</span>
+                <span>Rider</span>
               </TabsTrigger>
             </TabsList>
           

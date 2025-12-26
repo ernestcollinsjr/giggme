@@ -62,6 +62,36 @@ export type Database = {
         }
         Relationships: []
       }
+      artist_tips: {
+        Row: {
+          amount: number
+          artist_id: string
+          created_at: string
+          id: string
+          note: string | null
+          payment_method: string
+          tipper_name: string | null
+        }
+        Insert: {
+          amount: number
+          artist_id: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          payment_method: string
+          tipper_name?: string | null
+        }
+        Update: {
+          amount?: number
+          artist_id?: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          payment_method?: string
+          tipper_name?: string | null
+        }
+        Relationships: []
+      }
       availability_requests: {
         Row: {
           band_id: string | null

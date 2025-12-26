@@ -64,6 +64,8 @@ export const SetlistManager = () => {
   const [showRestoreDialog, setShowRestoreDialog] = useState(false);
   const [restoringSetlist, setRestoringSetlist] = useState<any>(null);
   const [restoreDate, setRestoreDate] = useState("");
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deletingSetlist, setDeletingSetlist] = useState<any>(null);
   const [selectedSetlist, setSelectedSetlist] = useState<string | null>(null);
   const [songTitle, setSongTitle] = useState("");
   const [songArtist, setSongArtist] = useState("");
@@ -412,9 +414,16 @@ export const SetlistManager = () => {
     }
   };
 
-  const deleteSetlist = async (setlistId: string) => {
+  const openDeleteDialog = (setlist: any) => {
+    setDeletingSetlist(setlist);
+    setShowDeleteDialog(true);
+  };
+
+  const deleteSetlist = async () => {
+    if (!deletingSetlist) return;
+    
     try {
-      const { error } = await supabase.from("setlists").delete().eq("id", setlistId);
+      const { error } = await supabase.from("setlists").delete().eq("id", deletingSetlist.id);
       if (error) throw error;
 
       toast({
@@ -422,6 +431,8 @@ export const SetlistManager = () => {
         description: "The setlist has been removed",
       });
 
+      setShowDeleteDialog(false);
+      setDeletingSetlist(null);
       fetchSetlists();
     } catch (error: any) {
       toast({
@@ -1523,7 +1534,7 @@ export const SetlistManager = () => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => deleteSetlist(setlist.id)}
+                    onClick={() => openDeleteDialog(setlist)}
                     title="Delete setlist"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -1860,6 +1871,26 @@ export const SetlistManager = () => {
           onClose={() => setPlayingVideo(null)}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Setlist</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{deletingSetlist?.title}"? This action cannot be undone and all songs in this setlist will be removed.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={deleteSetlist}>
+              Delete
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

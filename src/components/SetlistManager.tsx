@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Music, Plus, Trash2, Upload, Link as LinkIcon, ChevronUp, ChevronDown, FileText, GripVertical, Bell, Pencil } from "lucide-react";
+import { Music, Plus, Trash2, Upload, Link as LinkIcon, ChevronUp, ChevronDown, FileText, GripVertical, Bell, Pencil, Calendar, Clock, MapPin } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -30,6 +30,12 @@ interface Setlist {
   title: string;
   description: string | null;
   songs: Song[];
+  event_date?: string | null;
+  event_time?: string | null;
+  call_time?: string | null;
+  address?: string | null;
+  rehearsal_date?: string | null;
+  rehearsal_time?: string | null;
 }
 
 interface Band {
@@ -1256,13 +1262,50 @@ export const SetlistManager = () => {
           <Card key={setlist.id}>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <div>
+                <div className="flex-1">
                   <CardTitle className="flex items-center gap-2">
                     <span className="text-muted-foreground">For:</span>
                     {setlist.title}
                   </CardTitle>
                   {setlist.description && (
-                    <CardDescription className="mt-2">{setlist.description}</CardDescription>
+                    <CardDescription className="mt-1">{setlist.description}</CardDescription>
+                  )}
+                  {/* Event Details */}
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
+                    {setlist.event_date && (
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-3.5 w-3.5" />
+                        <span>{new Date(setlist.event_date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                      </div>
+                    )}
+                    {setlist.event_time && (
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-3.5 w-3.5" />
+                        <span>{setlist.event_time}</span>
+                      </div>
+                    )}
+                    {setlist.call_time && (
+                      <div className="flex items-center gap-1 text-primary/80">
+                        <span className="font-medium">Call:</span>
+                        <span>{setlist.call_time}</span>
+                      </div>
+                    )}
+                    {setlist.address && (
+                      <div className="flex items-center gap-1">
+                        <MapPin className="h-3.5 w-3.5" />
+                        <span className="truncate max-w-[200px]">{setlist.address}</span>
+                      </div>
+                    )}
+                  </div>
+                  {/* Rehearsal Info */}
+                  {(setlist.rehearsal_date || setlist.rehearsal_time) && (
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-xs text-muted-foreground/70">
+                      <span className="font-medium">Rehearsal:</span>
+                      {setlist.rehearsal_date && (
+                        <span>{new Date(setlist.rehearsal_date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                      )}
+                      {setlist.rehearsal_time && <span>at {setlist.rehearsal_time}</span>}
+                    </div>
                   )}
                 </div>
                 <div className="flex items-center gap-2">

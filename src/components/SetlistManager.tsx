@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useBand } from "@/contexts/BandContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -1263,10 +1264,30 @@ export const SetlistManager = () => {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <CardTitle className="flex items-center gap-2">
-                    <span className="text-muted-foreground">For:</span>
-                    {setlist.title}
-                  </CardTitle>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <CardTitle className="flex items-center gap-2">
+                      <span className="text-muted-foreground">For:</span>
+                      {setlist.title}
+                    </CardTitle>
+                    {setlist.event_date && (() => {
+                      const eventDate = new Date(setlist.event_date);
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      eventDate.setHours(0, 0, 0, 0);
+                      const diffTime = eventDate.getTime() - today.getTime();
+                      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                      
+                      if (diffDays < 0) {
+                        return <Badge variant="secondary" className="text-xs">Past</Badge>;
+                      } else if (diffDays === 0) {
+                        return <Badge className="text-xs bg-green-500 hover:bg-green-600">Today</Badge>;
+                      } else if (diffDays <= 7) {
+                        return <Badge className="text-xs bg-amber-500 hover:bg-amber-600">In {diffDays} day{diffDays > 1 ? 's' : ''}</Badge>;
+                      } else {
+                        return <Badge variant="outline" className="text-xs">Upcoming</Badge>;
+                      }
+                    })()}
+                  </div>
                   {setlist.description && (
                     <CardDescription className="mt-1">{setlist.description}</CardDescription>
                   )}

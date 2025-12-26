@@ -391,6 +391,17 @@ const ProfileSetup = () => {
       return;
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(recipientEmail.trim())) {
+      toast({
+        variant: "destructive",
+        title: "Invalid email",
+        description: "Please enter a valid email address (e.g., name@example.com).",
+      });
+      return;
+    }
+
     setSendingEmail(true);
     try {
       if (!user) throw new Error("No user found");

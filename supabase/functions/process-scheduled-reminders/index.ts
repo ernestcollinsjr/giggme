@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -25,12 +26,14 @@ interface ScheduledReminder {
 interface Profile {
   id: string;
   name: string;
+  email: string;
   phone_number: string | null;
 }
 
 interface NotificationPrefs {
   sms_enabled: boolean;
   push_enabled: boolean;
+  email_enabled: boolean;
 }
 
 interface PushToken {
@@ -58,8 +61,16 @@ const handler = async (req: Request): Promise<Response> => {
     const twilioPhoneNumber = Deno.env.get('TWILIO_PHONE_NUMBER');
     const hasTwilio = twilioAccountSid && twilioAuthToken && twilioPhoneNumber;
 
+    // Get Resend config for email
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
+    const hasResend = !!resendApiKey;
+    const resend = hasResend ? new Resend(resendApiKey) : null;
+
     if (!hasTwilio) {
-      console.log('Twilio credentials not configured - will only send push notifications');
+      console.log('Twilio credentials not configured - will skip SMS notifications');
+    }
+    if (!hasResend) {
+      console.log('Resend API key not configured - will skip email notifications');
     }
 
     const now = new Date();
@@ -116,7 +127,8 @@ const handler = async (req: Request): Promise<Response> => {
         await sendReminderNotifications(
           supabase,
           reminder,
-          hasTwilio ? { accountSid: twilioAccountSid!, authToken: twilioAuthToken!, phoneNumber: twilioPhoneNumber! } : null
+          hasTwilio ? { accountSid: twilioAccountSid!, authToken: twilioAuthToken!, phoneNumber: twilioPhoneNumber! } : null,
+          resend
         );
         
         // Mark reminder as sent or update if it has more reminder times
@@ -191,7 +203,8 @@ function getRemainingReminderTimes(reminder: ScheduledReminder, now: Date): stri
 async function sendReminderNotifications(
   supabase: any,
   reminder: ScheduledReminder,
-  twilioConfig: { accountSid: string; authToken: string; phoneNumber: string } | null
+  twilioConfig: { accountSid: string; authToken: string; phoneNumber: string } | null,
+  resend: Resend | null
 ) {
   console.log(`Sending notifications for reminder: ${reminder.event_name}`);
   
@@ -203,10 +216,10 @@ async function sendReminderNotifications(
     return;
   }
 
-  // Fetch member profiles
+  // Fetch member profiles including email
   const { data: profiles, error: profilesError } = await supabase
     .from('profiles')
-    .select('id, name, phone_number')
+    .select('id, name, email, phone_number')
     .in('id', targetIds);
 
   if (profilesError) {
@@ -258,6 +271,24 @@ async function sendReminderNotifications(
         }
       }
 
+      // Send email if enabled
+      if (prefs.email_enabled && resend && member.email) {
+        try {
+          await sendReminderEmail(
+            resend,
+            member.email,
+            member.name,
+            reminder.event_name,
+            eventDate,
+            formatEventType(reminder.event_type),
+            customMessage
+          );
+          console.log(`Email sent to ${member.name}`);
+        } catch (emailError) {
+          console.error(`Failed to send email to ${member.name}:`, emailError);
+        }
+      }
+
       // Send push notification if enabled
       if (prefs.push_enabled) {
         try {
@@ -284,6 +315,79 @@ async function sendReminderNotifications(
   }
 }
 
+async function sendReminderEmail(
+  resend: Resend,
+  to: string,
+  recipientName: string,
+  eventName: string,
+  eventDate: string,
+  eventType: string,
+  customMessage: string
+): Promise<void> {
+  const emailHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Event Reminder</title>
+    </head>
+    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5; margin: 0; padding: 20px;">
+      <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 30px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 24px;">🔔 Event Reminder</h1>
+        </div>
+        <div style="padding: 30px;">
+          <p style="font-size: 16px; color: #374151; margin: 0 0 20px;">
+            Hi ${recipientName},
+          </p>
+          <p style="font-size: 16px; color: #374151; margin: 0 0 20px;">
+            This is a friendly reminder about your upcoming event:
+          </p>
+          <div style="background-color: #f3f4f6; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h2 style="color: #1f2937; margin: 0 0 15px; font-size: 20px;">${eventName}</h2>
+            <p style="color: #4b5563; margin: 0 0 10px; font-size: 14px;">
+              <strong>📅 Date:</strong> ${eventDate}
+            </p>
+            <p style="color: #4b5563; margin: 0; font-size: 14px;">
+              <strong>📋 Type:</strong> ${eventType}
+            </p>
+            ${customMessage ? `
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #d1d5db;">
+              <p style="color: #4b5563; margin: 0; font-size: 14px; font-style: italic;">
+                "${customMessage}"
+              </p>
+            </div>
+            ` : ''}
+          </div>
+          <p style="font-size: 14px; color: #6b7280; margin: 20px 0 0;">
+            Don't miss it! Make sure you're prepared and ready to go.
+          </p>
+        </div>
+        <div style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
+          <p style="font-size: 12px; color: #9ca3af; margin: 0;">
+            This reminder was sent by Gig Manager. You can manage your notification preferences in the app.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const { error } = await resend.emails.send({
+    from: 'Gig Manager <onboarding@resend.dev>',
+    to: [to],
+    subject: `🔔 Reminder: ${eventName}`,
+    html: emailHtml,
+  });
+
+  if (error) {
+    throw new Error(`Resend API error: ${error.message}`);
+  }
+
+  console.log('Email sent successfully via Resend');
+}
+
 function formatEventType(eventType: string): string {
   switch (eventType) {
     case 'gig': return 'Gig';
@@ -298,18 +402,19 @@ function formatEventType(eventType: string): string {
 async function getUserNotificationPrefs(supabase: any, userId: string): Promise<NotificationPrefs> {
   const { data, error } = await supabase
     .from('notification_preferences')
-    .select('sms_enabled, push_enabled')
+    .select('sms_enabled, push_enabled, email_enabled')
     .eq('user_id', userId)
     .single();
 
   if (error || !data) {
-    return { sms_enabled: true, push_enabled: true };
+    return { sms_enabled: true, push_enabled: true, email_enabled: true };
   }
 
-  const prefs = data as { sms_enabled?: boolean; push_enabled?: boolean };
+  const prefs = data as { sms_enabled?: boolean; push_enabled?: boolean; email_enabled?: boolean };
   return {
     sms_enabled: prefs.sms_enabled ?? true,
     push_enabled: prefs.push_enabled ?? true,
+    email_enabled: prefs.email_enabled ?? true,
   };
 }
 

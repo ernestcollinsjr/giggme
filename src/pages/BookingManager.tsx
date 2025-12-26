@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { BandInvitationManager } from "@/components/BandInvitationManager";
 import { ArtistAvailabilityManager } from "@/components/ArtistAvailabilityManager";
+import { ScheduledRemindersManager } from "@/components/ScheduledRemindersManager";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -802,6 +803,9 @@ export default function BookingManager() {
             onViewResponses={(requestId) => setViewingResponsesForRequest(requestId)}
           />
         )}
+
+        {/* Scheduled Reminders */}
+        <ScheduledRemindersManager />
 
         {/* Location Tracking */}
         <BookingManagerClientLocations />

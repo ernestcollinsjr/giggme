@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Music, Plus, Trash2, Upload, Link as LinkIcon, ChevronUp, ChevronDown, FileText, GripVertical, Bell, Pencil, Calendar, Clock, MapPin, ArrowUpDown, Filter, Archive, RotateCcw, CheckSquare, Square, Download } from "lucide-react";
+import { Music, Plus, Trash2, Upload, Link as LinkIcon, ChevronUp, ChevronDown, FileText, GripVertical, Bell, Pencil, Calendar, Clock, MapPin, ArrowUpDown, Filter, Archive, RotateCcw, CheckSquare, Square, Download, Share2, Copy, Check } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -104,6 +104,11 @@ export const SetlistManager = () => {
   const [ghostPosition, setGhostPosition] = useState<{ x: number; y: number } | null>(null);
   const [isTouchDragging, setIsTouchDragging] = useState(false);
   const [recentlyReordered, setRecentlyReordered] = useState<string | null>(null);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [sharingSetlistId, setSharingSetlistId] = useState<string | null>(null);
+  const [shareLink, setShareLink] = useState<string | null>(null);
+  const [generatingShare, setGeneratingShare] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const songItemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const dragContainerRef = useRef<HTMLDivElement | null>(null);
   const selectedSongsAreaRef = useRef<HTMLDivElement | null>(null);
@@ -608,6 +613,87 @@ export const SetlistManager = () => {
       title: "PDF exported",
       description: `Setlist saved as ${filename}`,
     });
+  };
+
+  const openShareDialog = async (setlistId: string) => {
+    setSharingSetlistId(setlistId);
+    setShareLink(null);
+    setLinkCopied(false);
+    setShareDialogOpen(true);
+    
+    // Check if there's already an active share link
+    try {
+      const { data: existingShare } = await supabase
+        .from("shared_setlists")
+        .select("share_token")
+        .eq("setlist_id", setlistId)
+        .eq("is_active", true)
+        .maybeSingle();
+      
+      if (existingShare) {
+        const link = `${window.location.origin}/shared-setlist/${existingShare.share_token}`;
+        setShareLink(link);
+      }
+    } catch (error) {
+      console.error("Error checking existing share:", error);
+    }
+  };
+
+  const generateShareLink = async () => {
+    if (!sharingSetlistId) return;
+    
+    setGeneratingShare(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase
+        .from("shared_setlists")
+        .insert({
+          setlist_id: sharingSetlistId,
+          created_by: user.id,
+        })
+        .select("share_token")
+        .single();
+
+      if (error) throw error;
+
+      const link = `${window.location.origin}/shared-setlist/${data.share_token}`;
+      setShareLink(link);
+      
+      toast({
+        title: "Share link created",
+        description: "Your setlist can now be shared with this link",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error creating share link",
+        description: error.message,
+      });
+    } finally {
+      setGeneratingShare(false);
+    }
+  };
+
+  const copyShareLink = async () => {
+    if (!shareLink) return;
+    
+    try {
+      await navigator.clipboard.writeText(shareLink);
+      setLinkCopied(true);
+      toast({
+        title: "Link copied",
+        description: "Share link copied to clipboard",
+      });
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Failed to copy",
+        description: "Please copy the link manually",
+      });
+    }
   };
 
   const openRestoreDialog = (setlist: any) => {
@@ -1734,6 +1820,14 @@ export const SetlistManager = () => {
                   <Button
                     variant="ghost"
                     size="icon"
+                    onClick={() => openShareDialog(setlist.id)}
+                    title="Share setlist"
+                  >
+                    <Share2 className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={() => exportSetlistToPdf(setlist)}
                     title="Export to PDF"
                   >
@@ -2134,6 +2228,54 @@ export const SetlistManager = () => {
             <Button variant="destructive" onClick={bulkDeleteSetlists}>
               Delete All
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Share Setlist Dialog */}
+      <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Share2 className="h-5 w-5" />
+              Share Setlist
+            </DialogTitle>
+            <DialogDescription>
+              Create a shareable link for band members to view this setlist.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            {!shareLink ? (
+              <div className="text-center py-4">
+                <p className="text-sm text-muted-foreground mb-4">
+                  Generate a link that anyone can use to view this setlist (read-only).
+                </p>
+                <Button onClick={generateShareLink} disabled={generatingShare}>
+                  {generatingShare ? "Generating..." : "Generate Share Link"}
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <Input 
+                    value={shareLink} 
+                    readOnly 
+                    className="text-sm"
+                  />
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    onClick={copyShareLink}
+                    title="Copy link"
+                  >
+                    {linkCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Anyone with this link can view the setlist details and song list.
+                </p>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>

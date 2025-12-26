@@ -45,6 +45,28 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
   useEffect(() => {
     fetchInvitations();
     fetchAllBands();
+
+    // Subscribe to real-time changes on band_invitations
+    const channel = supabase
+      .channel(`band-invitations-${bandId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'band_invitations',
+          filter: `band_id=eq.${bandId}`,
+        },
+        (payload) => {
+          console.log('Real-time invitation update:', payload);
+          fetchInvitations();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [bandId]);
 
   const fetchAllBands = async () => {
@@ -64,10 +86,6 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
       console.error("Error fetching bands:", error);
     }
   };
-
-  useEffect(() => {
-    fetchInvitations();
-  }, [bandId]);
 
   const fetchInvitations = async () => {
     try {

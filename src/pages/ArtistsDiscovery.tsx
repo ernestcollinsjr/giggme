@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 import { Music, MapPin, Calendar, DollarSign, Youtube, Search, Filter } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -31,6 +32,19 @@ const ArtistsDiscovery = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
   const [selectedGenre, setSelectedGenre] = useState<string>("all");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     fetchArtists();
@@ -90,6 +104,17 @@ const ArtistsDiscovery = () => {
     return matchesSearch && matchesGenre;
   });
 
+  // Suggestions for autocomplete (show when typing and has results)
+  const suggestions = useMemo(() => {
+    if (!searchTerm || searchTerm.length < 1) return [];
+    return filteredArtists.slice(0, 6); // Limit to 6 suggestions
+  }, [searchTerm, filteredArtists]);
+
+  const handleSelectArtist = (artist: ArtistWithProfile) => {
+    setSearchTerm(artist.profile.name);
+    setShowSuggestions(false);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -110,14 +135,57 @@ const ArtistsDiscovery = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <div className="relative flex-1 max-w-md" ref={searchContainerRef}>
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
               <Input
                 placeholder="Search by name, stage name, or genre..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setShowSuggestions(true);
+                }}
+                onFocus={() => setShowSuggestions(true)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setShowSuggestions(false);
+                  }
+                }}
                 className="pl-10"
               />
+              
+              {/* Autocomplete dropdown */}
+              {showSuggestions && searchTerm && suggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-md border bg-popover shadow-lg">
+                  <Command className="rounded-md">
+                    <CommandList>
+                      <CommandGroup heading="Suggestions">
+                        {suggestions.map((artist) => (
+                          <CommandItem
+                            key={artist.id}
+                            onSelect={() => handleSelectArtist(artist)}
+                            className="cursor-pointer"
+                          >
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src={artist.profile.photo_urls?.[0]} />
+                                <AvatarFallback className="text-xs">
+                                  {artist.profile.name[0]}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="font-medium">{artist.profile.name}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {artist.genre || "Artist"}
+                                </p>
+                              </div>
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </div>
+              )}
             </div>
             
             <Select value={selectedGenre} onValueChange={setSelectedGenre}>

@@ -1248,7 +1248,9 @@ const Dashboard = () => {
               Welcome, {profile?.name}
             </h1>
             <Badge variant="secondary" className="mt-2">
-              {userRole === "booking_manager" 
+              {userRole === "super_admin"
+                ? "Super Admin"
+                : userRole === "booking_manager" 
                 ? "Booking Manager" 
                 : userRole === "band_leader"
                 ? "Band Leader"

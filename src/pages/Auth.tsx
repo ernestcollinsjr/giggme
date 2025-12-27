@@ -39,6 +39,7 @@ const Auth = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [role, setRole] = useState<"band_leader" | "band_member" | "booking_manager" | "artist" | "venue_owner">("band_leader");
+  const [venuePricingType, setVenuePricingType] = useState<"subscription" | "one_time">("subscription");
   
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -131,6 +132,7 @@ const Auth = () => {
           data: {
             name: validatedData.name,
             role: role,
+            venue_pricing_type: role === "venue_owner" ? venuePricingType : undefined,
           },
           emailRedirectTo: `${window.location.origin}/`,
         },
@@ -587,21 +589,66 @@ const Auth = () => {
                           <div className="flex items-center justify-between">
                             <h3 className="font-semibold">Venue Owner</h3>
                             <div className="text-right">
-                              <span className="font-bold text-primary">$26</span>
-                              <span className="text-xs text-muted-foreground">/mo</span>
+                              {venuePricingType === "subscription" ? (
+                                <>
+                                  <span className="font-bold text-primary">$26</span>
+                                  <span className="text-xs text-muted-foreground">/mo</span>
+                                </>
+                              ) : (
+                                <span className="font-bold text-primary">$49</span>
+                              )}
                             </div>
                           </div>
                           <p className="text-sm text-muted-foreground mt-1">
                             Manage your venue, book entertainers, schedule events, and streamline bookings.
                           </p>
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                              14-day free trial
-                            </span>
-                            <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-                              or $49 one-time booking
-                            </span>
-                          </div>
+                          
+                          {/* Pricing Toggle */}
+                          {role === "venue_owner" && (
+                            <div className="mt-3 p-2 bg-muted/50 rounded-lg" onClick={(e) => e.stopPropagation()}>
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setVenuePricingType("subscription")}
+                                  className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all ${
+                                    venuePricingType === "subscription"
+                                      ? "bg-primary text-primary-foreground shadow-sm"
+                                      : "bg-background text-muted-foreground hover:text-foreground"
+                                  }`}
+                                >
+                                  <div className="flex flex-col items-center">
+                                    <span>$26/mo</span>
+                                    <span className="text-xs opacity-75">14-day trial</span>
+                                  </div>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setVenuePricingType("one_time")}
+                                  className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all ${
+                                    venuePricingType === "one_time"
+                                      ? "bg-primary text-primary-foreground shadow-sm"
+                                      : "bg-background text-muted-foreground hover:text-foreground"
+                                  }`}
+                                >
+                                  <div className="flex flex-col items-center">
+                                    <span>$49</span>
+                                    <span className="text-xs opacity-75">One-time</span>
+                                  </div>
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {role !== "venue_owner" && (
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                                14-day free trial
+                              </span>
+                              <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                                or $49 one-time
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

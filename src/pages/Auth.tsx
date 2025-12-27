@@ -125,7 +125,7 @@ const Auth = () => {
         name: signupName,
       });
 
-      const { error } = await supabase.auth.signUp({
+      const { data: signUpData, error } = await supabase.auth.signUp({
         email: validatedData.email,
         password: validatedData.password,
         options: {
@@ -139,6 +139,39 @@ const Auth = () => {
       });
 
       if (error) throw error;
+
+      // For venue owners, redirect to checkout
+      if (role === "venue_owner" && signUpData.session) {
+        const priceId = venuePricingType === "subscription" 
+          ? "price_1Sj4nrEPiAZgF8MeCOUpkIfg" // $26/mo subscription
+          : "price_1Sj4o1EPiAZgF8MeVAfYLZ1h"; // $49 one-time
+        
+        try {
+          const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke("create-checkout", {
+            body: { priceId },
+          });
+
+          if (checkoutError) throw checkoutError;
+
+          if (checkoutData?.url) {
+            toast({
+              title: "Account created!",
+              description: "Redirecting to checkout...",
+            });
+            window.location.href = checkoutData.url;
+            return;
+          }
+        } catch (checkoutErr) {
+          console.error("Checkout error:", checkoutErr);
+          // If checkout fails, still navigate to profile setup
+          toast({
+            title: "Account created!",
+            description: "Welcome to GigMe. You can complete payment later.",
+          });
+          navigate("/profile-setup");
+          return;
+        }
+      }
 
       toast({
         title: "Account created!",

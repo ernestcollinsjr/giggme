@@ -292,6 +292,30 @@ export type Database = {
         }
         Relationships: []
       }
+      blocked_users: {
+        Row: {
+          blocked_at: string
+          blocked_id: string
+          blocker_id: string
+          id: string
+          reason: string | null
+        }
+        Insert: {
+          blocked_at?: string
+          blocked_id: string
+          blocker_id: string
+          id?: string
+          reason?: string | null
+        }
+        Update: {
+          blocked_at?: string
+          blocked_id?: string
+          blocker_id?: string
+          id?: string
+          reason?: string | null
+        }
+        Relationships: []
+      }
       booking_manager_artists: {
         Row: {
           artist_id: string

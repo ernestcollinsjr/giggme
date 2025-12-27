@@ -1872,7 +1872,7 @@ const Dashboard = () => {
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => navigate("/artists")}
+                    onClick={() => navigate("/entertainers")}
                     className="h-20 text-lg"
                   >
                     <Music className="mr-2 h-5 w-5" />

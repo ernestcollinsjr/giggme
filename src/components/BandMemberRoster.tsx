@@ -32,38 +32,31 @@ export const BandMemberRoster = ({ bandId }: BandMemberRosterProps) => {
 
     const fetchBandMembers = async () => {
       try {
-        // Get all unique members who have been invited to gigs for this band
-        const { data: gigMembers, error: gigMembersError } = await supabase
-          .from("gig_members")
-          .select(`
-            member_id,
-            gigs!inner (
-              id,
-              band_id
-            )
-          `)
-          .eq("gigs.band_id", bandId);
+        // Get official band members from band_members table
+        const { data: bandMembers, error: bandMembersError } = await supabase
+          .from("band_members")
+          .select("member_id, joined_at")
+          .eq("band_id", bandId);
 
-        if (gigMembersError) throw gigMembersError;
+        if (bandMembersError) throw bandMembersError;
 
-        // Get unique member IDs
-        const uniqueMemberIds = [...new Set(gigMembers?.map((gm: any) => gm.member_id) || [])];
-
-        if (uniqueMemberIds.length === 0) {
+        if (!bandMembers || bandMembers.length === 0) {
           setMembers([]);
           setLoading(false);
           return;
         }
 
+        const memberIds = bandMembers.map((bm) => bm.member_id);
+
         // Fetch profiles for these members
         const { data: profiles, error: profilesError } = await supabase
           .from("profiles")
           .select("*")
-          .in("id", uniqueMemberIds);
+          .in("id", memberIds);
 
         if (profilesError) throw profilesError;
 
-        // Check which members have accepted gigs for this band
+        // Check which members have accepted gigs for this band (for status indicator)
         const { data: acceptedMembers } = await supabase
           .from("gig_members")
           .select(`

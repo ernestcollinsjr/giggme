@@ -102,7 +102,8 @@ export default function BookingManager() {
       .eq("user_id", user.id)
       .single();
 
-    if (roleData?.role !== "booking_manager") {
+    // Allow booking_manager and super_admin to access this page
+    if (roleData?.role !== "booking_manager" && roleData?.role !== "super_admin") {
       navigate("/dashboard");
     }
   };

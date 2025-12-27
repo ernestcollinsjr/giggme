@@ -583,9 +583,15 @@ const Bookings = () => {
               {isBandLeader ? "Manage your band's performance schedule" : "View upcoming gigs"}
             </p>
           </div>
-          <Button variant="outline" onClick={() => navigate("/dashboard")}>
-            Back to Dashboard
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => navigate("/rehearsals")}>
+              <Music className="h-4 w-4 mr-2" />
+              Rehearsals
+            </Button>
+            <Button variant="outline" onClick={() => navigate("/dashboard")}>
+              Back to Dashboard
+            </Button>
+          </div>
         </div>
 
         {isBandLeader && bands.length > 0 && (

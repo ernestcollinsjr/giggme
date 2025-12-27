@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, User, MessageCircle, Briefcase, Calendar as CalendarIcon } from "lucide-react";
+import { Home, User, MessageCircle, Briefcase, Calendar as CalendarIcon, Music } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -67,6 +67,7 @@ const BottomNav = () => {
   const navItems = [
     { icon: Home, label: "Dashboard", path: "/dashboard" },
     { icon: MessageCircle, label: "Chat", path: "/chat", badge: unreadCount },
+    { icon: Music, label: "My Gigs", path: "/bookings" },
     { 
       icon: userRole === "tour_manager" ? CalendarIcon : Briefcase, 
       label: userRole === "tour_manager" ? "Tours" : "Bookings", 

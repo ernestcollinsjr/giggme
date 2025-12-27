@@ -108,10 +108,13 @@ const BandInvite = () => {
         return;
       }
 
-      // Update invitation status
+      // Update invitation status with acceptance timestamp
       const { error: updateError } = await supabase
         .from("band_invitations")
-        .update({ status: "accepted" })
+        .update({ 
+          status: "accepted",
+          accepted_at: new Date().toISOString()
+        })
         .eq("id", invitation.id);
 
       if (updateError) throw updateError;

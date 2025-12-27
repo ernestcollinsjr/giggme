@@ -532,6 +532,8 @@ const Auth = () => {
                           <p className="text-sm text-muted-foreground mt-1">
                             Showcase your talent, get booked for gigs, manage your schedule, and grow your career.
                           </p>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Venue Owner Card */}
@@ -562,8 +564,6 @@ const Auth = () => {
                         </div>
                       </div>
                     </div>
-                  </div>
-                </div>
                   </div>
                 </div>
                 

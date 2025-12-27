@@ -29,14 +29,20 @@ export function usePushNotifications() {
 
   useEffect(() => {
     const checkSupport = async () => {
-      const supported = 'serviceWorker' in navigator && 'PushManager' in window;
-      setIsSupported(supported);
-      
-      if (supported) {
-        setPermission(Notification.permission);
-        await checkSubscription();
+      try {
+        const supported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+        setIsSupported(supported);
+        
+        if (supported) {
+          setPermission(Notification.permission);
+          await checkSubscription();
+        }
+      } catch (error) {
+        console.error('Error checking push support:', error);
+        setIsSupported(false);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
     checkSupport();

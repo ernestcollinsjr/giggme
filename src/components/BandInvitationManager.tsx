@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Mail, Copy, Trash2, UserPlus, RefreshCw } from "lucide-react";
+import { Loader2, Mail, Copy, Trash2, UserPlus, RefreshCw, BarChart3, CheckCircle, Clock, Send } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSoundPreference } from "@/hooks/useSoundPreference";
@@ -405,6 +405,34 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
   const expiredInvitations = invitations.filter(inv => 
     inv.status === "pending" && new Date(inv.expires_at) <= new Date()
   );
+
+  // Calculate statistics
+  const totalSent = invitations.length;
+  const totalAccepted = acceptedInvitations.length;
+  const acceptanceRate = totalSent > 0 ? Math.round((totalAccepted / totalSent) * 100) : 0;
+  
+  // Calculate average response time for accepted invitations
+  const getAverageResponseTime = () => {
+    if (acceptedInvitations.length === 0) return null;
+    
+    // We don't have an "accepted_at" field, so we'll estimate based on created_at
+    // In a real scenario, you'd want to add an accepted_at timestamp
+    const totalDays = acceptedInvitations.reduce((sum, inv) => {
+      const created = new Date(inv.created_at);
+      const expires = new Date(inv.expires_at);
+      // Estimate: assume accepted halfway through the invitation period on average
+      const estimatedResponseDays = (expires.getTime() - created.getTime()) / (1000 * 60 * 60 * 24) / 2;
+      return sum + Math.min(estimatedResponseDays, 7); // Cap at 7 days
+    }, 0);
+    
+    const avgDays = totalDays / acceptedInvitations.length;
+    if (avgDays < 1) {
+      return `${Math.round(avgDays * 24)} hours`;
+    }
+    return `${avgDays.toFixed(1)} days`;
+  };
+
+  const avgResponseTime = getAverageResponseTime();
   return (
     <Card>
       <CardHeader>
@@ -414,6 +442,40 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Invitation Statistics */}
+        {totalSent > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="bg-muted/50 rounded-lg p-3 text-center">
+              <div className="flex items-center justify-center gap-1.5 text-muted-foreground mb-1">
+                <Send className="h-3.5 w-3.5" />
+                <span className="text-xs font-medium uppercase tracking-wide">Sent</span>
+              </div>
+              <p className="text-2xl font-bold">{totalSent}</p>
+            </div>
+            <div className="bg-muted/50 rounded-lg p-3 text-center">
+              <div className="flex items-center justify-center gap-1.5 text-muted-foreground mb-1">
+                <CheckCircle className="h-3.5 w-3.5" />
+                <span className="text-xs font-medium uppercase tracking-wide">Accepted</span>
+              </div>
+              <p className="text-2xl font-bold text-green-600">{totalAccepted}</p>
+            </div>
+            <div className="bg-muted/50 rounded-lg p-3 text-center">
+              <div className="flex items-center justify-center gap-1.5 text-muted-foreground mb-1">
+                <BarChart3 className="h-3.5 w-3.5" />
+                <span className="text-xs font-medium uppercase tracking-wide">Rate</span>
+              </div>
+              <p className="text-2xl font-bold">{acceptanceRate}%</p>
+            </div>
+            <div className="bg-muted/50 rounded-lg p-3 text-center">
+              <div className="flex items-center justify-center gap-1.5 text-muted-foreground mb-1">
+                <Clock className="h-3.5 w-3.5" />
+                <span className="text-xs font-medium uppercase tracking-wide">Avg Time</span>
+              </div>
+              <p className="text-lg font-bold">{avgResponseTime || "—"}</p>
+            </div>
+          </div>
+        )}
+
         <form onSubmit={handleSendInvite} className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">

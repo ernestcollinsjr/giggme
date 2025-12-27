@@ -5,7 +5,8 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Bell, Mail, MessageSquare, Smartphone, Loader2, Send, Volume2, VolumeX, Play } from "lucide-react";
+import { Bell, Mail, MessageSquare, Smartphone, Loader2, Send, Volume2, VolumeX, Play, Volume1 } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useSoundPreference, SoundType } from "@/hooks/useSoundPreference";
 
@@ -19,6 +20,7 @@ interface NotificationPrefs {
   reminder_day_of: boolean;
   sound_muted: boolean;
   sound_type: SoundType;
+  sound_volume: number;
 }
 
 export const NotificationPreferences = () => {
@@ -37,6 +39,7 @@ export const NotificationPreferences = () => {
     reminder_day_of: true,
     sound_muted: false,
     sound_type: 'chime',
+    sound_volume: 0.5,
   });
 
   useEffect(() => {
@@ -70,6 +73,7 @@ export const NotificationPreferences = () => {
           reminder_day_of: data.reminder_day_of ?? true,
           sound_muted: (data as any).sound_muted ?? false,
           sound_type: (data as any).sound_type ?? 'chime',
+          sound_volume: (data as any).sound_volume ?? 0.5,
         });
       }
     } catch (error) {
@@ -79,7 +83,7 @@ export const NotificationPreferences = () => {
     }
   };
 
-  const updatePreference = async (key: keyof NotificationPrefs, value: boolean | SoundType) => {
+  const updatePreference = async (key: keyof NotificationPrefs, value: boolean | SoundType | number) => {
     setSaving(true);
     const newPrefs = { ...prefs, [key]: value };
     setPrefs(newPrefs);
@@ -202,7 +206,7 @@ export const NotificationPreferences = () => {
                   size="sm"
                   onClick={() => {
                     updatePreference("sound_type", type);
-                    playTestSound(type);
+                    playTestSound(type, prefs.sound_volume);
                   }}
                   disabled={saving}
                   className="capitalize"
@@ -210,6 +214,41 @@ export const NotificationPreferences = () => {
                   {type}
                 </Button>
               ))}
+            </div>
+          </div>
+
+          {/* Volume Slider */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Volume1 className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <Label className="cursor-pointer">
+                  Volume
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Adjust notification sound volume
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 w-40">
+              <VolumeX className="h-3 w-3 text-muted-foreground" />
+              <Slider
+                value={[prefs.sound_volume * 100]}
+                onValueChange={(values) => {
+                  const newVolume = values[0] / 100;
+                  setPrefs(prev => ({ ...prev, sound_volume: newVolume }));
+                }}
+                onValueCommit={(values) => {
+                  const newVolume = values[0] / 100;
+                  updatePreference("sound_volume", newVolume);
+                  playTestSound(prefs.sound_type, newVolume);
+                }}
+                max={100}
+                step={5}
+                disabled={saving || prefs.sound_muted}
+                className="flex-1"
+              />
+              <Volume2 className="h-3 w-3 text-muted-foreground" />
             </div>
           </div>
         </div>

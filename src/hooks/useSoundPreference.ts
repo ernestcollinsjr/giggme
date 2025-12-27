@@ -24,6 +24,7 @@ const soundPatterns: Record<SoundType, { frequencies: number[]; durations: numbe
 export const useSoundPreference = () => {
   const [isMuted, setIsMuted] = useState(false);
   const [soundType, setSoundType] = useState<SoundType>('chime');
+  const [volume, setVolume] = useState(0.5);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -40,7 +41,7 @@ export const useSoundPreference = () => {
 
       const { data, error } = await supabase
         .from("notification_preferences")
-        .select("sound_muted, sound_type")
+        .select("sound_muted, sound_type, sound_volume")
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -53,6 +54,7 @@ export const useSoundPreference = () => {
       if (data) {
         setIsMuted(data.sound_muted ?? false);
         setSoundType((data as any).sound_type ?? 'chime');
+        setVolume((data as any).sound_volume ?? 0.5);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -61,7 +63,7 @@ export const useSoundPreference = () => {
     }
   };
 
-  const playSound = useCallback((type: SoundType = soundType) => {
+  const playSound = useCallback((type: SoundType = soundType, vol: number = volume) => {
     try {
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       const pattern = soundPatterns[type];
@@ -76,8 +78,9 @@ export const useSoundPreference = () => {
         oscillator.frequency.value = frequency;
         oscillator.type = type === 'bell' ? 'triangle' : 'sine';
         
+        const maxGain = vol * 0.5; // Scale volume (0-1) to gain (0-0.5)
         gainNode.gain.setValueAtTime(0, startTime);
-        gainNode.gain.linearRampToValueAtTime(0.3, startTime + 0.05);
+        gainNode.gain.linearRampToValueAtTime(maxGain, startTime + 0.05);
         gainNode.gain.linearRampToValueAtTime(0, startTime + duration);
         
         oscillator.start(startTime);
@@ -93,20 +96,21 @@ export const useSoundPreference = () => {
     } catch (error) {
       console.log('Could not play notification sound:', error);
     }
-  }, [soundType]);
+  }, [soundType, volume]);
 
   const playNotificationSound = useCallback(() => {
     if (isMuted) return;
     playSound();
   }, [isMuted, playSound]);
 
-  const playTestSound = useCallback((type?: SoundType) => {
-    playSound(type ?? soundType);
-  }, [playSound, soundType]);
+  const playTestSound = useCallback((type?: SoundType, vol?: number) => {
+    playSound(type ?? soundType, vol ?? volume);
+  }, [playSound, soundType, volume]);
 
   return { 
     isMuted, 
     soundType,
+    volume,
     loading, 
     playNotificationSound, 
     playTestSound, 

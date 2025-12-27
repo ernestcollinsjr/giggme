@@ -30,17 +30,29 @@ export function usePushNotifications() {
   useEffect(() => {
     const checkSupport = async () => {
       try {
-        const supported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+        const hasServiceWorker = 'serviceWorker' in navigator;
+        const hasPushManager = 'PushManager' in window;
+        const hasNotification = 'Notification' in window;
+        
+        console.log('[Push Debug] serviceWorker:', hasServiceWorker);
+        console.log('[Push Debug] PushManager:', hasPushManager);
+        console.log('[Push Debug] Notification:', hasNotification);
+        
+        const supported = hasServiceWorker && hasPushManager && hasNotification;
+        console.log('[Push Debug] Overall supported:', supported);
+        
         setIsSupported(supported);
         
         if (supported) {
+          console.log('[Push Debug] Permission:', Notification.permission);
           setPermission(Notification.permission);
           await checkSubscription();
         }
       } catch (error) {
-        console.error('Error checking push support:', error);
+        console.error('[Push Debug] Error checking push support:', error);
         setIsSupported(false);
       } finally {
+        console.log('[Push Debug] Setting isLoading to false');
         setIsLoading(false);
       }
     };

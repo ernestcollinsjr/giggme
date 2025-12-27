@@ -1646,6 +1646,10 @@ export type Database = {
         Args: { _tour_id: string; _user_id: string }
         Returns: boolean
       }
+      is_band_leader: {
+        Args: { _band_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_band_member: {
         Args: { _band_id: string; _user_id: string }
         Returns: boolean

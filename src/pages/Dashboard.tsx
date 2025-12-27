@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -1360,14 +1361,22 @@ const Dashboard = () => {
               </Card>
             ) : (
               <Tabs value={selectedBandId || bands[0]?.id} onValueChange={setSelectedBandId}>
-                <div className="overflow-x-auto pb-2 -mx-1 px-1">
-                  <TabsList className="bg-transparent border-0 p-0 h-auto gap-2 flex-nowrap inline-flex">
-                    {bands.map((band) => (
-                      <TabsTrigger key={band.id} value={band.id} className="border-2 border-border shadow-sm whitespace-nowrap shrink-0">
-                        {band.name}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
+                <div className="mb-4">
+                  <Select value={selectedBandId || bands[0]?.id} onValueChange={setSelectedBandId}>
+                    <SelectTrigger className="w-full max-w-xs bg-background border-2 border-border shadow-sm">
+                      <SelectValue placeholder="Select a band" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border border-border shadow-lg z-50">
+                      {bands.map((band) => (
+                        <SelectItem key={band.id} value={band.id}>
+                          <span className="flex items-center gap-2">
+                            <Music className="h-4 w-4 text-primary" />
+                            {band.name}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 {bands.map((band) => (
                   <TabsContent key={band.id} value={band.id}>

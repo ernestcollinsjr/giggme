@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Table, 
   TableBody, 
@@ -30,14 +30,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { 
-  Shield, 
-  Users, 
   Trash2, 
   Edit, 
   Search,
-  ArrowLeft,
-  Crown
 } from "lucide-react";
+import { TopNav } from "@/components/TopNav";
 
 type AppRole = "band_leader" | "band_member" | "booking_manager" | "artist" | "tour_manager" | "venue_owner" | "super_admin";
 
@@ -49,34 +46,36 @@ interface UserWithRole {
   instrument: string | null;
   created_at: string | null;
   role: AppRole | null;
+  bandNames: string[];
+}
+
+interface BandWithMembers {
+  id: string;
+  name: string;
+  description: string | null;
+  created_at: string;
+  band_leader_id: string;
+  memberCount: number;
 }
 
 const roleLabels: Record<AppRole, string> = {
-  super_admin: "Super Admin",
-  band_leader: "Band Leader",
-  band_member: "Band Member",
-  booking_manager: "Booking Manager",
-  artist: "Artist",
-  tour_manager: "Tour Manager",
-  venue_owner: "Venue Owner",
-};
-
-const roleColors: Record<AppRole, string> = {
-  super_admin: "bg-red-500",
-  band_leader: "bg-primary",
-  band_member: "bg-blue-500",
-  booking_manager: "bg-accent",
-  artist: "bg-purple-500",
-  tour_manager: "bg-orange-500",
-  venue_owner: "bg-green-500",
+  super_admin: "admin",
+  band_leader: "leader",
+  band_member: "member",
+  booking_manager: "manager",
+  artist: "artist",
+  tour_manager: "tour mgr",
+  venue_owner: "venue",
 };
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [users, setUsers] = useState<UserWithRole[]>([]);
+  const [bands, setBands] = useState<BandWithMembers[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [groupSearchTerm, setGroupSearchTerm] = useState("");
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [editingUser, setEditingUser] = useState<UserWithRole | null>(null);
   const [deleteConfirmUser, setDeleteConfirmUser] = useState<UserWithRole | null>(null);
@@ -88,10 +87,10 @@ const AdminDashboard = () => {
   });
 
   useEffect(() => {
-    checkSuperAdminAndFetchUsers();
+    checkSuperAdminAndFetchData();
   }, []);
 
-  const checkSuperAdminAndFetchUsers = async () => {
+  const checkSuperAdminAndFetchData = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -118,7 +117,7 @@ const AdminDashboard = () => {
       }
 
       setIsSuperAdmin(true);
-      await fetchUsers();
+      await Promise.all([fetchUsers(), fetchBands()]);
     } catch (error: any) {
       console.error("Error checking admin status:", error);
       toast({
@@ -148,12 +147,42 @@ const AdminDashboard = () => {
 
       if (rolesError) throw rolesError;
 
-      // Combine profiles with roles
+      // Fetch band memberships
+      const { data: bandMembers, error: bandMembersError } = await supabase
+        .from("band_members")
+        .select("member_id, band_id, bands(name)");
+
+      if (bandMembersError) throw bandMembersError;
+
+      // Fetch bands for leaders
+      const { data: allBands, error: bandsError } = await supabase
+        .from("bands")
+        .select("id, name, band_leader_id");
+
+      if (bandsError) throw bandsError;
+
+      // Combine profiles with roles and band names
       const usersWithRoles: UserWithRole[] = (profiles || []).map((profile) => {
         const userRole = roles?.find((r) => r.user_id === profile.id);
+        
+        // Get bands where user is a member
+        const memberBands = bandMembers
+          ?.filter((bm) => bm.member_id === profile.id)
+          .map((bm) => (bm.bands as any)?.name)
+          .filter(Boolean) || [];
+        
+        // Get bands where user is the leader
+        const leaderBands = allBands
+          ?.filter((b) => b.band_leader_id === profile.id)
+          .map((b) => b.name) || [];
+        
+        // Combine and deduplicate band names
+        const allBandNames = [...new Set([...memberBands, ...leaderBands])];
+
         return {
           ...profile,
           role: userRole?.role as AppRole || null,
+          bandNames: allBandNames,
         };
       });
 
@@ -163,6 +192,43 @@ const AdminDashboard = () => {
       toast({
         variant: "destructive",
         title: "Error fetching users",
+        description: error.message,
+      });
+    }
+  };
+
+  const fetchBands = async () => {
+    try {
+      // Fetch all bands
+      const { data: bandsData, error: bandsError } = await supabase
+        .from("bands")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (bandsError) throw bandsError;
+
+      // Fetch member counts
+      const { data: membersData, error: membersError } = await supabase
+        .from("band_members")
+        .select("band_id");
+
+      if (membersError) throw membersError;
+
+      // Calculate member count for each band
+      const bandsWithMembers: BandWithMembers[] = (bandsData || []).map((band) => {
+        const memberCount = membersData?.filter((m) => m.band_id === band.id).length || 0;
+        return {
+          ...band,
+          memberCount,
+        };
+      });
+
+      setBands(bandsWithMembers);
+    } catch (error: any) {
+      console.error("Error fetching bands:", error);
+      toast({
+        variant: "destructive",
+        title: "Error fetching groups",
         description: error.message,
       });
     }
@@ -266,7 +332,13 @@ const AdminDashboard = () => {
     (user) =>
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (user.role && roleLabels[user.role].toLowerCase().includes(searchTerm.toLowerCase()))
+      (user.role && roleLabels[user.role].toLowerCase().includes(searchTerm.toLowerCase())) ||
+      user.bandNames.some((bn) => bn.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
+  const filteredBands = bands.filter(
+    (band) =>
+      band.name.toLowerCase().includes(groupSearchTerm.toLowerCase())
   );
 
   if (loading) {
@@ -283,159 +355,163 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <TopNav userRole="super_admin" />
       <main className="container mx-auto px-4 py-6 pb-24">
-        <div className="flex items-center gap-4 mb-6">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Shield className="h-6 w-6 text-red-500" />
-              Admin Dashboard
-            </h1>
-            <p className="text-muted-foreground">Manage all users, roles, and permissions</p>
-          </div>
-        </div>
+        <Tabs defaultValue="members" className="w-full">
+          <TabsList className="mb-6">
+            <TabsTrigger value="members">Members</TabsTrigger>
+            <TabsTrigger value="groups">Groups</TabsTrigger>
+          </TabsList>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Users</p>
-                  <p className="text-2xl font-bold">{users.length}</p>
-                </div>
-                <Users className="h-8 w-8 text-muted-foreground" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Super Admins</p>
-                  <p className="text-2xl font-bold">
-                    {users.filter((u) => u.role === "super_admin").length}
-                  </p>
-                </div>
-                <Crown className="h-8 w-8 text-red-500" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Band Leaders</p>
-                  <p className="text-2xl font-bold">
-                    {users.filter((u) => u.role === "band_leader").length}
-                  </p>
-                </div>
-                <Crown className="h-8 w-8 text-primary" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Band Members</p>
-                  <p className="text-2xl font-bold">
-                    {users.filter((u) => u.role === "band_member").length}
-                  </p>
-                </div>
-                <Users className="h-8 w-8 text-blue-500" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+          {/* Members Tab */}
+          <TabsContent value="members">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold">All Members</h2>
+              <p className="text-muted-foreground">{users.length} members total</p>
+            </div>
 
-        {/* Users Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>All Users</span>
+            <div className="flex justify-end mb-4">
               <div className="relative w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search users..."
+                  placeholder="Search members..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-9"
                 />
               </div>
-            </CardTitle>
-            <CardDescription>
-              View and manage all registered users
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Joined</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredUsers.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.name}</TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>{user.phone_number || "—"}</TableCell>
-                      <TableCell>
-                        {user.role ? (
-                          <Badge className={`${roleColors[user.role]} text-white`}>
-                            {roleLabels[user.role]}
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline">No Role</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {user.created_at
-                          ? new Date(user.created_at).toLocaleDateString()
-                          : "—"}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleEditUser(user)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-destructive hover:text-destructive"
-                            onClick={() => setDeleteConfirmUser(user)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {filteredUsers.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                        No users found
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
             </div>
-          </CardContent>
-        </Card>
+
+            <div className="bg-card rounded-lg border overflow-hidden">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/50">
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Phone</TableHead>
+                      <TableHead>Group</TableHead>
+                      <TableHead>Roles</TableHead>
+                      <TableHead>Joined</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredUsers.map((user) => (
+                      <TableRow key={user.id}>
+                        <TableCell className="font-medium">{user.name}</TableCell>
+                        <TableCell className="text-muted-foreground">{user.email}</TableCell>
+                        <TableCell className="text-muted-foreground">{user.phone_number || "—"}</TableCell>
+                        <TableCell>
+                          {user.bandNames.length > 0 
+                            ? user.bandNames.join(", ") 
+                            : <span className="text-muted-foreground">No Group</span>
+                          }
+                        </TableCell>
+                        <TableCell>
+                          {user.role ? (
+                            <Badge variant="outline">
+                              {roleLabels[user.role]}
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-muted-foreground">none</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {user.created_at
+                            ? new Date(user.created_at).toLocaleDateString()
+                            : "—"}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleEditUser(user)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-destructive hover:text-destructive"
+                              onClick={() => setDeleteConfirmUser(user)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {filteredUsers.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                          No members found
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Groups Tab */}
+          <TabsContent value="groups">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold">All Groups</h2>
+              <p className="text-muted-foreground">{bands.length} groups total</p>
+            </div>
+
+            <div className="flex justify-end mb-4">
+              <div className="relative w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search groups..."
+                  value={groupSearchTerm}
+                  onChange={(e) => setGroupSearchTerm(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+            </div>
+
+            <div className="bg-card rounded-lg border overflow-hidden">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/50">
+                      <TableHead>Group Name</TableHead>
+                      <TableHead className="text-center">Members</TableHead>
+                      <TableHead>Created</TableHead>
+                      <TableHead>Group ID</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredBands.map((band) => (
+                      <TableRow key={band.id}>
+                        <TableCell className="font-medium">{band.name}</TableCell>
+                        <TableCell className="text-center">{band.memberCount}</TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {new Date(band.created_at).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground font-mono text-sm">
+                          {band.id.slice(0, 8)}...
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {filteredBands.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                          No groups found
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </main>
 
       {/* Edit User Dialog */}

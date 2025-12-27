@@ -215,13 +215,14 @@ const Dashboard = () => {
       setProfile(profileData);
       setUserRole(roleData.role as UserRole);
       
-      // Fetch bands for band leaders
-      if (roleData.role === "band_leader") {
-        const { data: bandsData } = await supabase
-          .from("bands")
-          .select("*")
-          .eq("band_leader_id", user.id)
-          .order("created_at", { ascending: true });
+      // Fetch bands for band leaders and super admins
+      if (roleData.role === "band_leader" || roleData.role === "super_admin") {
+        // For super_admin, fetch all bands; for band_leader, fetch only their bands
+        let bandsQuery = supabase.from("bands").select("*");
+        if (roleData.role !== "super_admin") {
+          bandsQuery = bandsQuery.eq("band_leader_id", user.id);
+        }
+        const { data: bandsData } = await bandsQuery.order("created_at", { ascending: true });
         
         setBands(bandsData || []);
         if (bandsData && bandsData.length > 0) {
@@ -260,8 +261,8 @@ const Dashboard = () => {
         }
       }
       
-      // Fetch rehearsals for band members and leaders
-      if (roleData.role === "band_member" || roleData.role === "band_leader") {
+      // Fetch rehearsals for band members, leaders, and super admins
+      if (roleData.role === "band_member" || roleData.role === "band_leader" || roleData.role === "super_admin") {
         const { data: rehearsalData } = await supabase
           .from("rehearsals")
           .select("*")
@@ -417,9 +418,9 @@ const Dashboard = () => {
     };
   }, [navigate]);
 
-  // Real-time updates for gig member responses (for band leaders)
+  // Real-time updates for gig member responses (for band leaders and super admins)
   useEffect(() => {
-    if (userRole !== "band_leader" || !user) return;
+    if ((userRole !== "band_leader" && userRole !== "super_admin") || !user) return;
 
     const channel = supabase
       .channel('gig-members-dashboard')
@@ -1295,10 +1296,10 @@ const Dashboard = () => {
           <LivePresence />
         </div>
 
-        {userRole === "band_leader" && (
+        {(userRole === "band_leader" || userRole === "super_admin") && (
           <div className="space-y-4">
             <div className="space-y-3">
-              <h2 className="text-xl font-semibold">My Bands</h2>
+              <h2 className="text-xl font-semibold">{userRole === "super_admin" ? "All Bands" : "My Bands"}</h2>
               <div className="flex gap-2">
                 <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                   <DialogTrigger asChild>

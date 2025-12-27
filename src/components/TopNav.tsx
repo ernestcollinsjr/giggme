@@ -19,7 +19,8 @@ import {
   LogOut,
   Sun,
   Moon,
-  Bell
+  Bell,
+  Plus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationBell } from "./NotificationBell";
@@ -134,6 +135,17 @@ export const TopNav = ({ userRole }: TopNavProps) => {
         
         {/* Right side - Nav links, Theme toggle, Notifications, Profile & Logout */}
         <div className="flex items-center gap-2">
+          {(userRole === "band_leader" || userRole === "super_admin") && (
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => navigate("/bookings")}
+              className="gap-2 bg-primary hover:bg-primary/90"
+            >
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">Book Gig</span>
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="sm"

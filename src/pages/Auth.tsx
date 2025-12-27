@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Music, Briefcase, Users, Eye, EyeOff, Star, Check } from "lucide-react";
+import { Music, Briefcase, Users, Eye, EyeOff, Star, Check, Building2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { z } from "zod";
 
@@ -532,9 +532,38 @@ const Auth = () => {
                           <p className="text-sm text-muted-foreground mt-1">
                             Showcase your talent, get booked for gigs, manage your schedule, and grow your career.
                           </p>
+                    </div>
+
+                    {/* Venue Owner Card */}
+                    <div
+                      onClick={() => setRole("venue_owner")}
+                      className={`relative cursor-pointer rounded-xl border-2 p-4 transition-all hover:shadow-lg ${
+                        role === "venue_owner"
+                          ? "border-primary bg-primary/5 shadow-md"
+                          : "border-border hover:border-primary/50"
+                      }`}
+                    >
+                      {role === "venue_owner" && (
+                        <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                          <Check className="h-4 w-4 text-primary-foreground" />
+                        </div>
+                      )}
+                      <div className="flex items-start gap-3">
+                        <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                          role === "venue_owner" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                        }`}>
+                          <Building2 className="h-6 w-6" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold">Venue Owner</h3>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Manage your venue, book entertainers, schedule events, and streamline bookings.
+                          </p>
                         </div>
                       </div>
                     </div>
+                  </div>
+                </div>
                   </div>
                 </div>
                 

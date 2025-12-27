@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Music, Briefcase, Building2, ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { Music, Briefcase, Users, Eye, EyeOff, Star, Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import { z } from "zod";
 
@@ -443,45 +443,98 @@ const Auth = () => {
             
             <TabsContent value="signup">
               <form onSubmit={handleSignup} className="space-y-4">
-                <div className="space-y-2">
-                  <Label>I am a...</Label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <Button
-                      type="button"
-                      variant={role === "band_leader" ? "default" : "outline"}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold">Choose Your Plan</Label>
+                  <div className="grid grid-cols-1 gap-3">
+                    {/* Band Manager Card */}
+                    <div
                       onClick={() => setRole("band_leader")}
-                      className="h-20 flex flex-col gap-2"
+                      className={`relative cursor-pointer rounded-xl border-2 p-4 transition-all hover:shadow-lg ${
+                        role === "band_leader"
+                          ? "border-primary bg-primary/5 shadow-md"
+                          : "border-border hover:border-primary/50"
+                      }`}
                     >
-                      <Music className="h-6 w-6" />
-                      <span className="text-xs text-center">Band Leader</span>
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={role === "venue_owner" ? "default" : "outline"}
-                      onClick={() => setRole("venue_owner")}
-                      className="h-20 flex flex-col gap-2"
-                    >
-                      <Building2 className="h-6 w-6" />
-                      <span className="text-xs text-center">Venue Owner</span>
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={role === "artist" ? "default" : "outline"}
-                      onClick={() => setRole("artist")}
-                      className="h-20 flex flex-col gap-2"
-                    >
-                      <Music className="h-6 w-6" />
-                      <span className="text-xs text-center">Entertainer</span>
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={role === "booking_manager" ? "default" : "outline"}
+                      {role === "band_leader" && (
+                        <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                          <Check className="h-4 w-4 text-primary-foreground" />
+                        </div>
+                      )}
+                      <div className="flex items-start gap-3">
+                        <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                          role === "band_leader" ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
+                        }`}>
+                          <Users className="h-6 w-6" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold">Band Manager</h3>
+                            <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Manage your band, schedule gigs, coordinate with venues, and keep your team organized.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Booking Agent Card */}
+                    <div
                       onClick={() => setRole("booking_manager")}
-                      className="h-20 flex flex-col gap-2"
+                      className={`relative cursor-pointer rounded-xl border-2 p-4 transition-all hover:shadow-lg ${
+                        role === "booking_manager"
+                          ? "border-primary bg-primary/5 shadow-md"
+                          : "border-border hover:border-primary/50"
+                      }`}
                     >
-                      <Briefcase className="h-6 w-6" />
-                      <span className="text-xs text-center">Booking Manager</span>
-                    </Button>
+                      {role === "booking_manager" && (
+                        <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                          <Check className="h-4 w-4 text-primary-foreground" />
+                        </div>
+                      )}
+                      <div className="flex items-start gap-3">
+                        <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                          role === "booking_manager" ? "bg-primary text-primary-foreground" : "bg-secondary/50 text-secondary-foreground"
+                        }`}>
+                          <Briefcase className="h-6 w-6" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold">Booking Agent</h3>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Book entertainers, manage rosters, check availability, and handle client requests.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Musicians/Entertainers Card */}
+                    <div
+                      onClick={() => setRole("artist")}
+                      className={`relative cursor-pointer rounded-xl border-2 p-4 transition-all hover:shadow-lg ${
+                        role === "artist"
+                          ? "border-primary bg-primary/5 shadow-md"
+                          : "border-border hover:border-primary/50"
+                      }`}
+                    >
+                      {role === "artist" && (
+                        <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                          <Check className="h-4 w-4 text-primary-foreground" />
+                        </div>
+                      )}
+                      <div className="flex items-start gap-3">
+                        <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                          role === "artist" ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground"
+                        }`}>
+                          <Music className="h-6 w-6" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold">Musicians / Entertainers</h3>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Showcase your talent, get booked for gigs, manage your schedule, and grow your career.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 

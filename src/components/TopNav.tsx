@@ -135,6 +135,14 @@ export const TopNav = ({ userRole }: TopNavProps) => {
         
         {/* Right side - Nav links, Theme toggle, Notifications, Profile & Logout */}
         <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="gap-2"
+          >
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </Button>
           {(userRole === "band_leader" || userRole === "super_admin") && (
             <Button
               variant="default"
@@ -146,14 +154,6 @@ export const TopNav = ({ userRole }: TopNavProps) => {
               <span className="hidden sm:inline">Book Gig</span>
             </Button>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="gap-2"
-          >
-            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          </Button>
           {links.map((link) => {
             const Icon = link.icon;
             return (

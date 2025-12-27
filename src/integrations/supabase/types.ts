@@ -739,6 +739,7 @@ export type Database = {
           sms_enabled: boolean | null
           sound_muted: boolean | null
           sound_type: string | null
+          sound_volume: number | null
           updated_at: string
           user_id: string
         }
@@ -753,6 +754,7 @@ export type Database = {
           sms_enabled?: boolean | null
           sound_muted?: boolean | null
           sound_type?: string | null
+          sound_volume?: number | null
           updated_at?: string
           user_id: string
         }
@@ -767,6 +769,7 @@ export type Database = {
           sms_enabled?: boolean | null
           sound_muted?: boolean | null
           sound_type?: string | null
+          sound_volume?: number | null
           updated_at?: string
           user_id?: string
         }

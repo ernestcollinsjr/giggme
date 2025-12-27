@@ -79,6 +79,7 @@ const AdminDashboard = () => {
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [editingUser, setEditingUser] = useState<UserWithRole | null>(null);
   const [deleteConfirmUser, setDeleteConfirmUser] = useState<UserWithRole | null>(null);
+  const [deleteConfirmGroup, setDeleteConfirmGroup] = useState<BandWithMembers | null>(null);
   const [editForm, setEditForm] = useState({
     name: "",
     email: "",
@@ -328,6 +329,40 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleDeleteGroup = async () => {
+    if (!deleteConfirmGroup) return;
+
+    try {
+      // Delete band members first
+      await supabase
+        .from("band_members")
+        .delete()
+        .eq("band_id", deleteConfirmGroup.id);
+
+      // Delete the band
+      const { error } = await supabase
+        .from("bands")
+        .delete()
+        .eq("id", deleteConfirmGroup.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Group deleted",
+        description: `${deleteConfirmGroup.name} has been removed.`,
+      });
+
+      setDeleteConfirmGroup(null);
+      await Promise.all([fetchBands(), fetchUsers()]);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error deleting group",
+        description: error.message,
+      });
+    }
+  };
+
   const filteredUsers = users.filter(
     (user) =>
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -484,6 +519,7 @@ const AdminDashboard = () => {
                       <TableHead className="text-center">Members</TableHead>
                       <TableHead>Created</TableHead>
                       <TableHead>Group ID</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -497,11 +533,21 @@ const AdminDashboard = () => {
                         <TableCell className="text-muted-foreground font-mono text-sm">
                           {band.id.slice(0, 8)}...
                         </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => setDeleteConfirmGroup(band)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                     {filteredBands.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                           No groups found
                         </TableCell>
                       </TableRow>
@@ -589,6 +635,26 @@ const AdminDashboard = () => {
             </Button>
             <Button variant="destructive" onClick={handleDeleteUser}>
               Delete User
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Group Confirmation Dialog */}
+      <Dialog open={!!deleteConfirmGroup} onOpenChange={() => setDeleteConfirmGroup(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Group</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{deleteConfirmGroup?.name}"? This will remove the group and all member associations. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteConfirmGroup(null)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteGroup}>
+              Delete Group
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -63,7 +63,7 @@ export const TopNav = ({ userRole }: TopNavProps) => {
 
   const artistLinks = [
     { path: "/artist-profile", label: "My Profile", icon: User },
-    { path: "/artists", label: "Connect w/ Entertainers", icon: Users },
+    { path: "/entertainers", label: "Connect w/ Entertainers", icon: Users },
   ];
 
   const tourManagerLinks = [

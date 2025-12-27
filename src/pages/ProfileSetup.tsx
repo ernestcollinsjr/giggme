@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "@supabase/supabase-js";
-import { LogOut, Crown, Music, Briefcase, Mail, Loader2, Youtube, Facebook, Instagram, Twitter, Globe, Plus, Trash2, Wrench, Tag, MapPin, Clock, Play, X, Check, HelpCircle, Volume2, VolumeX, Undo2, Bell, Shield, FileText, Ban, Flag, Users, AlertTriangle } from "lucide-react";
+import { LogOut, Crown, Music, Briefcase, Mail, Loader2, Youtube, Facebook, Instagram, Twitter, Globe, Plus, Trash2, Wrench, Tag, MapPin, Clock, Play, X, Check, HelpCircle, Volume2, VolumeX, Undo2, Bell, Shield, FileText, Ban, Flag, Users, AlertTriangle, CreditCard } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { detectFaceAndCrop, loadImage } from "@/utils/imageCropping";
 import { Browser } from '@capacitor/browser';
@@ -90,6 +90,11 @@ const ProfileSetup = () => {
   const [yearsExperience, setYearsExperience] = useState<string>("");
   const [unionMemberships, setUnionMemberships] = useState<string[]>([]);
   const [newUnion, setNewUnion] = useState("");
+  
+  // Subscription state
+  const [isSubscribed, setIsSubscribed] = useState<boolean | null>(null);
+  const [checkingSubscription, setCheckingSubscription] = useState(false);
+  const [subscribing, setSubscribing] = useState(false);
   
   // Video player state
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
@@ -189,6 +194,28 @@ const ProfileSetup = () => {
     };
     
     getUser();
+  }, []);
+
+  // Check subscription status
+  useEffect(() => {
+    const checkSubscription = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      
+      setCheckingSubscription(true);
+      try {
+        const { data, error } = await supabase.functions.invoke("check-subscription");
+        if (!error && data) {
+          setIsSubscribed(data.subscribed);
+        }
+      } catch (err) {
+        console.error("Error checking subscription:", err);
+      } finally {
+        setCheckingSubscription(false);
+      }
+    };
+    
+    checkSubscription();
   }, []);
 
   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
@@ -435,6 +462,58 @@ const ProfileSetup = () => {
       });
     } finally {
       setSendingEmail(false);
+    }
+  };
+
+  // Handle subscribe to plan
+  const handleSubscribe = async () => {
+    if (!user) return;
+    
+    setSubscribing(true);
+    try {
+      // Get user metadata for role and pricing preference
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      const userRole = currentUser?.user_metadata?.role || role;
+      const venuePricingType = currentUser?.user_metadata?.venue_pricing_type || "subscription";
+      
+      // Determine price ID based on role
+      let priceId: string;
+      switch (userRole) {
+        case "band_leader":
+          priceId = "price_1Sfl1yEPiAZgF8MerV2S8Hcf"; // $14/mo
+          break;
+        case "booking_manager":
+          priceId = "price_1Sfl29EPiAZgF8Me7Z7r8ty8"; // $26/mo
+          break;
+        case "venue_owner":
+          priceId = venuePricingType === "one_time" 
+            ? "price_1Sj4o1EPiAZgF8MeVAfYLZ1h" // $49 one-time
+            : "price_1Sj4nrEPiAZgF8MeCOUpkIfg"; // $26/mo
+          break;
+        case "artist":
+        default:
+          priceId = "price_1SLNn8EPiAZgF8MeCFVMdvWR"; // $10.99/mo
+          break;
+      }
+      
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { priceId },
+      });
+      
+      if (error) throw error;
+      
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (error: any) {
+      console.error("Checkout error:", error);
+      toast({
+        variant: "destructive",
+        title: "Checkout failed",
+        description: error.message || "Could not start checkout. Please try again.",
+      });
+    } finally {
+      setSubscribing(false);
     }
   };
 
@@ -1072,6 +1151,45 @@ const ProfileSetup = () => {
         </CardHeader>
         
         <CardContent>
+          {/* Subscription Prompt */}
+          {isSubscribed === false && !checkingSubscription && (
+            <div className="mb-6 p-4 bg-gradient-to-r from-primary/10 via-primary/5 to-secondary/10 border border-primary/20 rounded-xl">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                  <CreditCard className="h-6 w-6 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-foreground">Complete Your Subscription</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {role === "artist" && "Start your 14-day free trial at $10.99/mo to unlock all features."}
+                    {role === "band_leader" && "Start your 7-day free trial at $14/mo to manage your band."}
+                    {role === "booking_manager" && "Start your 7-day free trial at $26/mo to manage artists."}
+                    {role === "venue_owner" && "Subscribe at $26/mo (14-day trial) or $49 one-time to book entertainers."}
+                    {!["artist", "band_leader", "booking_manager", "venue_owner"].includes(role) && "Subscribe to unlock all features."}
+                  </p>
+                  <Button 
+                    onClick={handleSubscribe} 
+                    disabled={subscribing}
+                    className="mt-3"
+                    size="sm"
+                  >
+                    {subscribing ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="h-4 w-4 mr-2" />
+                        Subscribe Now
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+          
           {/* Tabbed Navigation */}
           <Tabs defaultValue="profile" className="w-full">
             <TabsList className="w-full grid grid-cols-6 h-auto p-1 mb-6">

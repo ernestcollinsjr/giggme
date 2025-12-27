@@ -77,6 +77,8 @@ export const TopNav = ({ userRole }: TopNavProps) => {
 
   const superAdminLinks = [
     { path: "/admin", label: "Admin", icon: Shield },
+    { path: "/dashboard", label: "Band Leader", icon: Music },
+    { path: "/booking-manager", label: "Booking Agent", icon: Briefcase },
     { path: "/bookings", label: "Gigs", icon: Calendar },
   ];
 

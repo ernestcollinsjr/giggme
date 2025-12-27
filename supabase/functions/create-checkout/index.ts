@@ -34,6 +34,10 @@ serve(async (req) => {
       customerId = customers.data[0].id;
     }
 
+    // Musicians/Entertainers plan gets 14-day free trial
+    const MUSICIAN_PRICE_ID = "price_1SLNn8EPiAZgF8MeCFVMdvWR";
+    const trialDays = priceId === MUSICIAN_PRICE_ID ? 14 : undefined;
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
@@ -44,6 +48,7 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
+      subscription_data: trialDays ? { trial_period_days: trialDays } : undefined,
       success_url: `${req.headers.get("origin")}/dashboard?checkout=success`,
       cancel_url: `${req.headers.get("origin")}/pricing?checkout=canceled`,
     });

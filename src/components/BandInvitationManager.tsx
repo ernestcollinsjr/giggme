@@ -42,6 +42,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
   const [allBands, setAllBands] = useState<Band[]>([]);
   const [showBandSelectDialog, setShowBandSelectDialog] = useState(false);
   const [selectedBandForMember, setSelectedBandForMember] = useState<string>("");
+  const [selectedRoleForMember, setSelectedRoleForMember] = useState<"band_leader" | "band_member" | "booking_manager" | "artist" | "tour_manager" | "venue_owner">("band_member");
   const [selectedInvitation, setSelectedInvitation] = useState<Invitation | null>(null);
   const [addingToBand, setAddingToBand] = useState(false);
   const [highlightedInvitationId, setHighlightedInvitationId] = useState<string | null>(null);
@@ -271,6 +272,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
   const openBandSelectDialog = (invitation: Invitation) => {
     setSelectedInvitation(invitation);
     setSelectedBandForMember(bandId); // Default to current band
+    setSelectedRoleForMember("band_member"); // Default role
     setShowBandSelectDialog(true);
   };
 
@@ -313,6 +315,32 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
 
       if (memberError) throw memberError;
 
+      // Set or update the user's role
+      // First check if user already has a role
+      const { data: existingRole } = await supabase
+        .from("user_roles")
+        .select("id, role")
+        .eq("user_id", profile.id)
+        .single();
+
+      if (existingRole) {
+        // Update existing role if different
+        if (existingRole.role !== selectedRoleForMember) {
+          await supabase
+            .from("user_roles")
+            .update({ role: selectedRoleForMember })
+            .eq("id", existingRole.id);
+        }
+      } else {
+        // Insert new role
+        await supabase
+          .from("user_roles")
+          .insert([{
+            user_id: profile.id,
+            role: selectedRoleForMember,
+          }]);
+      }
+
       // Delete the invitation
       await deleteInvitation(selectedInvitation.id);
 
@@ -325,6 +353,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
       setShowBandSelectDialog(false);
       setSelectedInvitation(null);
       setSelectedBandForMember("");
+      setSelectedRoleForMember("band_member");
     } catch (error: any) {
       console.error("Error adding member:", error);
       toast({
@@ -671,9 +700,9 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
       <Dialog open={showBandSelectDialog} onOpenChange={setShowBandSelectDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Select Band</DialogTitle>
+            <DialogTitle>Add Member to Band</DialogTitle>
             <DialogDescription>
-              Choose which band to add {selectedInvitation?.email} to
+              Choose which band and role for {selectedInvitation?.recipient_name || selectedInvitation?.email}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-4">
@@ -694,6 +723,26 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Assign Role</Label>
+              <Select 
+                value={selectedRoleForMember} 
+                onValueChange={(value: "band_leader" | "band_member" | "booking_manager" | "artist" | "tour_manager" | "venue_owner") => setSelectedRoleForMember(value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="band_member">Band Member</SelectItem>
+                  <SelectItem value="band_leader">Band Leader</SelectItem>
+                  <SelectItem value="artist">Entertainer</SelectItem>
+                  <SelectItem value="tour_manager">Tour Manager</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                You can change this role later if needed
+              </p>
             </div>
             <div className="flex gap-2 justify-end">
               <Button 

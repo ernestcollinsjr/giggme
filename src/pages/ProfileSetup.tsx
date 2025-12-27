@@ -22,6 +22,7 @@ import { AvailabilityCalendar } from "@/components/AvailabilityCalendar";
 import { NotificationPreferences } from "@/components/NotificationPreferences";
 import { SafetyManager } from "@/components/SafetyManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import RoleSwitcher from "@/components/RoleSwitcher";
 import type { Json } from "@/integrations/supabase/types";
 
 interface SocialLinks {
@@ -1073,26 +1074,30 @@ const ProfileSetup = () => {
         <CardContent>
           {/* Tabbed Navigation */}
           <Tabs defaultValue="profile" className="w-full">
-            <TabsList className="w-full grid grid-cols-5 h-auto p-1 mb-6">
+            <TabsList className="w-full grid grid-cols-6 h-auto p-1 mb-6">
               <TabsTrigger value="profile" className="flex items-center gap-1.5 text-xs sm:text-sm py-2">
                 <Music className="h-3.5 w-3.5" />
-                <span>Profile</span>
+                <span className="hidden sm:inline">Profile</span>
+              </TabsTrigger>
+              <TabsTrigger value="role" className="flex items-center gap-1.5 text-xs sm:text-sm py-2">
+                <Crown className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Role</span>
               </TabsTrigger>
               <TabsTrigger value="alerts" className="flex items-center gap-1.5 text-xs sm:text-sm py-2">
                 <Bell className="h-3.5 w-3.5" />
-                <span>Alerts</span>
+                <span className="hidden sm:inline">Alerts</span>
               </TabsTrigger>
               <TabsTrigger value="safety" className="flex items-center gap-1.5 text-xs sm:text-sm py-2">
                 <Shield className="h-3.5 w-3.5" />
-                <span>Safety</span>
+                <span className="hidden sm:inline">Safety</span>
               </TabsTrigger>
               <TabsTrigger value="availability" className="flex items-center gap-1.5 text-xs sm:text-sm py-2">
                 <Clock className="h-3.5 w-3.5" />
-                <span>Availability</span>
+                <span className="hidden sm:inline">Availability</span>
               </TabsTrigger>
               <TabsTrigger value="terms" className="flex items-center gap-1.5 text-xs sm:text-sm py-2">
                 <FileText className="h-3.5 w-3.5" />
-                <span>Rider</span>
+                <span className="hidden sm:inline">Rider</span>
               </TabsTrigger>
             </TabsList>
           
@@ -1113,6 +1118,40 @@ const ProfileSetup = () => {
                 )}
               </div>
             )}
+
+            {/* Role Tab - Outside form since it handles its own submission */}
+            <TabsContent value="role" className="mt-0 space-y-6">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <Crown className="h-5 w-5 text-primary" />
+                    Switch Your Role
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Choose the role that best describes how you use this app
+                  </p>
+                </div>
+                
+                <RoleSwitcher 
+                  currentRole={role as "band_leader" | "band_member" | "booking_manager" | "artist" | "tour_manager" | "super_admin" | null} 
+                  onRoleChange={() => {
+                    // Refresh the page to update role-specific features
+                    window.location.reload();
+                  }} 
+                />
+                
+                <div className="p-4 bg-muted/50 rounded-lg">
+                  <h4 className="font-medium mb-2">About Roles:</h4>
+                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                    <li><strong>Band Leader:</strong> Create and manage bands, schedule gigs and rehearsals</li>
+                    <li><strong>Band Member:</strong> Respond to gig invites, view schedules, share availability</li>
+                    <li><strong>Booking Manager:</strong> Discover and manage multiple bands and artists</li>
+                    <li><strong>Tour Manager:</strong> Coordinate tours and manage crew members</li>
+                    <li><strong>Artist/Musician:</strong> Build your portfolio and get discovered</li>
+                  </ul>
+                </div>
+              </div>
+            </TabsContent>
           
             <form onSubmit={handleSubmit}>
               <TabsContent value="profile" className="mt-0 space-y-6">

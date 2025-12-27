@@ -77,36 +77,84 @@ const handler = async (req: Request): Promise<Response> => {
     const base = (configured || origin).toString().replace(/\/$/, "");
     const dashboardUrl = `${base}/dashboard`;
 
-    const emailResponse = await resend.emails.send({
-      from: "Giggme <notifications@giggme.com>",
-      to: [bandLeader.email],
-      subject: `🎉 ${memberName} accepted your invitation to ${bandName}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #333;">Great News! 🎉</h1>
-          <p>Hello ${bandLeader.name}!</p>
-          <p><strong>${memberName}</strong> has accepted your invitation to join <strong>${bandName}</strong>.</p>
-          <p>They are now waiting to be added to the band. Head to your dashboard to complete the process:</p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${dashboardUrl}" 
-               style="background-color: #22c55e; color: white; padding: 12px 30px; 
-                      text-decoration: none; border-radius: 5px; display: inline-block;">
-              Go to Dashboard
-            </a>
-          </div>
-          <p style="color: #666; font-size: 14px;">
-            Once on your dashboard, go to your band's Team tab and click "Add to Band" next to their name.
-          </p>
-          <p style="color: #666; font-size: 12px; margin-top: 30px;">
-            This is an automated notification from Giggme.
-          </p>
-        </div>
-      `,
-    });
+    // Collect all recipients (band leader + booking managers)
+    const recipients: { email: string; name: string; type: string }[] = [
+      { email: bandLeader.email, name: bandLeader.name, type: "band leader" }
+    ];
 
-    console.log("Notification email sent successfully:", emailResponse);
+    // Find booking managers for this band
+    const { data: bookingManagerBands, error: bmError } = await supabase
+      .from("booking_manager_bands")
+      .select("booking_manager_id")
+      .eq("band_id", invitation.band_id);
 
-    return new Response(JSON.stringify(emailResponse), {
+    if (!bmError && bookingManagerBands && bookingManagerBands.length > 0) {
+      console.log(`Found ${bookingManagerBands.length} booking manager(s) for this band`);
+      
+      for (const bmBand of bookingManagerBands) {
+        // Skip if booking manager is the same as band leader
+        if (bmBand.booking_manager_id === bandData.band_leader_id) {
+          console.log("Skipping booking manager (same as band leader)");
+          continue;
+        }
+
+        const { data: bmProfile, error: bmProfileError } = await supabase
+          .from("profiles")
+          .select("name, email")
+          .eq("id", bmBand.booking_manager_id)
+          .single();
+
+        if (!bmProfileError && bmProfile) {
+          recipients.push({ 
+            email: bmProfile.email, 
+            name: bmProfile.name, 
+            type: "booking manager" 
+          });
+        }
+      }
+    }
+
+    console.log(`Sending notification to ${recipients.length} recipient(s)`);
+
+    // Send email to all recipients
+    const emailResults = [];
+    for (const recipient of recipients) {
+      try {
+        const emailResponse = await resend.emails.send({
+          from: "Giggme <notifications@giggme.com>",
+          to: [recipient.email],
+          subject: `🎉 ${memberName} accepted your invitation to ${bandName}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h1 style="color: #333;">Great News! 🎉</h1>
+              <p>Hello ${recipient.name}!</p>
+              <p><strong>${memberName}</strong> has accepted your invitation to join <strong>${bandName}</strong>.</p>
+              <p>They are now waiting to be added to the band. Head to your dashboard to complete the process:</p>
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${dashboardUrl}" 
+                   style="background-color: #22c55e; color: white; padding: 12px 30px; 
+                          text-decoration: none; border-radius: 5px; display: inline-block;">
+                  Go to Dashboard
+                </a>
+              </div>
+              <p style="color: #666; font-size: 14px;">
+                Once on your dashboard, go to your band's Team tab and click "Add to Band" next to their name.
+              </p>
+              <p style="color: #666; font-size: 12px; margin-top: 30px;">
+                This is an automated notification from Giggme.
+              </p>
+            </div>
+          `,
+        });
+        console.log(`Email sent to ${recipient.type} (${recipient.email}):`, emailResponse);
+        emailResults.push({ recipient: recipient.type, success: true });
+      } catch (emailError) {
+        console.error(`Failed to send email to ${recipient.type}:`, emailError);
+        emailResults.push({ recipient: recipient.type, success: false, error: emailError });
+      }
+    }
+
+    return new Response(JSON.stringify({ success: true, emailResults }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",

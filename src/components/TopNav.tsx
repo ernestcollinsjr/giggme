@@ -50,12 +50,14 @@ export const TopNav = ({ userRole }: TopNavProps) => {
   };
 
   const bandLeaderLinks = [
+    { path: "/admin", label: "Admin", icon: Shield },
     { path: "/bookings", label: "Gigs", icon: Calendar },
     { path: "/rehearsals", label: "Rehearsals", icon: Music },
     { path: "/setlist", label: "Setlists", icon: ListMusic },
   ];
 
   const bookingManagerLinks = [
+    { path: "/admin", label: "Admin", icon: Shield },
     { path: "/booking-manager", label: "Roster", icon: Briefcase },
     { path: "/artists", label: "Discover", icon: Search },
   ];

@@ -738,6 +738,7 @@ export type Database = {
           reminder_day_of: boolean | null
           sms_enabled: boolean | null
           sound_muted: boolean | null
+          sound_type: string | null
           updated_at: string
           user_id: string
         }
@@ -751,6 +752,7 @@ export type Database = {
           reminder_day_of?: boolean | null
           sms_enabled?: boolean | null
           sound_muted?: boolean | null
+          sound_type?: string | null
           updated_at?: string
           user_id: string
         }
@@ -764,6 +766,7 @@ export type Database = {
           reminder_day_of?: boolean | null
           sms_enabled?: boolean | null
           sound_muted?: boolean | null
+          sound_type?: string | null
           updated_at?: string
           user_id?: string
         }

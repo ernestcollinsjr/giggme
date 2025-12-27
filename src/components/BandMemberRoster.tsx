@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Users, Music } from "lucide-react";
+import { Users, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
 
 interface BandMember {
   id: string;
@@ -13,6 +14,7 @@ interface BandMember {
   bio: string | null;
   phone_number: string | null;
   hasAcceptedGigs?: boolean;
+  joinedAt?: string;
 }
 
 interface BandMemberRosterProps {
@@ -70,10 +72,14 @@ export const BandMemberRoster = ({ bandId }: BandMemberRosterProps) => {
 
         const acceptedMemberIds = new Set(acceptedMembers?.map((am: any) => am.member_id) || []);
 
-        // Add acceptance status to profiles
+        // Create a map of member_id to joined_at
+        const joinedAtMap = new Map(bandMembers.map(bm => [bm.member_id, bm.joined_at]));
+
+        // Add acceptance status and joined date to profiles
         const membersWithStatus = profiles?.map(profile => ({
           ...profile,
-          hasAcceptedGigs: acceptedMemberIds.has(profile.id)
+          hasAcceptedGigs: acceptedMemberIds.has(profile.id),
+          joinedAt: joinedAtMap.get(profile.id)
         })) || [];
 
         setMembers(membersWithStatus);
@@ -146,6 +152,12 @@ export const BandMemberRoster = ({ bandId }: BandMemberRosterProps) => {
               {member.instrument && (
                 <p className="text-[10px] text-muted-foreground mt-0.5 truncate w-full text-center">
                   {member.instrument}
+                </p>
+              )}
+              {member.joinedAt && (
+                <p className="text-[9px] text-muted-foreground/70 mt-0.5 flex items-center gap-0.5">
+                  <Calendar className="h-2.5 w-2.5" />
+                  {format(new Date(member.joinedAt), "MMM d, yyyy")}
                 </p>
               )}
             </div>

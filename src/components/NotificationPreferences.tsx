@@ -299,80 +299,80 @@ export const NotificationPreferences = () => {
             />
           </div>
 
-          {isSupported && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Smartphone className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <Label htmlFor="push-notifications" className="cursor-pointer">
-                      Push Notifications
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Receive browser push notifications
-                    </p>
-                  </div>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Smartphone className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <Label htmlFor="push-notifications" className="cursor-pointer">
+                    Push Notifications
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    {isSupported 
+                      ? "Receive browser push notifications"
+                      : "Not supported in this browser"}
+                  </p>
                 </div>
-                <Switch
-                  id="push-notifications"
-                  checked={isSubscribed}
-                  onCheckedChange={async (checked) => {
-                    if (checked) {
-                      await subscribe();
-                    } else {
-                      await unsubscribe();
-                    }
-                  }}
-                  disabled={pushLoading}
-                />
               </div>
-              
-              {isSubscribed && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="ml-7"
-                  disabled={sendingTest}
-                  onClick={async () => {
-                    setSendingTest(true);
-                    try {
-                      // Send test notification using the Notification API directly
-                      if ('serviceWorker' in navigator && 'Notification' in window) {
-                        const registration = await navigator.serviceWorker.ready;
-                        await registration.showNotification('Test Notification 🎵', {
-                          body: 'Push notifications are working! You will receive gig reminders here.',
-                          icon: '/favicon.ico',
-                          badge: '/favicon.ico',
-                        } as NotificationOptions);
-                        toast({
-                          title: 'Test sent!',
-                          description: 'Check your notifications - you should see the test message.',
-                        });
-                      } else {
-                        throw new Error('Push notifications not available');
-                      }
-                    } catch (error) {
-                      console.error('Error sending test notification:', error);
-                      toast({
-                        variant: 'destructive',
-                        title: 'Test failed',
-                        description: 'Could not send test notification. Make sure notifications are enabled.',
-                      });
-                    } finally {
-                      setSendingTest(false);
-                    }
-                  }}
-                >
-                  {sendingTest ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  ) : (
-                    <Send className="h-4 w-4 mr-2" />
-                  )}
-                  Send Test Notification
-                </Button>
-              )}
+              <Switch
+                id="push-notifications"
+                checked={isSubscribed}
+                onCheckedChange={async (checked) => {
+                  if (checked) {
+                    await subscribe();
+                  } else {
+                    await unsubscribe();
+                  }
+                }}
+                disabled={pushLoading || !isSupported}
+              />
             </div>
-          )}
+            
+            {isSubscribed && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="ml-7"
+                disabled={sendingTest}
+                onClick={async () => {
+                  setSendingTest(true);
+                  try {
+                    // Send test notification using the Notification API directly
+                    if ('serviceWorker' in navigator && 'Notification' in window) {
+                      const registration = await navigator.serviceWorker.ready;
+                      await registration.showNotification('Test Notification 🎵', {
+                        body: 'Push notifications are working! You will receive gig reminders here.',
+                        icon: '/favicon.ico',
+                        badge: '/favicon.ico',
+                      } as NotificationOptions);
+                      toast({
+                        title: 'Test sent!',
+                        description: 'Check your notifications - you should see the test message.',
+                      });
+                    } else {
+                      throw new Error('Push notifications not available');
+                    }
+                  } catch (error) {
+                    console.error('Error sending test notification:', error);
+                    toast({
+                      variant: 'destructive',
+                      title: 'Test failed',
+                      description: 'Could not send test notification. Make sure notifications are enabled.',
+                    });
+                  } finally {
+                    setSendingTest(false);
+                  }
+                }}
+              >
+                {sendingTest ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <Send className="h-4 w-4 mr-2" />
+                )}
+                Send Test Notification
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Reminder Settings */}

@@ -185,6 +185,7 @@ export type Database = {
       }
       band_invitations: {
         Row: {
+          accepted_at: string | null
           band_id: string
           created_at: string
           email: string
@@ -196,6 +197,7 @@ export type Database = {
           token: string
         }
         Insert: {
+          accepted_at?: string | null
           band_id: string
           created_at?: string
           email: string
@@ -207,6 +209,7 @@ export type Database = {
           token?: string
         }
         Update: {
+          accepted_at?: string | null
           band_id?: string
           created_at?: string
           email?: string

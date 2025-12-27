@@ -18,6 +18,7 @@ interface Invitation {
   token: string;
   created_at: string;
   expires_at: string;
+  accepted_at: string | null;
 }
 
 interface Band {
@@ -413,23 +414,31 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
   
   // Calculate average response time for accepted invitations
   const getAverageResponseTime = () => {
-    if (acceptedInvitations.length === 0) return null;
+    const invitationsWithTimestamp = acceptedInvitations.filter(inv => inv.accepted_at);
     
-    // We don't have an "accepted_at" field, so we'll estimate based on created_at
-    // In a real scenario, you'd want to add an accepted_at timestamp
-    const totalDays = acceptedInvitations.reduce((sum, inv) => {
+    if (invitationsWithTimestamp.length === 0) {
+      // Fallback for invitations without accepted_at (legacy data)
+      if (acceptedInvitations.length === 0) return null;
+      return "—";
+    }
+    
+    const totalMs = invitationsWithTimestamp.reduce((sum, inv) => {
       const created = new Date(inv.created_at);
-      const expires = new Date(inv.expires_at);
-      // Estimate: assume accepted halfway through the invitation period on average
-      const estimatedResponseDays = (expires.getTime() - created.getTime()) / (1000 * 60 * 60 * 24) / 2;
-      return sum + Math.min(estimatedResponseDays, 7); // Cap at 7 days
+      const accepted = new Date(inv.accepted_at!);
+      return sum + (accepted.getTime() - created.getTime());
     }, 0);
     
-    const avgDays = totalDays / acceptedInvitations.length;
-    if (avgDays < 1) {
-      return `${Math.round(avgDays * 24)} hours`;
+    const avgMs = totalMs / invitationsWithTimestamp.length;
+    const avgHours = avgMs / (1000 * 60 * 60);
+    const avgDays = avgHours / 24;
+    
+    if (avgHours < 1) {
+      return `${Math.round(avgMs / (1000 * 60))} min`;
+    } else if (avgDays < 1) {
+      return `${Math.round(avgHours)} hours`;
+    } else {
+      return `${avgDays.toFixed(1)} days`;
     }
-    return `${avgDays.toFixed(1)} days`;
   };
 
   const avgResponseTime = getAverageResponseTime();

@@ -99,14 +99,15 @@ const AdminDashboard = () => {
         return;
       }
 
-      // Check if user is super admin
+      // Check if user is super admin (user may have multiple roles)
       const { data: roleData } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id)
+        .eq("role", "super_admin")
         .maybeSingle();
 
-      if (roleData?.role !== "super_admin") {
+      if (!roleData) {
         toast({
           variant: "destructive",
           title: "Access Denied",

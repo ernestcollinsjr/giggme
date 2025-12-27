@@ -1002,6 +1002,7 @@ export type Database = {
           date: string
           end_time: string | null
           food_provided: string | null
+          gig_id: string | null
           id: string
           notes: string | null
           sound_man_info: string | null
@@ -1019,6 +1020,7 @@ export type Database = {
           date: string
           end_time?: string | null
           food_provided?: string | null
+          gig_id?: string | null
           id?: string
           notes?: string | null
           sound_man_info?: string | null
@@ -1036,6 +1038,7 @@ export type Database = {
           date?: string
           end_time?: string | null
           food_provided?: string | null
+          gig_id?: string | null
           id?: string
           notes?: string | null
           sound_man_info?: string | null
@@ -1051,6 +1054,13 @@ export type Database = {
             columns: ["band_id"]
             isOneToOne: false
             referencedRelation: "bands"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rehearsals_gig_id_fkey"
+            columns: ["gig_id"]
+            isOneToOne: false
+            referencedRelation: "gigs"
             referencedColumns: ["id"]
           },
         ]

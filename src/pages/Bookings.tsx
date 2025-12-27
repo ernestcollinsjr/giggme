@@ -54,6 +54,7 @@ const Bookings = () => {
   const { toast } = useToast();
   const { selectedBandId, setSelectedBandId } = useBand();
   const [gigs, setGigs] = useState<Gig[]>([]);
+  const [gigRehearsals, setGigRehearsals] = useState<Record<string, { date: string; venue: string; end_time: string | null }>>({});
   const [gigResponseCounts, setGigResponseCounts] = useState<Record<string, { pending: number; accepted: number; declined: number }>>({});
   const [bands, setBands] = useState<{ id: string; name: string }[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -236,9 +237,11 @@ const Bookings = () => {
 
     setGigs((gigData as unknown as Gig[]) || []);
     
-    // Fetch gig member response counts
+    // Fetch gig member response counts and linked rehearsals
     if (gigData && gigData.length > 0) {
       const gigIds = gigData.map((g: any) => g.id);
+      
+      // Fetch responses
       const { data: responses } = await supabase
         .from('gig_members')
         .select('gig_id, status')
@@ -254,6 +257,21 @@ const Bookings = () => {
         else if (r.status === 'declined') counts[r.gig_id].declined++;
       });
       setGigResponseCounts(counts);
+
+      // Fetch linked rehearsals
+      const { data: rehearsalsData } = await supabase
+        .from('rehearsals')
+        .select('gig_id, date, venue, end_time')
+        .in('gig_id', gigIds)
+        .not('gig_id', 'is', null);
+      
+      const rehearsalsMap: Record<string, { date: string; venue: string; end_time: string | null }> = {};
+      rehearsalsData?.forEach((r: any) => {
+        if (r.gig_id) {
+          rehearsalsMap[r.gig_id] = { date: r.date, venue: r.venue, end_time: r.end_time };
+        }
+      });
+      setGigRehearsals(rehearsalsMap);
     }
     
     // Fetch band members if a band is selected
@@ -339,12 +357,13 @@ const Bookings = () => {
           .insert({
             band_leader_id: user.id,
             band_id: selectedBandId,
+            gig_id: newGig.id,
             date: rehearsalDateTime.toISOString(),
             end_time: rehearsalEndTime,
             venue: rehearsalVenueToUse,
             venue_lat: rehearsalLatToUse,
             venue_lng: rehearsalLngToUse,
-            notes: rehearsalNotes.trim() ? `For gig on ${format(date, "PPP")} at ${venueName || venue}\n\n${rehearsalNotes.trim()}` : `Rehearsal for gig on ${format(date, "PPP")} at ${venueName || venue}`,
+            notes: rehearsalNotes.trim() || null,
             attire: attire.trim() || null,
           })
           .select()
@@ -1203,15 +1222,62 @@ const Bookings = () => {
                             </>
                           )}
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                          <CalendarIcon className="h-4 w-4" />
-                          {format(new Date(gig.date), "PPP")}
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                          <Clock className="h-4 w-4" />
-                          {format(new Date(gig.date), "p")}
-                          {gig.end_time && ` - ${gig.end_time}`}
-                        </div>
+                        
+                        {/* Visual Timeline */}
+                        {gigRehearsals[gig.id] ? (
+                          <div className="my-4 p-3 rounded-lg bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border border-primary/20">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Music className="h-4 w-4 text-primary" />
+                              <span className="text-sm font-semibold text-primary">Event Timeline</span>
+                            </div>
+                            <div className="relative">
+                              {/* Timeline line */}
+                              <div className="absolute left-3 top-6 bottom-6 w-0.5 bg-primary/30" />
+                              
+                              {/* Rehearsal */}
+                              <div className="flex items-start gap-3 mb-4">
+                                <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center z-10 shrink-0">
+                                  <Music className="h-3 w-3 text-secondary-foreground" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium">Rehearsal</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {format(new Date(gigRehearsals[gig.id].date), "EEE, MMM d")} at {format(new Date(gigRehearsals[gig.id].date), "p")}
+                                    {gigRehearsals[gig.id].end_time && ` - ${gigRehearsals[gig.id].end_time}`}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground truncate">{gigRehearsals[gig.id].venue}</p>
+                                </div>
+                              </div>
+                              
+                              {/* Gig */}
+                              <div className="flex items-start gap-3">
+                                <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center z-10 shrink-0">
+                                  <CalendarIcon className="h-3 w-3 text-primary-foreground" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium">Gig</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {format(new Date(gig.date), "EEE, MMM d")} at {format(new Date(gig.date), "p")}
+                                    {gig.end_time && ` - ${gig.end_time}`}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground truncate">{gig.venue_name || gig.venue}</p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                              <CalendarIcon className="h-4 w-4" />
+                              {format(new Date(gig.date), "PPP")}
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                              <Clock className="h-4 w-4" />
+                              {format(new Date(gig.date), "p")}
+                              {gig.end_time && ` - ${gig.end_time}`}
+                            </div>
+                          </>
+                        )}
                         {gig.loading_time && (
                           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                             <Clock className="h-4 w-4" />

@@ -188,7 +188,7 @@ const Bookings = () => {
     setUserRole(roleData?.role || null);
 
     // Fetch bands for band leaders
-    if (roleData?.role === "band_leader") {
+    if (roleData?.role === "band_leader" || roleData?.role === "super_admin") {
       const { data: bandsData } = await supabase
         .from("bands")
         .select("id, name")
@@ -246,7 +246,7 @@ const Bookings = () => {
     }
     
     // Fetch band members if a band is selected
-    if (selectedBandId && roleData?.role === "band_leader") {
+    if (selectedBandId && (roleData?.role === "band_leader" || roleData?.role === "super_admin")) {
       const { data: membersData } = await supabase
         .from("profiles")
         .select("id, name, email, instrument")
@@ -569,7 +569,7 @@ const Bookings = () => {
     );
   }
 
-  const isBandLeader = userRole === "band_leader";
+  const isBandLeader = userRole === "band_leader" || userRole === "super_admin";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/10 pb-20">

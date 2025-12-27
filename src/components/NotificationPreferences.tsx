@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Capacitor } from "@capacitor/core";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -8,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Bell, Mail, MessageSquare, Smartphone, Loader2, Send, Volume2, VolumeX, Play, Volume1 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { useNativePushNotifications } from "@/hooks/useNativePushNotifications";
 import { useSoundPreference, SoundType } from "@/hooks/useSoundPreference";
 
 interface NotificationPrefs {
@@ -25,7 +27,28 @@ interface NotificationPrefs {
 
 export const NotificationPreferences = () => {
   const { toast } = useToast();
-  const { isSupported, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
+  const isNative = Capacitor.isNativePlatform();
+  
+  // Use native push for Capacitor apps, web push for browsers
+  const webPush = usePushNotifications();
+  const nativePush = useNativePushNotifications();
+  
+  // Select the appropriate push implementation
+  const pushNotifications = isNative ? {
+    isSupported: nativePush.isSupported,
+    isSubscribed: nativePush.isRegistered,
+    isLoading: nativePush.isLoading,
+    subscribe: nativePush.register,
+    unsubscribe: nativePush.unregister
+  } : {
+    isSupported: webPush.isSupported,
+    isSubscribed: webPush.isSubscribed,
+    isLoading: webPush.isLoading,
+    subscribe: webPush.subscribe,
+    unsubscribe: webPush.unsubscribe
+  };
+  
+  const { isSupported, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = pushNotifications;
   const { playTestSound } = useSoundPreference();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -308,9 +331,11 @@ export const NotificationPreferences = () => {
                     Push Notifications
                   </Label>
                   <p className="text-xs text-muted-foreground">
-                    {isSupported 
-                      ? "Receive browser push notifications"
-                      : "Not supported in this browser"}
+                    {isNative 
+                      ? "Receive native push notifications"
+                      : isSupported 
+                        ? "Receive browser push notifications"
+                        : "Not supported in this browser"}
                   </p>
                 </div>
               </div>

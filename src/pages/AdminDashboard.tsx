@@ -80,11 +80,16 @@ const AdminDashboard = () => {
   const [editingUser, setEditingUser] = useState<UserWithRole | null>(null);
   const [deleteConfirmUser, setDeleteConfirmUser] = useState<UserWithRole | null>(null);
   const [deleteConfirmGroup, setDeleteConfirmGroup] = useState<BandWithMembers | null>(null);
+  const [editingGroup, setEditingGroup] = useState<BandWithMembers | null>(null);
   const [editForm, setEditForm] = useState({
     name: "",
     email: "",
     phone_number: "",
     role: "" as AppRole | "",
+  });
+  const [groupEditForm, setGroupEditForm] = useState({
+    name: "",
+    description: "",
   });
 
   useEffect(() => {
@@ -363,6 +368,44 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleEditGroup = (group: BandWithMembers) => {
+    setEditingGroup(group);
+    setGroupEditForm({
+      name: group.name,
+      description: group.description || "",
+    });
+  };
+
+  const handleSaveGroupEdit = async () => {
+    if (!editingGroup) return;
+
+    try {
+      const { error } = await supabase
+        .from("bands")
+        .update({
+          name: groupEditForm.name,
+          description: groupEditForm.description || null,
+        })
+        .eq("id", editingGroup.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Group updated",
+        description: `${groupEditForm.name} has been updated.`,
+      });
+
+      setEditingGroup(null);
+      await Promise.all([fetchBands(), fetchUsers()]);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error updating group",
+        description: error.message,
+      });
+    }
+  };
+
   const filteredUsers = users.filter(
     (user) =>
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -534,14 +577,23 @@ const AdminDashboard = () => {
                           {band.id.slice(0, 8)}...
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-destructive hover:text-destructive"
-                            onClick={() => setDeleteConfirmGroup(band)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <div className="flex justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleEditGroup(band)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-destructive hover:text-destructive"
+                              onClick={() => setDeleteConfirmGroup(band)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -656,6 +708,41 @@ const AdminDashboard = () => {
             <Button variant="destructive" onClick={handleDeleteGroup}>
               Delete Group
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Group Dialog */}
+      <Dialog open={!!editingGroup} onOpenChange={() => setEditingGroup(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Group</DialogTitle>
+            <DialogDescription>
+              Update group name and description
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Group Name</label>
+              <Input
+                value={groupEditForm.name}
+                onChange={(e) => setGroupEditForm({ ...groupEditForm, name: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Description</label>
+              <Input
+                value={groupEditForm.description}
+                onChange={(e) => setGroupEditForm({ ...groupEditForm, description: e.target.value })}
+                placeholder="Enter group description"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingGroup(null)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveGroupEdit}>Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

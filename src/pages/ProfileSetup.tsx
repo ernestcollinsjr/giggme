@@ -20,6 +20,7 @@ import { Progress } from "@/components/ui/progress";
 import { YouTubePlayer, getYoutubeVideoId } from "@/components/YouTubePlayer";
 import { AvailabilityCalendar } from "@/components/AvailabilityCalendar";
 import { NotificationPreferences } from "@/components/NotificationPreferences";
+import { SafetyManager } from "@/components/SafetyManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Json } from "@/integrations/supabase/types";
 
@@ -1592,81 +1593,7 @@ const ProfileSetup = () => {
 
               {/* Safety Tab */}
               <TabsContent value="safety" className="mt-0 space-y-6">
-                {/* User Safety Features Card */}
-                <Card className="bg-green-500/5 border-green-500/20">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2 text-lg text-green-600 dark:text-green-400">
-                      <Shield className="h-5 w-5" />
-                      User Safety Features
-                    </CardTitle>
-                    <CardDescription>
-                      Your safety is important to us. Here's how you can protect yourself:
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="flex items-start gap-3">
-                        <Ban className="h-5 w-5 text-red-500 mt-0.5 shrink-0" />
-                        <div>
-                          <h4 className="font-medium text-sm">Block Users</h4>
-                          <p className="text-xs text-muted-foreground">
-                            Tap the ••• menu on any message in chat to block a user. Blocked users cannot send you messages.
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start gap-3">
-                        <Flag className="h-5 w-5 text-orange-500 mt-0.5 shrink-0" />
-                        <div>
-                          <h4 className="font-medium text-sm">Report Users</h4>
-                          <p className="text-xs text-muted-foreground">
-                            Report inappropriate content via the ••• menu. Reports are reviewed by administrators.
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start gap-3">
-                        <Users className="h-5 w-5 text-blue-500 mt-0.5 shrink-0" />
-                        <div>
-                          <h4 className="font-medium text-sm">Moderated Community</h4>
-                          <p className="text-xs text-muted-foreground">
-                            Administrators review reports and can remove users who violate community guidelines.
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start gap-3">
-                        <AlertTriangle className="h-5 w-5 text-yellow-500 mt-0.5 shrink-0" />
-                        <div>
-                          <h4 className="font-medium text-sm">Closed Community</h4>
-                          <p className="text-xs text-muted-foreground">
-                            Users must be invited by administrators to join your group, reducing abuse risk.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Blocked Users Card */}
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                      <Ban className="h-5 w-5" />
-                      Blocked Users
-                    </CardTitle>
-                    <CardDescription>
-                      Manage users you've blocked. Blocked users cannot send you messages.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Ban className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                      <p className="text-sm">You haven't blocked anyone.</p>
-                      <p className="text-xs mt-1">To block someone, tap the ••• menu on their message in chat.</p>
-                    </div>
-                  </CardContent>
-                </Card>
+                <SafetyManager />
               </TabsContent>
 
               {/* Availability Tab */}

@@ -75,12 +75,28 @@ export const TopNav = ({ userRole }: TopNavProps) => {
     { path: "/entertainers", label: "Find Entertainment", icon: Search },
   ];
 
-  const superAdminLinks = [
-    { path: "/admin", label: "Admin", icon: Shield },
-    { path: "/dashboard", label: "Band Leader", icon: Music },
-    { path: "/booking-manager", label: "Booking Agent", icon: Briefcase },
-    { path: "/bookings", label: "Gigs", icon: Calendar },
-  ];
+  // For super_admin, dynamically show only the role they're NOT currently viewing
+  const getSuperAdminLinks = () => {
+    const currentPath = location.pathname;
+    const links = [
+      { path: "/admin", label: "Admin", icon: Shield },
+    ];
+    
+    // If on dashboard (Band Leader view), show Booking Agent option
+    // If on booking-manager (Booking Agent view), show Band Leader option
+    if (currentPath === "/dashboard") {
+      links.push({ path: "/booking-manager", label: "Booking Agent", icon: Briefcase });
+    } else if (currentPath === "/booking-manager") {
+      links.push({ path: "/dashboard", label: "Band Leader", icon: Music });
+    } else {
+      // On other pages, show both options
+      links.push({ path: "/dashboard", label: "Band Leader", icon: Music });
+      links.push({ path: "/booking-manager", label: "Booking Agent", icon: Briefcase });
+    }
+    
+    links.push({ path: "/bookings", label: "Gigs", icon: Calendar });
+    return links;
+  };
 
   const bandMemberLinks = [
     { path: "/setlist", label: "Setlists", icon: ListMusic },
@@ -89,7 +105,7 @@ export const TopNav = ({ userRole }: TopNavProps) => {
   const getLinks = () => {
     switch (userRole) {
       case "super_admin":
-        return superAdminLinks;
+        return getSuperAdminLinks();
       case "band_leader":
         return bandLeaderLinks;
       case "band_member":

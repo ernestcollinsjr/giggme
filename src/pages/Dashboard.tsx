@@ -227,6 +227,37 @@ const Dashboard = () => {
         if (bandsData && bandsData.length > 0) {
           setSelectedBandId(bandsData[0].id);
         }
+
+        // Fetch artist profiles for band leaders (for booking tab)
+        const { data: artistRoles } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .in("role", ["band_member", "artist"]);
+        
+        if (artistRoles && artistRoles.length > 0) {
+          const userIds = artistRoles.map(r => r.user_id);
+          const { data: artistProfiles } = await supabase
+            .from("profiles")
+            .select("*")
+            .in("id", userIds);
+          
+          // Get artists who have accepted gigs in the future
+          const { data: bookedArtists } = await supabase
+            .from("gig_members")
+            .select("member_id, gigs!inner(date)")
+            .eq("status", "accepted")
+            .gte("gigs.date", new Date().toISOString());
+          
+          const bookedArtistIds = new Set(bookedArtists?.map(g => g.member_id) || []);
+          
+          // Mark artists as available or booked
+          const profilesWithAvailability = artistProfiles?.map(profile => ({
+            ...profile,
+            isAvailable: !bookedArtistIds.has(profile.id)
+          })) || [];
+          
+          setProfiles(profilesWithAvailability);
+        }
       }
       
       // Fetch rehearsals for band members and leaders
@@ -1354,7 +1385,7 @@ const Dashboard = () => {
                       </CardHeader>
                       <CardContent className="pt-0">
                         <Tabs defaultValue="overview" className="w-full">
-                          <TabsList className="w-full justify-start bg-muted/50 mb-4">
+                          <TabsList className="w-full justify-start bg-muted/50 mb-4 flex-wrap">
                             <TabsTrigger value="overview" className="flex-1 sm:flex-none">
                               <Briefcase className="h-4 w-4 mr-1.5" />
                               Overview
@@ -1366,6 +1397,10 @@ const Dashboard = () => {
                             <TabsTrigger value="availability" className="flex-1 sm:flex-none">
                               <CalendarIcon className="h-4 w-4 mr-1.5" />
                               Availability
+                            </TabsTrigger>
+                            <TabsTrigger value="booking" className="flex-1 sm:flex-none">
+                              <Music className="h-4 w-4 mr-1.5" />
+                              Booking
                             </TabsTrigger>
                           </TabsList>
                           
@@ -1430,6 +1465,120 @@ const Dashboard = () => {
                               />
                             )}
                             <TeamAvailabilityView bandId={band.id} />
+                          </TabsContent>
+
+                          <TabsContent value="booking" className="mt-0 space-y-4">
+                            <div className="space-y-4">
+                              {/* Quick Actions */}
+                              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                <Button 
+                                  onClick={() => navigate("/bookings")}
+                                  className="h-16 gap-2"
+                                >
+                                  <Briefcase className="h-5 w-5" />
+                                  Manage Gigs
+                                </Button>
+                                <Button 
+                                  variant="outline"
+                                  onClick={() => navigate("/artists")}
+                                  className="h-16 gap-2"
+                                >
+                                  <Search className="h-5 w-5" />
+                                  Discover Artists
+                                </Button>
+                                <Button 
+                                  variant="outline"
+                                  onClick={() => navigate("/schedule-reminder?type=custom")}
+                                  className="h-16 gap-2"
+                                >
+                                  <CalendarIcon className="h-5 w-5" />
+                                  Schedule Reminder
+                                </Button>
+                                <Button 
+                                  variant="outline"
+                                  onClick={() => setGigRequestDialogOpen(true)}
+                                  className="h-16 gap-2"
+                                >
+                                  <Send className="h-5 w-5" />
+                                  Send Gig Request
+                                </Button>
+                              </div>
+
+                              {/* Artists Directory Preview */}
+                              <div className="p-4 rounded-lg border bg-muted/30">
+                                <div className="flex items-center justify-between mb-3">
+                                  <h4 className="font-medium text-sm flex items-center gap-2">
+                                    <UsersIcon className="h-4 w-4 text-primary" />
+                                    Available Artists
+                                  </h4>
+                                  <Button 
+                                    variant="link" 
+                                    size="sm" 
+                                    onClick={() => navigate("/artists")}
+                                    className="text-xs"
+                                  >
+                                    View All →
+                                  </Button>
+                                </div>
+                                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
+                                  {profiles.slice(0, 8).map((profile) => (
+                                    <div
+                                      key={profile.id}
+                                      onClick={() => {
+                                        setSelectedArtist(profile);
+                                        setArtistProfileDialogOpen(true);
+                                      }}
+                                      className="relative flex flex-col items-center p-2 border rounded-md hover:shadow-md hover:border-primary hover:bg-primary/5 transition-all cursor-pointer bg-card"
+                                    >
+                                      <div className="w-10 h-10 rounded-full overflow-hidden bg-muted mb-1">
+                                        {profile.photo_urls?.[0] ? (
+                                          <img
+                                            src={profile.photo_urls[0]}
+                                            alt={profile.name}
+                                            className="w-full h-full object-cover"
+                                          />
+                                        ) : (
+                                          <div className="w-full h-full flex items-center justify-center">
+                                            <UserIcon className="h-5 w-5 text-muted-foreground" />
+                                          </div>
+                                        )}
+                                      </div>
+                                      <p className="text-[10px] text-center font-medium truncate w-full">
+                                        {profile.name}
+                                      </p>
+                                      {profile.instrument && (
+                                        <p className="text-[9px] text-center text-muted-foreground truncate w-full">
+                                          {profile.instrument}
+                                        </p>
+                                      )}
+                                      {profile.isAvailable && (
+                                        <Badge variant="secondary" className="absolute -top-1 -right-1 text-[8px] px-1 py-0 bg-green-100 text-green-700">
+                                          Free
+                                        </Badge>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                                {profiles.length === 0 && (
+                                  <p className="text-sm text-muted-foreground text-center py-4">
+                                    No artists found. Browse the artist directory to discover talent.
+                                  </p>
+                                )}
+                              </div>
+
+                              {/* Group SMS */}
+                              <div className="flex gap-2">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => setGroupSmsDialogOpen(true)}
+                                  className="gap-1.5"
+                                >
+                                  <MessageSquare className="h-4 w-4" />
+                                  Send Group Text
+                                </Button>
+                              </div>
+                            </div>
                           </TabsContent>
                         </Tabs>
                       </CardContent>
@@ -2492,6 +2641,57 @@ const Dashboard = () => {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Gig Request Dialog */}
+      <Dialog open={gigRequestDialogOpen} onOpenChange={setGigRequestDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Send Gig Request</DialogTitle>
+            <DialogDescription>
+              Enter gig details to create a new booking
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="gig-request-message">Gig Details</Label>
+              <Textarea
+                id="gig-request-message"
+                value={smsMessage}
+                onChange={(e) => setSmsMessage(e.target.value)}
+                placeholder="Enter gig details (venue, date, time, requirements, etc.)"
+                rows={5}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setGigRequestDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                if (smsMessage.trim()) {
+                  setGigRequestDialogOpen(false);
+                  navigate(`/bookings?newGig=true&details=${encodeURIComponent(smsMessage)}`);
+                  setSmsMessage("");
+                } else {
+                  toast({
+                    title: "Error",
+                    description: "Please enter gig details",
+                    variant: "destructive",
+                  });
+                }
+              }}
+              className="gap-2"
+            >
+              <Send className="h-4 w-4" />
+              Create Gig
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

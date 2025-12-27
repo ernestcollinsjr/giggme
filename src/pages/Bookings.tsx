@@ -81,6 +81,17 @@ const Bookings = () => {
   const [soundManInfo, setSoundManInfo] = useState("");
   const [responseDeadlineHours, setResponseDeadlineHours] = useState("2");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Rehearsal state
+  const [includeRehearsal, setIncludeRehearsal] = useState(false);
+  const [rehearsalDate, setRehearsalDate] = useState<Date>();
+  const [rehearsalTime, setRehearsalTime] = useState("18:00");
+  const [rehearsalEndTime, setRehearsalEndTime] = useState("21:00");
+  const [rehearsalVenue, setRehearsalVenue] = useState("");
+  const [rehearsalVenueLat, setRehearsalVenueLat] = useState<number | null>(null);
+  const [rehearsalVenueLng, setRehearsalVenueLng] = useState<number | null>(null);
+  const [rehearsalNotes, setRehearsalNotes] = useState("");
+  const [useGigVenueForRehearsal, setUseGigVenueForRehearsal] = useState(false);
 
   // Edit gig state
   const [editingGig, setEditingGig] = useState<Gig | null>(null);
@@ -312,6 +323,40 @@ const Bookings = () => {
 
       if (error) throw error;
 
+      // Create linked rehearsal if included
+      let rehearsalId = null;
+      if (includeRehearsal && rehearsalDate && newGig) {
+        const [rHours, rMinutes] = rehearsalTime.split(":").map(Number);
+        const rehearsalDateTime = new Date(rehearsalDate);
+        rehearsalDateTime.setHours(rHours, rMinutes, 0, 0);
+
+        const rehearsalVenueToUse = useGigVenueForRehearsal ? venue.trim() : rehearsalVenue.trim();
+        const rehearsalLatToUse = useGigVenueForRehearsal ? venueLat : rehearsalVenueLat;
+        const rehearsalLngToUse = useGigVenueForRehearsal ? venueLng : rehearsalVenueLng;
+
+        const { data: newRehearsal, error: rehearsalError } = await supabase
+          .from("rehearsals")
+          .insert({
+            band_leader_id: user.id,
+            band_id: selectedBandId,
+            date: rehearsalDateTime.toISOString(),
+            end_time: rehearsalEndTime,
+            venue: rehearsalVenueToUse,
+            venue_lat: rehearsalLatToUse,
+            venue_lng: rehearsalLngToUse,
+            notes: rehearsalNotes.trim() ? `For gig on ${format(date, "PPP")} at ${venueName || venue}\n\n${rehearsalNotes.trim()}` : `Rehearsal for gig on ${format(date, "PPP")} at ${venueName || venue}`,
+            attire: attire.trim() || null,
+          })
+          .select()
+          .single();
+
+        if (rehearsalError) {
+          console.error("Failed to create rehearsal:", rehearsalError);
+        } else {
+          rehearsalId = newRehearsal?.id;
+        }
+      }
+
       // Auto-invite selected members
       if (selectedMembers.length > 0 && newGig) {
         // Calculate response deadline
@@ -343,13 +388,15 @@ const Bookings = () => {
         });
 
         toast({
-          title: "Gig added & invites sent",
-          description: `Successfully scheduled gig and invited ${selectedMembers.length} member(s).`,
+          title: includeRehearsal ? "Gig & Rehearsal added" : "Gig added & invites sent",
+          description: `Successfully scheduled gig${includeRehearsal ? ' with rehearsal' : ''} and invited ${selectedMembers.length} member(s).${includeRehearsal && rehearsalDate ? `\n\nRehearsal scheduled for ${format(rehearsalDate, "PPP")} at ${rehearsalTime}` : ''}`,
         });
       } else {
         toast({
-          title: "Gig added",
-          description: "The gig has been scheduled successfully.",
+          title: includeRehearsal ? "Gig & Rehearsal added" : "Gig added",
+          description: includeRehearsal 
+            ? "The gig and rehearsal have been scheduled successfully."
+            : "The gig has been scheduled successfully.",
         });
       }
 
@@ -369,6 +416,16 @@ const Bookings = () => {
       setVenueContactPerson("");
       setSoundManInfo("");
       setSelectedMembers([]);
+      // Reset rehearsal fields
+      setIncludeRehearsal(false);
+      setRehearsalDate(undefined);
+      setRehearsalTime("18:00");
+      setRehearsalEndTime("21:00");
+      setRehearsalVenue("");
+      setRehearsalVenueLat(null);
+      setRehearsalVenueLng(null);
+      setRehearsalNotes("");
+      setUseGigVenueForRehearsal(false);
       checkAuthAndFetchData();
     } catch (error: any) {
       toast({
@@ -887,6 +944,130 @@ const Bookings = () => {
                 />
               </div>
 
+              {/* Rehearsal Section */}
+              <div className="space-y-4 pt-4 border-t">
+                <div className="flex items-center justify-between">
+                  <Label className="flex items-center gap-2">
+                    <Music className="h-4 w-4" />
+                    Include Rehearsal
+                  </Label>
+                  <Switch
+                    checked={includeRehearsal}
+                    onCheckedChange={setIncludeRehearsal}
+                  />
+                </div>
+                
+                {includeRehearsal && (
+                  <div className="space-y-4 p-4 rounded-lg bg-muted/30 border">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Rehearsal Date</Label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !rehearsalDate && "text-muted-foreground"
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {rehearsalDate ? format(rehearsalDate, "PPP") : <span>Pick rehearsal date</span>}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={rehearsalDate}
+                              onSelect={setRehearsalDate}
+                              initialFocus
+                              className="pointer-events-auto"
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="rehearsalTime">Start Time</Label>
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-muted-foreground" />
+                            <Input
+                              id="rehearsalTime"
+                              type="time"
+                              value={rehearsalTime}
+                              onChange={(e) => setRehearsalTime(e.target.value)}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="rehearsalEndTime">End Time</Label>
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-muted-foreground" />
+                            <Input
+                              id="rehearsalEndTime"
+                              type="time"
+                              value={rehearsalEndTime}
+                              onChange={(e) => setRehearsalEndTime(e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label>Rehearsal Location</Label>
+                        <div className="flex items-center gap-2">
+                          <Checkbox
+                            id="useGigVenue"
+                            checked={useGigVenueForRehearsal}
+                            onCheckedChange={(checked) => setUseGigVenueForRehearsal(checked as boolean)}
+                          />
+                          <label htmlFor="useGigVenue" className="text-sm text-muted-foreground cursor-pointer">
+                            Same as gig venue
+                          </label>
+                        </div>
+                      </div>
+                      {!useGigVenueForRehearsal && (
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-muted-foreground" />
+                          <PlaceAutocomplete
+                            value={rehearsalVenue}
+                            onChange={(value, placeDetails) => {
+                              setRehearsalVenue(value);
+                              if (placeDetails?.geometry?.location) {
+                                setRehearsalVenueLat(placeDetails.geometry.location.lat());
+                                setRehearsalVenueLng(placeDetails.geometry.location.lng());
+                              }
+                            }}
+                            placeholder="Enter rehearsal location..."
+                          />
+                        </div>
+                      )}
+                      {useGigVenueForRehearsal && venue && (
+                        <p className="text-sm text-muted-foreground flex items-center gap-2">
+                          <MapPin className="h-4 w-4" />
+                          {venueName || venue}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="rehearsalNotes">Rehearsal Notes (Optional)</Label>
+                      <Textarea
+                        id="rehearsalNotes"
+                        placeholder="Songs to practice, focus areas, what to bring..."
+                        value={rehearsalNotes}
+                        onChange={(e) => setRehearsalNotes(e.target.value)}
+                        rows={2}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="space-y-3 pt-4 border-t">
                 <Label className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
@@ -954,7 +1135,7 @@ const Bookings = () => {
 
               <Button onClick={handleAddGig} disabled={isSubmitting} className="w-full">
                 <Plus className="h-4 w-4 mr-2" />
-                Add Gig {selectedMembers.length > 0 && `& Invite ${selectedMembers.length}`}
+                {includeRehearsal ? "Add Gig & Rehearsal" : "Add Gig"} {selectedMembers.length > 0 && `& Invite ${selectedMembers.length}`}
               </Button>
             </CardContent>
           </Card>

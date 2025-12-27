@@ -75,18 +75,18 @@ export const TopNav = ({ userRole }: TopNavProps) => {
     { path: "/entertainers", label: "Find Entertainment", icon: Search },
   ];
 
-  // For super_admin, hide the role tab for the page they're currently on
+  // For super_admin, hide role tabs when on their respective pages
   const getSuperAdminLinks = () => {
     const currentPath = location.pathname;
     const links = [
       { path: "/admin", label: "Admin", icon: Shield },
     ];
     
-    // Hide the current view's tab - only show the one you're NOT on
-    if (currentPath !== "/dashboard") {
+    // When on dashboard, hide both Band Leader AND Booking Agent
+    // When on booking-manager, hide both as well
+    // On other pages, show both options
+    if (currentPath !== "/dashboard" && currentPath !== "/booking-manager") {
       links.push({ path: "/dashboard", label: "Band Leader", icon: Music });
-    }
-    if (currentPath !== "/booking-manager") {
       links.push({ path: "/booking-manager", label: "Booking Agent", icon: Briefcase });
     }
     

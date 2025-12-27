@@ -4,6 +4,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Music, Briefcase, Crown, Star, Users, RefreshCw, Calendar, Shield } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type UserRole = "band_leader" | "band_member" | "booking_manager" | "artist" | "tour_manager" | "super_admin";
 
@@ -14,6 +24,7 @@ interface RoleSwitcherProps {
 
 const RoleSwitcher = ({ currentRole, onRoleChange }: RoleSwitcherProps) => {
   const [loading, setLoading] = useState(false);
+  const [pendingRole, setPendingRole] = useState<UserRole | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -115,6 +126,8 @@ const RoleSwitcher = ({ currentRole, onRoleChange }: RoleSwitcherProps) => {
     );
   }
 
+  const selectedRoleDetails = pendingRole ? roles.find(r => r.value === pendingRole) : null;
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
@@ -129,7 +142,7 @@ const RoleSwitcher = ({ currentRole, onRoleChange }: RoleSwitcherProps) => {
               className={`border-border/50 shadow hover:shadow-lg transition-all cursor-pointer hover:scale-[1.02] ${
                 isCurrentRole ? "ring-2 ring-primary" : ""
               }`}
-              onClick={() => !loading && !isCurrentRole && handleRoleChange(role.value)}
+              onClick={() => !loading && !isCurrentRole && setPendingRole(role.value)}
             >
               <CardContent className="pt-4 pb-3 px-3">
                 <div className={`w-10 h-10 rounded-full ${role.iconBg} flex items-center justify-center mb-3`}>
@@ -153,6 +166,32 @@ const RoleSwitcher = ({ currentRole, onRoleChange }: RoleSwitcherProps) => {
           );
         })}
       </div>
+
+      <AlertDialog open={!!pendingRole} onOpenChange={(open) => !open && setPendingRole(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Switch to {selectedRoleDetails?.label}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will change your role from <strong>{roles.find(r => r.value === currentRole)?.label || "None"}</strong> to <strong>{selectedRoleDetails?.label}</strong>. 
+              Your available features and dashboard will update to reflect your new role.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              disabled={loading}
+              onClick={() => {
+                if (pendingRole) {
+                  handleRoleChange(pendingRole);
+                  setPendingRole(null);
+                }
+              }}
+            >
+              {loading ? "Switching..." : "Confirm Switch"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

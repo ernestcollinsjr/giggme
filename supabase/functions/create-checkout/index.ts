@@ -34,9 +34,19 @@ serve(async (req) => {
       customerId = customers.data[0].id;
     }
 
-    // Musicians/Entertainers plan gets 14-day free trial
-    const MUSICIAN_PRICE_ID = "price_1SLNn8EPiAZgF8MeCFVMdvWR";
-    const trialDays = priceId === MUSICIAN_PRICE_ID ? 14 : undefined;
+    // Pricing tiers with trial periods
+    const PRICING_CONFIG: Record<string, { trialDays?: number }> = {
+      // Musicians/Entertainers - $10.99/mo, 14-day free trial
+      "price_1SLNn8EPiAZgF8MeCFVMdvWR": { trialDays: 14 },
+      // Band Manager - $14/mo, 7-day free trial
+      "price_1Sfl1yEPiAZgF8MerV2S8Hcf": { trialDays: 7 },
+      // Booking Agent - $26/mo, 7-day free trial
+      "price_1Sfl29EPiAZgF8Me7Z7r8ty8": { trialDays: 7 },
+      // Venue Owner - $19.99/mo, 14-day free trial
+      "price_1Sj4kFEPiAZgF8MeOf9ObBL0": { trialDays: 14 },
+    };
+
+    const trialDays = PRICING_CONFIG[priceId]?.trialDays;
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,

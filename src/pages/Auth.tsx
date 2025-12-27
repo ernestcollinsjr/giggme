@@ -467,13 +467,22 @@ const Auth = () => {
                           <Users className="h-6 w-6" />
                         </div>
                         <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-semibold">Band Manager</h3>
-                            <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-semibold">Band Manager</h3>
+                              <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+                            </div>
+                            <div className="text-right">
+                              <span className="font-bold text-primary">$14</span>
+                              <span className="text-xs text-muted-foreground">/mo</span>
+                            </div>
                           </div>
                           <p className="text-sm text-muted-foreground mt-1">
                             Manage your band, schedule gigs, coordinate with venues, and keep your team organized.
                           </p>
+                          <div className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                            7-day free trial
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -499,10 +508,19 @@ const Auth = () => {
                           <Briefcase className="h-6 w-6" />
                         </div>
                         <div className="flex-1">
-                          <h3 className="font-semibold">Booking Agent</h3>
+                          <div className="flex items-center justify-between">
+                            <h3 className="font-semibold">Booking Agent</h3>
+                            <div className="text-right">
+                              <span className="font-bold text-primary">$26</span>
+                              <span className="text-xs text-muted-foreground">/mo</span>
+                            </div>
+                          </div>
                           <p className="text-sm text-muted-foreground mt-1">
                             Book entertainers, manage rosters, check availability, and handle client requests.
                           </p>
+                          <div className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                            7-day free trial
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -528,10 +546,19 @@ const Auth = () => {
                           <Music className="h-6 w-6" />
                         </div>
                         <div className="flex-1">
-                          <h3 className="font-semibold">Musicians / Entertainers</h3>
+                          <div className="flex items-center justify-between">
+                            <h3 className="font-semibold">Musicians / Entertainers</h3>
+                            <div className="text-right">
+                              <span className="font-bold text-primary">$10.99</span>
+                              <span className="text-xs text-muted-foreground">/mo</span>
+                            </div>
+                          </div>
                           <p className="text-sm text-muted-foreground mt-1">
                             Showcase your talent, get booked for gigs, manage your schedule, and grow your career.
                           </p>
+                          <div className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                            14-day free trial
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -557,10 +584,24 @@ const Auth = () => {
                           <Building2 className="h-6 w-6" />
                         </div>
                         <div className="flex-1">
-                          <h3 className="font-semibold">Venue Owner</h3>
+                          <div className="flex items-center justify-between">
+                            <h3 className="font-semibold">Venue Owner</h3>
+                            <div className="text-right">
+                              <span className="font-bold text-primary">$26</span>
+                              <span className="text-xs text-muted-foreground">/mo</span>
+                            </div>
+                          </div>
                           <p className="text-sm text-muted-foreground mt-1">
                             Manage your venue, book entertainers, schedule events, and streamline bookings.
                           </p>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                              14-day free trial
+                            </span>
+                            <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                              or $49 one-time booking
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>

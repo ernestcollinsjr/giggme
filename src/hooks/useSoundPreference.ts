@@ -1,8 +1,29 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+export type SoundType = 'chime' | 'bell' | 'ding';
+
+const soundPatterns: Record<SoundType, { frequencies: number[]; durations: number[]; delays: number[] }> = {
+  chime: {
+    frequencies: [523.25, 659.25, 783.99], // C5, E5, G5
+    durations: [0.15, 0.15, 0.2],
+    delays: [0, 0.1, 0.2],
+  },
+  bell: {
+    frequencies: [880, 1108.73, 1318.51], // A5, C#6, E6
+    durations: [0.3, 0.25, 0.35],
+    delays: [0, 0.05, 0.1],
+  },
+  ding: {
+    frequencies: [1046.5], // C6
+    durations: [0.4],
+    delays: [0],
+  },
+};
+
 export const useSoundPreference = () => {
   const [isMuted, setIsMuted] = useState(false);
+  const [soundType, setSoundType] = useState<SoundType>('chime');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,11 +40,11 @@ export const useSoundPreference = () => {
 
       const { data, error } = await supabase
         .from("notification_preferences")
-        .select("sound_muted")
+        .select("sound_muted, sound_type")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== "PGRST116") {
+      if (error) {
         console.error("Error fetching sound preference:", error);
         setLoading(false);
         return;
@@ -31,6 +52,7 @@ export const useSoundPreference = () => {
 
       if (data) {
         setIsMuted(data.sound_muted ?? false);
+        setSoundType((data as any).sound_type ?? 'chime');
       }
     } catch (error) {
       console.error("Error:", error);
@@ -39,9 +61,10 @@ export const useSoundPreference = () => {
     }
   };
 
-  const playSound = useCallback(() => {
+  const playSound = useCallback((type: SoundType = soundType) => {
     try {
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const pattern = soundPatterns[type];
       
       const playTone = (frequency: number, startTime: number, duration: number) => {
         const oscillator = audioContext.createOscillator();
@@ -51,7 +74,7 @@ export const useSoundPreference = () => {
         gainNode.connect(audioContext.destination);
         
         oscillator.frequency.value = frequency;
-        oscillator.type = 'sine';
+        oscillator.type = type === 'bell' ? 'triangle' : 'sine';
         
         gainNode.gain.setValueAtTime(0, startTime);
         gainNode.gain.linearRampToValueAtTime(0.3, startTime + 0.05);
@@ -62,25 +85,31 @@ export const useSoundPreference = () => {
       };
       
       const now = audioContext.currentTime;
-      playTone(523.25, now, 0.15); // C5
-      playTone(659.25, now + 0.1, 0.15); // E5
-      playTone(783.99, now + 0.2, 0.2); // G5
+      pattern.frequencies.forEach((freq, i) => {
+        playTone(freq, now + pattern.delays[i], pattern.durations[i]);
+      });
       
       setTimeout(() => audioContext.close(), 1000);
     } catch (error) {
       console.log('Could not play notification sound:', error);
     }
-  }, []);
+  }, [soundType]);
 
   const playNotificationSound = useCallback(() => {
     if (isMuted) return;
     playSound();
   }, [isMuted, playSound]);
 
-  // Play sound for testing (ignores mute setting)
-  const playTestSound = useCallback(() => {
-    playSound();
-  }, [playSound]);
+  const playTestSound = useCallback((type?: SoundType) => {
+    playSound(type ?? soundType);
+  }, [playSound, soundType]);
 
-  return { isMuted, loading, playNotificationSound, playTestSound, refetch: fetchSoundPreference };
+  return { 
+    isMuted, 
+    soundType,
+    loading, 
+    playNotificationSound, 
+    playTestSound, 
+    refetch: fetchSoundPreference 
+  };
 };

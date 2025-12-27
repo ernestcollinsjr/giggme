@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Bell, Mail, MessageSquare, Smartphone, Loader2, Send, Volume2, VolumeX, Play } from "lucide-react";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
-import { useSoundPreference } from "@/hooks/useSoundPreference";
+import { useSoundPreference, SoundType } from "@/hooks/useSoundPreference";
 
 interface NotificationPrefs {
   id?: string;
@@ -18,6 +18,7 @@ interface NotificationPrefs {
   reminder_1_day: boolean;
   reminder_day_of: boolean;
   sound_muted: boolean;
+  sound_type: SoundType;
 }
 
 export const NotificationPreferences = () => {
@@ -35,6 +36,7 @@ export const NotificationPreferences = () => {
     reminder_1_day: true,
     reminder_day_of: true,
     sound_muted: false,
+    sound_type: 'chime',
   });
 
   useEffect(() => {
@@ -67,6 +69,7 @@ export const NotificationPreferences = () => {
           reminder_1_day: data.reminder_1_day ?? true,
           reminder_day_of: data.reminder_day_of ?? true,
           sound_muted: (data as any).sound_muted ?? false,
+          sound_type: (data as any).sound_type ?? 'chime',
         });
       }
     } catch (error) {
@@ -76,7 +79,7 @@ export const NotificationPreferences = () => {
     }
   };
 
-  const updatePreference = async (key: keyof NotificationPrefs, value: boolean) => {
+  const updatePreference = async (key: keyof NotificationPrefs, value: boolean | SoundType) => {
     setSaving(true);
     const newPrefs = { ...prefs, [key]: value };
     setPrefs(newPrefs);
@@ -170,22 +173,43 @@ export const NotificationPreferences = () => {
                 </p>
               </div>
             </div>
+            <Switch
+              id="sound-muted"
+              checked={!prefs.sound_muted}
+              onCheckedChange={(checked) => updatePreference("sound_muted", !checked)}
+              disabled={saving}
+            />
+          </div>
+
+          {/* Sound Type Selection */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Play className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <Label className="cursor-pointer">
+                  Sound Type
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Choose your notification sound
+                </p>
+              </div>
+            </div>
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={playTestSound}
-                className="mr-2"
-              >
-                <Play className="h-3 w-3 mr-1" />
-                Test
-              </Button>
-              <Switch
-                id="sound-muted"
-                checked={!prefs.sound_muted}
-                onCheckedChange={(checked) => updatePreference("sound_muted", !checked)}
-                disabled={saving}
-              />
+              {(['chime', 'bell', 'ding'] as const).map((type) => (
+                <Button
+                  key={type}
+                  variant={prefs.sound_type === type ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => {
+                    updatePreference("sound_type", type);
+                    playTestSound(type);
+                  }}
+                  disabled={saving}
+                  className="capitalize"
+                >
+                  {type}
+                </Button>
+              ))}
             </div>
           </div>
         </div>

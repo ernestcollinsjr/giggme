@@ -621,7 +621,18 @@ export default function BookingManager() {
                       value={gigRequestMessage}
                       onChange={(e) => setGigRequestMessage(e.target.value)}
                     />
-                    <Button onClick={() => {/* TODO: Implement */}}>
+                    <Button onClick={() => {
+                      if (gigRequestMessage.trim()) {
+                        setGigRequestDialogOpen(false);
+                        navigate(`/bookings?newGig=true&details=${encodeURIComponent(gigRequestMessage)}`);
+                      } else {
+                        toast({
+                          title: "Error",
+                          description: "Please enter gig details",
+                          variant: "destructive",
+                        });
+                      }
+                    }}>
                       Send Request
                     </Button>
                   </DialogContent>

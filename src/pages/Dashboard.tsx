@@ -1876,7 +1876,7 @@ const Dashboard = () => {
                     className="h-20 text-lg"
                   >
                     <Music className="mr-2 h-5 w-5" />
-                    Browse Artists
+                    Connect w/ Entertainers
                   </Button>
                 </div>
                 <p className="text-sm text-muted-foreground text-center mt-4">

@@ -35,18 +35,24 @@ serve(async (req) => {
     }
 
     // Pricing tiers with trial periods
-    const PRICING_CONFIG: Record<string, { trialDays?: number }> = {
+    const SUBSCRIPTION_CONFIG: Record<string, { trialDays?: number }> = {
       // Musicians/Entertainers - $10.99/mo, 14-day free trial
       "price_1SLNn8EPiAZgF8MeCFVMdvWR": { trialDays: 14 },
       // Band Manager - $14/mo, 7-day free trial
       "price_1Sfl1yEPiAZgF8MerV2S8Hcf": { trialDays: 7 },
       // Booking Agent - $26/mo, 7-day free trial
       "price_1Sfl29EPiAZgF8Me7Z7r8ty8": { trialDays: 7 },
-      // Venue Owner - $19.99/mo, 14-day free trial
-      "price_1Sj4kFEPiAZgF8MeOf9ObBL0": { trialDays: 14 },
+      // Venue Owner - $26/mo, 14-day free trial
+      "price_1Sj4nrEPiAZgF8MeCOUpkIfg": { trialDays: 14 },
     };
 
-    const trialDays = PRICING_CONFIG[priceId]?.trialDays;
+    // One-time payment prices (no trial, payment mode)
+    const ONE_TIME_PRICES = [
+      "price_1Sj4o1EPiAZgF8MeVAfYLZ1h", // One-Time Booking - $49
+    ];
+
+    const isOneTime = ONE_TIME_PRICES.includes(priceId);
+    const trialDays = SUBSCRIPTION_CONFIG[priceId]?.trialDays;
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -57,8 +63,8 @@ serve(async (req) => {
           quantity: 1,
         },
       ],
-      mode: "subscription",
-      subscription_data: trialDays ? { trial_period_days: trialDays } : undefined,
+      mode: isOneTime ? "payment" : "subscription",
+      subscription_data: !isOneTime && trialDays ? { trial_period_days: trialDays } : undefined,
       success_url: `${req.headers.get("origin")}/dashboard?checkout=success`,
       cancel_url: `${req.headers.get("origin")}/pricing?checkout=canceled`,
     });

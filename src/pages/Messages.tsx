@@ -243,6 +243,7 @@ const Messages = () => {
   }, [userId, profiles]);
 
   const handleTextChange = useCallback((value: string) => {
+    console.log("handleTextChange called with:", value);
     setText(value);
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     if (value.trim()) {

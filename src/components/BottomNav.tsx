@@ -66,7 +66,7 @@ const BottomNav = () => {
 
   const navItems = [
     { icon: Home, label: "Dashboard", path: "/dashboard" },
-    { icon: MessageCircle, label: "Chat", path: "/chat", badge: unreadCount },
+    { icon: MessageCircle, label: "Messages", path: "/messages", badge: unreadCount },
     { icon: Music, label: "My Gigs", path: "/bookings" },
     { 
       icon: PlusCircle, 

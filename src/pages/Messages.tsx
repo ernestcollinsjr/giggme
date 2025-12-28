@@ -1163,6 +1163,8 @@ const Messages = () => {
                   </Button>
                 </div>
               </div>
+              {/* Spacer for bottom navigation on mobile */}
+              <div className="h-20 md:h-0 flex-shrink-0 bg-background" />
               </div>
             </>
           ) : (

@@ -69,7 +69,7 @@ const Messages = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [userId, setUserId] = useState<string | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [profiles, setProfiles] = useState<Map<string, Profile>>(new Map());
+  const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [profilesList, setProfilesList] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [allMessages, setAllMessages] = useState<Message[]>([]);
@@ -106,8 +106,8 @@ const Messages = () => {
     const conversationId = searchParams.get("conversation");
     const view = searchParams.get("view");
     
-    if (conversationId && profiles.size > 0) {
-      const profile = profiles.get(conversationId);
+    if (conversationId && Object.keys(profiles).length > 0) {
+      const profile = profiles[conversationId];
       setActiveConversation({
         id: conversationId,
         name: profile?.name || "Unknown",
@@ -213,7 +213,7 @@ const Messages = () => {
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
-          const myProfile = profiles.get(userId);
+          const myProfile = profiles[userId];
           await channel.track({
             oderId: userId,
             name: myProfile?.name || 'User',
@@ -234,7 +234,7 @@ const Messages = () => {
 
   const broadcastTyping = useCallback((isTyping: boolean) => {
     if (!typingChannelRef.current || !userId) return;
-    const myProfile = profiles.get(userId);
+    const myProfile = profiles[userId];
     typingChannelRef.current.track({
       oderId: userId,
       name: myProfile?.name || 'User',
@@ -263,9 +263,9 @@ const Messages = () => {
   const fetchProfiles = async () => {
     const { data } = await supabase.from("profiles").select("id, name, photo_urls");
     if (data) {
-      const profileMap = new Map<string, Profile>();
-      data.forEach((p) => profileMap.set(p.id, p as Profile));
-      setProfiles(profileMap);
+      const profileObj: Record<string, Profile> = {};
+      data.forEach((p) => { profileObj[p.id] = p as Profile; });
+      setProfiles(profileObj);
       setProfilesList(data.filter((p) => p.id !== userId) as Profile[]);
     }
   };
@@ -337,7 +337,7 @@ const Messages = () => {
       const isNewer = !existing || new Date(message.created_at) > new Date(existing.lastMessageTime);
       
       if (isNewer) {
-        const profile = profiles.get(otherParticipantId);
+        const profile = profiles[otherParticipantId];
         const isUnread = message.sender_id !== userId && !message.read_by?.includes(userId);
         
         conversationMap.set(otherParticipantId, {
@@ -405,7 +405,7 @@ const Messages = () => {
   const openConversation = async (conversation: Conversation) => {
     // Get fresh profile data if available
     const freshProfile = conversation.participantId 
-      ? profiles.get(conversation.participantId) 
+      ? profiles[conversation.participantId] 
       : null;
     
     // Update conversation with fresh profile data
@@ -513,7 +513,7 @@ const Messages = () => {
   };
 
   const startNewConversation = (participantId: string) => {
-    const profile = profiles.get(participantId);
+    const profile = profiles[participantId];
     setActiveConversation({
       id: participantId,
       name: profile?.name || "Unknown",
@@ -653,7 +653,7 @@ const Messages = () => {
                 {filteredConversations.map((conversation) => {
                   // Get fresh profile data for display
                   const freshProfile = !conversation.isGroup && conversation.participantId 
-                    ? profiles.get(conversation.participantId) 
+                    ? profiles[conversation.participantId] 
                     : null;
                   const displayName = freshProfile?.name || conversation.name;
                   const displayPhoto = freshProfile?.photo_urls?.[0] || conversation.photo;
@@ -709,7 +709,7 @@ const Messages = () => {
           {activeConversation ? (
             <>
               {/* Chat Header - use key to force re-render when profiles change */}
-              <div key={`header-${activeConversation.participantId}-${profiles.size}`} className="p-4 border-b border-border bg-background flex items-center gap-3">
+              <div key={`header-${activeConversation.participantId}-${Object.keys(profiles).length}`} className="p-4 border-b border-border bg-background flex items-center gap-3">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -721,7 +721,7 @@ const Messages = () => {
                 {(() => {
                   // Get current profile for conversation partner
                   const partnerProfile = activeConversation.participantId 
-                    ? profiles.get(activeConversation.participantId) 
+                    ? profiles[activeConversation.participantId] 
                     : null;
                   
                   // Compute display values - prioritize fresh profile data
@@ -769,7 +769,7 @@ const Messages = () => {
                   ) : (
                     conversationMessages.map((m) => {
                       const isOwn = m.sender_id === userId;
-                      const senderProfile = profiles.get(m.sender_id);
+                      const senderProfile = profiles[m.sender_id];
                       const isRead = isOwn && !activeConversation.isGroup && m.read_by?.includes(activeConversation.participantId!);
                       const msgReactions = getMessageReactions(m.id);
                       
@@ -809,7 +809,7 @@ const Messages = () => {
                             {m.reply_to_id && (() => {
                               const repliedMsg = allMessages.find(msg => msg.id === m.reply_to_id);
                               if (!repliedMsg) return null;
-                              const repliedSender = repliedMsg.sender_id === userId ? 'You' : profiles.get(repliedMsg.sender_id)?.name || 'Unknown';
+                              const repliedSender = repliedMsg.sender_id === userId ? 'You' : profiles[repliedMsg.sender_id]?.name || 'Unknown';
                               return (
                                 <div className={cn(
                                   "mb-1 px-3 py-2 rounded-lg border-l-2 border-primary/50 text-xs",
@@ -945,9 +945,9 @@ const Messages = () => {
                           {isOwn && (
                             <div className="flex-shrink-0">
                               <Avatar className="h-8 w-8">
-                                <AvatarImage src={profiles.get(userId)?.photo_urls?.[0]} />
+                                <AvatarImage src={profiles[userId!]?.photo_urls?.[0]} />
                                 <AvatarFallback className="text-xs bg-primary/30 border border-primary/50">
-                                  {getInitials(profiles.get(userId)?.name || "U")}
+                                  {getInitials(profiles[userId!]?.name || "U")}
                                 </AvatarFallback>
                               </Avatar>
                             </div>
@@ -980,7 +980,7 @@ const Messages = () => {
                   <div>
                     <div className="flex items-center gap-1 text-xs text-primary font-medium">
                       <Reply className="h-3 w-3" />
-                      Replying to {replyToMessage.sender_id === userId ? 'yourself' : profiles.get(replyToMessage.sender_id)?.name}
+                      Replying to {replyToMessage.sender_id === userId ? 'yourself' : profiles[replyToMessage.sender_id]?.name}
                     </div>
                     <p className="text-xs text-muted-foreground line-clamp-1">{replyToMessage.content}</p>
                   </div>

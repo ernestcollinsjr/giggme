@@ -1162,6 +1162,9 @@ const Messages = () => {
                   </Button>
                 </div>
               </div>
+              
+              {/* Black dividing block to separate from bottom navigation - visible on mobile only */}
+              <div className="flex-shrink-0 h-24 bg-black md:hidden" />
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center">

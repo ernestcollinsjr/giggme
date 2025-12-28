@@ -1126,8 +1126,8 @@ const Messages = () => {
                 </div>
               )}
 
-              {/* Message Input - fixed height */}
-              <div className="flex-shrink-0 p-4 pb-6 border-t border-border bg-background">
+              {/* Message Input - with extra bottom padding for mobile nav */}
+              <div className="flex-shrink-0 p-4 pb-8 md:pb-6 border-t border-border bg-background safe-area-bottom">
                 <div className="flex gap-2 max-w-3xl mx-auto items-end">
                   <Textarea
                     ref={textareaRef}

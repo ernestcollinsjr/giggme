@@ -737,24 +737,20 @@ const Messages = () => {
                         <div 
                           key={m.id} 
                           className={cn(
-                            "flex gap-3 mb-4",
-                            isOwn ? "justify-end pl-12" : "justify-start pr-12"
+                            "flex items-end gap-2 mb-3",
+                            isOwn ? "flex-row-reverse" : "flex-row"
                           )}
                         >
-                          {!isOwn && (
-                            <Avatar className="h-9 w-9 mt-1 flex-shrink-0">
-                              <AvatarImage src={senderProfile?.photo_urls?.[0]} />
-                              <AvatarFallback className="text-xs bg-muted">{getInitials(senderProfile?.name || "U")}</AvatarFallback>
-                            </Avatar>
-                          )}
-                          <div className={cn("max-w-[75%] group relative", isOwn && "order-first")}>
-                            {/* Sender name for received messages */}
-                            {!isOwn && (
-                              <p className="text-xs font-medium text-muted-foreground mb-1 ml-1">
-                                {senderProfile?.name || "Unknown"}
-                              </p>
-                            )}
-                            
+                          {/* Avatar */}
+                          <Avatar className="h-8 w-8 flex-shrink-0">
+                            <AvatarImage src={isOwn ? profiles.get(userId)?.photo_urls?.[0] : senderProfile?.photo_urls?.[0]} />
+                            <AvatarFallback className="text-xs bg-muted">
+                              {getInitials(isOwn ? profiles.get(userId)?.name || "U" : senderProfile?.name || "U")}
+                            </AvatarFallback>
+                          </Avatar>
+                          
+                          {/* Message bubble */}
+                          <div className="max-w-[60%] group relative">
                             {/* Reply quote */}
                             {m.reply_to_id && (() => {
                               const repliedMsg = allMessages.find(msg => msg.id === m.reply_to_id);
@@ -772,7 +768,7 @@ const Messages = () => {
                             })()}
                             
                             <div className={cn(
-                              "px-4 py-3 rounded-2xl shadow-sm",
+                              "px-4 py-2.5 rounded-2xl",
                               isOwn 
                                 ? "bg-primary text-primary-foreground rounded-br-sm" 
                                 : "bg-card border border-border rounded-bl-sm"
@@ -780,20 +776,25 @@ const Messages = () => {
                               {activeConversation.isGroup && !isOwn && (
                                 <p className="text-xs font-semibold mb-1 opacity-80">{senderProfile?.name}</p>
                               )}
-                              <p className="text-sm whitespace-pre-wrap leading-relaxed">{m.content}</p>
-                              <div className={cn("flex items-center gap-1.5 mt-2", isOwn ? "justify-end" : "")}>
-                                <span className={cn("text-[10px]", isOwn ? "text-primary-foreground/70" : "text-muted-foreground")}>
-                                  {formatMessageTime(m.created_at)}
-                                </span>
-                                {isOwn && !activeConversation.isGroup && (
-                                  isRead ? <CheckCheck className="h-3 w-3 text-primary-foreground/90" /> : <Check className="h-3 w-3 text-primary-foreground/70" />
-                                )}
-                              </div>
+                              <p className="text-sm whitespace-pre-wrap">{m.content}</p>
+                            </div>
+                            
+                            {/* Timestamp below bubble */}
+                            <div className={cn(
+                              "flex items-center gap-1 mt-1 px-1",
+                              isOwn ? "justify-end" : "justify-start"
+                            )}>
+                              {isOwn && !activeConversation.isGroup && (
+                                isRead ? <CheckCheck className="h-3 w-3 text-muted-foreground" /> : <Check className="h-3 w-3 text-muted-foreground" />
+                              )}
+                              <span className="text-[10px] text-muted-foreground">
+                                {formatMessageTime(m.created_at)}
+                              </span>
                             </div>
 
                             {/* Reactions */}
                             {msgReactions.size > 0 && (
-                              <div className={cn("flex gap-1 mt-1", isOwn ? "justify-end" : "")}>
+                              <div className={cn("flex gap-1 mt-1", isOwn ? "justify-end" : "justify-start")}>
                                 {Array.from(msgReactions.entries()).map(([emoji, data]) => (
                                   <button
                                     key={emoji}
@@ -812,7 +813,7 @@ const Messages = () => {
                             {/* Actions */}
                             <div className={cn(
                               "absolute top-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity",
-                              isOwn ? "left-0 -translate-x-full pr-2" : "right-0 translate-x-full pl-2"
+                              isOwn ? "right-0 translate-x-full pl-2" : "left-0 -translate-x-full pr-2"
                             )}>
                               <Tooltip>
                                 <TooltipTrigger asChild>
@@ -885,12 +886,6 @@ const Messages = () => {
                               )}
                             </div>
                           </div>
-                          {isOwn && (
-                            <Avatar className="h-8 w-8 mt-1">
-                              <AvatarImage src={profiles.get(userId)?.photo_urls?.[0]} />
-                              <AvatarFallback className="text-xs">{getInitials(profiles.get(userId)?.name || "U")}</AvatarFallback>
-                            </Avatar>
-                          )}
                         </div>
                       );
                     })

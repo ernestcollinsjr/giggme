@@ -283,11 +283,6 @@ export const MessagesChat = ({
     })();
   }, [navigate]);
 
-  // Store refs to avoid dependency issues
-  const toastRef = useRef(toast);
-  useEffect(() => {
-    toastRef.current = toast;
-  }, [toast]);
 
   useEffect(() => {
     if (!userId) return;
@@ -306,23 +301,18 @@ export const MessagesChat = ({
               if (prev.some(m => m.id === (payload.new as Message).id)) return prev;
               return [...prev, payload.new as Message];
             });
-            setTimeout(scrollToBottom, 200);
+            // Scroll after a short delay
+            requestAnimationFrame(() => {
+              if (scrollRef.current) {
+                const scrollContainer = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
+                if (scrollContainer) {
+                  scrollContainer.scrollTop = scrollContainer.scrollHeight;
+                }
+              }
+            });
           } else if (payload.eventType === "UPDATE") {
-            const newMsg = payload.new as Message;
-            const oldMsg = payload.old as Partial<Message>;
-            
-            // Check if this is a delivery update for a message the current user sent
-            if (
-              newMsg.sender_id === userId &&
-              newMsg.delivered_to &&
-              newMsg.delivered_to.length > 0 &&
-              (!oldMsg.delivered_to || oldMsg.delivered_to.length === 0)
-            ) {
-              toastRef.current({ title: "Message delivered", description: "Your message was delivered." });
-            }
-            
             setAllMessages((prev) =>
-              prev.map((m) => (m.id === newMsg.id ? newMsg : m))
+              prev.map((m) => (m.id === (payload.new as Message).id ? payload.new as Message : m))
             );
           } else if (payload.eventType === "DELETE") {
             setAllMessages((prev) => prev.filter((m) => m.id !== (payload.old as Message).id));
@@ -332,43 +322,24 @@ export const MessagesChat = ({
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "message_reactions" },
-        (payload) => {
-          // Update reactions locally instead of re-fetching all
-          if (payload.eventType === "INSERT") {
-            setReactions(prev => [...prev, payload.new as Reaction]);
-          } else if (payload.eventType === "DELETE") {
-            setReactions(prev => prev.filter(r => r.id !== (payload.old as Reaction).id));
-          }
-        }
+        () => fetchReactionsAndPins()
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "pinned_messages" },
-        (payload) => {
-          // Update pins locally instead of re-fetching all
-          if (payload.eventType === "INSERT") {
-            setPinnedMessages(prev => [...prev, payload.new as PinnedMessage]);
-          } else if (payload.eventType === "DELETE") {
-            setPinnedMessages(prev => prev.filter(p => p.id !== (payload.old as PinnedMessage).id));
-          }
-        }
+        () => fetchReactionsAndPins()
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "read_receipts" },
-        (payload) => {
-          // Update read receipts locally instead of re-fetching all
-          if (payload.eventType === "INSERT") {
-            setReadReceipts(prev => [...prev, payload.new as ReadReceipt]);
-          }
-        }
+        () => fetchReactionsAndPins()
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [userId, scrollToBottom]);
+  }, [userId]);
 
   useEffect(() => {
     if (!userId || !activeConversation) {

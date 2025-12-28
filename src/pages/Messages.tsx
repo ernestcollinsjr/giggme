@@ -326,14 +326,19 @@ const Messages = () => {
   }, []);
 
   const fetchProfiles = async () => {
-    const { data } = await supabase.from("profiles").select("id, name, photo_urls");
+    console.log('FETCHING PROFILES...');
+    const { data, error } = await supabase.from("profiles").select("id, name, photo_urls");
+    console.log('PROFILES FETCH RESULT:', { data, error, count: data?.length });
     if (data) {
       const profileObj: Record<string, Profile> = {};
       data.forEach((p) => { profileObj[p.id] = p as Profile; });
+      console.log('PROFILES OBJECT KEYS:', Object.keys(profileObj));
+      console.log('EJ PROFILE:', profileObj['37f6fc80-4c01-4678-b90d-5b9ed36941f6']);
       setProfiles(profileObj);
       setProfilesList(data.filter((p) => p.id !== userId) as Profile[]);
     }
     setProfilesLoaded(true);
+    console.log('PROFILES LOADED SET TO TRUE');
   };
 
   const fetchMessages = async () => {

@@ -754,10 +754,12 @@ const Messages = () => {
                       const isRead = isOwn && !activeConversation.isGroup && m.read_by?.includes(activeConversation.participantId!);
                       const msgReactions = getMessageReactions(m.id);
                       
-                      // Debug logging
-                      if (!isOwn) {
-                        console.log('Received msg debug - sender_id:', m.sender_id, 'senderProfile:', senderProfile?.name, 'userId:', userId);
-                      }
+                      // Debug ALL messages
+                      console.log('ALL msg debug - content:', m.content?.substring(0, 15), 
+                        'isOwn:', isOwn, 
+                        'sender_id:', m.sender_id.substring(0, 8), 
+                        'userId:', userId?.substring(0, 8),
+                        'senderProfile:', senderProfile?.name);
                       
                       return (
                         <div 

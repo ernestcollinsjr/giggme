@@ -230,9 +230,9 @@ const Chat = () => {
     })();
   }, []);
 
-  // Set up typing indicator channel when conversation is active
+  // Set up typing indicator channel for conversations
   useEffect(() => {
-    if (!activeConversation || !userId) {
+    if (!userId) {
       if (typingChannelRef.current) {
         supabase.removeChannel(typingChannelRef.current);
         typingChannelRef.current = null;
@@ -240,9 +240,23 @@ const Chat = () => {
       return;
     }
 
-    // Create a unique channel for this conversation pair
-    const channelIds = [userId, activeConversation].sort().join('-');
-    const channelName = `typing:${channelIds}`;
+    // Determine channel name based on conversation type
+    let channelName: string;
+    if (activeConversation) {
+      // Direct conversation: unique channel for this conversation pair
+      const channelIds = [userId, activeConversation].sort().join('-');
+      channelName = `typing:${channelIds}`;
+    } else if (targetType === "group") {
+      // Group chat: shared channel for all group messages
+      channelName = `typing:group`;
+    } else {
+      // No active conversation and not in group view
+      if (typingChannelRef.current) {
+        supabase.removeChannel(typingChannelRef.current);
+        typingChannelRef.current = null;
+      }
+      return;
+    }
 
     const channel = supabase.channel(channelName, {
       config: { presence: { key: userId } }
@@ -284,7 +298,7 @@ const Chat = () => {
         typingChannelRef.current = null;
       }
     };
-  }, [activeConversation, userId, profiles]);
+  }, [activeConversation, userId, profiles, targetType]);
 
   // Handle typing indicator broadcast
   const broadcastTyping = useCallback((isTyping: boolean) => {
@@ -999,13 +1013,34 @@ const Chat = () => {
                     id="message"
                     placeholder="Type your message..."
                     value={text}
-                    onChange={(e) => setText(e.target.value)}
+                    onChange={(e) => handleTextChange(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        broadcastTyping(false);
+                        handleSend();
+                      }
+                    }}
                     rows={3}
                   />
                 </div>
 
+                {/* Typing indicator for group */}
+                {typingUsers.size > 0 && (
+                  <div className="flex items-center gap-2 px-1">
+                    <div className="flex gap-1">
+                      <span className="w-2 h-2 bg-primary rounded-full animate-bounce" />
+                      <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {Array.from(typingUsers.values()).join(', ')} {typingUsers.size === 1 ? 'is' : 'are'} typing...
+                    </span>
+                  </div>
+                )}
+
                 <div className="flex justify-end">
-                  <Button onClick={handleSend} disabled={sending} className="gap-2">
+                  <Button onClick={() => { broadcastTyping(false); handleSend(); }} disabled={sending} className="gap-2">
                     <Send className="h-4 w-4" />
                     Send to All
                   </Button>

@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
 
 interface GigNotificationParams {
   gigId: string;
@@ -7,6 +8,14 @@ interface GigNotificationParams {
   venue: string;
   gigDate: Date;
   bandId?: string | null;
+  responseDeadline?: Date;
+  notes?: string | null;
+  attire?: string | null;
+  rehearsalInfo?: {
+    date: Date;
+    time: string;
+    venue: string;
+  } | null;
 }
 
 export async function sendGigPushNotifications({
@@ -16,6 +25,10 @@ export async function sendGigPushNotifications({
   venue,
   gigDate,
   bandId,
+  responseDeadline,
+  notes,
+  attire,
+  rehearsalInfo,
 }: GigNotificationParams): Promise<void> {
   const displayVenue = venueName || venue;
   const formattedDate = gigDate.toLocaleDateString('en-US', {
@@ -23,6 +36,38 @@ export async function sendGigPushNotifications({
     month: 'short',
     day: 'numeric',
   });
+
+  // Get member profiles for emails
+  const { data: memberProfiles } = await supabase
+    .from('profiles')
+    .select('id, name, email')
+    .in('id', memberIds);
+
+  // Get band name and leader name
+  let bandName = 'Your Band';
+  let bandLeaderName = 'Band Leader';
+  
+  if (bandId) {
+    const { data: band } = await supabase
+      .from('bands')
+      .select('name, band_leader_id')
+      .eq('id', bandId)
+      .single();
+    
+    if (band) {
+      bandName = band.name;
+      
+      const { data: leaderProfile } = await supabase
+        .from('profiles')
+        .select('name')
+        .eq('id', band.band_leader_id)
+        .single();
+      
+      if (leaderProfile) {
+        bandLeaderName = leaderProfile.name;
+      }
+    }
+  }
 
   // Send push notification to each member
   const notificationPromises = memberIds.map(async (memberId) => {
@@ -43,6 +88,49 @@ export async function sendGigPushNotifications({
       console.error(`Failed to send push notification to ${memberId}:`, error);
     }
   });
+
+  // Send email invitations to each member
+  if (memberProfiles && memberProfiles.length > 0 && responseDeadline) {
+    const emailPromises = memberProfiles.map(async (member) => {
+      try {
+        const gigTime = format(gigDate, 'h:mm a');
+        const gigDateFormatted = format(gigDate, 'EEEE, MMMM d, yyyy');
+        
+        const emailBody: Record<string, unknown> = {
+          recipientEmail: member.email,
+          recipientName: member.name,
+          venueName: venueName || '',
+          venueAddress: venue,
+          gigDate: gigDateFormatted,
+          gigTime: gigTime,
+          responseDeadline: responseDeadline.toISOString(),
+          bandLeaderName: bandLeaderName,
+          bandName: bandName,
+          notes: notes || undefined,
+          attire: attire || undefined,
+        };
+        
+        // Add rehearsal info if present
+        if (rehearsalInfo) {
+          emailBody.rehearsalInfo = {
+            date: format(rehearsalInfo.date, 'EEEE, MMMM d, yyyy'),
+            time: rehearsalInfo.time,
+            venue: rehearsalInfo.venue,
+          };
+        }
+
+        await supabase.functions.invoke('send-gig-invite', {
+          body: emailBody,
+        });
+        
+        console.log(`Gig invite email sent to ${member.email}`);
+      } catch (error) {
+        console.error(`Failed to send email to ${member.email}:`, error);
+      }
+    });
+
+    await Promise.allSettled(emailPromises);
+  }
 
   // Also create in-app notifications for members
   const inAppNotifications = memberIds.map((memberId) => ({

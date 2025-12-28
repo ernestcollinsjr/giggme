@@ -396,7 +396,7 @@ const Bookings = () => {
 
         if (inviteError) throw inviteError;
 
-        // Send push notifications to invited members
+        // Send push notifications and emails to invited members
         sendGigPushNotifications({
           gigId: newGig.id,
           memberIds: selectedMembers,
@@ -404,6 +404,14 @@ const Bookings = () => {
           venue: venue.trim(),
           gigDate: new Date(newGig.date),
           bandId: selectedBandId,
+          responseDeadline: responseDeadline,
+          notes: notes.trim() || null,
+          attire: attire.trim() || null,
+          rehearsalInfo: includeRehearsal && rehearsalDate ? {
+            date: new Date(rehearsalDate),
+            time: rehearsalTime,
+            venue: useGigVenueForRehearsal ? venue.trim() : rehearsalVenue.trim(),
+          } : null,
         });
 
         toast({
@@ -504,8 +512,9 @@ const Bookings = () => {
 
       if (error) throw error;
 
-      // Send push notifications to newly invited members
+      // Send push notifications and emails to newly invited members
       const gig = gigs.find(g => g.id === currentGigForInvite);
+      const rehearsal = gigRehearsals[currentGigForInvite];
       if (gig && newMembers.length > 0) {
         sendGigPushNotifications({
           gigId: currentGigForInvite,
@@ -514,6 +523,14 @@ const Bookings = () => {
           venue: gig.venue,
           gigDate: new Date(gig.date),
           bandId: selectedBandId,
+          responseDeadline: responseDeadline,
+          notes: gig.notes,
+          attire: gig.attire,
+          rehearsalInfo: rehearsal ? {
+            date: new Date(rehearsal.date),
+            time: format(new Date(rehearsal.date), 'h:mm a'),
+            venue: rehearsal.venue,
+          } : null,
         });
       }
 

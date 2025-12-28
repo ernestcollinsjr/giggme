@@ -994,7 +994,7 @@ const Chat = () => {
               <>
                 {/* Group message compose */}
                 <div className="space-y-2">
-                  <Label htmlFor="message">Message to {userRole === "booking_manager" ? "All Artists" : "Everyone"}</Label>
+                  <Label htmlFor="message">Message to Everyone</Label>
                   <Textarea
                     id="message"
                     placeholder="Type your message..."

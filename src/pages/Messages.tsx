@@ -795,13 +795,13 @@ const Messages = () => {
 
         {/* Chat Area */}
         <div className={cn(
-          "flex-1 flex flex-col bg-muted/30 min-h-0",
+          "flex-1 flex flex-col bg-muted/30 min-h-0 relative",
           !activeConversation && "hidden md:flex"
         )}>
           {activeConversation ? (
-            <>
+            <div className="absolute inset-0 flex flex-col">
               {/* Chat Header - use key to force re-render when profiles change */}
-              <div key={`header-${activeConversation.participantId}-${Object.keys(profiles).length}`} className="p-4 border-b border-border bg-background flex items-center gap-3">
+              <div key={`header-${activeConversation.participantId}-${Object.keys(profiles).length}`} className="flex-shrink-0 p-4 border-b border-border bg-background flex items-center gap-3">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -819,7 +819,7 @@ const Messages = () => {
               </div>
 
               {/* Messages - wrap in flex-1 container to properly constrain height */}
-              <div className="flex-1 min-h-0 overflow-y-auto">
+              <div className="flex-1 min-h-0 overflow-hidden">
                 <ScrollArea className="h-full p-4 bg-muted/30" ref={scrollRef as any}>
                 <TooltipProvider delayDuration={300}>
                 <div className="max-w-3xl mx-auto py-4 px-2">
@@ -1056,7 +1056,7 @@ const Messages = () => {
               )}
 
               {/* Message Input */}
-              <div className="flex-shrink-0 p-3 border-t border-border bg-background min-h-[68px]">
+              <div className="flex-shrink-0 p-3 border-t border-border bg-background">
                 <div className="flex gap-2 max-w-3xl mx-auto items-end">
                   <Textarea
                     ref={textareaRef}
@@ -1089,7 +1089,7 @@ const Messages = () => {
                   </Button>
                 </div>
               </div>
-            </>
+            </div>
           ) : (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center">

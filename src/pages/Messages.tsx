@@ -655,8 +655,8 @@ const Messages = () => {
   }
 
   return (
-    <div className="fixed inset-0 bottom-48 md:bottom-0 bg-background flex flex-col">
-      <div className="flex flex-1 min-h-0 overflow-hidden">
+    <div className="h-[100dvh] bg-background flex flex-col">
+      <div className="flex flex-1 min-h-0 overflow-hidden pb-16 md:pb-0">
         {/* Sidebar - Conversation List */}
         <div className={cn(
           "w-full md:w-80 lg:w-96 border-r border-border flex flex-col bg-background",
@@ -795,7 +795,7 @@ const Messages = () => {
 
         {/* Chat Area */}
         <div className={cn(
-          "flex-1 flex flex-col bg-muted/30 min-h-0 relative",
+          "flex-1 flex flex-col bg-muted/30 min-w-0 overflow-hidden",
           !activeConversation && "hidden md:flex"
         )}>
           {activeConversation ? (
@@ -818,8 +818,8 @@ const Messages = () => {
                 />
               </div>
 
-              {/* Messages - wrap in flex-1 container to properly constrain height */}
-              <div className="flex-1 min-h-0 overflow-hidden">
+              {/* Messages - scrollable area */}
+              <div className="flex-1 overflow-y-auto">
                 <ScrollArea className="h-full p-4 bg-muted/30" ref={scrollRef as any}>
                 <TooltipProvider delayDuration={300}>
                 <div className="max-w-3xl mx-auto py-4 px-2">

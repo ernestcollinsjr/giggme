@@ -1111,21 +1111,47 @@ const Messages = () => {
                               );
                             })()}
                             
-                            <div className={cn(
-                              "px-4 py-2.5 rounded-2xl",
-                              isOwn 
-                                ? "bg-primary text-primary-foreground rounded-br-sm" 
-                                : "bg-card border border-border rounded-bl-sm"
-                            )}>
-                              {activeConversation.isGroup && !isOwn && (
-                                <p className="text-xs font-semibold mb-1 opacity-80">{senderProfile?.name}</p>
+                            <div className="relative">
+                              <div className={cn(
+                                "px-4 py-2.5 rounded-2xl",
+                                isOwn 
+                                  ? "bg-primary text-primary-foreground rounded-br-sm" 
+                                  : "bg-card border border-border rounded-bl-sm"
+                              )}>
+                                {activeConversation.isGroup && !isOwn && (
+                                  <p className="text-xs font-semibold mb-1 opacity-80">{senderProfile?.name}</p>
+                                )}
+                                <p className="text-sm whitespace-pre-wrap">{m.content}</p>
+                              </div>
+                              
+                              {/* Reactions - positioned on the bubble */}
+                              {msgReactions.size > 0 && (
+                                <div className={cn(
+                                  "absolute -bottom-2.5 flex gap-0.5",
+                                  isOwn ? "right-2" : "left-2"
+                                )}>
+                                  {Array.from(msgReactions.entries()).map(([emoji, data]) => (
+                                    <button
+                                      key={emoji}
+                                      onClick={() => toggleReaction(m.id, emoji)}
+                                      className={cn(
+                                        "flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs shadow-sm",
+                                        data.hasUserReacted 
+                                          ? "bg-primary/20 border border-primary/40" 
+                                          : "bg-background border border-border"
+                                      )}
+                                    >
+                                      {emoji} {data.count > 1 && <span className="text-[10px]">{data.count}</span>}
+                                    </button>
+                                  ))}
+                                </div>
                               )}
-                              <p className="text-sm whitespace-pre-wrap">{m.content}</p>
                             </div>
                             
-                            {/* Timestamp below bubble */}
+                            {/* Timestamp below bubble - add extra margin if reactions exist */}
                             <div className={cn(
-                              "flex items-center gap-1 mt-1 px-1",
+                              "flex items-center gap-1 px-1",
+                              msgReactions.size > 0 ? "mt-3" : "mt-1",
                               isOwn ? "justify-end" : "justify-start"
                             )}>
                               {isOwn && !activeConversation.isGroup && (
@@ -1135,24 +1161,6 @@ const Messages = () => {
                                 {formatMessageTime(m.created_at)}
                               </span>
                             </div>
-
-                            {/* Reactions */}
-                            {msgReactions.size > 0 && (
-                              <div className={cn("flex gap-1 mt-1", isOwn ? "justify-end" : "justify-start")}>
-                                {Array.from(msgReactions.entries()).map(([emoji, data]) => (
-                                  <button
-                                    key={emoji}
-                                    onClick={() => toggleReaction(m.id, emoji)}
-                                    className={cn(
-                                      "flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs border",
-                                      data.hasUserReacted ? "bg-primary/10 border-primary/30" : "bg-background border-border"
-                                    )}
-                                  >
-                                    {emoji} {data.count > 1 && data.count}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
 
                             {/* Actions */}
                             <div className={cn(

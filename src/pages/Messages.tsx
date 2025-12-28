@@ -168,12 +168,21 @@ const Messages = () => {
   }, []);
 
   const scrollToBottom = useCallback(() => {
-    if (scrollRef.current) {
-      const scrollContainer = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
-      if (scrollContainer) {
-        scrollContainer.scrollTo({ top: scrollContainer.scrollHeight, behavior: 'smooth' });
+    // Try multiple methods to ensure scroll works
+    setTimeout(() => {
+      // Method 1: Use scrollRef
+      if (scrollRef.current) {
+        const scrollContainer = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
+        if (scrollContainer) {
+          scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        }
       }
-    }
+      // Method 2: Find any scroll viewport in the chat area
+      const allViewports = document.querySelectorAll('[data-radix-scroll-area-viewport]');
+      allViewports.forEach(viewport => {
+        viewport.scrollTop = viewport.scrollHeight;
+      });
+    }, 150);
   }, []);
 
   // Attach scroll listener
@@ -260,11 +269,11 @@ const Messages = () => {
             setAllMessages((prev) => [...prev, payload.new as Message]);
             // Auto-scroll to bottom when new message arrives
             setTimeout(() => {
-              const scrollContainer = document.querySelector('[data-radix-scroll-area-viewport]');
-              if (scrollContainer) {
-                scrollContainer.scrollTo({ top: scrollContainer.scrollHeight, behavior: 'smooth' });
-              }
-            }, 100);
+              const allViewports = document.querySelectorAll('[data-radix-scroll-area-viewport]');
+              allViewports.forEach(viewport => {
+                viewport.scrollTop = viewport.scrollHeight;
+              });
+            }, 200);
           } else if (payload.eventType === "UPDATE") {
             setAllMessages((prev) =>
               prev.map((m) => (m.id === (payload.new as Message).id ? (payload.new as Message) : m))
@@ -569,14 +578,7 @@ const Messages = () => {
       broadcastTyping(false);
       
       // Scroll to bottom after sending
-      setTimeout(() => {
-        if (scrollRef.current) {
-          const scrollContainer = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
-          if (scrollContainer) {
-            scrollContainer.scrollTop = scrollContainer.scrollHeight;
-          }
-        }
-      }, 100);
+      scrollToBottom();
     } catch (e: any) {
       toast({ variant: "destructive", title: "Failed to send", description: e.message });
     } finally {

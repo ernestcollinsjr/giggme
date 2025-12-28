@@ -63,6 +63,53 @@ interface PinnedMessage {
 
 const EMOJI_OPTIONS = ['👍', '❤️', '😂', '😮', '😢', '🎉'];
 
+// Separate component to ensure fresh profile data is used
+const ChatHeader = ({ 
+  activeConversation, 
+  profiles, 
+  getInitials 
+}: { 
+  activeConversation: Conversation; 
+  profiles: Record<string, Profile>;
+  getInitials: (name: string) => string;
+}) => {
+  // ALWAYS get fresh profile data directly from profiles object
+  const partnerProfile = activeConversation.participantId 
+    ? profiles[activeConversation.participantId] 
+    : null;
+  
+  const displayName = activeConversation.isGroup 
+    ? "Group Chat" 
+    : (partnerProfile?.name || "Unknown");
+  const displayPhoto = activeConversation.isGroup 
+    ? null 
+    : (partnerProfile?.photo_urls?.[0] || null);
+  
+  return (
+    <>
+      <Avatar className="h-10 w-10" key={`header-avatar-${displayPhoto || 'none'}`}>
+        {activeConversation.isGroup ? (
+          <AvatarFallback className="bg-primary/10">
+            <Users className="h-4 w-4 text-primary" />
+          </AvatarFallback>
+        ) : (
+          <>
+            {displayPhoto ? <AvatarImage src={displayPhoto} /> : null}
+            <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
+          </>
+        )}
+      </Avatar>
+      <div className="flex-1">
+        <h2 className="font-semibold">{displayName}</h2>
+        <p className="text-xs text-muted-foreground">
+          {activeConversation.isGroup ? "Group Message" : "Direct Message"}
+        </p>
+      </div>
+    </>
+  );
+};
+
+
 const Messages = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -718,43 +765,11 @@ const Messages = () => {
                 >
                   <ArrowLeft className="h-5 w-5" />
                 </Button>
-                {(() => {
-                  // Get current profile for conversation partner
-                  const partnerProfile = activeConversation.participantId 
-                    ? profiles[activeConversation.participantId] 
-                    : null;
-                  
-                  // Compute display values - prioritize fresh profile data
-                  const displayName = activeConversation.isGroup 
-                    ? "Group Chat" 
-                    : (partnerProfile?.name || activeConversation.name || "Unknown");
-                  const displayPhoto = activeConversation.isGroup 
-                    ? null 
-                    : (partnerProfile?.photo_urls?.[0] || activeConversation.photo || null);
-                  
-                  return (
-                    <>
-                      <Avatar className="h-10 w-10">
-                        {activeConversation.isGroup ? (
-                          <AvatarFallback className="bg-primary/10">
-                            <Users className="h-4 w-4 text-primary" />
-                          </AvatarFallback>
-                        ) : (
-                          <>
-                            <AvatarImage src={displayPhoto || undefined} />
-                            <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
-                          </>
-                        )}
-                      </Avatar>
-                      <div className="flex-1">
-                        <h2 className="font-semibold">{displayName}</h2>
-                        <p className="text-xs text-muted-foreground">
-                          {activeConversation.isGroup ? "Group Message" : "Direct Message"}
-                        </p>
-                      </div>
-                    </>
-                  );
-                })()}
+                <ChatHeader 
+                  activeConversation={activeConversation}
+                  profiles={profiles}
+                  getInitials={getInitials}
+                />
               </div>
 
               {/* Messages */}
@@ -773,16 +788,6 @@ const Messages = () => {
                       const isRead = isOwn && !activeConversation.isGroup && m.read_by?.includes(activeConversation.participantId!);
                       const msgReactions = getMessageReactions(m.id);
                       
-                      // Debug: Log what we're actually getting from the profile
-                      if (!isOwn) {
-                        console.log('RECEIVED MSG AVATAR:', {
-                          sender_id: m.sender_id,
-                          profileFound: !!senderProfile,
-                          profileName: senderProfile?.name,
-                          photoUrl: senderProfile?.photo_urls?.[0]
-                        });
-                      }
-                      
                       return (
                         <div 
                           key={m.id} 
@@ -794,8 +799,10 @@ const Messages = () => {
                           {/* Avatar - Left side for received messages */}
                           {!isOwn && (
                             <div className="flex-shrink-0">
-                              <Avatar className="h-8 w-8">
-                                <AvatarImage src={senderProfile?.photo_urls?.[0]} />
+                              <Avatar className="h-8 w-8" key={`avatar-${m.sender_id}-${senderProfile?.photo_urls?.[0] || 'none'}`}>
+                                {senderProfile?.photo_urls?.[0] ? (
+                                  <AvatarImage src={senderProfile.photo_urls[0]} />
+                                ) : null}
                                 <AvatarFallback className="text-xs bg-muted border border-border">
                                   {getInitials(senderProfile?.name || "U")}
                                 </AvatarFallback>
@@ -944,8 +951,10 @@ const Messages = () => {
                           {/* Avatar - Right side for sent */}
                           {isOwn && (
                             <div className="flex-shrink-0">
-                              <Avatar className="h-8 w-8">
-                                <AvatarImage src={profiles[userId!]?.photo_urls?.[0]} />
+                              <Avatar className="h-8 w-8" key={`avatar-own-${profiles[userId!]?.photo_urls?.[0] || 'none'}`}>
+                                {profiles[userId!]?.photo_urls?.[0] ? (
+                                  <AvatarImage src={profiles[userId!].photo_urls[0]} />
+                                ) : null}
                                 <AvatarFallback className="text-xs bg-primary/30 border border-primary/50">
                                   {getInitials(profiles[userId!]?.name || "U")}
                                 </AvatarFallback>

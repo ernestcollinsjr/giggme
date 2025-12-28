@@ -18,6 +18,7 @@ import { detectFaceAndCrop, loadImage } from "@/utils/imageCropping";
 import { format } from "date-fns";
 import { PerformerQRCode } from "@/components/PerformerQRCode";
 import { PerformerRatingsDisplay } from "@/components/PerformerRatingsDisplay";
+import { RatingsAnalyticsDashboard } from "@/components/RatingsAnalyticsDashboard";
 
 interface PaymentMethods {
   venmo?: string;
@@ -952,6 +953,9 @@ const ArtistProfile = () => {
 
           {/* Customer Ratings */}
           {profileUserId && <PerformerRatingsDisplay artistId={profileUserId} />}
+
+          {/* Ratings Analytics - Only for own profile */}
+          {isOwnProfile && profileUserId && <RatingsAnalyticsDashboard artistId={profileUserId} />}
 
           {/* QR Code for Customer Ratings - Only for own profile */}
           {isOwnProfile && profileUserId && (

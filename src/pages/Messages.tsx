@@ -773,6 +773,16 @@ const Messages = () => {
                       const isRead = isOwn && !activeConversation.isGroup && m.read_by?.includes(activeConversation.participantId!);
                       const msgReactions = getMessageReactions(m.id);
                       
+                      // Debug: Log what we're actually getting from the profile
+                      if (!isOwn) {
+                        console.log('RECEIVED MSG AVATAR:', {
+                          sender_id: m.sender_id,
+                          profileFound: !!senderProfile,
+                          profileName: senderProfile?.name,
+                          photoUrl: senderProfile?.photo_urls?.[0]
+                        });
+                      }
+                      
                       return (
                         <div 
                           key={m.id} 

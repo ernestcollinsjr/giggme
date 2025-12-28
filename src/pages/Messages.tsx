@@ -1118,6 +1118,7 @@ const Messages = () => {
                     ref={textareaRef}
                     placeholder="Type a message..."
                     value={text}
+                    onFocus={scrollToBottom}
                     onChange={(e) => {
                       handleTextChange(e.target.value);
                       e.target.style.height = 'auto';

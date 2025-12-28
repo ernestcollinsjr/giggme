@@ -282,6 +282,25 @@ const Chat = () => {
                         </div>
                       </div>
                       <p className="mt-1 text-sm">{m.content}</p>
+                      {/* Reply button - show for messages from others */}
+                      {m.sender_id !== userId && (
+                        <div className="mt-2 pt-2 border-t border-border/50">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 text-xs gap-1.5 text-muted-foreground hover:text-primary"
+                            onClick={() => {
+                              setTargetType("direct");
+                              setRecipientId(m.sender_id);
+                              // Focus on the message input
+                              document.getElementById("message")?.focus();
+                            }}
+                          >
+                            <MessageCircle className="h-3.5 w-3.5" />
+                            Reply to {senderName(m.sender_id)}
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

@@ -31,6 +31,7 @@ import Notifications from "./pages/Notifications";
 import ScheduleReminder from "./pages/ScheduleReminder";
 import SharedSetlist from "./pages/SharedSetlist";
 import RatePerformer from "./pages/RatePerformer";
+import Messages from "./pages/Messages";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +48,7 @@ const App = () => (
             <Route path="/profile-setup" element={<ProfileSetup />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/chat" element={<Chat />} />
+            <Route path="/messages" element={<Messages />} />
             <Route path="/bookings" element={<Bookings />} />
             <Route path="/rehearsals" element={<Rehearsals />} />
             <Route path="/setlist" element={<Setlist />} />

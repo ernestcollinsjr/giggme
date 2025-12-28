@@ -836,30 +836,30 @@ const Chat = () => {
                               </PopoverContent>
                             </Popover>
                           </div>
+                          {/* Reactions display - positioned on bubble */}
+                          {messageReactions.size > 0 && (
+                            <div className={cn(
+                              "absolute -bottom-3 flex flex-wrap gap-1",
+                              isOwnMessage ? "right-2" : "left-2"
+                            )}>
+                              {Array.from(messageReactions.entries()).map(([emoji, data]) => (
+                                <button
+                                  key={emoji}
+                                  onClick={() => toggleReaction(m.id, emoji)}
+                                  className={cn(
+                                    "flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs border shadow-sm transition-colors",
+                                    data.hasUserReacted 
+                                      ? "bg-primary/10 border-primary/30" 
+                                      : "bg-background border-border hover:bg-muted"
+                                  )}
+                                >
+                                  <span>{emoji}</span>
+                                  <span className="text-muted-foreground">{data.count}</span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                        {/* Reactions display */}
-                        {messageReactions.size > 0 && (
-                          <div className={cn(
-                            "flex flex-wrap gap-1 mt-1",
-                            isOwnMessage ? "justify-end" : "justify-start"
-                          )}>
-                            {Array.from(messageReactions.entries()).map(([emoji, data]) => (
-                              <button
-                                key={emoji}
-                                onClick={() => toggleReaction(m.id, emoji)}
-                                className={cn(
-                                  "flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs border transition-colors",
-                                  data.hasUserReacted 
-                                    ? "bg-primary/10 border-primary/30" 
-                                    : "bg-muted/50 border-border hover:bg-muted"
-                                )}
-                              >
-                                <span>{emoji}</span>
-                                <span className="text-muted-foreground">{data.count}</span>
-                              </button>
-                            ))}
-                          </div>
-                        )}
                       </div>
                     );
                   })}

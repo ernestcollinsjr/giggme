@@ -641,10 +641,11 @@ const Messages = () => {
       data.forEach((p) => { profileObj[p.id] = p as Profile; });
       setProfiles(profileObj);
       // Filter profiles list based on allowed members for role-based messaging
-      const shouldFilter = (userRole === "band_leader" || userRole === "booking_manager") && allowedMemberIds.length > 0;
+      // For band_leader/booking_manager: ONLY show their assigned members
+      const isRestrictedRole = userRole === "band_leader" || userRole === "booking_manager";
       const filteredProfiles = data.filter((p) => {
         if (p.id === userId) return false;
-        if (shouldFilter) return allowedMemberIds.includes(p.id);
+        if (isRestrictedRole) return allowedMemberIds.includes(p.id);
         return true;
       });
       setProfilesList(filteredProfiles as Profile[]);
@@ -686,13 +687,15 @@ const Messages = () => {
     if (!userId) return { direct: [], group: null as Conversation | null };
     
     const conversationMap = new Map<string, Conversation>();
-    const shouldFilter = (userRole === "band_leader" || userRole === "booking_manager") && allowedMemberIds.length > 0;
+    // Always filter for band_leader and booking_manager roles
+    const isRestrictedRole = userRole === "band_leader" || userRole === "booking_manager";
     
     // Group chat - only show if user has a role that uses group chat
     // For band_leader/booking_manager, group chat is within their own group
     const groupMessages = allMessages.filter((m) => m.is_group_message);
     let groupConv: Conversation | null = null;
-    if (groupMessages.length > 0) {
+    if (groupMessages.length > 0 && !isRestrictedRole) {
+      // Only show group chat for non-restricted roles
       const sortedGroup = [...groupMessages].sort((a, b) => 
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
@@ -702,7 +705,7 @@ const Messages = () => {
       
       groupConv = {
         id: "group",
-        name: userRole === "band_leader" ? "Band Group Chat" : userRole === "booking_manager" ? "Artists Group Chat" : "Group Chat",
+        name: "Group Chat",
         isGroup: true,
         lastMessage: sortedGroup[0].content,
         lastMessageTime: sortedGroup[0].created_at,
@@ -719,8 +722,9 @@ const Messages = () => {
       
       if (!otherParticipantId) return;
       
-      // Filter to only allowed members if role-based filtering is active
-      if (shouldFilter && !allowedMemberIds.includes(otherParticipantId)) {
+      // For restricted roles, ONLY show messages from allowed members
+      // If no members assigned, don't show any conversations
+      if (isRestrictedRole && !allowedMemberIds.includes(otherParticipantId)) {
         return;
       }
       

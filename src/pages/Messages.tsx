@@ -1055,8 +1055,8 @@ const Messages = () => {
                 </div>
               )}
 
-              {/* Message Input */}
-              <div className="shrink-0 p-3 border-t border-border bg-background">
+              {/* Message Input - DEBUG: Added red background to verify rendering */}
+              <div className="shrink-0 p-3 border-t-2 border-primary bg-red-500">
                 <div className="flex gap-2 max-w-3xl mx-auto items-end">
                   <Textarea
                     ref={textareaRef}

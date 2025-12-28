@@ -5,6 +5,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import EventTypesSlideshow from "@/components/EventTypesSlideshow";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { 
   Music, 
   Briefcase, 
@@ -21,7 +27,11 @@ import {
   MapPin,
   Guitar,
   Headphones,
-  Speaker
+  Speaker,
+  LogIn,
+  DollarSign,
+  HelpCircle,
+  UserPlus
 } from "lucide-react";
 
 import heroSinger from "@/assets/hero-singer.jpg";
@@ -158,13 +168,35 @@ const Index = () => {
             </Button>
 
             {/* Mobile Menu */}
-            <Button 
-              size="icon" 
-              variant="ghost"
-              className="sm:hidden"
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  size="icon" 
+                  variant="ghost"
+                  className="sm:hidden"
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={() => navigate("/pricing")}>
+                  <DollarSign className="mr-2 h-4 w-4" />
+                  Pricing
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/auth")}>
+                  <HelpCircle className="mr-2 h-4 w-4" />
+                  Support
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/auth")}>
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Sign In
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/auth")}>
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Get Started
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </nav>
         </div>
       </header>

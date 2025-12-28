@@ -18,7 +18,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useSoundPreference } from "@/hooks/useSoundPreference";
+
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 const REPORT_REASONS = [
@@ -172,7 +172,7 @@ export const MessagesChat = ({
 }: MessagesChatProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { playNotificationSound, playSentSound } = useSoundPreference();
+  
   const isMobile = useIsMobile();
   const [userId, setUserId] = useState<string | null>(null);
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
@@ -284,12 +284,10 @@ export const MessagesChat = ({
   }, [navigate]);
 
   // Store refs to avoid dependency issues
-  const playNotificationSoundRef = useRef(playNotificationSound);
   const toastRef = useRef(toast);
   useEffect(() => {
-    playNotificationSoundRef.current = playNotificationSound;
     toastRef.current = toast;
-  }, [playNotificationSound, toast]);
+  }, [toast]);
 
   useEffect(() => {
     if (!userId) return;
@@ -321,7 +319,6 @@ export const MessagesChat = ({
               (!oldMsg.delivered_to || oldMsg.delivered_to.length === 0)
             ) {
               toastRef.current({ title: "Message delivered", description: "Your message was delivered." });
-              playNotificationSoundRef.current();
             }
             
             setAllMessages((prev) =>
@@ -684,7 +681,6 @@ export const MessagesChat = ({
       setReplyToMessage(null);
       broadcastTyping(false);
       toast({ title: "Sent", description: "Message sent successfully." });
-      playSentSound();
       scrollToBottom();
     } catch (e: any) {
       toast({ variant: "destructive", title: "Failed to send", description: e.message });

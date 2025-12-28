@@ -8,8 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MessageCircle, Send, Trash2, ArrowLeft, Users, User, Check, CheckCheck, Smile } from "lucide-react";
+import { MessageCircle, Send, Trash2, ArrowLeft, Users, User, Check, CheckCheck, Smile, Forward } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import BottomNav from "@/components/BottomNav";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -68,6 +69,8 @@ const Chat = () => {
   const [activeConversation, setActiveConversation] = useState<string | null>(null);
   const [typingUsers, setTypingUsers] = useState<Map<string, string>>(new Map());
   const [reactions, setReactions] = useState<Reaction[]>([]);
+  const [forwardMessage, setForwardMessage] = useState<Message | null>(null);
+  const [forwarding, setForwarding] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const typingChannelRef = useRef<RealtimeChannel | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -465,6 +468,31 @@ const Chat = () => {
     return grouped;
   };
 
+  const handleForward = async (targetUserId: string) => {
+    if (!userId || !forwardMessage) return;
+    
+    setForwarding(true);
+    try {
+      const forwardedContent = `↪️ Forwarded message:\n"${forwardMessage.content}"`;
+      
+      const { error } = await supabase.from("messages").insert({
+        sender_id: userId,
+        recipient_id: targetUserId,
+        is_group_message: false,
+        content: forwardedContent,
+      });
+      
+      if (error) throw error;
+      
+      toast({ title: "Message forwarded", description: `Message sent to ${profilesById.get(targetUserId)?.name || 'user'}` });
+      setForwardMessage(null);
+    } catch (e: any) {
+      toast({ variant: "destructive", title: "Failed to forward", description: e.message || "Unknown error" });
+    } finally {
+      setForwarding(false);
+    }
+  };
+
   const openConversation = async (participantId: string) => {
     setActiveConversation(participantId);
     setTargetType("direct");
@@ -610,37 +638,49 @@ const Chat = () => {
                               )}
                             </div>
                           </div>
-                          {/* Reaction picker button */}
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className={cn(
-                                  "absolute -bottom-2 h-6 w-6 rounded-full bg-background border shadow-sm opacity-0 group-hover:opacity-100 transition-opacity",
-                                  isOwnMessage ? "left-0 -translate-x-1/2" : "right-0 translate-x-1/2"
-                                )}
-                              >
-                                <Smile className="h-3.5 w-3.5 text-muted-foreground" />
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-2" side={isOwnMessage ? "left" : "right"}>
-                              <div className="flex gap-1">
-                                {EMOJI_OPTIONS.map((emoji) => (
-                                  <button
-                                    key={emoji}
-                                    onClick={() => toggleReaction(m.id, emoji)}
-                                    className={cn(
-                                      "text-lg hover:bg-muted p-1.5 rounded transition-colors",
-                                      messageReactions.get(emoji)?.hasUserReacted && "bg-primary/10"
-                                    )}
-                                  >
-                                    {emoji}
-                                  </button>
-                                ))}
-                              </div>
-                            </PopoverContent>
-                          </Popover>
+                          {/* Action buttons */}
+                          <div className={cn(
+                            "absolute -bottom-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity",
+                            isOwnMessage ? "left-0 -translate-x-1/2" : "right-0 translate-x-1/2"
+                          )}>
+                            {/* Forward button */}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 rounded-full bg-background border shadow-sm"
+                              onClick={() => setForwardMessage(m)}
+                            >
+                              <Forward className="h-3.5 w-3.5 text-muted-foreground" />
+                            </Button>
+                            {/* Reaction picker button */}
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6 rounded-full bg-background border shadow-sm"
+                                >
+                                  <Smile className="h-3.5 w-3.5 text-muted-foreground" />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-2" side={isOwnMessage ? "left" : "right"}>
+                                <div className="flex gap-1">
+                                  {EMOJI_OPTIONS.map((emoji) => (
+                                    <button
+                                      key={emoji}
+                                      onClick={() => toggleReaction(m.id, emoji)}
+                                      className={cn(
+                                        "text-lg hover:bg-muted p-1.5 rounded transition-colors",
+                                        messageReactions.get(emoji)?.hasUserReacted && "bg-primary/10"
+                                      )}
+                                    >
+                                      {emoji}
+                                    </button>
+                                  ))}
+                                </div>
+                              </PopoverContent>
+                            </Popover>
+                          </div>
                         </div>
                         {/* Reactions display */}
                         {messageReactions.size > 0 && (
@@ -898,6 +938,46 @@ const Chat = () => {
         </Card>
       </div>
       <BottomNav />
+
+      {/* Forward Message Dialog */}
+      <Dialog open={!!forwardMessage} onOpenChange={(open) => !open && setForwardMessage(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Forward Message</DialogTitle>
+            <DialogDescription>
+              Choose who to forward this message to
+            </DialogDescription>
+          </DialogHeader>
+          {forwardMessage && (
+            <div className="space-y-4">
+              <div className="p-3 bg-muted rounded-md">
+                <p className="text-sm text-muted-foreground mb-1">Message:</p>
+                <p className="text-sm line-clamp-3">{forwardMessage.content}</p>
+              </div>
+              <ScrollArea className="h-[200px]">
+                <div className="space-y-1">
+                  {profiles
+                    .filter(p => p.id !== forwardMessage.sender_id)
+                    .map((profile) => (
+                      <button
+                        key={profile.id}
+                        disabled={forwarding}
+                        onClick={() => handleForward(profile.id)}
+                        className="w-full flex items-center gap-3 p-2 rounded-md hover:bg-muted transition-colors text-left disabled:opacity-50"
+                      >
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={profile.photo_urls?.[0]} />
+                          <AvatarFallback>{getInitials(profile.name)}</AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm font-medium">{profile.name}</span>
+                      </button>
+                    ))}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

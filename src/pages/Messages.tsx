@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, Plus, Users, User, Send, Trash2, ArrowLeft, Check, CheckCheck, Smile, Forward, Pin, X, Reply, CornerDownRight, Search, RefreshCw, MoreVertical, ArrowDown, Flag, Ban, Loader2 } from "lucide-react";
+import { MessageCircle, Plus, Users, User, Send, Trash2, ArrowLeft, Check, CheckCheck, Smile, Forward, Pin, X, Reply, CornerDownRight, Search, RefreshCw, MoreVertical, ArrowDown, Flag, Ban, Loader2, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { PageContainer } from "@/components/PageContainer";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 const REPORT_REASONS = [
@@ -141,6 +142,7 @@ const ChatHeader = ({
 const Messages = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
   const [userId, setUserId] = useState<string | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -175,6 +177,37 @@ const Messages = () => {
   const [reportDescription, setReportDescription] = useState("");
   const [blockReason, setBlockReason] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
+
+  // Long press state for mobile context menu
+  const [longPressMessage, setLongPressMessage] = useState<Message | null>(null);
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Long press handlers
+  const handleTouchStart = useCallback((message: Message) => {
+    longPressTimerRef.current = setTimeout(() => {
+      setLongPressMessage(message);
+    }, 500);
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  }, []);
+
+  const handleTouchMove = useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  }, []);
+
+  const handleCopyMessage = useCallback((content: string) => {
+    navigator.clipboard.writeText(content);
+    toast({ title: "Copied to clipboard" });
+    setLongPressMessage(null);
+  }, [toast]);
 
   // Scroll detection
   const handleScroll = useCallback(() => {
@@ -1094,7 +1127,12 @@ const Messages = () => {
                           )}
                           
                           {/* Message bubble */}
-                          <div className="max-w-[70%] sm:max-w-[60%] group relative">
+                          <div 
+                            className="max-w-[70%] sm:max-w-[60%] group relative"
+                            onTouchStart={() => isMobile && handleTouchStart(m)}
+                            onTouchEnd={handleTouchEnd}
+                            onTouchMove={handleTouchMove}
+                          >
                             {/* Reply quote */}
                             {m.reply_to_id && (() => {
                               const repliedMsg = allMessages.find(msg => msg.id === m.reply_to_id);
@@ -1170,9 +1208,10 @@ const Messages = () => {
                               </span>
                             </div>
 
-                            {/* Actions - positioned on the bubble */}
+                            {/* Actions - positioned on the bubble (desktop only) */}
                             <div className={cn(
-                              "absolute -top-3 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity bg-background/95 backdrop-blur-sm rounded-full shadow-md border border-border px-1 py-0.5",
+                              "absolute -top-3 flex gap-0.5 opacity-0 transition-opacity bg-background/95 backdrop-blur-sm rounded-full shadow-md border border-border px-1 py-0.5",
+                              "hidden md:flex md:group-hover:opacity-100",
                               isOwn ? "right-2" : "left-2"
                             )}>
                               <Tooltip>
@@ -1425,6 +1464,87 @@ const Messages = () => {
                   ))}
                 </div>
               </ScrollArea>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Mobile Long Press Context Menu */}
+      <Dialog open={!!longPressMessage} onOpenChange={(open) => !open && setLongPressMessage(null)}>
+        <DialogContent className="max-w-xs p-0 rounded-2xl overflow-hidden">
+          {longPressMessage && (
+            <div className="space-y-0">
+              {/* Emoji Reactions Row */}
+              <div className="flex justify-center gap-2 p-4 bg-card border-b border-border">
+                {EMOJI_OPTIONS.map((emoji) => (
+                  <button
+                    key={emoji}
+                    onClick={() => {
+                      toggleReaction(longPressMessage.id, emoji);
+                      setLongPressMessage(null);
+                    }}
+                    className="text-2xl hover:scale-125 transition-transform p-2 rounded-full hover:bg-muted"
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+              
+              {/* Menu Items */}
+              <div className="py-2">
+                <button
+                  onClick={() => handleCopyMessage(longPressMessage.content)}
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted transition-colors text-left"
+                >
+                  <Copy className="h-5 w-5" />
+                  <span>Copy</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setReplyToMessage(longPressMessage);
+                    setLongPressMessage(null);
+                    setTimeout(() => textareaRef.current?.focus(), 100);
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted transition-colors text-left"
+                >
+                  <Reply className="h-5 w-5" />
+                  <span>Reply</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setForwardMessage(longPressMessage);
+                    setLongPressMessage(null);
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted transition-colors text-left"
+                >
+                  <Forward className="h-5 w-5" />
+                  <span>Forward</span>
+                </button>
+                {activeConversation && !activeConversation.isGroup && (
+                  <button
+                    onClick={() => {
+                      togglePin(longPressMessage);
+                      setLongPressMessage(null);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted transition-colors text-left"
+                  >
+                    <Pin className="h-5 w-5" />
+                    <span>{pinnedMessages.some(p => p.message_id === longPressMessage.id) ? "Unpin" : "Pin"}</span>
+                  </button>
+                )}
+                {longPressMessage.sender_id === userId && (
+                  <button
+                    onClick={() => {
+                      handleDelete(longPressMessage.id);
+                      setLongPressMessage(null);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted transition-colors text-left text-destructive"
+                  >
+                    <Trash2 className="h-5 w-5" />
+                    <span>Delete</span>
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </DialogContent>

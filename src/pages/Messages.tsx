@@ -730,8 +730,14 @@ const Messages = () => {
                     conversationMessages.map((m) => {
                       const isOwn = m.sender_id === userId;
                       const senderProfile = profiles.get(m.sender_id);
+                      const recipientProfile = profiles.get(m.recipient_id || '');
                       const isRead = isOwn && !activeConversation.isGroup && m.read_by?.includes(activeConversation.participantId!);
                       const msgReactions = getMessageReactions(m.id);
+                      
+                      // For display: show sender's avatar for received messages, viewer's avatar for sent
+                      const avatarProfile = isOwn ? profiles.get(userId) : senderProfile;
+                      
+                      console.log('Message:', m.content?.substring(0, 20), 'isOwn:', isOwn, 'sender_id:', m.sender_id, 'senderProfile:', senderProfile?.name, 'avatarProfile:', avatarProfile?.name);
                       
                       return (
                         <div 
@@ -745,9 +751,9 @@ const Messages = () => {
                           {!isOwn && (
                             <div className="flex-shrink-0">
                               <Avatar className="h-8 w-8">
-                                <AvatarImage src={senderProfile?.photo_urls?.[0]} />
+                                <AvatarImage src={avatarProfile?.photo_urls?.[0]} />
                                 <AvatarFallback className="text-xs bg-muted border border-border">
-                                  {getInitials(senderProfile?.name || "U")}
+                                  {getInitials(avatarProfile?.name || "?")}
                                 </AvatarFallback>
                               </Avatar>
                             </div>

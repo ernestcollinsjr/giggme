@@ -1154,8 +1154,8 @@ const ProfileSetup = () => {
         </CardHeader>
         
         <CardContent>
-          {/* Subscription Prompt */}
-          {isSubscribed === false && !checkingSubscription && (
+          {/* Subscription Prompt - Hide for super_admin */}
+          {isSubscribed === false && !checkingSubscription && role !== "super_admin" && (
             <div className="mb-6 p-4 bg-gradient-to-r from-primary/10 via-primary/5 to-secondary/10 border border-primary/20 rounded-xl">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">

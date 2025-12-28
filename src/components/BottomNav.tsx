@@ -5,6 +5,17 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 
+/**
+ * BottomNav - Fixed bottom navigation component
+ * 
+ * IMPORTANT HEIGHT DOCUMENTATION:
+ * - Total height: 5rem (80px) = h-16 (64px) + safe-area-inset-bottom padding
+ * - This height is used in PageContainer's `withBottomNav` prop calculation
+ * - If you change the height here, you MUST also update:
+ *   1. src/components/PageContainer.tsx - the 5rem value in h-[calc(100dvh-5rem)]
+ * 
+ * @see PageContainer for the layout component that accounts for this height
+ */
 const BottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();

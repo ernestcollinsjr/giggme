@@ -436,11 +436,52 @@ const Messages = () => {
     fetchReactionsAndPins();
   }, [userId]);
 
-  // Separate useEffect for realtime subscription to prevent re-subscribing
+  // Polling fallback for messages - ensures messages appear even if realtime fails
   useEffect(() => {
     if (!userId) return;
 
-    console.log("🚀 Messages: Setting up realtime subscription for:", userId);
+    const pollMessages = async () => {
+      const { data, error } = await supabase
+        .from("messages")
+        .select("*")
+        .or(`sender_id.eq.${userId},recipient_id.eq.${userId},is_group_message.eq.true`)
+        .order("created_at", { ascending: true });
+      
+      if (!error && data) {
+        setAllMessages(prev => {
+          // Only update if there are actual new messages
+          const prevIds = new Set(prev.filter(m => !m.id.startsWith('temp-')).map(m => m.id));
+          const newMessages = data.filter((m: Message) => !prevIds.has(m.id));
+          
+          if (newMessages.length > 0) {
+            // Keep temp messages, add new real ones
+            const tempMessages = prev.filter(m => m.id.startsWith('temp-'));
+            const realMessages = data as Message[];
+            
+            // Filter out temp messages that now have real counterparts
+            const remainingTemp = tempMessages.filter(temp => 
+              !realMessages.some(real => 
+                real.content === temp.content && 
+                real.sender_id === temp.sender_id
+              )
+            );
+            
+            return [...realMessages, ...remainingTemp];
+          }
+          return prev;
+        });
+      }
+    };
+
+    // Poll every 3 seconds
+    const intervalId = setInterval(pollMessages, 3000);
+
+    return () => clearInterval(intervalId);
+  }, [userId]);
+
+  // Realtime subscription (kept as primary, polling is fallback)
+  useEffect(() => {
+    if (!userId) return;
 
     const channel = supabase
       .channel(`messages-page-${userId}`)
@@ -448,15 +489,11 @@ const Messages = () => {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages" },
         (payload) => {
-          console.log("🔔 Messages page: REALTIME INSERT received!", payload);
           const newMsg = payload.new as Message;
-          
-          // Add message to state
           setAllMessages((prev) => {
             const exists = prev.some(m => m.id === newMsg.id);
             if (exists) return prev;
             
-            // Replace temp message if exists
             const tempIndex = prev.findIndex(m => 
               m.id.startsWith('temp-') && 
               m.content === newMsg.content && 
@@ -477,7 +514,6 @@ const Messages = () => {
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "messages" },
         (payload) => {
-          console.log("🔔 Messages page: REALTIME UPDATE received!");
           setAllMessages((prev) =>
             prev.map((m) => (m.id === (payload.new as Message).id ? (payload.new as Message) : m))
           );
@@ -490,27 +526,9 @@ const Messages = () => {
           setAllMessages((prev) => prev.filter((m) => m.id !== (payload.old as Message).id));
         }
       )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "message_reactions" },
-        () => fetchReactionsAndPins()
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "pinned_messages" },
-        () => fetchReactionsAndPins()
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "read_receipts" },
-        () => fetchReactionsAndPins()
-      )
-      .subscribe((status, err) => {
-        console.log("📡 Messages page: Subscription status:", status, err || '');
-      });
+      .subscribe();
 
     return () => {
-      console.log("🛑 Messages page: Removing channel");
       supabase.removeChannel(channel);
     };
   }, [userId]);

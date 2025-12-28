@@ -16,6 +16,8 @@ import { TopNav } from "@/components/TopNav";
 import { AvailabilityCalendar } from "@/components/AvailabilityCalendar";
 import { detectFaceAndCrop, loadImage } from "@/utils/imageCropping";
 import { format } from "date-fns";
+import { PerformerQRCode } from "@/components/PerformerQRCode";
+import { PerformerRatingsDisplay } from "@/components/PerformerRatingsDisplay";
 
 interface PaymentMethods {
   venmo?: string;
@@ -69,6 +71,7 @@ const ArtistProfile = () => {
   const [tips, setTips] = useState<Tip[]>([]);
   const [newTip, setNewTip] = useState({ tipper_name: "", amount: "", payment_method: "venmo", note: "" });
   const [addingTip, setAddingTip] = useState(false);
+  const [profileUserId, setProfileUserId] = useState<string>("");
 
   useEffect(() => {
     fetchProfiles();
@@ -157,6 +160,7 @@ const ArtistProfile = () => {
       // Check if viewing own profile
       const viewingOwnProfile = !userId || (user && userId === user.id);
       setIsOwnProfile(viewingOwnProfile);
+      setProfileUserId(targetUserId);
 
       // Fetch basic profile
       const { data: profileData, error: profileError } = await supabase
@@ -944,6 +948,17 @@ const ArtistProfile = () => {
                 </div>
               </CardContent>
             </Card>
+          )}
+
+          {/* Customer Ratings */}
+          {profileUserId && <PerformerRatingsDisplay artistId={profileUserId} />}
+
+          {/* QR Code for Customer Ratings - Only for own profile */}
+          {isOwnProfile && profileUserId && (
+            <PerformerQRCode 
+              artistId={profileUserId} 
+              artistName={artistProfile?.stage_name || profile?.name || "Artist"} 
+            />
           )}
 
           {/* Availability Calendar - Only show for own profile */}

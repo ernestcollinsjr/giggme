@@ -795,12 +795,12 @@ const Messages = () => {
 
         {/* Chat Area */}
         <div className={cn(
-          "flex-1 grid grid-rows-[auto_1fr_auto] bg-muted/30",
+          "flex-1 flex flex-col bg-muted/30 min-h-0 overflow-hidden",
           !activeConversation && "hidden md:flex"
         )}>
           {activeConversation ? (
             <>
-              {/* Chat Header */}
+              {/* Chat Header - use key to force re-render when profiles change */}
               <div key={`header-${activeConversation.participantId}-${Object.keys(profiles).length}`} className="p-4 border-b border-border bg-background flex items-center gap-3">
                 <Button
                   variant="ghost"
@@ -818,8 +818,9 @@ const Messages = () => {
                 />
               </div>
 
-              {/* Messages - scrollable area */}
-              <div className="overflow-y-auto p-4 bg-muted/30" ref={scrollRef}>
+              {/* Messages - wrap in flex-1 container to properly constrain height */}
+              <div className="flex-1 min-h-0 overflow-hidden">
+                <ScrollArea className="h-full p-4 bg-muted/30" ref={scrollRef as any}>
                 <TooltipProvider delayDuration={300}>
                 <div className="max-w-3xl mx-auto py-4 px-2">
                   {conversationMessages.length === 0 ? (
@@ -1021,6 +1022,7 @@ const Messages = () => {
                   )}
                 </div>
                 </TooltipProvider>
+                </ScrollArea>
               </div>
 
               {/* Typing indicator */}
@@ -1054,7 +1056,7 @@ const Messages = () => {
               )}
 
               {/* Message Input */}
-              <div className="p-3 border-t border-border bg-background">
+              <div className="flex-shrink-0 p-3 border-t border-border bg-background min-h-[68px]">
                 <div className="flex gap-2 max-w-3xl mx-auto items-end">
                   <Textarea
                     ref={textareaRef}

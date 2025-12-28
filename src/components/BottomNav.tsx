@@ -69,15 +69,26 @@ const BottomNav = () => {
 
       if (error) throw error;
 
-      const unread = (data || []).filter((m: any) => {
+      const relevantMessages = (data || []).filter((m: any) => {
         // Check if this message is relevant to the user
-        const isRelevant = m.is_group_message || m.sender_id === uid || m.recipient_id === uid;
-        // Check if unread (user not in read_by array)
-        const isUnread = !(m.read_by || []).includes(uid);
-        return isRelevant && isUnread;
-      }).length;
+        return m.is_group_message || m.sender_id === uid || m.recipient_id === uid;
+      });
 
-      setUnreadCount(unread);
+      const unread = relevantMessages.filter((m: any) => {
+        // Check if unread (user not in read_by array)
+        const readByArray = m.read_by || [];
+        return !readByArray.includes(uid);
+      });
+
+      console.log("BottomNav fetchUnreadCount:", { 
+        uid, 
+        totalMessages: data?.length, 
+        relevantMessages: relevantMessages.length,
+        unreadCount: unread.length,
+        unreadMessages: unread.map((m: any) => ({ id: m.id, read_by: m.read_by }))
+      });
+
+      setUnreadCount(unread.length);
     } catch (error) {
       console.error("Error fetching unread count:", error);
     }

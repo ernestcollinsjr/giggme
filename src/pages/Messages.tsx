@@ -1072,8 +1072,8 @@ const Messages = () => {
 
       {/* Message Input - Fixed position above bottom nav */}
       {activeConversation && (
-        <div className="fixed bottom-16 md:bottom-0 left-0 right-0 md:left-80 lg:left-96 p-4 border-t border-border bg-background z-40">
-          <div className="flex gap-2 max-w-3xl mx-auto">
+        <div className="fixed bottom-16 md:bottom-0 left-0 md:left-80 lg:left-96 right-0 p-4 border-t border-border bg-background z-40 shadow-lg">
+          <div className="flex gap-2 max-w-3xl mx-auto items-end">
             <Textarea
               ref={textareaRef}
               placeholder="Type a message..."

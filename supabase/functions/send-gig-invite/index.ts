@@ -82,14 +82,23 @@ const handler = async (req: Request): Promise<Response> => {
 
     const deadlineDate = new Date(responseDeadline);
     const countdownText = formatCountdown(deadlineDate);
-    const formattedDeadline = deadlineDate.toLocaleString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    });
+    
+    // Format the deadline with explicit time - more user-friendly
+    // Show date and time in a clear format
+    const deadlineHours = deadlineDate.getUTCHours();
+    const deadlineMinutes = deadlineDate.getUTCMinutes();
+    const deadlineDay = deadlineDate.getUTCDate();
+    const deadlineMonth = deadlineDate.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' });
+    const deadlineYear = deadlineDate.getUTCFullYear();
+    const deadlineWeekday = deadlineDate.toLocaleString('en-US', { weekday: 'short', timeZone: 'UTC' });
+    
+    // Convert to 12-hour format
+    const isPM = deadlineHours >= 12;
+    const displayHour = deadlineHours % 12 || 12;
+    const displayMinutes = deadlineMinutes.toString().padStart(2, '0');
+    const ampm = isPM ? 'PM' : 'AM';
+    
+    const formattedDeadline = `${deadlineWeekday}, ${deadlineMonth} ${deadlineDay}, ${deadlineYear} at ${displayHour}:${displayMinutes} ${ampm} UTC`;
 
     const displayVenue = venueName || venueAddress;
 

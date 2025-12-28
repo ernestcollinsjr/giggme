@@ -22,7 +22,7 @@ import { PlaceAutocomplete } from "@/components/PlaceAutocomplete";
 import { AutoLocationTracker } from "@/components/AutoLocationTracker";
 import { MemberLocationsMap } from "@/components/MemberLocationsMap";
 import { AcceptedGigsCard } from "@/components/AcceptedGigsCard";
-import { MessageInbox } from "@/components/MessageInbox";
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { BandMemberRoster } from "@/components/BandMemberRoster";
 import { BandInvitationManager } from "@/components/BandInvitationManager";
@@ -1600,7 +1600,6 @@ const Dashboard = () => {
             
             <div className="space-y-6">
               <BandAssistant />
-              <MessageInbox userId={user?.id || ""} />
             </div>
           </div>
         )}
@@ -1686,7 +1685,6 @@ const Dashboard = () => {
             <div className="space-y-6">
               <BandAssistant />
               <AcceptedGigsCard userId={user?.id || ""} />
-              <MessageInbox userId={user?.id || ""} />
             </div>
 
             {userRole === "band_member" && (

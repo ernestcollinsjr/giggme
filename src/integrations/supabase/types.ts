@@ -888,6 +888,36 @@ export type Database = {
         }
         Relationships: []
       }
+      performer_ratings: {
+        Row: {
+          artist_id: string
+          comment: string | null
+          created_at: string
+          customer_name: string | null
+          id: string
+          rating: number
+          venue_name: string | null
+        }
+        Insert: {
+          artist_id: string
+          comment?: string | null
+          created_at?: string
+          customer_name?: string | null
+          id?: string
+          rating: number
+          venue_name?: string | null
+        }
+        Update: {
+          artist_id?: string
+          comment?: string | null
+          created_at?: string
+          customer_name?: string | null
+          id?: string
+          rating?: number
+          venue_name?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           availability_status: string | null

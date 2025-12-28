@@ -1055,42 +1055,8 @@ const Messages = () => {
                 </div>
               )}
 
-              {/* Message Input - Fixed at bottom above nav */}
-              <div className="shrink-0 p-4 border-t border-border bg-background pb-20 md:pb-4">
-                <div className="flex gap-2 max-w-3xl mx-auto">
-                  <Textarea
-                    ref={textareaRef}
-                    placeholder="Type a message..."
-                    value={text}
-                    onChange={(e) => {
-                      handleTextChange(e.target.value);
-                      // Auto-resize textarea
-                      e.target.style.height = 'auto';
-                      e.target.style.height = Math.min(e.target.scrollHeight, 128) + 'px';
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSend();
-                        // Reset height after sending
-                        if (textareaRef.current) {
-                          textareaRef.current.style.height = 'auto';
-                        }
-                      }
-                    }}
-                    rows={1}
-                    className="flex-1 resize-none min-h-[44px] max-h-32 overflow-y-auto"
-                  />
-                  <Button 
-                    onClick={handleSend} 
-                    disabled={sending || !text.trim()} 
-                    size="icon" 
-                    className="h-11 w-11 rounded-full shrink-0 bg-primary hover:bg-primary/90"
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
+              {/* Spacer for fixed input */}
+              <div className="h-24 md:h-20 shrink-0" />
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center">
@@ -1103,6 +1069,45 @@ const Messages = () => {
           )}
         </div>
       </div>
+
+      {/* Message Input - Fixed position above bottom nav */}
+      {activeConversation && (
+        <div className="fixed bottom-16 md:bottom-0 left-0 right-0 md:left-80 lg:left-96 p-4 border-t border-border bg-background z-40">
+          <div className="flex gap-2 max-w-3xl mx-auto">
+            <Textarea
+              ref={textareaRef}
+              placeholder="Type a message..."
+              value={text}
+              onChange={(e) => {
+                handleTextChange(e.target.value);
+                // Auto-resize textarea
+                e.target.style.height = 'auto';
+                e.target.style.height = Math.min(e.target.scrollHeight, 128) + 'px';
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                  // Reset height after sending
+                  if (textareaRef.current) {
+                    textareaRef.current.style.height = 'auto';
+                  }
+                }
+              }}
+              rows={1}
+              className="flex-1 resize-none min-h-[44px] max-h-32 overflow-y-auto"
+            />
+            <Button 
+              onClick={handleSend} 
+              disabled={sending || !text.trim()} 
+              size="icon" 
+              className="h-11 w-11 rounded-full shrink-0 bg-primary hover:bg-primary/90"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* New Conversation Dialog */}
       <Dialog open={newConversationOpen} onOpenChange={setNewConversationOpen}>

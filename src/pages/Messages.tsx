@@ -1082,7 +1082,7 @@ const Messages = () => {
               </div>
 
               {/* Bottom input area container - fixed above bottom nav on mobile */}
-              <div className="flex-shrink-0 border-t border-border bg-background fixed bottom-16 md:bottom-0 left-0 right-0 md:relative md:left-auto md:right-auto z-40">
+              <div className="flex-shrink-0 border-t border-border bg-background fixed bottom-20 md:bottom-0 left-0 right-0 md:relative md:left-auto md:right-auto z-40 shadow-lg md:shadow-none">
                 {/* Typing indicator */}
                 {typingUsers.size > 0 && (
                   <div className="px-4 py-2 flex items-center gap-2 border-b border-border/50">

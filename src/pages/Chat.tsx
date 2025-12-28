@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ import BottomNav from "@/components/BottomNav";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 
 interface Message {
   id: string;
@@ -37,6 +38,12 @@ interface Conversation {
   unreadCount: number;
 }
 
+interface TypingUser {
+  oderId: string;
+  name: string;
+  isTyping: boolean;
+}
+
 const Chat = () => {
   const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
@@ -48,7 +55,10 @@ const Chat = () => {
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [activeConversation, setActiveConversation] = useState<string | null>(null);
+  const [typingUsers, setTypingUsers] = useState<Map<string, string>>(new Map());
   const scrollRef = useRef<HTMLDivElement>(null);
+  const typingChannelRef = useRef<RealtimeChannel | null>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -110,6 +120,105 @@ const Chat = () => {
         supabase.removeChannel(channel);
       };
     })();
+  }, []);
+
+  // Set up typing indicator channel when conversation is active
+  useEffect(() => {
+    if (!activeConversation || !userId) {
+      if (typingChannelRef.current) {
+        supabase.removeChannel(typingChannelRef.current);
+        typingChannelRef.current = null;
+      }
+      return;
+    }
+
+    // Create a unique channel for this conversation pair
+    const channelIds = [userId, activeConversation].sort().join('-');
+    const channelName = `typing:${channelIds}`;
+
+    const channel = supabase.channel(channelName, {
+      config: { presence: { key: userId } }
+    });
+
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState();
+        const newTypingUsers = new Map<string, string>();
+        
+        Object.entries(state).forEach(([key, presences]) => {
+          if (key !== userId && Array.isArray(presences)) {
+            const presence = presences[0] as any;
+            if (presence?.isTyping) {
+              newTypingUsers.set(key, presence.name || 'Someone');
+            }
+          }
+        });
+        
+        setTypingUsers(newTypingUsers);
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          // Track presence with initial state
+          const myProfile = profiles.find(p => p.id === userId);
+          await channel.track({
+            oderId: userId,
+            name: myProfile?.name || 'User',
+            isTyping: false,
+          });
+        }
+      });
+
+    typingChannelRef.current = channel;
+
+    return () => {
+      if (typingChannelRef.current) {
+        supabase.removeChannel(typingChannelRef.current);
+        typingChannelRef.current = null;
+      }
+    };
+  }, [activeConversation, userId, profiles]);
+
+  // Handle typing indicator broadcast
+  const broadcastTyping = useCallback((isTyping: boolean) => {
+    if (!typingChannelRef.current || !userId) return;
+
+    const myProfile = profiles.find(p => p.id === userId);
+    typingChannelRef.current.track({
+      oderId: userId,
+      name: myProfile?.name || 'User',
+      isTyping,
+    });
+  }, [userId, profiles]);
+
+  // Handle text change with typing indicator
+  const handleTextChange = useCallback((value: string) => {
+    setText(value);
+
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    if (value.trim()) {
+      // Broadcast that user is typing
+      broadcastTyping(true);
+
+      // Set timeout to stop typing indicator after 2 seconds of inactivity
+      typingTimeoutRef.current = setTimeout(() => {
+        broadcastTyping(false);
+      }, 2000);
+    } else {
+      broadcastTyping(false);
+    }
+  }, [broadcastTyping]);
+
+  // Clear typing indicator on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -368,22 +477,37 @@ const Chat = () => {
                 </div>
               </ScrollArea>
 
+              {/* Typing indicator */}
+              {typingUsers.size > 0 && (
+                <div className="flex items-center gap-2 px-1">
+                  <div className="flex gap-1">
+                    <span className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {Array.from(typingUsers.values()).join(', ')} {typingUsers.size === 1 ? 'is' : 'are'} typing...
+                  </span>
+                </div>
+              )}
+
               {/* Message input */}
               <div className="flex gap-2 pt-2 border-t">
                 <Textarea
                   placeholder="Type a message..."
                   value={text}
-                  onChange={(e) => setText(e.target.value)}
+                  onChange={(e) => handleTextChange(e.target.value)}
                   rows={2}
                   className="flex-1 resize-none"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
+                      broadcastTyping(false);
                       handleSend();
                     }
                   }}
                 />
-                <Button onClick={handleSend} disabled={sending} size="icon" className="h-auto">
+                <Button onClick={() => { broadcastTyping(false); handleSend(); }} disabled={sending} size="icon" className="h-auto">
                   <Send className="h-4 w-4" />
                 </Button>
               </div>

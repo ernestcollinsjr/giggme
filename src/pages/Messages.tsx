@@ -1077,7 +1077,12 @@ const Messages = () => {
                     rows={1}
                     className="flex-1 resize-none min-h-[44px] max-h-32 pointer-events-auto"
                   />
-                  <Button onClick={handleSend} disabled={sending || !text.trim()} size="icon" className="h-11 w-11 rounded-full">
+                  <Button 
+                    onClick={handleSend} 
+                    disabled={sending || !text.trim()} 
+                    size="icon" 
+                    className="h-11 w-11 rounded-full shrink-0 bg-primary hover:bg-primary/90"
+                  >
                     <Send className="h-4 w-4" />
                   </Button>
                 </div>

@@ -322,17 +322,42 @@ export const MessagesChat = ({
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "message_reactions" },
-        () => fetchReactionsAndPins()
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            setReactions(prev => {
+              if (prev.some(r => r.id === (payload.new as Reaction).id)) return prev;
+              return [...prev, payload.new as Reaction];
+            });
+          } else if (payload.eventType === "DELETE") {
+            setReactions(prev => prev.filter(r => r.id !== (payload.old as Reaction).id));
+          }
+        }
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "pinned_messages" },
-        () => fetchReactionsAndPins()
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            setPinnedMessages(prev => {
+              if (prev.some(p => p.id === (payload.new as PinnedMessage).id)) return prev;
+              return [...prev, payload.new as PinnedMessage];
+            });
+          } else if (payload.eventType === "DELETE") {
+            setPinnedMessages(prev => prev.filter(p => p.id !== (payload.old as PinnedMessage).id));
+          }
+        }
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "read_receipts" },
-        () => fetchReactionsAndPins()
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            setReadReceipts(prev => {
+              if (prev.some(r => r.id === (payload.new as ReadReceipt).id)) return prev;
+              return [...prev, payload.new as ReadReceipt];
+            });
+          }
+        }
       )
       .subscribe();
 

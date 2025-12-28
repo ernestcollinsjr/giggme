@@ -294,11 +294,27 @@ export const MessagesChat = ({
         { event: "*", schema: "public", table: "messages" },
         (payload) => {
           if (payload.eventType === "INSERT") {
-            setAllMessages((prev) => [...prev, payload.new as Message]);
+            setAllMessages((prev) => {
+              if (prev.some(m => m.id === (payload.new as Message).id)) return prev;
+              return [...prev, payload.new as Message];
+            });
             setTimeout(scrollToBottom, 200);
           } else if (payload.eventType === "UPDATE") {
+            const newMsg = payload.new as Message;
+            const oldMsg = payload.old as Partial<Message>;
+            
+            // Check if this is a delivery update for a message the current user sent
+            if (
+              newMsg.sender_id === userId &&
+              newMsg.delivered_to &&
+              newMsg.delivered_to.length > 0 &&
+              (!oldMsg.delivered_to || oldMsg.delivered_to.length === 0)
+            ) {
+              toast({ title: "Message delivered", description: "Your message was delivered." });
+            }
+            
             setAllMessages((prev) =>
-              prev.map((m) => (m.id === (payload.new as Message).id ? (payload.new as Message) : m))
+              prev.map((m) => (m.id === newMsg.id ? newMsg : m))
             );
           } else if (payload.eventType === "DELETE") {
             setAllMessages((prev) => prev.filter((m) => m.id !== (payload.old as Message).id));

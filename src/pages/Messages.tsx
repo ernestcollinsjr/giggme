@@ -737,17 +737,19 @@ const Messages = () => {
                         <div 
                           key={m.id} 
                           className={cn(
-                            "flex items-end gap-2 mb-3",
-                            isOwn ? "flex-row-reverse" : "flex-row"
+                            "flex items-start gap-2 mb-4",
+                            isOwn ? "justify-end" : "justify-start"
                           )}
                         >
-                          {/* Avatar */}
-                          <Avatar className="h-8 w-8 flex-shrink-0 block">
-                            <AvatarImage src={isOwn ? profiles.get(userId)?.photo_urls?.[0] : senderProfile?.photo_urls?.[0]} />
-                            <AvatarFallback className="text-xs bg-muted flex items-center justify-center">
-                              {getInitials(isOwn ? profiles.get(userId)?.name || "U" : senderProfile?.name || "U")}
-                            </AvatarFallback>
-                          </Avatar>
+                          {/* Avatar - Left side for received */}
+                          {!isOwn && (
+                            <Avatar className="h-8 w-8 flex-shrink-0 mt-1">
+                              <AvatarImage src={senderProfile?.photo_urls?.[0]} />
+                              <AvatarFallback className="text-xs bg-muted">
+                                {getInitials(senderProfile?.name || "U")}
+                              </AvatarFallback>
+                            </Avatar>
+                          )}
                           
                           {/* Message bubble */}
                           <div className="max-w-[70%] sm:max-w-[60%] group relative">
@@ -886,6 +888,16 @@ const Messages = () => {
                               )}
                             </div>
                           </div>
+                          
+                          {/* Avatar - Right side for sent */}
+                          {isOwn && (
+                            <Avatar className="h-8 w-8 flex-shrink-0 mt-1">
+                              <AvatarImage src={profiles.get(userId)?.photo_urls?.[0]} />
+                              <AvatarFallback className="text-xs bg-primary/20">
+                                {getInitials(profiles.get(userId)?.name || "U")}
+                              </AvatarFallback>
+                            </Avatar>
+                          )}
                         </div>
                       );
                     })

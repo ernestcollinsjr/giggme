@@ -463,15 +463,20 @@ export const MessagesChat = ({
   }, []);
 
   const fetchProfiles = async () => {
+    console.log("fetchProfiles: Starting to fetch profiles...");
     const { data, error } = await supabase.from("profiles").select("id, name, photo_urls");
+    console.log("fetchProfiles: Response - data count:", data?.length, "error:", error);
     if (error) {
       console.error("Error fetching profiles:", error);
     }
     if (data && data.length > 0) {
+      console.log("fetchProfiles: Setting profiles with names:", data.map(p => p.name));
       const profileObj: Record<string, Profile> = {};
       data.forEach((p) => { profileObj[p.id] = p as Profile; });
       setProfiles(profileObj);
       setProfilesList(data.filter((p) => p.id !== userId) as Profile[]);
+    } else {
+      console.warn("fetchProfiles: No profiles returned from query");
     }
     setProfilesLoaded(true);
   };

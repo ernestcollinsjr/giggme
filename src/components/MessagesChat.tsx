@@ -283,6 +283,14 @@ export const MessagesChat = ({
     })();
   }, [navigate]);
 
+  // Store refs to avoid dependency issues
+  const playNotificationSoundRef = useRef(playNotificationSound);
+  const toastRef = useRef(toast);
+  useEffect(() => {
+    playNotificationSoundRef.current = playNotificationSound;
+    toastRef.current = toast;
+  }, [playNotificationSound, toast]);
+
   useEffect(() => {
     if (!userId) return;
     fetchProfiles();
@@ -312,8 +320,8 @@ export const MessagesChat = ({
               newMsg.delivered_to.length > 0 &&
               (!oldMsg.delivered_to || oldMsg.delivered_to.length === 0)
             ) {
-              toast({ title: "Message delivered", description: "Your message was delivered." });
-              playNotificationSound();
+              toastRef.current({ title: "Message delivered", description: "Your message was delivered." });
+              playNotificationSoundRef.current();
             }
             
             setAllMessages((prev) =>
@@ -327,17 +335,36 @@ export const MessagesChat = ({
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "message_reactions" },
-        () => fetchReactionsAndPins()
+        (payload) => {
+          // Update reactions locally instead of re-fetching all
+          if (payload.eventType === "INSERT") {
+            setReactions(prev => [...prev, payload.new as Reaction]);
+          } else if (payload.eventType === "DELETE") {
+            setReactions(prev => prev.filter(r => r.id !== (payload.old as Reaction).id));
+          }
+        }
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "pinned_messages" },
-        () => fetchReactionsAndPins()
+        (payload) => {
+          // Update pins locally instead of re-fetching all
+          if (payload.eventType === "INSERT") {
+            setPinnedMessages(prev => [...prev, payload.new as PinnedMessage]);
+          } else if (payload.eventType === "DELETE") {
+            setPinnedMessages(prev => prev.filter(p => p.id !== (payload.old as PinnedMessage).id));
+          }
+        }
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "read_receipts" },
-        () => fetchReactionsAndPins()
+        (payload) => {
+          // Update read receipts locally instead of re-fetching all
+          if (payload.eventType === "INSERT") {
+            setReadReceipts(prev => [...prev, payload.new as ReadReceipt]);
+          }
+        }
       )
       .subscribe();
 

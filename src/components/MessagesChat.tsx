@@ -172,7 +172,7 @@ export const MessagesChat = ({
 }: MessagesChatProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { playNotificationSound } = useSoundPreference();
+  const { playNotificationSound, playSentSound } = useSoundPreference();
   const isMobile = useIsMobile();
   const [userId, setUserId] = useState<string | null>(null);
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
@@ -657,6 +657,7 @@ export const MessagesChat = ({
       setReplyToMessage(null);
       broadcastTyping(false);
       toast({ title: "Sent", description: "Message sent successfully." });
+      playSentSound();
       scrollToBottom();
     } catch (e: any) {
       toast({ variant: "destructive", title: "Failed to send", description: e.message });

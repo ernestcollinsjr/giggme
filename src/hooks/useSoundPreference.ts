@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export type SoundType = 'chime' | 'bell' | 'ding';
+export type SoundType = 'chime' | 'bell' | 'ding' | 'sent';
 
 const soundPatterns: Record<SoundType, { frequencies: number[]; durations: number[]; delays: number[] }> = {
   chime: {
@@ -17,6 +17,11 @@ const soundPatterns: Record<SoundType, { frequencies: number[]; durations: numbe
   ding: {
     frequencies: [1046.5], // C6
     durations: [0.4],
+    delays: [0],
+  },
+  sent: {
+    frequencies: [440], // A4 - subtle low tone
+    durations: [0.1],
     delays: [0],
   },
 };
@@ -103,6 +108,11 @@ export const useSoundPreference = () => {
     playSound();
   }, [isMuted, playSound]);
 
+  const playSentSound = useCallback(() => {
+    if (isMuted) return;
+    playSound('sent', volume * 0.7); // Slightly quieter for sent
+  }, [isMuted, playSound, volume]);
+
   const playTestSound = useCallback((type?: SoundType, vol?: number) => {
     playSound(type ?? soundType, vol ?? volume);
   }, [playSound, soundType, volume]);
@@ -112,7 +122,8 @@ export const useSoundPreference = () => {
     soundType,
     volume,
     loading, 
-    playNotificationSound, 
+    playNotificationSound,
+    playSentSound,
     playTestSound, 
     refetch: fetchSoundPreference 
   };

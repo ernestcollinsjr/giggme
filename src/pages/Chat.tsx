@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MessageCircle, Send, Trash2, ArrowLeft, Users, User, Check, CheckCheck, Smile, Forward } from "lucide-react";
+import { MessageCircle, Send, Trash2, ArrowLeft, Users, User, Check, CheckCheck, Smile, Forward, Pin, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import BottomNav from "@/components/BottomNav";
@@ -54,6 +54,14 @@ interface Reaction {
   created_at: string;
 }
 
+interface PinnedMessage {
+  id: string;
+  message_id: string;
+  conversation_user_id: string;
+  pinned_by: string;
+  pinned_at: string;
+}
+
 const EMOJI_OPTIONS = ['👍', '❤️', '😂', '😮', '😢', '🎉'];
 
 const Chat = () => {
@@ -71,6 +79,7 @@ const Chat = () => {
   const [reactions, setReactions] = useState<Reaction[]>([]);
   const [forwardMessage, setForwardMessage] = useState<Message | null>(null);
   const [forwarding, setForwarding] = useState(false);
+  const [pinnedMessages, setPinnedMessages] = useState<PinnedMessage[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const typingChannelRef = useRef<RealtimeChannel | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -126,9 +135,17 @@ const Chat = () => {
         setReactions(reactionsData as Reaction[]);
       }
 
+      // Load pinned messages
+      const { data: pinnedData } = await supabase
+        .from("pinned_messages")
+        .select("*");
+      if (pinnedData) {
+        setPinnedMessages(pinnedData as PinnedMessage[]);
+      }
+
       // Realtime subscription for new messages and updates (read receipts)
       const channel = supabase
-        .channel("messages-and-reactions")
+        .channel("messages-reactions-pins")
         .on(
           "postgres_changes",
           { event: "INSERT", schema: "public", table: "messages" },
@@ -161,6 +178,22 @@ const Chat = () => {
           (payload) => {
             const deletedReaction = payload.old as Reaction;
             setReactions((prev) => prev.filter((r) => r.id !== deletedReaction.id));
+          }
+        )
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "pinned_messages" },
+          (payload) => {
+            const newPin = payload.new as PinnedMessage;
+            setPinnedMessages((prev) => [...prev, newPin]);
+          }
+        )
+        .on(
+          "postgres_changes",
+          { event: "DELETE", schema: "public", table: "pinned_messages" },
+          (payload) => {
+            const deletedPin = payload.old as PinnedMessage;
+            setPinnedMessages((prev) => prev.filter((p) => p.id !== deletedPin.id));
           }
         )
         .subscribe();
@@ -493,6 +526,52 @@ const Chat = () => {
     }
   };
 
+  const togglePin = async (message: Message) => {
+    if (!userId || !activeConversation) return;
+    
+    const existingPin = pinnedMessages.find(
+      p => p.message_id === message.id && p.pinned_by === userId
+    );
+
+    try {
+      if (existingPin) {
+        // Unpin
+        const { error } = await supabase
+          .from("pinned_messages")
+          .delete()
+          .eq("id", existingPin.id);
+        if (error) throw error;
+        setPinnedMessages(prev => prev.filter(p => p.id !== existingPin.id));
+        toast({ title: "Message unpinned" });
+      } else {
+        // Pin
+        const { data, error } = await supabase
+          .from("pinned_messages")
+          .insert({
+            message_id: message.id,
+            conversation_user_id: activeConversation,
+            pinned_by: userId,
+          })
+          .select()
+          .single();
+        if (error) throw error;
+        if (data) {
+          setPinnedMessages(prev => [...prev, data as PinnedMessage]);
+        }
+        toast({ title: "Message pinned" });
+      }
+    } catch (e: any) {
+      toast({ variant: "destructive", title: "Failed to update pin", description: e.message || "Unknown error" });
+    }
+  };
+
+  const getConversationPinnedMessages = () => {
+    if (!activeConversation || !userId) return [];
+    return pinnedMessages.filter(
+      p => p.pinned_by === userId && p.conversation_user_id === activeConversation
+    );
+  };
+
   const openConversation = async (participantId: string) => {
     setActiveConversation(participantId);
     setTargetType("direct");
@@ -574,6 +653,39 @@ const Chat = () => {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Pinned messages section */}
+              {getConversationPinnedMessages().length > 0 && (
+                <div className="bg-muted/50 rounded-lg p-3 border border-border/50">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Pin className="h-3.5 w-3.5 text-primary" />
+                    <span className="text-xs font-medium text-muted-foreground">Pinned Messages</span>
+                  </div>
+                  <div className="space-y-2">
+                    {getConversationPinnedMessages().map((pin) => {
+                      const pinnedMsg = messages.find(m => m.id === pin.message_id);
+                      if (!pinnedMsg) return null;
+                      return (
+                        <div key={pin.id} className="flex items-start justify-between gap-2 p-2 bg-background rounded-md">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-muted-foreground mb-0.5">
+                              {pinnedMsg.sender_id === userId ? 'You' : profilesById.get(pinnedMsg.sender_id)?.name || 'Unknown'}
+                            </p>
+                            <p className="text-sm line-clamp-2">{pinnedMsg.content}</p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 shrink-0"
+                            onClick={() => togglePin(pinnedMsg)}
+                          >
+                            <X className="h-3 w-3 text-muted-foreground" />
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
               <ScrollArea className="h-[400px] pr-4" ref={scrollRef as any}>
                 <div className="space-y-3">
                   {conversationMessages.length === 0 && (
@@ -651,6 +763,18 @@ const Chat = () => {
                               onClick={() => setForwardMessage(m)}
                             >
                               <Forward className="h-3.5 w-3.5 text-muted-foreground" />
+                            </Button>
+                            {/* Pin button */}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className={cn(
+                                "h-6 w-6 rounded-full bg-background border shadow-sm",
+                                pinnedMessages.some(p => p.message_id === m.id && p.pinned_by === userId) && "text-primary"
+                              )}
+                              onClick={() => togglePin(m)}
+                            >
+                              <Pin className="h-3.5 w-3.5" />
                             </Button>
                             {/* Reaction picker button */}
                             <Popover>

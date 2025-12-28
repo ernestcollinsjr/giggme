@@ -180,7 +180,9 @@ export const MessagesChat = ({
   const [allMessages, setAllMessages] = useState<Message[]>([]);
   const [activeTab, setActiveTab] = useState<"direct" | "groups">(defaultTab);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [typingUsers, setTypingUsers] = useState<Map<string, string>>(new Map());
@@ -547,6 +549,21 @@ export const MessagesChat = ({
     }
   }, [conversationMessages, activeConversation, userId]);
 
+  // Search suggestions - profiles that match search query but aren't in current conversations
+  const searchSuggestions = useMemo(() => {
+    if (!searchQuery.trim() || searchQuery.length < 2) return [];
+    const query = searchQuery.toLowerCase();
+    const existingParticipantIds = new Set(groupedConversations.direct.map(c => c.participantId).filter(Boolean));
+    
+    return profilesList
+      .filter(p => 
+        p.id !== userId && 
+        p.name.toLowerCase().includes(query) &&
+        !existingParticipantIds.has(p.id)
+      )
+      .slice(0, 5); // Limit to 5 suggestions
+  }, [profilesList, searchQuery, groupedConversations.direct, userId]);
+
   const filteredConversations = useMemo(() => {
     const list = activeTab === "groups" 
       ? (groupedConversations.group ? [groupedConversations.group] : [])
@@ -855,13 +872,46 @@ export const MessagesChat = ({
             </Button>
 
             <div className="relative mt-2">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground z-10" />
               <Input
-                placeholder="Search..."
+                ref={searchInputRef}
+                placeholder="Search or start new..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setShowSearchSuggestions(true);
+                }}
+                onFocus={() => setShowSearchSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSearchSuggestions(false), 200)}
                 className="pl-8 h-8 text-sm"
               />
+              
+              {/* Search Suggestions Dropdown */}
+              {showSearchSuggestions && searchSuggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-lg z-50 overflow-hidden">
+                  <div className="px-2 py-1.5 text-xs text-muted-foreground border-b border-border">
+                    Start conversation with:
+                  </div>
+                  {searchSuggestions.map((profile) => (
+                    <button
+                      key={profile.id}
+                      className="w-full flex items-center gap-2 px-2 py-2 hover:bg-muted/50 transition-colors text-left"
+                      onMouseDown={(e) => {
+                        e.preventDefault(); // Prevent blur
+                        startNewConversation(profile.id);
+                        setSearchQuery("");
+                        setShowSearchSuggestions(false);
+                      }}
+                    >
+                      <Avatar className="h-7 w-7">
+                        {profile.photo_urls?.[0] && <AvatarImage src={profile.photo_urls[0]} />}
+                        <AvatarFallback className="text-xs">{getInitials(profile.name)}</AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm font-medium truncate">{profile.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}

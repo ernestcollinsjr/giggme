@@ -146,16 +146,22 @@ const BottomNav = () => {
   // Route to role-appropriate dashboard
   const dashboardPath = userRole === "booking_manager" ? "/booking-manager" : "/dashboard";
   
+  // Book Gig path - for booking managers, go to artist discovery instead to avoid duplicate paths
+  const bookGigPath = userRole === "booking_manager" 
+    ? "/artists" 
+    : userRole === "band_leader" || userRole === "super_admin"
+      ? "/bookings?new=true" 
+      : "/bookings?new=true";
+  
   const navItems = [
-    { icon: Home, label: "Dashboard", path: dashboardPath },
-    { icon: MessageCircle, label: "Messages", path: "/messages", badge: unreadCount },
-    { icon: Music, label: "My Gigs", path: "/bookings" },
+    { id: "dashboard", icon: Home, label: "Dashboard", path: dashboardPath },
+    { id: "messages", icon: MessageCircle, label: "Messages", path: "/messages", badge: unreadCount },
+    { id: "gigs", icon: Music, label: "My Gigs", path: "/bookings" },
     { 
+      id: "book",
       icon: PlusCircle, 
-      label: "Book Gig", 
-      path: userRole === "band_leader" || userRole === "super_admin" || userRole === "booking_manager" 
-        ? "/booking-manager" 
-        : "/bookings?new=true"
+      label: userRole === "booking_manager" ? "Find Artists" : "Book Gig", 
+      path: bookGigPath
     },
   ];
 
@@ -168,7 +174,7 @@ const BottomNav = () => {
           
           return (
             <button
-              key={item.path}
+              key={item.id}
               onClick={() => navigate(item.path)}
               className={cn(
                 "flex flex-col items-center justify-center flex-1 h-full transition-colors relative",

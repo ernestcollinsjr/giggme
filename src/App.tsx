@@ -27,6 +27,7 @@ import VenueDashboard from "./pages/VenueDashboard";
 import EntertainerMarketplace from "./pages/EntertainerMarketplace";
 import EntertainerDashboard from "./pages/EntertainerDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import BookingManagerAdmin from "./pages/BookingManagerAdmin";
 import Notifications from "./pages/Notifications";
 import ScheduleReminder from "./pages/ScheduleReminder";
 import SharedSetlist from "./pages/SharedSetlist";
@@ -66,6 +67,7 @@ const App = () => (
             <Route path="/entertainers" element={<EntertainerMarketplace />} />
             <Route path="/entertainer-dashboard" element={<EntertainerDashboard />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/booking-admin" element={<BookingManagerAdmin />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/schedule-reminder" element={<ScheduleReminder />} />
             <Route path="/shared-setlist/:token" element={<SharedSetlist />} />

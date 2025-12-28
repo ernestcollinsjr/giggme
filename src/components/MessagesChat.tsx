@@ -18,7 +18,6 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
-
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 const REPORT_REASONS = [
@@ -172,7 +171,6 @@ export const MessagesChat = ({
 }: MessagesChatProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  
   const isMobile = useIsMobile();
   const [userId, setUserId] = useState<string | null>(null);
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
@@ -182,9 +180,7 @@ export const MessagesChat = ({
   const [allMessages, setAllMessages] = useState<Message[]>([]);
   const [activeTab, setActiveTab] = useState<"direct" | "groups">(defaultTab);
   const [searchQuery, setSearchQuery] = useState("");
-  const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [typingUsers, setTypingUsers] = useState<Map<string, string>>(new Map());
@@ -195,7 +191,6 @@ export const MessagesChat = ({
   const [forwardMessage, setForwardMessage] = useState<Message | null>(null);
   const [forwarding, setForwarding] = useState(false);
   const [newConversationOpen, setNewConversationOpen] = useState(false);
-  const [newConversationSearch, setNewConversationSearch] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingChannelRef = useRef<RealtimeChannel | null>(null);
@@ -283,39 +278,24 @@ export const MessagesChat = ({
     })();
   }, [navigate]);
 
-
   useEffect(() => {
     if (!userId) return;
     fetchProfiles();
     fetchMessages();
     fetchReactionsAndPins();
 
-    console.log("Setting up realtime subscription for messages...");
-    
     const channel = supabase
       .channel("messages-chat-realtime")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "messages" },
         (payload) => {
-          console.log("Realtime message event:", payload.eventType, payload);
           if (payload.eventType === "INSERT") {
-            setAllMessages((prev) => {
-              if (prev.some(m => m.id === (payload.new as Message).id)) return prev;
-              return [...prev, payload.new as Message];
-            });
-            // Scroll after a short delay
-            requestAnimationFrame(() => {
-              if (scrollRef.current) {
-                const scrollContainer = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
-                if (scrollContainer) {
-                  scrollContainer.scrollTop = scrollContainer.scrollHeight;
-                }
-              }
-            });
+            setAllMessages((prev) => [...prev, payload.new as Message]);
+            setTimeout(scrollToBottom, 200);
           } else if (payload.eventType === "UPDATE") {
             setAllMessages((prev) =>
-              prev.map((m) => (m.id === (payload.new as Message).id ? payload.new as Message : m))
+              prev.map((m) => (m.id === (payload.new as Message).id ? (payload.new as Message) : m))
             );
           } else if (payload.eventType === "DELETE") {
             setAllMessages((prev) => prev.filter((m) => m.id !== (payload.old as Message).id));
@@ -325,55 +305,24 @@ export const MessagesChat = ({
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "message_reactions" },
-        (payload) => {
-          console.log("Realtime reaction event:", payload.eventType);
-          if (payload.eventType === "INSERT") {
-            setReactions(prev => {
-              if (prev.some(r => r.id === (payload.new as Reaction).id)) return prev;
-              return [...prev, payload.new as Reaction];
-            });
-          } else if (payload.eventType === "DELETE") {
-            setReactions(prev => prev.filter(r => r.id !== (payload.old as Reaction).id));
-          }
-        }
+        () => fetchReactionsAndPins()
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "pinned_messages" },
-        (payload) => {
-          console.log("Realtime pin event:", payload.eventType);
-          if (payload.eventType === "INSERT") {
-            setPinnedMessages(prev => {
-              if (prev.some(p => p.id === (payload.new as PinnedMessage).id)) return prev;
-              return [...prev, payload.new as PinnedMessage];
-            });
-          } else if (payload.eventType === "DELETE") {
-            setPinnedMessages(prev => prev.filter(p => p.id !== (payload.old as PinnedMessage).id));
-          }
-        }
+        () => fetchReactionsAndPins()
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "read_receipts" },
-        (payload) => {
-          console.log("Realtime read receipt event:", payload.eventType);
-          if (payload.eventType === "INSERT") {
-            setReadReceipts(prev => {
-              if (prev.some(r => r.id === (payload.new as ReadReceipt).id)) return prev;
-              return [...prev, payload.new as ReadReceipt];
-            });
-          }
-        }
+        () => fetchReactionsAndPins()
       )
-      .subscribe((status) => {
-        console.log("Realtime subscription status:", status);
-      });
+      .subscribe();
 
     return () => {
-      console.log("Cleaning up realtime subscription");
       supabase.removeChannel(channel);
     };
-  }, [userId]);
+  }, [userId, scrollToBottom]);
 
   useEffect(() => {
     if (!userId || !activeConversation) {
@@ -463,20 +412,12 @@ export const MessagesChat = ({
   }, []);
 
   const fetchProfiles = async () => {
-    console.log("fetchProfiles: Starting to fetch profiles...");
-    const { data, error } = await supabase.from("profiles").select("id, name, photo_urls");
-    console.log("fetchProfiles: Response - data count:", data?.length, "error:", error);
-    if (error) {
-      console.error("Error fetching profiles:", error);
-    }
-    if (data && data.length > 0) {
-      console.log("fetchProfiles: Setting profiles with names:", data.map(p => p.name));
+    const { data } = await supabase.from("profiles").select("id, name, photo_urls");
+    if (data) {
       const profileObj: Record<string, Profile> = {};
       data.forEach((p) => { profileObj[p.id] = p as Profile; });
       setProfiles(profileObj);
       setProfilesList(data.filter((p) => p.id !== userId) as Profile[]);
-    } else {
-      console.warn("fetchProfiles: No profiles returned from query");
     }
     setProfilesLoaded(true);
   };
@@ -593,50 +534,18 @@ export const MessagesChat = ({
     ).sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
   }, [allMessages, activeConversation, userId]);
 
-  // Mark messages as read - debounced and batched
-  const markReadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const pendingMarkRead = useRef<Set<string>>(new Set());
-
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
     
-    if (activeConversation && userId) {
+    if (activeConversation && userId && !activeConversation.isGroup) {
       const unread = conversationMessages.filter(
-        m => m.sender_id !== userId && !m.read_by?.includes(userId)
+        m => m.sender_id === activeConversation.participantId && !m.read_by?.includes(userId)
       );
-      
-      // Add to pending set
-      unread.forEach(msg => pendingMarkRead.current.add(msg.id));
-      
-      // Debounce the actual marking
-      if (markReadTimeoutRef.current) clearTimeout(markReadTimeoutRef.current);
-      markReadTimeoutRef.current = setTimeout(() => {
-        const idsToMark = Array.from(pendingMarkRead.current);
-        pendingMarkRead.current.clear();
-        
-        // Mark all in parallel
-        Promise.all(
-          idsToMark.map(id => supabase.rpc("mark_message_as_read", { message_id: id, user_id: userId }))
-        ).catch(console.error);
-      }, 500);
+      unread.forEach(async (msg) => {
+        await supabase.rpc("mark_message_as_read", { message_id: msg.id, user_id: userId });
+      });
     }
   }, [conversationMessages, activeConversation, userId]);
-
-  // Search suggestions - ALL profiles that match search query (both new and existing conversations)
-  const searchSuggestions = useMemo(() => {
-    if (!searchQuery.trim() || searchQuery.length < 2) return [];
-    const query = searchQuery.toLowerCase();
-    
-    // Find all matching profiles
-    const matches = profilesList.filter(p => 
-      p.id !== userId && 
-      p.name.toLowerCase().includes(query)
-    ).slice(0, 8); // Limit to 8 suggestions
-    
-    console.log('Search suggestions:', { query, profilesCount: profilesList.length, matchesCount: matches.length, matches: matches.map(p => p.name) });
-    
-    return matches;
-  }, [profilesList, searchQuery, userId]);
 
   const filteredConversations = useMemo(() => {
     const list = activeTab === "groups" 
@@ -647,7 +556,7 @@ export const MessagesChat = ({
     return list.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
   }, [groupedConversations, activeTab, searchQuery]);
 
-  const openConversation = (conversation: Conversation) => {
+  const openConversation = async (conversation: Conversation) => {
     const freshProfile = conversation.participantId 
       ? profiles[conversation.participantId] 
       : null;
@@ -660,7 +569,6 @@ export const MessagesChat = ({
     
     setActiveConversation(updatedConversation);
     
-    // Mark messages as delivered/read in background without blocking
     if (userId) {
       const messagesToProcess = allMessages.filter(m => {
         if (conversation.isGroup) {
@@ -669,17 +577,14 @@ export const MessagesChat = ({
         return !m.is_group_message && m.sender_id === conversation.participantId;
       });
 
-      // Filter to only undelivered/unread and run in parallel in background
-      const deliverPromises = messagesToProcess
-        .filter(msg => !msg.delivered_to?.includes(userId))
-        .map(msg => supabase.rpc("mark_message_as_delivered", { message_id: msg.id, user_id: userId }));
-      
-      const readPromises = messagesToProcess
-        .filter(msg => !msg.read_by?.includes(userId))
-        .map(msg => supabase.rpc("mark_message_as_read", { message_id: msg.id, user_id: userId }));
-      
-      // Run all in parallel, don't await
-      Promise.all([...deliverPromises, ...readPromises]).catch(console.error);
+      for (const msg of messagesToProcess) {
+        if (!msg.delivered_to?.includes(userId)) {
+          await supabase.rpc("mark_message_as_delivered", { message_id: msg.id, user_id: userId });
+        }
+        if (!msg.read_by?.includes(userId)) {
+          await supabase.rpc("mark_message_as_read", { message_id: msg.id, user_id: userId });
+        }
+      }
     }
   };
 
@@ -687,54 +592,21 @@ export const MessagesChat = ({
     if (!userId || !text.trim() || !activeConversation) return;
     
     setSending(true);
-    const messageContent = text.trim();
-    const replyId = replyToMessage?.id || null;
-    const recipientId = activeConversation.isGroup ? null : activeConversation.participantId;
-    const isGroupMessage = activeConversation.isGroup;
-    
-    // Create optimistic message immediately for instant UI feedback
-    const optimisticMessage: Message = {
-      id: `temp-${Date.now()}`,
-      sender_id: userId,
-      recipient_id: recipientId || null,
-      is_group_message: isGroupMessage,
-      content: messageContent,
-      created_at: new Date().toISOString(),
-      read_by: [userId],
-      delivered_to: [userId],
-      reply_to_id: replyId,
-    };
-    
-    // Add optimistic message immediately
-    setAllMessages((prev) => [...prev, optimisticMessage]);
-    setText("");
-    setReplyToMessage(null);
-    broadcastTyping(false);
-    scrollToBottom();
-    
     try {
-      const { data, error } = await supabase.from("messages").insert({
+      const { error } = await supabase.from("messages").insert({
         sender_id: userId,
-        recipient_id: recipientId,
-        is_group_message: isGroupMessage,
-        content: messageContent,
-        reply_to_id: replyId,
-      }).select().single();
+        recipient_id: activeConversation.isGroup ? null : activeConversation.participantId,
+        is_group_message: activeConversation.isGroup,
+        content: text.trim(),
+        reply_to_id: replyToMessage?.id || null,
+      });
       
       if (error) throw error;
-      
-      // Replace optimistic message with real one
-      if (data) {
-        setAllMessages((prev) => {
-          // Remove optimistic message and add real one if not already present
-          const filtered = prev.filter(m => m.id !== optimisticMessage.id);
-          if (filtered.some(m => m.id === data.id)) return filtered;
-          return [...filtered, data as Message];
-        });
-      }
+      setText("");
+      setReplyToMessage(null);
+      broadcastTyping(false);
+      scrollToBottom();
     } catch (e: any) {
-      // Remove optimistic message on error
-      setAllMessages((prev) => prev.filter(m => m.id !== optimisticMessage.id));
       toast({ variant: "destructive", title: "Failed to send", description: e.message });
     } finally {
       setSending(false);
@@ -928,14 +800,6 @@ export const MessagesChat = ({
     return profilesList.filter(p => filterToManagedArtists.includes(p.id));
   }, [profilesList, filterToManagedArtists]);
 
-  // Filtered profiles for new conversation dialog with search
-  const filteredNewConversationProfiles = useMemo(() => {
-    const base = availableProfiles.filter(p => p.id !== userId);
-    if (!newConversationSearch.trim()) return base.slice(0, 20); // Show first 20 when no search
-    const query = newConversationSearch.toLowerCase();
-    return base.filter(p => p.name.toLowerCase().includes(query));
-  }, [availableProfiles, newConversationSearch, userId]);
-
   if (loading) {
     return (
       <div className={cn("flex items-center justify-center h-96", className)}>
@@ -991,59 +855,13 @@ export const MessagesChat = ({
             </Button>
 
             <div className="relative mt-2">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground z-10" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input
-                ref={searchInputRef}
-                placeholder="Search or start new..."
+                placeholder="Search..."
                 value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setShowSearchSuggestions(true);
-                }}
-                onFocus={() => setShowSearchSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowSearchSuggestions(false), 200)}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-8 h-8 text-sm"
               />
-              
-              {/* Search Suggestions Dropdown */}
-              {showSearchSuggestions && searchSuggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-lg z-50 overflow-hidden">
-                  <div className="px-2 py-1.5 text-xs text-muted-foreground border-b border-border">
-                    Message:
-                  </div>
-                  {searchSuggestions.map((profile) => {
-                    // Check if there's already a conversation with this person
-                    const existingConv = groupedConversations.direct.find(c => c.participantId === profile.id);
-                    return (
-                      <button
-                        key={profile.id}
-                        className="w-full flex items-center gap-2 px-2 py-2 hover:bg-muted/50 transition-colors text-left"
-                        onMouseDown={(e) => {
-                          e.preventDefault(); // Prevent blur
-                          if (existingConv) {
-                            openConversation(existingConv);
-                          } else {
-                            startNewConversation(profile.id);
-                          }
-                          setSearchQuery("");
-                          setShowSearchSuggestions(false);
-                        }}
-                      >
-                        <Avatar className="h-7 w-7">
-                          {profile.photo_urls?.[0] && <AvatarImage src={profile.photo_urls[0]} />}
-                          <AvatarFallback className="text-xs">{getInitials(profile.name)}</AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm font-medium truncate">{profile.name}</span>
-                        {existingConv && existingConv.unreadCount > 0 && (
-                          <Badge variant="destructive" className="ml-auto text-xs h-5 min-w-5 flex items-center justify-center">
-                            {existingConv.unreadCount}
-                          </Badge>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
             </div>
           </div>
         )}
@@ -1544,51 +1362,27 @@ export const MessagesChat = ({
       </div>
 
       {/* New Conversation Dialog */}
-      <Dialog open={newConversationOpen} onOpenChange={(open) => {
-        setNewConversationOpen(open);
-        if (!open) setNewConversationSearch("");
-      }}>
+      <Dialog open={newConversationOpen} onOpenChange={setNewConversationOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>New Conversation</DialogTitle>
-            <DialogDescription>Search for someone to start a conversation</DialogDescription>
+            <DialogDescription>Select someone to start a conversation</DialogDescription>
           </DialogHeader>
-          
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Type a name to search..."
-              value={newConversationSearch}
-              onChange={(e) => setNewConversationSearch(e.target.value)}
-              className="pl-9"
-              autoFocus
-            />
-          </div>
-          
           <ScrollArea className="max-h-64">
             <div className="space-y-1">
-              {filteredNewConversationProfiles.length === 0 ? (
-                <div className="text-center py-6 text-muted-foreground text-sm">
-                  {newConversationSearch ? "No matching profiles found" : "Start typing to search..."}
-                </div>
-              ) : (
-                filteredNewConversationProfiles.map((profile) => (
-                  <button
-                    key={profile.id}
-                    onClick={() => {
-                      startNewConversation(profile.id);
-                      setNewConversationSearch("");
-                    }}
-                    className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors"
-                  >
-                    <Avatar className="h-9 w-9">
-                      {profile.photo_urls?.[0] && <AvatarImage src={profile.photo_urls[0]} />}
-                      <AvatarFallback>{getInitials(profile.name)}</AvatarFallback>
-                    </Avatar>
-                    <span className="font-medium text-sm">{profile.name}</span>
-                  </button>
-                ))
-              )}
+              {availableProfiles.map((profile) => (
+                <button
+                  key={profile.id}
+                  onClick={() => startNewConversation(profile.id)}
+                  className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors"
+                >
+                  <Avatar className="h-9 w-9">
+                    {profile.photo_urls?.[0] && <AvatarImage src={profile.photo_urls[0]} />}
+                    <AvatarFallback>{getInitials(profile.name)}</AvatarFallback>
+                  </Avatar>
+                  <span className="font-medium text-sm">{profile.name}</span>
+                </button>
+              ))}
             </div>
           </ScrollArea>
         </DialogContent>

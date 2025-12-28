@@ -349,16 +349,27 @@ const Messages = () => {
   }, []);
 
   const scrollToBottom = useCallback(() => {
-    // Immediate scroll without delay
     const doScroll = () => {
+      // Method 1: Use scrollRef
+      if (scrollRef.current) {
+        const scrollContainer = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
+        if (scrollContainer) {
+          scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        }
+      }
+      // Method 2: Find any scroll viewport in the chat area
       const allViewports = document.querySelectorAll('[data-radix-scroll-area-viewport]');
       allViewports.forEach(viewport => {
         viewport.scrollTop = viewport.scrollHeight;
       });
     };
+    
+    // Scroll multiple times to handle mobile keyboard animation
+    // This mimics native phone messaging behavior
     doScroll();
-    // Single follow-up for dynamic content
-    requestAnimationFrame(doScroll);
+    setTimeout(doScroll, 100);
+    setTimeout(doScroll, 300);
+    setTimeout(doScroll, 500);
   }, []);
 
   // Attach scroll listener
@@ -430,106 +441,49 @@ const Messages = () => {
 
   useEffect(() => {
     if (!userId) return;
-    
     fetchProfiles();
     fetchMessages();
     fetchReactionsAndPins();
-  }, [userId]);
 
-  // Polling fallback for messages - ensures messages appear even if realtime fails
-  useEffect(() => {
-    if (!userId) return;
-
-    const pollMessages = async () => {
-      const { data, error } = await supabase
-        .from("messages")
-        .select("*")
-        .or(`sender_id.eq.${userId},recipient_id.eq.${userId},is_group_message.eq.true`)
-        .order("created_at", { ascending: true });
-      
-      if (!error && data) {
-        setAllMessages(currentMessages => {
-          // Get IDs of current real messages (not temp)
-          const currentRealIds = new Set(
-            currentMessages.filter(m => !m.id.startsWith('temp-')).map(m => m.id)
-          );
-          
-          // Check if there are any new messages from the server
-          const hasNewMessages = data.some((m: Message) => !currentRealIds.has(m.id));
-          
-          // Also check if any messages were deleted
-          const serverIds = new Set(data.map((m: Message) => m.id));
-          const hasDeletedMessages = currentMessages.some(m => 
-            !m.id.startsWith('temp-') && !serverIds.has(m.id)
-          );
-          
-          if (hasNewMessages || hasDeletedMessages) {
-            // Preserve temp messages that don't have real counterparts
-            const tempMessages = currentMessages.filter(m => 
-              m.id.startsWith('temp-') && 
-              !data.some((d: Message) => d.content === m.content && d.sender_id === m.sender_id)
-            );
-            return [...(data as Message[]), ...tempMessages];
-          }
-          
-          return currentMessages;
-        });
-      }
-    };
-
-    // Poll immediately and then every 2 seconds
-    pollMessages();
-    const intervalId = setInterval(pollMessages, 2000);
-
-    return () => clearInterval(intervalId);
-  }, [userId]);
-
-  // Realtime subscription (kept as primary, polling is fallback)
-  useEffect(() => {
-    if (!userId) return;
-
+    // Realtime subscription
     const channel = supabase
-      .channel(`messages-page-${userId}`)
+      .channel("messages-page-realtime")
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages" },
+        { event: "*", schema: "public", table: "messages" },
         (payload) => {
-          const newMsg = payload.new as Message;
-          setAllMessages((prev) => {
-            const exists = prev.some(m => m.id === newMsg.id);
-            if (exists) return prev;
-            
-            const tempIndex = prev.findIndex(m => 
-              m.id.startsWith('temp-') && 
-              m.content === newMsg.content && 
-              m.sender_id === newMsg.sender_id
+          if (payload.eventType === "INSERT") {
+            setAllMessages((prev) => [...prev, payload.new as Message]);
+            // Auto-scroll to bottom when new message arrives
+            setTimeout(() => {
+              const allViewports = document.querySelectorAll('[data-radix-scroll-area-viewport]');
+              allViewports.forEach(viewport => {
+                viewport.scrollTop = viewport.scrollHeight;
+              });
+            }, 200);
+          } else if (payload.eventType === "UPDATE") {
+            setAllMessages((prev) =>
+              prev.map((m) => (m.id === (payload.new as Message).id ? (payload.new as Message) : m))
             );
-            
-            if (tempIndex >= 0) {
-              const updated = [...prev];
-              updated[tempIndex] = newMsg;
-              return updated;
-            }
-            
-            return [...prev, newMsg];
-          });
+          } else if (payload.eventType === "DELETE") {
+            setAllMessages((prev) => prev.filter((m) => m.id !== (payload.old as Message).id));
+          }
         }
       )
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "messages" },
-        (payload) => {
-          setAllMessages((prev) =>
-            prev.map((m) => (m.id === (payload.new as Message).id ? (payload.new as Message) : m))
-          );
-        }
+        { event: "*", schema: "public", table: "message_reactions" },
+        () => fetchReactionsAndPins()
       )
       .on(
         "postgres_changes",
-        { event: "DELETE", schema: "public", table: "messages" },
-        (payload) => {
-          setAllMessages((prev) => prev.filter((m) => m.id !== (payload.old as Message).id));
-        }
+        { event: "*", schema: "public", table: "pinned_messages" },
+        () => fetchReactionsAndPins()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "read_receipts" },
+        () => fetchReactionsAndPins()
       )
       .subscribe();
 
@@ -610,6 +564,7 @@ const Messages = () => {
   }, [userId, profiles]);
 
   const handleTextChange = useCallback((value: string) => {
+    console.log("handleTextChange called with:", value);
     setText(value);
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     if (value.trim()) {
@@ -748,18 +703,19 @@ const Messages = () => {
     ).sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
   }, [allMessages, activeConversation, userId]);
 
-  // Auto-scroll and mark as read - only on conversation change, not every message
+  // Auto-scroll and mark as read
   useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    
     if (activeConversation && userId && !activeConversation.isGroup) {
       const unread = conversationMessages.filter(
         m => m.sender_id === activeConversation.participantId && !m.read_by?.includes(userId)
       );
-      // Mark unread messages as read in background
-      unread.forEach((msg) => {
-        supabase.rpc("mark_message_as_read", { message_id: msg.id, user_id: userId });
+      unread.forEach(async (msg) => {
+        await supabase.rpc("mark_message_as_read", { message_id: msg.id, user_id: userId });
       });
     }
-  }, [activeConversation?.participantId, userId]);
+  }, [conversationMessages, activeConversation, userId]);
 
   const filteredConversations = useMemo(() => {
     const list = activeTab === "groups" 
@@ -794,76 +750,44 @@ const Messages = () => {
         return !m.is_group_message && m.sender_id === conversation.participantId;
       });
 
-      // Fire all mark operations in parallel without blocking UI
-      messagesToProcess.forEach(msg => {
+      for (const msg of messagesToProcess) {
+        // Mark as delivered if not already
         if (!msg.delivered_to?.includes(userId)) {
-          void supabase.rpc("mark_message_as_delivered", { message_id: msg.id, user_id: userId });
+          await supabase.rpc("mark_message_as_delivered", { message_id: msg.id, user_id: userId });
         }
+        // Mark as read if not already
         if (!msg.read_by?.includes(userId)) {
-          void supabase.rpc("mark_message_as_read", { message_id: msg.id, user_id: userId });
+          await supabase.rpc("mark_message_as_read", { message_id: msg.id, user_id: userId });
         }
-      });
+      }
     }
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!userId || !text.trim() || !activeConversation) return;
     
-    // Capture values immediately
-    const messageContent = text.trim();
-    const replyId = replyToMessage?.id || null;
-    const recipientId = activeConversation.isGroup ? null : activeConversation.participantId;
-    const isGroupMessage = activeConversation.isGroup;
-    const tempId = `temp-${Date.now()}`;
-    
-    // Create optimistic message
-    const optimisticMessage: Message = {
-      id: tempId,
-      sender_id: userId,
-      recipient_id: recipientId || null,
-      is_group_message: isGroupMessage,
-      content: messageContent,
-      created_at: new Date().toISOString(),
-      read_by: [userId],
-      delivered_to: [userId],
-      reply_to_id: replyId,
-    };
-    
-    // Batch all state updates together - React will batch these
-    setText("");
-    setReplyToMessage(null);
-    setAllMessages((prev) => [...prev, optimisticMessage]);
-    
-    // Defer non-critical work
-    queueMicrotask(() => {
-      scrollToBottom();
-      broadcastTyping(false);
-    });
-    
-    // Database insert happens in background - don't block UI
-    supabase.from("messages").insert({
-      sender_id: userId,
-      recipient_id: recipientId,
-      is_group_message: isGroupMessage,
-      content: messageContent,
-      reply_to_id: replyId,
-    }).select().single().then(({ data, error }) => {
-      if (error) {
-        // Remove optimistic message on error
-        setAllMessages((prev) => prev.filter(m => m.id !== tempId));
-        toast({ variant: "destructive", title: "Failed to send", description: error.message });
-        return;
-      }
+    setSending(true);
+    try {
+      const { error } = await supabase.from("messages").insert({
+        sender_id: userId,
+        recipient_id: activeConversation.isGroup ? null : activeConversation.participantId,
+        is_group_message: activeConversation.isGroup,
+        content: text.trim(),
+        reply_to_id: replyToMessage?.id || null,
+      });
       
-      // Replace optimistic message with real one
-      if (data) {
-        setAllMessages((prev) => {
-          const filtered = prev.filter(m => m.id !== tempId);
-          if (filtered.some(m => m.id === data.id)) return filtered;
-          return [...filtered, data as Message];
-        });
-      }
-    });
+      if (error) throw error;
+      setText("");
+      setReplyToMessage(null);
+      broadcastTyping(false);
+      
+      // Scroll to bottom after sending
+      scrollToBottom();
+    } catch (e: any) {
+      toast({ variant: "destructive", title: "Failed to send", description: e.message });
+    } finally {
+      setSending(false);
+    }
   };
 
   const handleDelete = async (messageId: string) => {
@@ -1735,7 +1659,7 @@ const Messages = () => {
                   />
                   <Button 
                     onClick={handleSend} 
-                    disabled={!text.trim()} 
+                    disabled={sending || !text.trim()} 
                     size="icon" 
                     className="h-11 w-11 rounded-full shrink-0 bg-primary hover:bg-primary/90"
                   >

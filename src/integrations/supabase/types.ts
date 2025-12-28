@@ -856,14 +856,12 @@ export type Database = {
       notification_preferences: {
         Row: {
           created_at: string
-          delivered_sound_type: string | null
           email_enabled: boolean | null
           id: string
           push_enabled: boolean | null
           reminder_1_day: boolean | null
           reminder_1_week: boolean | null
           reminder_day_of: boolean | null
-          sent_sound_type: string | null
           sms_enabled: boolean | null
           sound_muted: boolean | null
           sound_type: string | null
@@ -873,14 +871,12 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          delivered_sound_type?: string | null
           email_enabled?: boolean | null
           id?: string
           push_enabled?: boolean | null
           reminder_1_day?: boolean | null
           reminder_1_week?: boolean | null
           reminder_day_of?: boolean | null
-          sent_sound_type?: string | null
           sms_enabled?: boolean | null
           sound_muted?: boolean | null
           sound_type?: string | null
@@ -890,14 +886,12 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          delivered_sound_type?: string | null
           email_enabled?: boolean | null
           id?: string
           push_enabled?: boolean | null
           reminder_1_day?: boolean | null
           reminder_1_week?: boolean | null
           reminder_day_of?: boolean | null
-          sent_sound_type?: string | null
           sms_enabled?: boolean | null
           sound_muted?: boolean | null
           sound_type?: string | null

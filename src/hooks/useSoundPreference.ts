@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export type SoundType = 'chime' | 'bell' | 'ding' | 'sent';
+export type SoundType = 'chime' | 'bell' | 'ding';
 
 const soundPatterns: Record<SoundType, { frequencies: number[]; durations: number[]; delays: number[] }> = {
   chime: {
@@ -19,18 +19,11 @@ const soundPatterns: Record<SoundType, { frequencies: number[]; durations: numbe
     durations: [0.4],
     delays: [0],
   },
-  sent: {
-    frequencies: [440], // A4 - subtle low tone
-    durations: [0.1],
-    delays: [0],
-  },
 };
 
 export const useSoundPreference = () => {
   const [isMuted, setIsMuted] = useState(false);
   const [soundType, setSoundType] = useState<SoundType>('chime');
-  const [sentSoundType, setSentSoundType] = useState<SoundType>('sent');
-  const [deliveredSoundType, setDeliveredSoundType] = useState<SoundType>('chime');
   const [volume, setVolume] = useState(0.5);
   const [loading, setLoading] = useState(true);
 
@@ -48,7 +41,7 @@ export const useSoundPreference = () => {
 
       const { data, error } = await supabase
         .from("notification_preferences")
-        .select("sound_muted, sound_type, sound_volume, sent_sound_type, delivered_sound_type")
+        .select("sound_muted, sound_type, sound_volume")
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -62,8 +55,6 @@ export const useSoundPreference = () => {
         setIsMuted(data.sound_muted ?? false);
         setSoundType((data as any).sound_type ?? 'chime');
         setVolume((data as any).sound_volume ?? 0.5);
-        setSentSoundType((data as any).sent_sound_type ?? 'sent');
-        setDeliveredSoundType((data as any).delivered_sound_type ?? 'chime');
       }
     } catch (error) {
       console.error("Error:", error);
@@ -109,13 +100,8 @@ export const useSoundPreference = () => {
 
   const playNotificationSound = useCallback(() => {
     if (isMuted) return;
-    playSound(deliveredSoundType, volume);
-  }, [isMuted, playSound, deliveredSoundType, volume]);
-
-  const playSentSound = useCallback(() => {
-    if (isMuted) return;
-    playSound(sentSoundType, volume * 0.7); // Slightly quieter for sent
-  }, [isMuted, playSound, sentSoundType, volume]);
+    playSound();
+  }, [isMuted, playSound]);
 
   const playTestSound = useCallback((type?: SoundType, vol?: number) => {
     playSound(type ?? soundType, vol ?? volume);
@@ -124,12 +110,9 @@ export const useSoundPreference = () => {
   return { 
     isMuted, 
     soundType,
-    sentSoundType,
-    deliveredSoundType,
     volume,
     loading, 
-    playNotificationSound,
-    playSentSound,
+    playNotificationSound, 
     playTestSound, 
     refetch: fetchSoundPreference 
   };

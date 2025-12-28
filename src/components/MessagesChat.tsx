@@ -576,16 +576,32 @@ export const MessagesChat = ({
     ).sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
   }, [allMessages, activeConversation, userId]);
 
+  // Mark messages as read - debounced and batched
+  const markReadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pendingMarkRead = useRef<Set<string>>(new Set());
+
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
     
-    if (activeConversation && userId && !activeConversation.isGroup) {
+    if (activeConversation && userId) {
       const unread = conversationMessages.filter(
-        m => m.sender_id === activeConversation.participantId && !m.read_by?.includes(userId)
+        m => m.sender_id !== userId && !m.read_by?.includes(userId)
       );
-      unread.forEach(async (msg) => {
-        await supabase.rpc("mark_message_as_read", { message_id: msg.id, user_id: userId });
-      });
+      
+      // Add to pending set
+      unread.forEach(msg => pendingMarkRead.current.add(msg.id));
+      
+      // Debounce the actual marking
+      if (markReadTimeoutRef.current) clearTimeout(markReadTimeoutRef.current);
+      markReadTimeoutRef.current = setTimeout(() => {
+        const idsToMark = Array.from(pendingMarkRead.current);
+        pendingMarkRead.current.clear();
+        
+        // Mark all in parallel
+        Promise.all(
+          idsToMark.map(id => supabase.rpc("mark_message_as_read", { message_id: id, user_id: userId }))
+        ).catch(console.error);
+      }, 500);
     }
   }, [conversationMessages, activeConversation, userId]);
 
@@ -614,7 +630,7 @@ export const MessagesChat = ({
     return list.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
   }, [groupedConversations, activeTab, searchQuery]);
 
-  const openConversation = async (conversation: Conversation) => {
+  const openConversation = (conversation: Conversation) => {
     const freshProfile = conversation.participantId 
       ? profiles[conversation.participantId] 
       : null;
@@ -627,6 +643,7 @@ export const MessagesChat = ({
     
     setActiveConversation(updatedConversation);
     
+    // Mark messages as delivered/read in background without blocking
     if (userId) {
       const messagesToProcess = allMessages.filter(m => {
         if (conversation.isGroup) {
@@ -635,14 +652,17 @@ export const MessagesChat = ({
         return !m.is_group_message && m.sender_id === conversation.participantId;
       });
 
-      for (const msg of messagesToProcess) {
-        if (!msg.delivered_to?.includes(userId)) {
-          await supabase.rpc("mark_message_as_delivered", { message_id: msg.id, user_id: userId });
-        }
-        if (!msg.read_by?.includes(userId)) {
-          await supabase.rpc("mark_message_as_read", { message_id: msg.id, user_id: userId });
-        }
-      }
+      // Filter to only undelivered/unread and run in parallel in background
+      const deliverPromises = messagesToProcess
+        .filter(msg => !msg.delivered_to?.includes(userId))
+        .map(msg => supabase.rpc("mark_message_as_delivered", { message_id: msg.id, user_id: userId }));
+      
+      const readPromises = messagesToProcess
+        .filter(msg => !msg.read_by?.includes(userId))
+        .map(msg => supabase.rpc("mark_message_as_read", { message_id: msg.id, user_id: userId }));
+      
+      // Run all in parallel, don't await
+      Promise.all([...deliverPromises, ...readPromises]).catch(console.error);
     }
   };
 

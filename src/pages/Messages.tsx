@@ -655,11 +655,11 @@ const Messages = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      <div className="flex h-[calc(100vh-80px)] md:h-screen">
+    <div className="min-h-screen bg-background flex flex-col">
+      <div className="flex flex-1 h-[calc(100vh-64px)] md:h-screen overflow-hidden">
         {/* Sidebar - Conversation List */}
         <div className={cn(
-          "w-full md:w-80 lg:w-96 border-r border-border flex flex-col bg-background",
+          "w-full md:w-80 lg:w-96 border-r border-border flex flex-col bg-background pb-16 md:pb-0",
           activeConversation && "hidden md:flex"
         )}>
           {/* Header */}
@@ -795,7 +795,7 @@ const Messages = () => {
 
         {/* Chat Area */}
         <div className={cn(
-          "flex-1 flex flex-col bg-muted/30",
+          "flex-1 flex flex-col bg-muted/30 overflow-hidden pb-16 md:pb-0",
           !activeConversation && "hidden md:flex"
         )}>
           {activeConversation ? (
@@ -1053,27 +1053,22 @@ const Messages = () => {
                 </div>
               )}
 
-              {/* Message Input */}
-              <div className="p-4 border-t border-border bg-background relative z-50">
+              {/* Message Input - Fixed at bottom */}
+              <div className="sticky bottom-0 p-4 border-t border-border bg-background z-50">
                 <div className="flex gap-2 max-w-3xl mx-auto">
                   <Textarea
                     ref={textareaRef}
                     placeholder="Type a message..."
                     value={text}
-                    onChange={(e) => {
-                      console.log("onChange triggered:", e.target.value);
-                      handleTextChange(e.target.value);
-                    }}
-                    onFocus={() => console.log("Textarea focused")}
+                    onChange={(e) => handleTextChange(e.target.value)}
                     onKeyDown={(e) => {
-                      console.log("Key pressed:", e.key);
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
                         handleSend();
                       }
                     }}
                     rows={1}
-                    className="flex-1 resize-none min-h-[44px] max-h-32 pointer-events-auto"
+                    className="flex-1 resize-none min-h-[44px] max-h-32"
                   />
                   <Button 
                     onClick={handleSend} 

@@ -1162,10 +1162,10 @@ const Messages = () => {
                               </span>
                             </div>
 
-                            {/* Actions */}
+                            {/* Actions - positioned on the bubble */}
                             <div className={cn(
-                              "absolute top-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity",
-                              isOwn ? "right-0 translate-x-full pl-2" : "left-0 -translate-x-full pr-2"
+                              "absolute -top-3 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity bg-background/95 backdrop-blur-sm rounded-full shadow-md border border-border px-1 py-0.5",
+                              isOwn ? "right-2" : "left-2"
                             )}>
                               <Tooltip>
                                 <TooltipTrigger asChild>

@@ -1081,53 +1081,55 @@ const Messages = () => {
                 </ScrollArea>
               </div>
 
-              {/* Typing indicator */}
-              {typingUsers.size > 0 && (
-                <div className="px-4 py-3 flex items-center gap-2 bg-background border-t border-border">
-                  <div className="flex gap-1">
-                    <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" />
-                    <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </div>
-                  <span className="text-sm text-muted-foreground">
-                    {Array.from(typingUsers.values()).join(', ')} {typingUsers.size === 1 ? 'is' : 'are'} typing...
-                  </span>
-                </div>
-              )}
-
-              {/* Reply preview */}
-              {replyToMessage && (
-                <div className="mx-4 p-2 bg-muted rounded-lg border-l-2 border-primary flex items-start justify-between">
-                  <div>
-                    <div className="flex items-center gap-1 text-xs text-primary font-medium">
-                      <Reply className="h-3 w-3" />
-                      Replying to {replyToMessage.sender_id === userId ? 'yourself' : profiles[replyToMessage.sender_id]?.name}
+              {/* Bottom input area container */}
+              <div className="flex-shrink-0 border-t border-border bg-background safe-area-bottom">
+                {/* Typing indicator */}
+                {typingUsers.size > 0 && (
+                  <div className="px-4 py-2 flex items-center gap-2 border-b border-border/50">
+                    <div className="flex gap-1">
+                      <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" />
+                      <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                     </div>
-                    <p className="text-xs text-muted-foreground line-clamp-1">{replyToMessage.content}</p>
+                    <span className="text-sm text-muted-foreground">
+                      {Array.from(typingUsers.values()).join(', ')} {typingUsers.size === 1 ? 'is' : 'are'} typing...
+                    </span>
                   </div>
-                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setReplyToMessage(null)}>
-                    <X className="h-3 w-3" />
-                  </Button>
-                </div>
-              )}
+                )}
 
-              {/* Scroll to bottom button */}
-              {!isAtBottom && (
-                <div className="flex justify-center py-2">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={scrollToBottom}
-                    className="rounded-full shadow-lg gap-1"
-                  >
-                    <ArrowDown className="h-4 w-4" />
-                    New messages
-                  </Button>
-                </div>
-              )}
+                {/* Reply preview */}
+                {replyToMessage && (
+                  <div className="mx-4 mt-2 p-2 bg-muted rounded-lg border-l-2 border-primary flex items-start justify-between">
+                    <div>
+                      <div className="flex items-center gap-1 text-xs text-primary font-medium">
+                        <Reply className="h-3 w-3" />
+                        Replying to {replyToMessage.sender_id === userId ? 'yourself' : profiles[replyToMessage.sender_id]?.name}
+                      </div>
+                      <p className="text-xs text-muted-foreground line-clamp-1">{replyToMessage.content}</p>
+                    </div>
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setReplyToMessage(null)}>
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
 
-              {/* Message Input - with extra bottom padding for mobile nav */}
-              <div className="flex-shrink-0 p-4 pb-8 md:pb-6 border-t border-border bg-background safe-area-bottom">
+                {/* Scroll to bottom button */}
+                {!isAtBottom && (
+                  <div className="flex justify-center py-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={scrollToBottom}
+                      className="rounded-full shadow-lg gap-1"
+                    >
+                      <ArrowDown className="h-4 w-4" />
+                      New messages
+                    </Button>
+                  </div>
+                )}
+
+                {/* Message Input */}
+                <div className="p-4 pb-6 md:pb-4">
                 <div className="flex gap-2 max-w-3xl mx-auto items-end">
                   <Textarea
                     ref={textareaRef}
@@ -1160,6 +1162,7 @@ const Messages = () => {
                     <Send className="h-4 w-4" />
                   </Button>
                 </div>
+              </div>
               </div>
             </>
           ) : (

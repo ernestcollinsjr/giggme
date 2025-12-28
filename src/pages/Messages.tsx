@@ -448,33 +448,38 @@ const Messages = () => {
         .order("created_at", { ascending: true });
       
       if (!error && data) {
-        setAllMessages(prev => {
-          // Only update if there are actual new messages
-          const prevIds = new Set(prev.filter(m => !m.id.startsWith('temp-')).map(m => m.id));
-          const newMessages = data.filter((m: Message) => !prevIds.has(m.id));
+        setAllMessages(currentMessages => {
+          // Get IDs of current real messages (not temp)
+          const currentRealIds = new Set(
+            currentMessages.filter(m => !m.id.startsWith('temp-')).map(m => m.id)
+          );
           
-          if (newMessages.length > 0) {
-            // Keep temp messages, add new real ones
-            const tempMessages = prev.filter(m => m.id.startsWith('temp-'));
-            const realMessages = data as Message[];
-            
-            // Filter out temp messages that now have real counterparts
-            const remainingTemp = tempMessages.filter(temp => 
-              !realMessages.some(real => 
-                real.content === temp.content && 
-                real.sender_id === temp.sender_id
-              )
+          // Check if there are any new messages from the server
+          const hasNewMessages = data.some((m: Message) => !currentRealIds.has(m.id));
+          
+          // Also check if any messages were deleted
+          const serverIds = new Set(data.map((m: Message) => m.id));
+          const hasDeletedMessages = currentMessages.some(m => 
+            !m.id.startsWith('temp-') && !serverIds.has(m.id)
+          );
+          
+          if (hasNewMessages || hasDeletedMessages) {
+            // Preserve temp messages that don't have real counterparts
+            const tempMessages = currentMessages.filter(m => 
+              m.id.startsWith('temp-') && 
+              !data.some((d: Message) => d.content === m.content && d.sender_id === m.sender_id)
             );
-            
-            return [...realMessages, ...remainingTemp];
+            return [...(data as Message[]), ...tempMessages];
           }
-          return prev;
+          
+          return currentMessages;
         });
       }
     };
 
-    // Poll every 3 seconds
-    const intervalId = setInterval(pollMessages, 3000);
+    // Poll immediately and then every 2 seconds
+    pollMessages();
+    const intervalId = setInterval(pollMessages, 2000);
 
     return () => clearInterval(intervalId);
   }, [userId]);

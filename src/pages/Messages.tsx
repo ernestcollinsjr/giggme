@@ -1184,7 +1184,7 @@ const Messages = () => {
                                     <Reply className="h-3.5 w-3.5" />
                                   </Button>
                                 </TooltipTrigger>
-                                <TooltipContent>Reply</TooltipContent>
+                                <TooltipContent side="top" sideOffset={8}>Reply</TooltipContent>
                               </Tooltip>
                               <Tooltip>
                                 <TooltipTrigger asChild>
@@ -1192,7 +1192,7 @@ const Messages = () => {
                                     <Forward className="h-3.5 w-3.5" />
                                   </Button>
                                 </TooltipTrigger>
-                                <TooltipContent>Forward</TooltipContent>
+                                <TooltipContent side="top" sideOffset={8}>Forward</TooltipContent>
                               </Tooltip>
                               {!activeConversation.isGroup && (
                                 <Tooltip>
@@ -1206,7 +1206,7 @@ const Messages = () => {
                                       <Pin className="h-3.5 w-3.5" />
                                     </Button>
                                   </TooltipTrigger>
-                                  <TooltipContent>{pinnedMessages.some(p => p.message_id === m.id) ? "Unpin" : "Pin"}</TooltipContent>
+                                  <TooltipContent side="top" sideOffset={8}>{pinnedMessages.some(p => p.message_id === m.id) ? "Unpin" : "Pin"}</TooltipContent>
                                 </Tooltip>
                               )}
                               <Popover>
@@ -1218,7 +1218,7 @@ const Messages = () => {
                                       </Button>
                                     </PopoverTrigger>
                                   </TooltipTrigger>
-                                  <TooltipContent>React</TooltipContent>
+                                  <TooltipContent side="top" sideOffset={8}>React</TooltipContent>
                                 </Tooltip>
                                 <PopoverContent className="w-auto p-2">
                                   <div className="flex gap-1">
@@ -1241,7 +1241,7 @@ const Messages = () => {
                                       <Trash2 className="h-3.5 w-3.5" />
                                     </Button>
                                   </TooltipTrigger>
-                                  <TooltipContent>Delete</TooltipContent>
+                                  <TooltipContent side="top" sideOffset={8}>Delete</TooltipContent>
                                 </Tooltip>
                               )}
                             </div>

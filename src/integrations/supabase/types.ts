@@ -813,6 +813,7 @@ export type Database = {
         Row: {
           content: string
           created_at: string
+          delivered_to: string[] | null
           id: string
           is_group_message: boolean | null
           read_by: string[] | null
@@ -823,6 +824,7 @@ export type Database = {
         Insert: {
           content: string
           created_at?: string
+          delivered_to?: string[] | null
           id?: string
           is_group_message?: boolean | null
           read_by?: string[] | null
@@ -833,6 +835,7 @@ export type Database = {
         Update: {
           content?: string
           created_at?: string
+          delivered_to?: string[] | null
           id?: string
           is_group_message?: boolean | null
           read_by?: string[] | null
@@ -1914,6 +1917,10 @@ export type Database = {
       is_tour_manager: {
         Args: { _tour_id: string; _user_id: string }
         Returns: boolean
+      }
+      mark_message_as_delivered: {
+        Args: { message_id: string; user_id: string }
+        Returns: undefined
       }
       mark_message_as_read: {
         Args: { message_id: string; user_id: string }

@@ -9,6 +9,7 @@ interface SubscriptionContextType {
   loading: boolean;
   checkSubscription: () => Promise<void>;
   isPro: boolean;
+  isSuperAdmin: boolean;
 }
 
 const SubscriptionContext = createContext<SubscriptionContextType>({
@@ -18,6 +19,7 @@ const SubscriptionContext = createContext<SubscriptionContextType>({
   loading: true,
   checkSubscription: async () => {},
   isPro: false,
+  isSuperAdmin: false,
 });
 
 export const useSubscription = () => useContext(SubscriptionContext);
@@ -29,6 +31,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
   const [productId, setProductId] = useState<string | null>(null);
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const { toast } = useToast();
 
   const checkSubscription = async () => {
@@ -37,8 +40,23 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
       if (!session) {
         setIsSubscribed(false);
         setProductId(null);
+        setIsSuperAdmin(false);
         setLoading(false);
         return;
+      }
+
+      // Check if user is super_admin
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .eq("role", "super_admin")
+        .maybeSingle();
+
+      if (roleData) {
+        setIsSuperAdmin(true);
+      } else {
+        setIsSuperAdmin(false);
       }
 
       const { data, error } = await supabase.functions.invoke("check-subscription", {
@@ -78,7 +96,8 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  const isPro = isSubscribed && productId === PRO_PRODUCT_ID;
+  // Super admins get Pro access regardless of subscription
+  const isPro = isSuperAdmin || (isSubscribed && productId === PRO_PRODUCT_ID);
 
   return (
     <SubscriptionContext.Provider
@@ -89,6 +108,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
         loading,
         checkSubscription,
         isPro,
+        isSuperAdmin,
       }}
     >
       {children}

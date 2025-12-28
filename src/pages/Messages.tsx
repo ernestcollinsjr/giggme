@@ -185,17 +185,36 @@ const Messages = () => {
   const typingChannelRef = useRef<RealtimeChannel | null>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
 
-  // Bubble color customization
-  const [bubbleColor, setBubbleColor] = useState<string>(() => {
-    return localStorage.getItem('messageBubbleColor') || 'default';
+  // Bubble color customization - per conversation
+  const [conversationColors, setConversationColors] = useState<Record<string, string>>(() => {
+    try {
+      const stored = localStorage.getItem('conversationBubbleColors');
+      return stored ? JSON.parse(stored) : {};
+    } catch {
+      return {};
+    }
   });
   const [showColorPicker, setShowColorPicker] = useState(false);
 
+  const getConversationColorKey = (conv: Conversation | null) => {
+    if (!conv) return '';
+    return conv.isGroup ? 'group' : conv.participantId || conv.id;
+  };
+
+  const getCurrentBubbleColor = () => {
+    const key = getConversationColorKey(activeConversation);
+    return conversationColors[key] || 'default';
+  };
+
   const handleColorChange = (color: string) => {
-    setBubbleColor(color);
-    localStorage.setItem('messageBubbleColor', color);
+    const key = getConversationColorKey(activeConversation);
+    if (!key) return;
+    
+    const newColors = { ...conversationColors, [key]: color };
+    setConversationColors(newColors);
+    localStorage.setItem('conversationBubbleColors', JSON.stringify(newColors));
     setShowColorPicker(false);
-    toast({ title: "Color updated", description: "Your message bubble color has been changed." });
+    toast({ title: "Color updated", description: `Bubble color updated for this conversation.` });
   };
 
   // Safety features state (Report, Block, Delete - Apple App Store requirements)
@@ -1271,7 +1290,7 @@ const Messages = () => {
                               <div className={cn(
                                 "relative px-4 py-2.5 rounded-2xl text-white",
                                 isOwn 
-                                  ? `${getBubbleColorClass(bubbleColor)} rounded-br-none` 
+                                  ? `${getBubbleColorClass(getCurrentBubbleColor())} rounded-br-none` 
                                   : "bg-muted text-foreground rounded-bl-none"
                               )}>
                                 {activeConversation.isGroup && !isOwn && (
@@ -1282,7 +1301,7 @@ const Messages = () => {
                                 <div className={cn(
                                   "absolute bottom-0 w-4 h-4",
                                   isOwn 
-                                    ? `-right-2 ${getBubbleColorClass(bubbleColor)}` 
+                                    ? `-right-2 ${getBubbleColorClass(getCurrentBubbleColor())}` 
                                     : "-left-2 bg-muted"
                                 )} style={{
                                   clipPath: isOwn 
@@ -1688,11 +1707,11 @@ const Messages = () => {
                 className={cn(
                   "w-12 h-12 rounded-full transition-all hover:scale-110 flex items-center justify-center",
                   color.class,
-                  bubbleColor === color.value && "ring-2 ring-offset-2 ring-foreground"
+                  getCurrentBubbleColor() === color.value && "ring-2 ring-offset-2 ring-foreground"
                 )}
                 title={color.name}
               >
-                {bubbleColor === color.value && (
+                {getCurrentBubbleColor() === color.value && (
                   <Check className="h-5 w-5 text-white" />
                 )}
               </button>
@@ -1702,7 +1721,7 @@ const Messages = () => {
             <span className="text-sm text-muted-foreground">Preview:</span>
             <div className={cn(
               "px-4 py-2 rounded-2xl text-white text-sm",
-              getBubbleColorClass(bubbleColor)
+              getBubbleColorClass(getCurrentBubbleColor())
             )}>
               Hello! 👋
             </div>

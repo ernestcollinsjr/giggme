@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { PageContainer } from "@/components/PageContainer";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
@@ -711,7 +712,7 @@ const Messages = () => {
   }
 
   return (
-    <div className="h-[calc(100dvh-5rem)] bg-background flex flex-col">
+    <PageContainer withBottomNav>
       <div className="flex flex-1 min-h-0">
         {/* Sidebar - Conversation List */}
         <div className={cn(
@@ -1239,7 +1240,7 @@ const Messages = () => {
       </Dialog>
 
       <BottomNav />
-    </div>
+    </PageContainer>
   );
 };
 

@@ -655,7 +655,7 @@ const Messages = () => {
   }
 
   return (
-    <div className="fixed inset-0 bottom-16 md:bottom-0 bg-background flex flex-col">
+    <div className="fixed inset-0 bottom-48 md:bottom-0 bg-background flex flex-col">
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Sidebar - Conversation List */}
         <div className={cn(

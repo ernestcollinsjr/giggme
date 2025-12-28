@@ -688,34 +688,49 @@ const Messages = () => {
           {activeConversation ? (
             <>
               {/* Chat Header */}
-              <div className="p-4 border-b border-border bg-background flex items-center gap-3">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setActiveConversation(null)}
-                  className="md:hidden"
-                >
-                  <ArrowLeft className="h-5 w-5" />
-                </Button>
-                <Avatar className="h-10 w-10">
-                  {activeConversation.isGroup ? (
-                    <AvatarFallback className="bg-primary/10">
-                      <Users className="h-4 w-4 text-primary" />
-                    </AvatarFallback>
-                  ) : (
-                    <>
-                      <AvatarImage src={activeConversation.photo || undefined} />
-                      <AvatarFallback>{getInitials(activeConversation.name)}</AvatarFallback>
-                    </>
-                  )}
-                </Avatar>
-                <div className="flex-1">
-                  <h2 className="font-semibold">{activeConversation.name}</h2>
-                  <p className="text-xs text-muted-foreground">
-                    {activeConversation.isGroup ? "Group Message" : "Direct Message"}
-                  </p>
-                </div>
-              </div>
+              {(() => {
+                // Get current profile for conversation partner (in case it loaded after conversation was opened)
+                const partnerProfile = activeConversation.participantId 
+                  ? profiles.get(activeConversation.participantId) 
+                  : null;
+                const displayName = activeConversation.isGroup 
+                  ? "Group Chat" 
+                  : partnerProfile?.name || activeConversation.name || "Unknown";
+                const displayPhoto = activeConversation.isGroup 
+                  ? null 
+                  : partnerProfile?.photo_urls?.[0] || activeConversation.photo;
+                
+                return (
+                  <div className="p-4 border-b border-border bg-background flex items-center gap-3">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setActiveConversation(null)}
+                      className="md:hidden"
+                    >
+                      <ArrowLeft className="h-5 w-5" />
+                    </Button>
+                    <Avatar className="h-10 w-10">
+                      {activeConversation.isGroup ? (
+                        <AvatarFallback className="bg-primary/10">
+                          <Users className="h-4 w-4 text-primary" />
+                        </AvatarFallback>
+                      ) : (
+                        <>
+                          <AvatarImage src={displayPhoto || undefined} />
+                          <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
+                        </>
+                      )}
+                    </Avatar>
+                    <div className="flex-1">
+                      <h2 className="font-semibold">{displayName}</h2>
+                      <p className="text-xs text-muted-foreground">
+                        {activeConversation.isGroup ? "Group Message" : "Direct Message"}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Messages */}
               <ScrollArea className="flex-1 p-4 bg-muted/30" ref={scrollRef as any}>
@@ -730,14 +745,8 @@ const Messages = () => {
                     conversationMessages.map((m) => {
                       const isOwn = m.sender_id === userId;
                       const senderProfile = profiles.get(m.sender_id);
-                      const recipientProfile = profiles.get(m.recipient_id || '');
                       const isRead = isOwn && !activeConversation.isGroup && m.read_by?.includes(activeConversation.participantId!);
                       const msgReactions = getMessageReactions(m.id);
-                      
-                      // For display: show sender's avatar for received messages, viewer's avatar for sent
-                      const avatarProfile = isOwn ? profiles.get(userId) : senderProfile;
-                      
-                      console.log('Message:', m.content?.substring(0, 20), 'isOwn:', isOwn, 'sender_id:', m.sender_id, 'senderProfile:', senderProfile?.name, 'avatarProfile:', avatarProfile?.name);
                       
                       return (
                         <div 
@@ -747,13 +756,13 @@ const Messages = () => {
                             isOwn ? "justify-end" : "justify-start"
                           )}
                         >
-                          {/* Avatar - Left side for received */}
+                          {/* Avatar - Left side for received messages */}
                           {!isOwn && (
                             <div className="flex-shrink-0">
                               <Avatar className="h-8 w-8">
-                                <AvatarImage src={avatarProfile?.photo_urls?.[0]} />
+                                <AvatarImage src={senderProfile?.photo_urls?.[0]} />
                                 <AvatarFallback className="text-xs bg-muted border border-border">
-                                  {getInitials(avatarProfile?.name || "?")}
+                                  {getInitials(senderProfile?.name || "U")}
                                 </AvatarFallback>
                               </Avatar>
                             </div>

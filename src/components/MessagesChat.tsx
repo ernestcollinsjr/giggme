@@ -463,8 +463,11 @@ export const MessagesChat = ({
   }, []);
 
   const fetchProfiles = async () => {
-    const { data } = await supabase.from("profiles").select("id, name, photo_urls");
-    if (data) {
+    const { data, error } = await supabase.from("profiles").select("id, name, photo_urls");
+    if (error) {
+      console.error("Error fetching profiles:", error);
+    }
+    if (data && data.length > 0) {
       const profileObj: Record<string, Profile> = {};
       data.forEach((p) => { profileObj[p.id] = p as Profile; });
       setProfiles(profileObj);

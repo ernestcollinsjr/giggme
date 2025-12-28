@@ -106,7 +106,8 @@ const BottomNav = () => {
 
   const fetchUnreadCount = async (uid: string, role: string | null, memberIds: string[]) => {
     try {
-      const shouldFilter = (role === "band_leader" || role === "booking_manager") && memberIds.length > 0;
+      // For band_leader/booking_manager: ONLY count messages from their assigned members
+      const isRestrictedRole = role === "band_leader" || role === "booking_manager";
       
       // Only fetch messages relevant to this user (group messages OR messages where user is sender/recipient)
       const { data, error } = await supabase
@@ -120,8 +121,9 @@ const BottomNav = () => {
         const isRelevant = m.is_group_message || m.sender_id === uid || m.recipient_id === uid;
         if (!isRelevant) return false;
         
-        // For role-based filtering, only count messages from/to allowed members
-        if (shouldFilter && !m.is_group_message) {
+        // For restricted roles, only count messages from/to allowed members
+        if (isRestrictedRole) {
+          if (m.is_group_message) return false; // No group chat for restricted roles
           const otherParticipant = m.sender_id === uid ? m.recipient_id : m.sender_id;
           return memberIds.includes(otherParticipant);
         }

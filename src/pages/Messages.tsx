@@ -1081,8 +1081,8 @@ const Messages = () => {
                 </ScrollArea>
               </div>
 
-              {/* Bottom input area container - mb-16 clears the fixed bottom nav on mobile */}
-              <div className="flex-shrink-0 border-t border-border bg-background mb-16 md:mb-0">
+              {/* Bottom input area container - positioned above the bottom nav */}
+              <div className="flex-shrink-0 border-t border-border bg-background pb-20 md:pb-4">
                 {/* Typing indicator */}
                 {typingUsers.size > 0 && (
                   <div className="px-4 py-2 flex items-center gap-2 border-b border-border/50">
@@ -1129,7 +1129,7 @@ const Messages = () => {
                 )}
 
                 {/* Message Input */}
-                <div className="p-4 pb-6 md:pb-4">
+                <div className="p-4">
                 <div className="flex gap-2 max-w-3xl mx-auto items-end">
                   <Textarea
                     ref={textareaRef}

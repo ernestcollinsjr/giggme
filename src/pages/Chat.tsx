@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MessageCircle, Send, Trash2, ArrowLeft, Users, User, Check, CheckCheck, Smile, Forward, Pin, X } from "lucide-react";
+import { MessageCircle, Send, Trash2, ArrowLeft, Users, User, Check, CheckCheck, Smile, Forward, Pin, X, Reply, CornerDownRight } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import BottomNav from "@/components/BottomNav";
@@ -25,6 +25,7 @@ interface Message {
   content: string;
   created_at: string;
   read_by: string[] | null;
+  reply_to_id: string | null;
 }
 
 interface Profile {
@@ -80,6 +81,7 @@ const Chat = () => {
   const [forwardMessage, setForwardMessage] = useState<Message | null>(null);
   const [forwarding, setForwarding] = useState(false);
   const [pinnedMessages, setPinnedMessages] = useState<PinnedMessage[]>([]);
+  const [replyToMessage, setReplyToMessage] = useState<Message | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const typingChannelRef = useRef<RealtimeChannel | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -109,7 +111,7 @@ const Chat = () => {
       // Load existing messages visible to this user
       const { data: msgs, error: msgErr } = await supabase
         .from("messages")
-        .select("id, sender_id, recipient_id, is_group_message, content, created_at, read_by")
+        .select("id, sender_id, recipient_id, is_group_message, content, created_at, read_by, reply_to_id")
         .order("created_at", { ascending: true });
       if (!msgErr) {
         setMessages((msgs as Message[]) || []);
@@ -411,6 +413,7 @@ const Chat = () => {
         recipient_id: targetType === "direct" ? actualRecipient! : null,
         is_group_message: targetType === "group",
         content: text.trim(),
+        reply_to_id: replyToMessage?.id || null,
       }).select().single();
       
       if (error) throw error;
@@ -433,6 +436,7 @@ const Chat = () => {
       }
       
       setText("");
+      setReplyToMessage(null);
       if (targetType === "direct" && !activeConversation) {
         toast({ title: "Sent", description: `Direct message to ${recipientName(actualRecipient!)} sent.` });
       }
@@ -712,6 +716,24 @@ const Chat = () => {
                         )}
                       >
                         <div className="group relative">
+                          {/* Reply quote display */}
+                          {m.reply_to_id && (() => {
+                            const repliedMessage = messages.find(msg => msg.id === m.reply_to_id);
+                            if (!repliedMessage) return null;
+                            const repliedSender = repliedMessage.sender_id === userId ? 'You' : profilesById.get(repliedMessage.sender_id)?.name || 'Unknown';
+                            return (
+                              <div className={cn(
+                                "mb-1 px-2 py-1.5 rounded-md border-l-2 border-primary/50 bg-muted/30",
+                                isOwnMessage ? "ml-auto max-w-[75%]" : "mr-auto max-w-[75%]"
+                              )}>
+                                <div className="flex items-center gap-1 mb-0.5">
+                                  <CornerDownRight className="h-3 w-3 text-muted-foreground" />
+                                  <span className="text-[10px] font-medium text-primary">{repliedSender}</span>
+                                </div>
+                                <p className="text-xs text-muted-foreground line-clamp-2">{repliedMessage.content}</p>
+                              </div>
+                            );
+                          })()}
                           <div
                             className={cn(
                               "max-w-[75%] p-3 rounded-lg",
@@ -755,6 +777,15 @@ const Chat = () => {
                             "absolute -bottom-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity",
                             isOwnMessage ? "left-0 -translate-x-1/2" : "right-0 translate-x-1/2"
                           )}>
+                            {/* Reply button */}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 rounded-full bg-background border shadow-sm"
+                              onClick={() => setReplyToMessage(m)}
+                            >
+                              <Reply className="h-3.5 w-3.5 text-muted-foreground" />
+                            </Button>
                             {/* Forward button */}
                             <Button
                               variant="ghost"
@@ -849,10 +880,33 @@ const Chat = () => {
                 </div>
               )}
 
+              {/* Reply preview */}
+              {replyToMessage && (
+                <div className="flex items-start justify-between gap-2 p-2 bg-muted/50 rounded-lg border-l-2 border-primary">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1 mb-0.5">
+                      <Reply className="h-3 w-3 text-primary" />
+                      <span className="text-xs font-medium text-primary">
+                        Replying to {replyToMessage.sender_id === userId ? 'yourself' : profilesById.get(replyToMessage.sender_id)?.name || 'Unknown'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground line-clamp-1">{replyToMessage.content}</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-5 w-5 shrink-0"
+                    onClick={() => setReplyToMessage(null)}
+                  >
+                    <X className="h-3 w-3 text-muted-foreground" />
+                  </Button>
+                </div>
+              )}
+
               {/* Message input */}
               <div className="flex gap-2 pt-2 border-t">
                 <Textarea
-                  placeholder="Type a message..."
+                  placeholder={replyToMessage ? "Type your reply..." : "Type a message..."}
                   value={text}
                   onChange={(e) => handleTextChange(e.target.value)}
                   rows={2}

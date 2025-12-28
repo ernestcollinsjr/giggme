@@ -444,24 +444,26 @@ const Messages = () => {
           if (payload.eventType === "INSERT") {
             const newMsg = payload.new as Message;
             setAllMessages((prev) => {
-              // Skip if already exists (from optimistic update) or is a temp message
-              if (prev.some(m => m.id === newMsg.id || (m.id.startsWith('temp-') && m.content === newMsg.content && m.sender_id === newMsg.sender_id))) {
+              // Check if this exact message ID already exists
+              const exists = prev.some(m => m.id === newMsg.id);
+              if (exists) return prev;
+              
+              // Check for matching temp message to replace
+              const tempIndex = prev.findIndex(m => 
+                m.id.startsWith('temp-') && 
+                m.content === newMsg.content && 
+                m.sender_id === newMsg.sender_id
+              );
+              
+              if (tempIndex >= 0) {
                 // Replace temp message with real one
-                return prev.map(m => 
-                  m.id.startsWith('temp-') && m.content === newMsg.content && m.sender_id === newMsg.sender_id 
-                    ? newMsg 
-                    : m
-                ).filter((m, i, arr) => arr.findIndex(x => x.id === m.id) === i);
+                const updated = [...prev];
+                updated[tempIndex] = newMsg;
+                return updated;
               }
+              
               return [...prev, newMsg];
             });
-            // Auto-scroll to bottom when new message arrives
-            setTimeout(() => {
-              const allViewports = document.querySelectorAll('[data-radix-scroll-area-viewport]');
-              allViewports.forEach(viewport => {
-                viewport.scrollTop = viewport.scrollHeight;
-              });
-            }, 200);
           } else if (payload.eventType === "UPDATE") {
             setAllMessages((prev) =>
               prev.map((m) => (m.id === (payload.new as Message).id ? (payload.new as Message) : m))
@@ -565,7 +567,6 @@ const Messages = () => {
   }, [userId, profiles]);
 
   const handleTextChange = useCallback((value: string) => {
-    console.log("handleTextChange called with:", value);
     setText(value);
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     if (value.trim()) {

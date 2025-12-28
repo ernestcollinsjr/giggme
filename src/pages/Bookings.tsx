@@ -66,6 +66,7 @@ const Bookings = () => {
   const [currentGigForInvite, setCurrentGigForInvite] = useState<string | null>(null);
   const [currentGigInvitedMembers, setCurrentGigInvitedMembers] = useState<{ member_id: string; status: string }[]>([]);
   const [resendingMemberId, setResendingMemberId] = useState<string | null>(null);
+  const [resendingAll, setResendingAll] = useState(false);
   const [showPendingOnly, setShowPendingOnly] = useState(false);
   
   // Form state
@@ -617,6 +618,70 @@ const Bookings = () => {
       });
     } finally {
       setResendingMemberId(null);
+    }
+  };
+
+  const handleResendAllPending = async () => {
+    if (!currentGigForInvite) return;
+    
+    const pendingMembers = currentGigInvitedMembers.filter(m => m.status === 'pending');
+    if (pendingMembers.length === 0) {
+      toast({
+        title: "No pending invitations",
+        description: "There are no pending invitations to resend.",
+      });
+      return;
+    }
+
+    setResendingAll(true);
+    try {
+      const gig = gigs.find(g => g.id === currentGigForInvite);
+      const rehearsal = gigRehearsals[currentGigForInvite];
+      
+      if (!gig) throw new Error("Gig not found");
+
+      // Update response deadlines for all pending members
+      const responseDeadline = new Date();
+      responseDeadline.setHours(responseDeadline.getHours() + 2);
+      const pendingMemberIds = pendingMembers.map(m => m.member_id);
+
+      await supabase
+        .from("gig_members")
+        .update({ response_deadline: responseDeadline.toISOString() })
+        .eq("gig_id", currentGigForInvite)
+        .in("member_id", pendingMemberIds);
+
+      // Resend notifications to all pending members
+      await sendGigPushNotifications({
+        gigId: currentGigForInvite,
+        memberIds: pendingMemberIds,
+        venueName: gig.venue_name,
+        venue: gig.venue,
+        gigDate: new Date(gig.date),
+        bandId: selectedBandId,
+        responseDeadline: responseDeadline,
+        notes: gig.notes,
+        attire: gig.attire,
+        rehearsalInfo: rehearsal ? {
+          date: new Date(rehearsal.date),
+          time: format(new Date(rehearsal.date), 'h:mm a'),
+          venue: rehearsal.venue,
+        } : null,
+      });
+
+      toast({
+        title: "All invitations resent",
+        description: `Resent invitations to ${pendingMembers.length} pending member(s).`,
+      });
+    } catch (error: any) {
+      console.error("Error resending all invitations:", error);
+      toast({
+        variant: "destructive",
+        title: "Failed to resend",
+        description: error.message,
+      });
+    } finally {
+      setResendingAll(false);
     }
   };
 
@@ -1493,7 +1558,29 @@ const Bookings = () => {
                                 {/* Already Invited Members */}
                                 {currentGigInvitedMembers.length > 0 && (
                                   <div className="space-y-3">
-                                    <h4 className="text-sm font-semibold text-muted-foreground">Already Invited</h4>
+                                    <div className="flex items-center justify-between">
+                                      <h4 className="text-sm font-semibold text-muted-foreground">Already Invited</h4>
+                                      {currentGigInvitedMembers.filter(m => m.status === 'pending').length > 0 && (
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={handleResendAllPending}
+                                          disabled={resendingAll || resendingMemberId !== null}
+                                        >
+                                          {resendingAll ? (
+                                            <>
+                                              <Mail className="h-3 w-3 mr-1 animate-pulse" />
+                                              Sending...
+                                            </>
+                                          ) : (
+                                            <>
+                                              <Send className="h-3 w-3 mr-1" />
+                                              Resend All Pending ({currentGigInvitedMembers.filter(m => m.status === 'pending').length})
+                                            </>
+                                          )}
+                                        </Button>
+                                      )}
+                                    </div>
                                     {currentGigInvitedMembers.map((invite) => {
                                       const member = bandMembers.find(m => m.id === invite.member_id);
                                       if (!member) return null;
@@ -1513,7 +1600,7 @@ const Bookings = () => {
                                             variant="outline"
                                             size="sm"
                                             onClick={() => handleResendInvitation(invite.member_id)}
-                                            disabled={resendingMemberId === invite.member_id}
+                                            disabled={resendingMemberId === invite.member_id || resendingAll}
                                           >
                                             {resendingMemberId === invite.member_id ? (
                                               <>

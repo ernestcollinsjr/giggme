@@ -795,7 +795,7 @@ const Messages = () => {
 
         {/* Chat Area */}
         <div className={cn(
-          "flex-1 flex flex-col bg-muted/30 min-h-0 overflow-hidden",
+          "flex-1 flex flex-col bg-muted/30 min-h-0",
           !activeConversation && "hidden md:flex"
         )}>
           {activeConversation ? (
@@ -819,7 +819,7 @@ const Messages = () => {
               </div>
 
               {/* Messages - wrap in flex-1 container to properly constrain height */}
-              <div className="flex-1 min-h-0 overflow-hidden">
+              <div className="flex-1 min-h-0 overflow-y-auto">
                 <ScrollArea className="h-full p-4 bg-muted/30" ref={scrollRef as any}>
                 <TooltipProvider delayDuration={300}>
                 <div className="max-w-3xl mx-auto py-4 px-2">

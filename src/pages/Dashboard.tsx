@@ -211,13 +211,12 @@ const Dashboard = () => {
       .select("role")
       .eq("user_id", user.id);
     
-    // Determine the primary role based on priority
+    // Determine the primary role for display - prioritize band_leader for users who have both
+    // This allows super_admins who are also band_leaders to test the app as a band leader
     let primaryRole: UserRole | null = null;
     if (rolesData && rolesData.length > 0) {
       const roles = rolesData.map(r => r.role);
-      if (roles.includes("super_admin")) {
-        primaryRole = "super_admin";
-      } else if (roles.includes("band_leader")) {
+      if (roles.includes("band_leader")) {
         primaryRole = "band_leader";
       } else if (roles.includes("tour_manager")) {
         primaryRole = "tour_manager";
@@ -225,6 +224,8 @@ const Dashboard = () => {
         primaryRole = "booking_manager";
       } else if (roles.includes("artist")) {
         primaryRole = "artist";
+      } else if (roles.includes("super_admin")) {
+        primaryRole = "super_admin";
       } else {
         primaryRole = roles[0] as UserRole;
       }

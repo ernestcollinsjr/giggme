@@ -778,15 +778,21 @@ const Messages = () => {
   const handleSend = async () => {
     if (!userId || !text.trim() || !activeConversation) return;
     
-    setSending(true);
+    // Capture values immediately and clear input FIRST for instant feedback
     const messageContent = text.trim();
     const replyId = replyToMessage?.id || null;
     const recipientId = activeConversation.isGroup ? null : activeConversation.participantId;
     const isGroupMessage = activeConversation.isGroup;
+    const tempId = `temp-${Date.now()}`;
     
-    // Create optimistic message immediately for instant UI feedback
+    // Clear input immediately - no waiting
+    setText("");
+    setReplyToMessage(null);
+    broadcastTyping(false);
+    
+    // Create and add optimistic message immediately
     const optimisticMessage: Message = {
-      id: `temp-${Date.now()}`,
+      id: tempId,
       sender_id: userId,
       recipient_id: recipientId || null,
       is_group_message: isGroupMessage,
@@ -797,39 +803,33 @@ const Messages = () => {
       reply_to_id: replyId,
     };
     
-    // Add optimistic message immediately
     setAllMessages((prev) => [...prev, optimisticMessage]);
-    setText("");
-    setReplyToMessage(null);
-    broadcastTyping(false);
     scrollToBottom();
     
-    try {
-      const { data, error } = await supabase.from("messages").insert({
-        sender_id: userId,
-        recipient_id: recipientId,
-        is_group_message: isGroupMessage,
-        content: messageContent,
-        reply_to_id: replyId,
-      }).select().single();
-      
-      if (error) throw error;
+    // Database insert happens in background - don't block UI
+    supabase.from("messages").insert({
+      sender_id: userId,
+      recipient_id: recipientId,
+      is_group_message: isGroupMessage,
+      content: messageContent,
+      reply_to_id: replyId,
+    }).select().single().then(({ data, error }) => {
+      if (error) {
+        // Remove optimistic message on error
+        setAllMessages((prev) => prev.filter(m => m.id !== tempId));
+        toast({ variant: "destructive", title: "Failed to send", description: error.message });
+        return;
+      }
       
       // Replace optimistic message with real one
       if (data) {
         setAllMessages((prev) => {
-          const filtered = prev.filter(m => m.id !== optimisticMessage.id);
+          const filtered = prev.filter(m => m.id !== tempId);
           if (filtered.some(m => m.id === data.id)) return filtered;
           return [...filtered, data as Message];
         });
       }
-    } catch (e: any) {
-      // Remove optimistic message on error
-      setAllMessages((prev) => prev.filter(m => m.id !== optimisticMessage.id));
-      toast({ variant: "destructive", title: "Failed to send", description: e.message });
-    } finally {
-      setSending(false);
-    }
+    });
   };
 
   const handleDelete = async (messageId: string) => {

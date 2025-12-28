@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, Plus, Users, User, Send, Trash2, ArrowLeft, Check, CheckCheck, Smile, Forward, Pin, X, Reply, CornerDownRight, Search, RefreshCw, MoreVertical, ArrowDown } from "lucide-react";
+import { MessageCircle, Plus, Users, User, Send, Trash2, ArrowLeft, Check, CheckCheck, Smile, Forward, Pin, X, Reply, CornerDownRight, Search, RefreshCw, MoreVertical, ArrowDown, Flag, Ban, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,10 +14,20 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { PageContainer } from "@/components/PageContainer";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { RealtimeChannel } from "@supabase/supabase-js";
+
+const REPORT_REASONS = [
+  { value: "harassment", label: "Harassment or bullying" },
+  { value: "spam", label: "Spam or scam" },
+  { value: "inappropriate", label: "Inappropriate content" },
+  { value: "impersonation", label: "Impersonation" },
+  { value: "other", label: "Other" },
+];
 
 interface Message {
   id: string;
@@ -155,6 +165,16 @@ const Messages = () => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingChannelRef = useRef<RealtimeChannel | null>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
+
+  // Safety features state (Report, Block, Delete - Apple App Store requirements)
+  const [selectedConversationForAction, setSelectedConversationForAction] = useState<Conversation | null>(null);
+  const [showReportDialog, setShowReportDialog] = useState(false);
+  const [showBlockDialog, setShowBlockDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reportDescription, setReportDescription] = useState("");
+  const [blockReason, setBlockReason] = useState("");
+  const [actionLoading, setActionLoading] = useState(false);
 
   // Scroll detection
   const handleScroll = useCallback(() => {
@@ -703,6 +723,105 @@ const Messages = () => {
     return grouped;
   };
 
+  // Safety handlers (Apple App Store requirements)
+  const handleReportUser = async () => {
+    if (!selectedConversationForAction?.participantId || !userId || !reportReason) return;
+    setActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from("user_reports")
+        .insert({
+          reporter_id: userId,
+          reported_user_id: selectedConversationForAction.participantId,
+          reason: reportReason,
+          description: reportDescription || null,
+        });
+      if (error) throw error;
+      toast({ title: "Report submitted", description: `${selectedConversationForAction.name} has been reported.` });
+      setShowReportDialog(false);
+      setReportReason("");
+      setReportDescription("");
+      setSelectedConversationForAction(null);
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleBlockUser = async () => {
+    if (!selectedConversationForAction?.participantId || !userId) return;
+    setActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from("blocked_users")
+        .insert({
+          blocker_id: userId,
+          blocked_id: selectedConversationForAction.participantId,
+          reason: blockReason || null,
+        });
+      if (error) throw error;
+      toast({ title: "User blocked", description: `${selectedConversationForAction.name} has been blocked.` });
+      setShowBlockDialog(false);
+      setBlockReason("");
+      setSelectedConversationForAction(null);
+      // Remove conversation from list
+      setConversations(prev => prev.filter(c => c.participantId !== selectedConversationForAction.participantId));
+      if (activeConversation?.participantId === selectedConversationForAction.participantId) {
+        setActiveConversation(null);
+      }
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDeleteConversation = async () => {
+    if (!selectedConversationForAction || !userId) return;
+    setActionLoading(true);
+    try {
+      // Delete all messages in the conversation
+      if (selectedConversationForAction.isGroup) {
+        // For group messages, delete only messages sent by the user
+        const { error } = await supabase
+          .from("messages")
+          .delete()
+          .eq("sender_id", userId)
+          .eq("is_group_message", true);
+        if (error) throw error;
+      } else {
+        // For direct messages, delete all messages between the two users
+        const { error } = await supabase
+          .from("messages")
+          .delete()
+          .or(`and(sender_id.eq.${userId},recipient_id.eq.${selectedConversationForAction.participantId}),and(sender_id.eq.${selectedConversationForAction.participantId},recipient_id.eq.${userId})`);
+        if (error) throw error;
+      }
+      toast({ title: "Conversation deleted", description: "The conversation has been deleted." });
+      setShowDeleteDialog(false);
+      setSelectedConversationForAction(null);
+      // Remove from local state
+      setConversations(prev => prev.filter(c => c.id !== selectedConversationForAction.id));
+      setAllMessages(prev => prev.filter(m => {
+        if (selectedConversationForAction.isGroup) {
+          return !m.is_group_message || m.sender_id !== userId;
+        }
+        return !(
+          (m.sender_id === userId && m.recipient_id === selectedConversationForAction.participantId) ||
+          (m.sender_id === selectedConversationForAction.participantId && m.recipient_id === userId)
+        );
+      }));
+      if (activeConversation?.id === selectedConversationForAction.id) {
+        setActiveConversation(null);
+      }
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -800,49 +919,105 @@ const Messages = () => {
                   const displayPhoto = freshProfile?.photo_urls?.[0] || conversation.photo;
                   
                   return (
-                    <button
+                    <div
                       key={conversation.id}
-                      onClick={() => openConversation(conversation)}
                       className={cn(
-                        "w-full p-3 flex items-center gap-3 hover:bg-muted/50 transition-colors text-left",
+                        "w-full p-3 flex items-center gap-3 hover:bg-muted/50 transition-colors text-left relative group",
                         activeConversation?.id === conversation.id && "bg-muted"
                       )}
                     >
-                      {isProfileLoading ? (
-                        <Skeleton className="h-12 w-12 rounded-full" />
-                      ) : (
-                        <Avatar className="h-12 w-12">
-                          {conversation.isGroup ? (
-                            <AvatarFallback className="bg-primary/10">
-                              <Users className="h-5 w-5 text-primary" />
-                            </AvatarFallback>
-                          ) : (
+                      <button
+                        onClick={() => openConversation(conversation)}
+                        className="flex items-center gap-3 flex-1 min-w-0"
+                      >
+                        {isProfileLoading ? (
+                          <Skeleton className="h-12 w-12 rounded-full" />
+                        ) : (
+                          <Avatar className="h-12 w-12">
+                            {conversation.isGroup ? (
+                              <AvatarFallback className="bg-primary/10">
+                                <Users className="h-5 w-5 text-primary" />
+                              </AvatarFallback>
+                            ) : (
+                              <>
+                                <AvatarImage src={displayPhoto || undefined} />
+                                <AvatarFallback>{getInitials(displayName || "?")}</AvatarFallback>
+                              </>
+                            )}
+                          </Avatar>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            {isProfileLoading ? (
+                              <Skeleton className="h-4 w-24" />
+                            ) : (
+                              <p className="font-medium text-sm truncate">{displayName}</p>
+                            )}
+                            <span className="text-xs text-muted-foreground">{formatTime(conversation.lastMessageTime)}</span>
+                          </div>
+                          <div className="flex items-center justify-between mt-0.5">
+                            <p className="text-xs text-muted-foreground truncate pr-2">{conversation.lastMessage}</p>
+                            {conversation.unreadCount > 0 && (
+                              <Badge variant="default" className="h-5 min-w-5 px-1.5 text-xs">
+                                {conversation.unreadCount}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </button>
+                      
+                      {/* Context Menu for Report/Block/Delete */}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          {!conversation.isGroup && (
                             <>
-                              <AvatarImage src={displayPhoto || undefined} />
-                              <AvatarFallback>{getInitials(displayName || "?")}</AvatarFallback>
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedConversationForAction(conversation);
+                                  setShowReportDialog(true);
+                                }}
+                              >
+                                <Flag className="h-4 w-4 mr-2" />
+                                Report {displayName}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedConversationForAction(conversation);
+                                  setShowBlockDialog(true);
+                                }}
+                              >
+                                <Ban className="h-4 w-4 mr-2" />
+                                Block {displayName}
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
                             </>
                           )}
-                        </Avatar>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          {isProfileLoading ? (
-                            <Skeleton className="h-4 w-24" />
-                          ) : (
-                            <p className="font-medium text-sm truncate">{displayName}</p>
-                          )}
-                          <span className="text-xs text-muted-foreground">{formatTime(conversation.lastMessageTime)}</span>
-                        </div>
-                        <div className="flex items-center justify-between mt-0.5">
-                          <p className="text-xs text-muted-foreground truncate pr-2">{conversation.lastMessage}</p>
-                          {conversation.unreadCount > 0 && (
-                            <Badge variant="default" className="h-5 min-w-5 px-1.5 text-xs">
-                              {conversation.unreadCount}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    </button>
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedConversationForAction(conversation);
+                              setShowDeleteDialog(true);
+                            }}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete Conversation
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   );
                 })}
               </div>
@@ -1236,6 +1411,129 @@ const Messages = () => {
               </ScrollArea>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Report User Dialog */}
+      <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Flag className="h-5 w-5 text-destructive" />
+              Report {selectedConversationForAction?.name}
+            </DialogTitle>
+            <DialogDescription>
+              Help us understand what's happening. Your report is confidential.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Reason for report</Label>
+              <Select value={reportReason} onValueChange={setReportReason}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a reason" />
+                </SelectTrigger>
+                <SelectContent>
+                  {REPORT_REASONS.map((reason) => (
+                    <SelectItem key={reason.value} value={reason.value}>
+                      {reason.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Additional details (optional)</Label>
+              <Textarea
+                placeholder="Provide any additional context..."
+                value={reportDescription}
+                onChange={(e) => setReportDescription(e.target.value)}
+                rows={3}
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setShowReportDialog(false)}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleReportUser} 
+                disabled={!reportReason || actionLoading}
+                variant="destructive"
+              >
+                {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Submit Report
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Block User Dialog */}
+      <Dialog open={showBlockDialog} onOpenChange={setShowBlockDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Ban className="h-5 w-5 text-destructive" />
+              Block {selectedConversationForAction?.name}
+            </DialogTitle>
+            <DialogDescription>
+              Blocking will prevent this user from messaging you. They won't be notified.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Reason (optional)</Label>
+              <Textarea
+                placeholder="Why are you blocking this user?"
+                value={blockReason}
+                onChange={(e) => setBlockReason(e.target.value)}
+                rows={2}
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setShowBlockDialog(false)}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleBlockUser} 
+                disabled={actionLoading}
+                variant="destructive"
+              >
+                {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Block User
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Conversation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-destructive" />
+              Delete Conversation
+            </DialogTitle>
+            <DialogDescription>
+              {selectedConversationForAction?.isGroup 
+                ? "This will delete your messages from the group chat. Other members' messages will remain."
+                : `This will permanently delete all messages between you and ${selectedConversationForAction?.name}.`}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleDeleteConversation} 
+              disabled={actionLoading}
+              variant="destructive"
+            >
+              {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Delete
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 

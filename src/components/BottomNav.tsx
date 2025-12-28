@@ -143,8 +143,11 @@ const BottomNav = () => {
     }
   };
 
+  // Route to role-appropriate dashboard
+  const dashboardPath = userRole === "booking_manager" ? "/booking-manager" : "/dashboard";
+  
   const navItems = [
-    { icon: Home, label: "Dashboard", path: "/dashboard" },
+    { icon: Home, label: "Dashboard", path: dashboardPath },
     { icon: MessageCircle, label: "Messages", path: "/messages", badge: unreadCount },
     { icon: Music, label: "My Gigs", path: "/bookings" },
     { 

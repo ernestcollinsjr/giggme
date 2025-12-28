@@ -38,6 +38,7 @@ interface Message {
   content: string;
   created_at: string;
   read_by: string[] | null;
+  delivered_to: string[] | null;
   reply_to_id: string | null;
 }
 
@@ -726,18 +727,23 @@ const Messages = () => {
     setActiveConversation(updatedConversation);
     
     if (userId) {
-      const unread = allMessages.filter(
-        m => {
-          if (conversation.isGroup) {
-            return m.is_group_message && !m.read_by?.includes(userId);
-          }
-          return !m.is_group_message && 
-                 m.sender_id === conversation.participantId && 
-                 !m.read_by?.includes(userId);
+      // Mark messages as delivered and read
+      const messagesToProcess = allMessages.filter(m => {
+        if (conversation.isGroup) {
+          return m.is_group_message && m.sender_id !== userId;
         }
-      );
-      for (const msg of unread) {
-        await supabase.rpc("mark_message_as_read", { message_id: msg.id, user_id: userId });
+        return !m.is_group_message && m.sender_id === conversation.participantId;
+      });
+
+      for (const msg of messagesToProcess) {
+        // Mark as delivered if not already
+        if (!msg.delivered_to?.includes(userId)) {
+          await supabase.rpc("mark_message_as_delivered", { message_id: msg.id, user_id: userId });
+        }
+        // Mark as read if not already
+        if (!msg.read_by?.includes(userId)) {
+          await supabase.rpc("mark_message_as_read", { message_id: msg.id, user_id: userId });
+        }
       }
     }
   };
@@ -1236,6 +1242,7 @@ const Messages = () => {
                       const isOwn = m.sender_id === userId;
                       const senderProfile = profiles[m.sender_id];
                       const isRead = isOwn && !activeConversation.isGroup && m.read_by?.includes(activeConversation.participantId!);
+                      const isDelivered = isOwn && !activeConversation.isGroup && m.delivered_to?.includes(activeConversation.participantId!);
                       const msgReactions = getMessageReactions(m.id);
                       
                       return (
@@ -1400,7 +1407,11 @@ const Messages = () => {
                                 );
                               })()}
                               {isOwn && !activeConversation.isGroup && (
-                                isRead ? <CheckCheck className="h-3 w-3 text-muted-foreground" /> : <Check className="h-3 w-3 text-muted-foreground" />
+                                isRead 
+                                  ? <CheckCheck className="h-3 w-3 text-primary" /> 
+                                  : isDelivered 
+                                    ? <CheckCheck className="h-3 w-3 text-muted-foreground" />
+                                    : <Check className="h-3 w-3 text-muted-foreground" />
                               )}
                               <span className="text-[10px] text-muted-foreground">
                                 {formatMessageTime(m.created_at)}

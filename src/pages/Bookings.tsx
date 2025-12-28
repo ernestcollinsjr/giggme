@@ -64,6 +64,8 @@ const Bookings = () => {
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [currentGigForInvite, setCurrentGigForInvite] = useState<string | null>(null);
+  const [currentGigInvitedMembers, setCurrentGigInvitedMembers] = useState<{ member_id: string; status: string }[]>([]);
+  const [resendingMemberId, setResendingMemberId] = useState<string | null>(null);
   const [showPendingOnly, setShowPendingOnly] = useState(false);
   
   // Form state
@@ -553,6 +555,82 @@ const Bookings = () => {
         description: error.message,
       });
     }
+  };
+
+  const handleResendInvitation = async (memberId: string) => {
+    if (!currentGigForInvite) return;
+    
+    setResendingMemberId(memberId);
+    try {
+      const gig = gigs.find(g => g.id === currentGigForInvite);
+      const rehearsal = gigRehearsals[currentGigForInvite];
+      
+      if (!gig) throw new Error("Gig not found");
+
+      // Update the response deadline
+      const responseDeadline = new Date();
+      responseDeadline.setHours(responseDeadline.getHours() + 2);
+
+      await supabase
+        .from("gig_members")
+        .update({ 
+          response_deadline: responseDeadline.toISOString(),
+          status: 'pending' // Reset to pending if they want to re-respond
+        })
+        .eq("gig_id", currentGigForInvite)
+        .eq("member_id", memberId);
+
+      // Resend notifications
+      await sendGigPushNotifications({
+        gigId: currentGigForInvite,
+        memberIds: [memberId],
+        venueName: gig.venue_name,
+        venue: gig.venue,
+        gigDate: new Date(gig.date),
+        bandId: selectedBandId,
+        responseDeadline: responseDeadline,
+        notes: gig.notes,
+        attire: gig.attire,
+        rehearsalInfo: rehearsal ? {
+          date: new Date(rehearsal.date),
+          time: format(new Date(rehearsal.date), 'h:mm a'),
+          venue: rehearsal.venue,
+        } : null,
+      });
+
+      const member = bandMembers.find(m => m.id === memberId);
+      toast({
+        title: "Invitation resent",
+        description: `Resent invitation to ${member?.name || 'member'}.`,
+      });
+
+      // Update local state
+      setCurrentGigInvitedMembers(prev => 
+        prev.map(m => m.member_id === memberId ? { ...m, status: 'pending' } : m)
+      );
+    } catch (error: any) {
+      console.error("Error resending invitation:", error);
+      toast({
+        variant: "destructive",
+        title: "Failed to resend",
+        description: error.message,
+      });
+    } finally {
+      setResendingMemberId(null);
+    }
+  };
+
+  const openInviteDialog = async (gigId: string) => {
+    setCurrentGigForInvite(gigId);
+    
+    // Fetch already invited members for this gig
+    const { data: invitedMembers } = await supabase
+      .from("gig_members")
+      .select("member_id, status")
+      .eq("gig_id", gigId);
+    
+    setCurrentGigInvitedMembers(invitedMembers || []);
+    setInviteDialogOpen(true);
   };
 
   const handleDeleteGig = async (id: string) => {
@@ -1391,69 +1469,134 @@ const Bookings = () => {
                             if (!open) {
                               setCurrentGigForInvite(null);
                               setSelectedMembers([]);
+                              setCurrentGigInvitedMembers([]);
                             }
                           }}>
                             <DialogTrigger asChild>
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => {
-                                  setCurrentGigForInvite(gig.id);
-                                  setInviteDialogOpen(true);
-                                }}
+                                onClick={() => openInviteDialog(gig.id)}
                               >
                                 <Users className="h-4 w-4 mr-2" />
                                 Invite Members
                               </Button>
                             </DialogTrigger>
-                            <DialogContent>
+                            <DialogContent className="max-h-[80vh] overflow-y-auto">
                               <DialogHeader>
-                                <DialogTitle>Invite Band Members</DialogTitle>
+                                <DialogTitle>Manage Gig Invitations</DialogTitle>
                                 <DialogDescription>
-                                  Select band members to invite to this gig
+                                  Invite new members or resend invitations to existing ones
                                 </DialogDescription>
                               </DialogHeader>
                               <div className="space-y-4 py-4">
-                                {bandMembers.length === 0 ? (
-                                  <p className="text-sm text-muted-foreground text-center py-4">
-                                    No other band members found. Members need to sign up first.
-                                  </p>
-                                ) : (
-                                  bandMembers.map((member) => (
-                                    <div key={member.id} className="flex items-center space-x-3">
-                                      <Checkbox
-                                        id={member.id}
-                                        checked={selectedMembers.includes(member.id)}
-                                        onCheckedChange={(checked) => {
-                                          if (checked) {
-                                            setSelectedMembers([...selectedMembers, member.id]);
-                                          } else {
-                                            setSelectedMembers(selectedMembers.filter(id => id !== member.id));
-                                          }
-                                        }}
-                                      />
-                                      <label
-                                        htmlFor={member.id}
-                                        className="flex-1 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                                      >
-                                        <div>
-                                          <p className="font-semibold">{member.name}</p>
-                                          <p className="text-xs text-muted-foreground">{member.email}</p>
-                                          {member.instrument && (
-                                            <p className="text-xs text-muted-foreground">{member.instrument}</p>
-                                          )}
+                                {/* Already Invited Members */}
+                                {currentGigInvitedMembers.length > 0 && (
+                                  <div className="space-y-3">
+                                    <h4 className="text-sm font-semibold text-muted-foreground">Already Invited</h4>
+                                    {currentGigInvitedMembers.map((invite) => {
+                                      const member = bandMembers.find(m => m.id === invite.member_id);
+                                      if (!member) return null;
+                                      return (
+                                        <div key={invite.member_id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+                                          <div className="flex-1">
+                                            <p className="font-semibold text-sm">{member.name}</p>
+                                            <p className="text-xs text-muted-foreground">{member.email}</p>
+                                            <Badge 
+                                              variant={invite.status === 'accepted' ? 'default' : invite.status === 'declined' ? 'destructive' : 'secondary'}
+                                              className="mt-1 text-xs"
+                                            >
+                                              {invite.status}
+                                            </Badge>
+                                          </div>
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => handleResendInvitation(invite.member_id)}
+                                            disabled={resendingMemberId === invite.member_id}
+                                          >
+                                            {resendingMemberId === invite.member_id ? (
+                                              <>
+                                                <Mail className="h-3 w-3 mr-1 animate-pulse" />
+                                                Sending...
+                                              </>
+                                            ) : (
+                                              <>
+                                                <Mail className="h-3 w-3 mr-1" />
+                                                Resend
+                                              </>
+                                            )}
+                                          </Button>
                                         </div>
-                                      </label>
-                                    </div>
-                                  ))
+                                      );
+                                    })}
+                                  </div>
                                 )}
+
+                                {/* Uninvited Members */}
+                                {(() => {
+                                  const invitedIds = new Set(currentGigInvitedMembers.map(i => i.member_id));
+                                  const uninvitedMembers = bandMembers.filter(m => !invitedIds.has(m.id));
+                                  
+                                  if (uninvitedMembers.length === 0 && currentGigInvitedMembers.length === 0) {
+                                    return (
+                                      <p className="text-sm text-muted-foreground text-center py-4">
+                                        No other band members found. Members need to sign up first.
+                                      </p>
+                                    );
+                                  }
+                                  
+                                  if (uninvitedMembers.length === 0) {
+                                    return null;
+                                  }
+                                  
+                                  return (
+                                    <div className="space-y-3">
+                                      <h4 className="text-sm font-semibold text-muted-foreground">Invite New Members</h4>
+                                      {uninvitedMembers.map((member) => (
+                                        <div key={member.id} className="flex items-center space-x-3">
+                                          <Checkbox
+                                            id={`invite-${member.id}`}
+                                            checked={selectedMembers.includes(member.id)}
+                                            onCheckedChange={(checked) => {
+                                              if (checked) {
+                                                setSelectedMembers([...selectedMembers, member.id]);
+                                              } else {
+                                                setSelectedMembers(selectedMembers.filter(id => id !== member.id));
+                                              }
+                                            }}
+                                          />
+                                          <label
+                                            htmlFor={`invite-${member.id}`}
+                                            className="flex-1 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                                          >
+                                            <div>
+                                              <p className="font-semibold">{member.name}</p>
+                                              <p className="text-xs text-muted-foreground">{member.email}</p>
+                                              {member.instrument && (
+                                                <p className="text-xs text-muted-foreground">{member.instrument}</p>
+                                              )}
+                                            </div>
+                                          </label>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  );
+                                })()}
                               </div>
-                              {bandMembers.length > 0 && (
-                                <Button onClick={handleInviteMembers} className="w-full">
-                                  <Send className="h-4 w-4 mr-2" />
-                                  Send Invitations ({selectedMembers.length})
-                                </Button>
-                              )}
+                              {(() => {
+                                const invitedIds = new Set(currentGigInvitedMembers.map(i => i.member_id));
+                                const uninvitedMembers = bandMembers.filter(m => !invitedIds.has(m.id));
+                                if (uninvitedMembers.length > 0) {
+                                  return (
+                                    <Button onClick={handleInviteMembers} className="w-full" disabled={selectedMembers.length === 0}>
+                                      <Send className="h-4 w-4 mr-2" />
+                                      Send Invitations ({selectedMembers.length})
+                                    </Button>
+                                  );
+                                }
+                                return null;
+                              })()}
                             </DialogContent>
                           </Dialog>
                           <Button

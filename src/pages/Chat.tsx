@@ -193,13 +193,32 @@ const Chat = () => {
 
     setSending(true);
     try {
-      const { error } = await supabase.from("messages").insert({
+      const { data: insertedMessage, error } = await supabase.from("messages").insert({
         sender_id: userId,
         recipient_id: targetType === "direct" ? actualRecipient! : null,
         is_group_message: targetType === "group",
         content: text.trim(),
-      });
+      }).select().single();
+      
       if (error) throw error;
+      
+      // Send push notification for direct messages
+      if (targetType === "direct" && actualRecipient && insertedMessage) {
+        try {
+          await supabase.functions.invoke("notify-new-message", {
+            body: {
+              message_id: insertedMessage.id,
+              sender_id: userId,
+              recipient_id: actualRecipient,
+              content: text.trim(),
+            },
+          });
+        } catch (notifyError) {
+          console.error("Failed to send push notification:", notifyError);
+          // Don't fail the message send if notification fails
+        }
+      }
+      
       setText("");
       if (targetType === "direct" && !activeConversation) {
         toast({ title: "Sent", description: `Direct message to ${recipientName(actualRecipient!)} sent.` });

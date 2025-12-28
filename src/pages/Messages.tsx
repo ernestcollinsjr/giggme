@@ -711,8 +711,8 @@ const Messages = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col pb-16 md:pb-0">
-      <div className="flex flex-1 min-h-0">
+    <div className="h-[100dvh] bg-background flex flex-col pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">
+      <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Sidebar - Conversation List */}
         <div className={cn(
           "w-full md:w-80 lg:w-96 border-r border-border flex flex-col bg-background",
@@ -1081,8 +1081,8 @@ const Messages = () => {
                 </ScrollArea>
               </div>
 
-              {/* Bottom input area container - mb-16 creates space above the fixed bottom nav */}
-              <div className="flex-shrink-0 border-t border-border bg-background p-4 mb-16 md:mb-0">
+              {/* Bottom input area container */}
+              <div className="flex-shrink-0 border-t border-border bg-background p-4">
                 {/* Typing indicator */}
                 {typingUsers.size > 0 && (
                   <div className="px-4 py-2 flex items-center gap-2 border-b border-border/50">

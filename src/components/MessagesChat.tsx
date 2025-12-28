@@ -193,6 +193,7 @@ export const MessagesChat = ({
   const [forwardMessage, setForwardMessage] = useState<Message | null>(null);
   const [forwarding, setForwarding] = useState(false);
   const [newConversationOpen, setNewConversationOpen] = useState(false);
+  const [newConversationSearch, setNewConversationSearch] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingChannelRef = useRef<RealtimeChannel | null>(null);
@@ -817,6 +818,14 @@ export const MessagesChat = ({
     return profilesList.filter(p => filterToManagedArtists.includes(p.id));
   }, [profilesList, filterToManagedArtists]);
 
+  // Filtered profiles for new conversation dialog with search
+  const filteredNewConversationProfiles = useMemo(() => {
+    const base = availableProfiles.filter(p => p.id !== userId);
+    if (!newConversationSearch.trim()) return base.slice(0, 20); // Show first 20 when no search
+    const query = newConversationSearch.toLowerCase();
+    return base.filter(p => p.name.toLowerCase().includes(query));
+  }, [availableProfiles, newConversationSearch, userId]);
+
   if (loading) {
     return (
       <div className={cn("flex items-center justify-center h-96", className)}>
@@ -1412,27 +1421,51 @@ export const MessagesChat = ({
       </div>
 
       {/* New Conversation Dialog */}
-      <Dialog open={newConversationOpen} onOpenChange={setNewConversationOpen}>
+      <Dialog open={newConversationOpen} onOpenChange={(open) => {
+        setNewConversationOpen(open);
+        if (!open) setNewConversationSearch("");
+      }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>New Conversation</DialogTitle>
-            <DialogDescription>Select someone to start a conversation</DialogDescription>
+            <DialogDescription>Search for someone to start a conversation</DialogDescription>
           </DialogHeader>
+          
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Type a name to search..."
+              value={newConversationSearch}
+              onChange={(e) => setNewConversationSearch(e.target.value)}
+              className="pl-9"
+              autoFocus
+            />
+          </div>
+          
           <ScrollArea className="max-h-64">
             <div className="space-y-1">
-              {availableProfiles.map((profile) => (
-                <button
-                  key={profile.id}
-                  onClick={() => startNewConversation(profile.id)}
-                  className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors"
-                >
-                  <Avatar className="h-9 w-9">
-                    {profile.photo_urls?.[0] && <AvatarImage src={profile.photo_urls[0]} />}
-                    <AvatarFallback>{getInitials(profile.name)}</AvatarFallback>
-                  </Avatar>
-                  <span className="font-medium text-sm">{profile.name}</span>
-                </button>
-              ))}
+              {filteredNewConversationProfiles.length === 0 ? (
+                <div className="text-center py-6 text-muted-foreground text-sm">
+                  {newConversationSearch ? "No matching profiles found" : "Start typing to search..."}
+                </div>
+              ) : (
+                filteredNewConversationProfiles.map((profile) => (
+                  <button
+                    key={profile.id}
+                    onClick={() => {
+                      startNewConversation(profile.id);
+                      setNewConversationSearch("");
+                    }}
+                    className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors"
+                  >
+                    <Avatar className="h-9 w-9">
+                      {profile.photo_urls?.[0] && <AvatarImage src={profile.photo_urls[0]} />}
+                      <AvatarFallback>{getInitials(profile.name)}</AvatarFallback>
+                    </Avatar>
+                    <span className="font-medium text-sm">{profile.name}</span>
+                  </button>
+                ))
+              )}
             </div>
           </ScrollArea>
         </DialogContent>

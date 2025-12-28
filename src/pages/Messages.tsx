@@ -655,11 +655,11 @@ const Messages = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <div className="flex flex-1 h-[calc(100vh-64px)] md:h-screen overflow-hidden">
+    <div className="h-screen bg-background flex flex-col pb-16 md:pb-0">
+      <div className="flex flex-1 overflow-hidden">
         {/* Sidebar - Conversation List */}
         <div className={cn(
-          "w-full md:w-80 lg:w-96 border-r border-border flex flex-col bg-background pb-16 md:pb-0",
+          "w-full md:w-80 lg:w-96 border-r border-border flex flex-col bg-background",
           activeConversation && "hidden md:flex"
         )}>
           {/* Header */}
@@ -1056,7 +1056,7 @@ const Messages = () => {
               )}
 
               {/* Message Input - Fixed at bottom */}
-              <div className="shrink-0 p-4 border-t border-border bg-background mb-16 md:mb-0">
+              <div className="shrink-0 p-4 border-t border-border bg-background">
                 <div className="flex gap-2 max-w-3xl mx-auto">
                   <Textarea
                     ref={textareaRef}

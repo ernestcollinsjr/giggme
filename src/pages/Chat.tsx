@@ -7,10 +7,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, Send, Trash2 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { MessageCircle, Send, Trash2, ArrowLeft, Users, User } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface Message {
   id: string;
@@ -28,6 +30,13 @@ interface Profile {
   photo_urls: string[] | null;
 }
 
+interface Conversation {
+  participantId: string;
+  participant: Profile | null;
+  lastMessage: Message;
+  unreadCount: number;
+}
+
 const Chat = () => {
   const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
@@ -38,6 +47,7 @@ const Chat = () => {
   const [recipientId, setRecipientId] = useState<string | undefined>();
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
+  const [activeConversation, setActiveConversation] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -105,7 +115,7 @@ const Chat = () => {
   useEffect(() => {
     // Auto-scroll to bottom on new messages
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages]);
+  }, [messages, activeConversation]);
 
   const profilesById = useMemo(() => {
     const map = new Map<string, Profile>();
@@ -115,6 +125,49 @@ const Chat = () => {
 
   const senderName = (id: string) => (id === userId ? "You" : (profilesById.get(id)?.name || "Unknown"));
   const recipientName = (id: string | null) => (id ? (id === userId ? "You" : (profilesById.get(id)?.name || "Unknown")) : "Everyone");
+
+  // Get direct message conversations grouped by participant
+  const conversations = useMemo(() => {
+    if (!userId) return [];
+    
+    const directMessages = messages.filter(m => !m.is_group_message);
+    const conversationMap = new Map<string, Conversation>();
+
+    directMessages.forEach(m => {
+      // Get the other participant in the conversation
+      const otherParticipant = m.sender_id === userId ? m.recipient_id : m.sender_id;
+      if (!otherParticipant) return;
+
+      const existing = conversationMap.get(otherParticipant);
+      const isUnread = m.sender_id !== userId && !m.read_by?.includes(userId);
+
+      if (!existing || new Date(m.created_at) > new Date(existing.lastMessage.created_at)) {
+        conversationMap.set(otherParticipant, {
+          participantId: otherParticipant,
+          participant: profilesById.get(otherParticipant) || null,
+          lastMessage: m,
+          unreadCount: (existing?.unreadCount || 0) + (isUnread ? 1 : 0),
+        });
+      } else if (isUnread) {
+        existing.unreadCount++;
+      }
+    });
+
+    // Sort by most recent message
+    return Array.from(conversationMap.values()).sort(
+      (a, b) => new Date(b.lastMessage.created_at).getTime() - new Date(a.lastMessage.created_at).getTime()
+    );
+  }, [messages, userId, profilesById]);
+
+  // Get messages for active conversation
+  const conversationMessages = useMemo(() => {
+    if (!activeConversation || !userId) return [];
+    return messages.filter(m => 
+      !m.is_group_message && 
+      ((m.sender_id === userId && m.recipient_id === activeConversation) ||
+       (m.sender_id === activeConversation && m.recipient_id === userId))
+    );
+  }, [messages, activeConversation, userId]);
 
   // Filter messages based on target type
   const filteredMessages = useMemo(() => {
@@ -131,7 +184,9 @@ const Chat = () => {
       toast({ variant: "destructive", title: "Message is empty", description: "Type something to send." });
       return;
     }
-    if (targetType === "direct" && !recipientId) {
+    
+    const actualRecipient = activeConversation || recipientId;
+    if (targetType === "direct" && !actualRecipient) {
       toast({ variant: "destructive", title: "Choose a recipient", description: "Select who to send to." });
       return;
     }
@@ -140,14 +195,14 @@ const Chat = () => {
     try {
       const { error } = await supabase.from("messages").insert({
         sender_id: userId,
-        recipient_id: targetType === "direct" ? recipientId! : null,
+        recipient_id: targetType === "direct" ? actualRecipient! : null,
         is_group_message: targetType === "group",
         content: text.trim(),
       });
       if (error) throw error;
       setText("");
-      if (targetType === "direct") {
-        toast({ title: "Sent", description: `Direct message to ${recipientName(recipientId!)} sent.` });
+      if (targetType === "direct" && !activeConversation) {
+        toast({ title: "Sent", description: `Direct message to ${recipientName(actualRecipient!)} sent.` });
       }
     } catch (e: any) {
       toast({ variant: "destructive", title: "Failed to send", description: e.message || "Unknown error" });
@@ -167,6 +222,160 @@ const Chat = () => {
     }
   };
 
+  const openConversation = (participantId: string) => {
+    setActiveConversation(participantId);
+    setTargetType("direct");
+    setRecipientId(participantId);
+    
+    // Mark messages as read
+    const unreadInConversation = messages.filter(
+      m => m.sender_id === participantId && !m.read_by?.includes(userId!)
+    );
+    unreadInConversation.forEach(async (msg) => {
+      await supabase.rpc("mark_message_as_read", {
+        message_id: msg.id,
+        user_id: userId!,
+      });
+    });
+  };
+
+  const startNewConversation = (participantId: string) => {
+    setActiveConversation(participantId);
+    setTargetType("direct");
+    setRecipientId(participantId);
+  };
+
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
+  const formatMessageTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    
+    if (isToday) {
+      return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    }
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  };
+
+  // Render conversation thread view
+  if (activeConversation) {
+    const participant = profilesById.get(activeConversation);
+    
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/10 pb-20">
+        <div className="max-w-4xl mx-auto p-4 space-y-4">
+          <Card className="border-border/50 shadow-lg">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setActiveConversation(null)}
+                  className="h-8 w-8"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={participant?.photo_urls?.[0]} />
+                  <AvatarFallback>{getInitials(participant?.name || 'U')}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <CardTitle className="text-lg">{participant?.name || 'Unknown'}</CardTitle>
+                  <CardDescription className="text-xs">Direct conversation</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <ScrollArea className="h-[400px] pr-4" ref={scrollRef as any}>
+                <div className="space-y-3">
+                  {conversationMessages.length === 0 && (
+                    <div className="text-center py-12">
+                      <MessageCircle className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+                      <p className="text-sm font-medium text-muted-foreground mb-1">
+                        No messages yet
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Start the conversation by sending a message
+                      </p>
+                    </div>
+                  )}
+                  {conversationMessages.map((m) => {
+                    const isOwnMessage = m.sender_id === userId;
+                    return (
+                      <div
+                        key={m.id}
+                        className={cn(
+                          "flex",
+                          isOwnMessage ? "justify-end" : "justify-start"
+                        )}
+                      >
+                        <div
+                          className={cn(
+                            "max-w-[75%] p-3 rounded-lg",
+                            isOwnMessage
+                              ? "bg-primary text-primary-foreground rounded-br-sm"
+                              : "bg-muted rounded-bl-sm"
+                          )}
+                        >
+                          <p className="text-sm">{m.content}</p>
+                          <div className={cn(
+                            "flex items-center gap-2 mt-1",
+                            isOwnMessage ? "justify-end" : "justify-start"
+                          )}>
+                            <span className={cn(
+                              "text-[10px]",
+                              isOwnMessage ? "text-primary-foreground/70" : "text-muted-foreground"
+                            )}>
+                              {formatMessageTime(m.created_at)}
+                            </span>
+                            {isOwnMessage && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-5 w-5 text-primary-foreground/70 hover:text-destructive hover:bg-primary-foreground/10"
+                                onClick={() => handleDelete(m.id)}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+
+              {/* Message input */}
+              <div className="flex gap-2 pt-2 border-t">
+                <Textarea
+                  placeholder="Type a message..."
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  rows={2}
+                  className="flex-1 resize-none"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSend();
+                    }
+                  }}
+                />
+                <Button onClick={handleSend} disabled={sending} size="icon" className="h-auto">
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/10 pb-20">
       <div className="max-w-4xl mx-auto p-4 space-y-4">
@@ -179,133 +388,175 @@ const Chat = () => {
             <CardDescription>Send a group announcement or a direct message</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid md:grid-cols-3 gap-3">
-              <div className="md:col-span-2 space-y-2">
-                <Label>Audience</Label>
-                <RadioGroup
-                  value={targetType}
-                  onValueChange={(v) => setTargetType(v as "group" | "direct")}
-                  className="flex gap-4"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem id="audience-group" value="group" />
-                    <Label htmlFor="audience-group">
-                      {userRole === "booking_manager" ? "All Artists" : "Everyone"}
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem id="audience-direct" value="direct" />
-                    <Label htmlFor="audience-direct">Direct Message</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="recipient">Recipient</Label>
-                <Select
-                  value={recipientId}
-                  onValueChange={setRecipientId}
-                  disabled={targetType !== "direct"}
-                >
-                  <SelectTrigger id="recipient">
-                    <SelectValue placeholder={targetType === "direct" ? "Choose a person" : "Disabled for Everyone"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {profiles.map((p) => (
-                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="message">Message</Label>
-              <Textarea
-                id="message"
-                placeholder="Type your message..."
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                rows={3}
-              />
-            </div>
-
-            <div className="flex justify-end">
-              <Button onClick={handleSend} disabled={sending} className="gap-2">
-                <Send className="h-4 w-4" />
-                Send
+            {/* View toggle */}
+            <div className="flex gap-2">
+              <Button
+                variant={targetType === "group" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setTargetType("group")}
+                className="gap-2"
+              >
+                <Users className="h-4 w-4" />
+                Group Messages
+              </Button>
+              <Button
+                variant={targetType === "direct" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setTargetType("direct")}
+                className="gap-2"
+              >
+                <User className="h-4 w-4" />
+                Direct Messages
               </Button>
             </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label>Recent Messages</Label>
-                <p className="text-xs text-muted-foreground">
-                  {targetType === "group" ? "Group Messages" : "Direct Messages"} 
-                  {filteredMessages.length > 0 && ` (${filteredMessages.length})`}
-                </p>
-              </div>
-              <ScrollArea className="h-[380px] border rounded-md p-3" ref={scrollRef as any}>
-                <div className="space-y-3">
-                  {filteredMessages.length === 0 && (
-                    <div className="text-center py-12">
-                      <MessageCircle className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-                      <p className="text-sm font-medium text-muted-foreground mb-1">
-                        {targetType === "group" 
-                          ? "No group messages yet" 
-                          : "No direct messages yet"}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {targetType === "group"
-                          ? "Send a message to everyone using the form above"
-                          : "Select a recipient and send a direct message"}
-                      </p>
-                    </div>
-                  )}
-                  {filteredMessages.map((m) => (
-                    <div key={m.id} className="p-3 rounded-md border bg-background">
-                      <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                        <span>
-                          From {senderName(m.sender_id)} {m.is_group_message ? "to Everyone" : m.recipient_id ? `→ ${recipientName(m.recipient_id)}` : ""}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <span>{new Date(m.created_at).toLocaleString()}</span>
-                          {m.sender_id === userId && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                              onClick={() => handleDelete(m.id)}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                      <p className="mt-1 text-sm">{m.content}</p>
-                      {/* Reply button - show for messages from others */}
-                      {m.sender_id !== userId && (
-                        <div className="mt-2 pt-2 border-t border-border/50">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 text-xs gap-1.5 text-muted-foreground hover:text-primary"
-                            onClick={() => {
-                              setTargetType("direct");
-                              setRecipientId(m.sender_id);
-                              // Focus on the message input
-                              document.getElementById("message")?.focus();
-                            }}
-                          >
-                            <MessageCircle className="h-3.5 w-3.5" />
-                            Reply to {senderName(m.sender_id)}
-                          </Button>
+            {targetType === "group" ? (
+              <>
+                {/* Group message compose */}
+                <div className="space-y-2">
+                  <Label htmlFor="message">Message to {userRole === "booking_manager" ? "All Artists" : "Everyone"}</Label>
+                  <Textarea
+                    id="message"
+                    placeholder="Type your message..."
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    rows={3}
+                  />
+                </div>
+
+                <div className="flex justify-end">
+                  <Button onClick={handleSend} disabled={sending} className="gap-2">
+                    <Send className="h-4 w-4" />
+                    Send to All
+                  </Button>
+                </div>
+
+                {/* Group messages list */}
+                <div className="space-y-2">
+                  <Label>Group Messages</Label>
+                  <ScrollArea className="h-[300px] border rounded-md p-3" ref={scrollRef as any}>
+                    <div className="space-y-3">
+                      {filteredMessages.length === 0 && (
+                        <div className="text-center py-12">
+                          <Users className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+                          <p className="text-sm font-medium text-muted-foreground mb-1">
+                            No group messages yet
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Send a message to everyone using the form above
+                          </p>
                         </div>
                       )}
+                      {filteredMessages.map((m) => (
+                        <div key={m.id} className="p-3 rounded-md border bg-background">
+                          <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                            <span>From {senderName(m.sender_id)}</span>
+                            <div className="flex items-center gap-2">
+                              <span>{formatMessageTime(m.created_at)}</span>
+                              {m.sender_id === userId && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                                  onClick={() => handleDelete(m.id)}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                          <p className="mt-1 text-sm">{m.content}</p>
+                          {m.sender_id !== userId && (
+                            <div className="mt-2 pt-2 border-t border-border/50">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 text-xs gap-1.5 text-muted-foreground hover:text-primary"
+                                onClick={() => startNewConversation(m.sender_id)}
+                              >
+                                <MessageCircle className="h-3.5 w-3.5" />
+                                Reply to {senderName(m.sender_id)}
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  </ScrollArea>
                 </div>
-              </ScrollArea>
-            </div>
+              </>
+            ) : (
+              <>
+                {/* Conversations list */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label>Conversations</Label>
+                    <Select value={recipientId} onValueChange={(id) => startNewConversation(id)}>
+                      <SelectTrigger className="w-[180px] h-8">
+                        <SelectValue placeholder="New conversation" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {profiles.map((p) => (
+                          <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <ScrollArea className="h-[380px] border rounded-md">
+                    {conversations.length === 0 ? (
+                      <div className="text-center py-12 px-4">
+                        <User className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+                        <p className="text-sm font-medium text-muted-foreground mb-1">
+                          No conversations yet
+                        </p>
+                        <p className="text-xs text-muted-foreground mb-4">
+                          Start a new conversation by selecting someone above
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="divide-y">
+                        {conversations.map((conv) => (
+                          <button
+                            key={conv.participantId}
+                            onClick={() => openConversation(conv.participantId)}
+                            className="w-full p-3 flex items-center gap-3 hover:bg-muted/50 transition-colors text-left"
+                          >
+                            <Avatar className="h-10 w-10">
+                              <AvatarImage src={conv.participant?.photo_urls?.[0]} />
+                              <AvatarFallback>
+                                {getInitials(conv.participant?.name || 'U')}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between">
+                                <p className="font-medium text-sm truncate">
+                                  {conv.participant?.name || 'Unknown'}
+                                </p>
+                                <span className="text-xs text-muted-foreground">
+                                  {formatMessageTime(conv.lastMessage.created_at)}
+                                </span>
+                              </div>
+                              <div className="flex items-center justify-between mt-0.5">
+                                <p className="text-xs text-muted-foreground truncate pr-2">
+                                  {conv.lastMessage.sender_id === userId ? "You: " : ""}
+                                  {conv.lastMessage.content}
+                                </p>
+                                {conv.unreadCount > 0 && (
+                                  <span className="bg-primary text-primary-foreground text-xs rounded-full h-5 min-w-5 px-1.5 flex items-center justify-center">
+                                    {conv.unreadCount}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </ScrollArea>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>

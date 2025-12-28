@@ -874,8 +874,8 @@ const Messages = () => {
                 />
               </div>
 
-              {/* Messages - scrollable area */}
-              <div className="flex-1 min-h-0 overflow-hidden">
+              {/* Messages - scrollable area, reduced height on mobile to make room for input + nav */}
+              <div className="flex-1 min-h-0 overflow-hidden max-h-[calc(100dvh-16rem)] md:max-h-none">
                 <ScrollArea className="h-full p-4 bg-muted/30" ref={scrollRef as any}>
                 <TooltipProvider delayDuration={300}>
                 <div className="max-w-3xl mx-auto py-4 px-2">

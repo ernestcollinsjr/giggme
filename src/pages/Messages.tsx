@@ -655,8 +655,8 @@ const Messages = () => {
   }
 
   return (
-    <div className="h-[100dvh] bg-background flex flex-col pb-16 md:pb-0">
-      <div className="flex flex-1 min-h-0">
+    <div className="fixed inset-0 bottom-16 md:bottom-0 bg-background flex flex-col">
+      <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Sidebar - Conversation List */}
         <div className={cn(
           "w-full md:w-80 lg:w-96 border-r border-border flex flex-col bg-background",
@@ -799,7 +799,7 @@ const Messages = () => {
           !activeConversation && "hidden md:flex"
         )}>
           {activeConversation ? (
-            <div className="absolute inset-0 flex flex-col">
+            <>
               {/* Chat Header - use key to force re-render when profiles change */}
               <div key={`header-${activeConversation.participantId}-${Object.keys(profiles).length}`} className="flex-shrink-0 p-4 border-b border-border bg-background flex items-center gap-3">
                 <Button
@@ -1089,7 +1089,7 @@ const Messages = () => {
                   </Button>
                 </div>
               </div>
-            </div>
+            </>
           ) : (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center">

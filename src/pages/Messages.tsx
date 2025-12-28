@@ -1081,8 +1081,8 @@ const Messages = () => {
                 </ScrollArea>
               </div>
 
-              {/* Bottom input area container */}
-              <div className="flex-shrink-0 border-t border-border bg-background p-4">
+              {/* Bottom input area - fixed position above bottom nav */}
+              <div className="fixed bottom-16 left-0 right-0 md:relative md:bottom-auto border-t border-border bg-background p-4 z-40">
                 {/* Typing indicator */}
                 {typingUsers.size > 0 && (
                   <div className="px-4 py-2 flex items-center gap-2 border-b border-border/50">

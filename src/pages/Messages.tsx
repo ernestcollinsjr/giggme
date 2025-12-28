@@ -258,6 +258,13 @@ const Messages = () => {
         (payload) => {
           if (payload.eventType === "INSERT") {
             setAllMessages((prev) => [...prev, payload.new as Message]);
+            // Auto-scroll to bottom when new message arrives
+            setTimeout(() => {
+              const scrollContainer = document.querySelector('[data-radix-scroll-area-viewport]');
+              if (scrollContainer) {
+                scrollContainer.scrollTo({ top: scrollContainer.scrollHeight, behavior: 'smooth' });
+              }
+            }, 100);
           } else if (payload.eventType === "UPDATE") {
             setAllMessages((prev) =>
               prev.map((m) => (m.id === (payload.new as Message).id ? (payload.new as Message) : m))

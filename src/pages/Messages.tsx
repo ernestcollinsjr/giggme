@@ -1083,13 +1083,13 @@ const Messages = () => {
 
               {/* Typing indicator */}
               {typingUsers.size > 0 && (
-                <div className="px-4 py-2 flex items-center gap-2">
+                <div className="px-4 py-3 flex items-center gap-2 bg-background border-t border-border">
                   <div className="flex gap-1">
                     <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" />
                     <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                     <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-sm text-muted-foreground">
                     {Array.from(typingUsers.values()).join(', ')} {typingUsers.size === 1 ? 'is' : 'are'} typing...
                   </span>
                 </div>
@@ -1127,7 +1127,7 @@ const Messages = () => {
               )}
 
               {/* Message Input - fixed height */}
-              <div className="h-20 flex-shrink-0 p-3 border-t border-border bg-background">
+              <div className="flex-shrink-0 p-4 pb-6 border-t border-border bg-background">
                 <div className="flex gap-2 max-w-3xl mx-auto items-end">
                   <Textarea
                     ref={textareaRef}

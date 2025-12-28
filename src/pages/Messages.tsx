@@ -720,7 +720,7 @@ const Messages = () => {
               {/* Messages */}
               <ScrollArea className="flex-1 p-4 bg-muted/30" ref={scrollRef as any}>
                 <TooltipProvider delayDuration={300}>
-                <div className="space-y-2 max-w-3xl mx-auto py-4">
+                <div className="max-w-3xl mx-auto py-4 px-2">
                   {conversationMessages.length === 0 ? (
                     <div className="text-center py-16">
                       <MessageCircle className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
@@ -743,12 +743,14 @@ const Messages = () => {
                         >
                           {/* Avatar - Left side for received */}
                           {!isOwn && (
-                            <Avatar className="h-8 w-8 flex-shrink-0 mt-1">
-                              <AvatarImage src={senderProfile?.photo_urls?.[0]} />
-                              <AvatarFallback className="text-xs bg-muted">
-                                {getInitials(senderProfile?.name || "U")}
-                              </AvatarFallback>
-                            </Avatar>
+                            <div className="flex-shrink-0">
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src={senderProfile?.photo_urls?.[0]} />
+                                <AvatarFallback className="text-xs bg-muted border border-border">
+                                  {getInitials(senderProfile?.name || "U")}
+                                </AvatarFallback>
+                              </Avatar>
+                            </div>
                           )}
                           
                           {/* Message bubble */}
@@ -891,12 +893,14 @@ const Messages = () => {
                           
                           {/* Avatar - Right side for sent */}
                           {isOwn && (
-                            <Avatar className="h-8 w-8 flex-shrink-0 mt-1">
-                              <AvatarImage src={profiles.get(userId)?.photo_urls?.[0]} />
-                              <AvatarFallback className="text-xs bg-primary/20">
-                                {getInitials(profiles.get(userId)?.name || "U")}
-                              </AvatarFallback>
-                            </Avatar>
+                            <div className="flex-shrink-0">
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src={profiles.get(userId)?.photo_urls?.[0]} />
+                                <AvatarFallback className="text-xs bg-primary/30 border border-primary/50">
+                                  {getInitials(profiles.get(userId)?.name || "U")}
+                                </AvatarFallback>
+                              </Avatar>
+                            </div>
                           )}
                         </div>
                       );

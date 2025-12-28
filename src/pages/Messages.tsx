@@ -694,17 +694,21 @@ const Messages = () => {
                   ? profiles.get(activeConversation.participantId) 
                   : null;
                 
-                console.log('Header Debug - participantId:', activeConversation.participantId, 
-                  'partnerProfile:', partnerProfile?.name, 
-                  'profiles size:', profiles.size,
-                  'all profile IDs:', Array.from(profiles.keys()));
-                
+                // Compute display values with proper fallbacks
                 const displayName = activeConversation.isGroup 
                   ? "Group Chat" 
-                  : partnerProfile?.name || activeConversation.name || "Unknown";
+                  : (partnerProfile?.name || activeConversation.name || "Unknown");
                 const displayPhoto = activeConversation.isGroup 
                   ? null 
-                  : partnerProfile?.photo_urls?.[0] || activeConversation.photo;
+                  : (partnerProfile?.photo_urls?.[0] || activeConversation.photo || null);
+                
+                // Debug: verify values
+                console.log('HEADER RENDER:', { 
+                  participantId: activeConversation.participantId,
+                  partnerProfileName: partnerProfile?.name,
+                  convName: activeConversation.name,
+                  finalDisplayName: displayName 
+                });
                 
                 return (
                   <div className="p-4 border-b border-border bg-background flex items-center gap-3">
@@ -753,13 +757,6 @@ const Messages = () => {
                       const senderProfile = profiles.get(m.sender_id);
                       const isRead = isOwn && !activeConversation.isGroup && m.read_by?.includes(activeConversation.participantId!);
                       const msgReactions = getMessageReactions(m.id);
-                      
-                      // Debug ALL messages
-                      console.log('ALL msg debug - content:', m.content?.substring(0, 15), 
-                        'isOwn:', isOwn, 
-                        'sender_id:', m.sender_id.substring(0, 8), 
-                        'userId:', userId?.substring(0, 8),
-                        'senderProfile:', senderProfile?.name);
                       
                       return (
                         <div 

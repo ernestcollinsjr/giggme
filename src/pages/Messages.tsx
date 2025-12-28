@@ -351,6 +351,23 @@ const Messages = () => {
         .order("created_at", { ascending: true });
 
       if (error) throw error;
+      
+      // Debug: Check for Timmy's messages
+      const timmyId = '40cb4e99-9eb0-4fe9-97b6-d5822f467848';
+      const timmyMessages = data?.filter(m => 
+        m.sender_id === timmyId || m.recipient_id === timmyId
+      );
+      console.log('MESSAGES FETCH - Timmy messages:', {
+        totalMessages: data?.length,
+        timmyMessageCount: timmyMessages?.length,
+        timmyMessages: timmyMessages?.map(m => ({
+          id: m.id,
+          sender: m.sender_id,
+          recipient: m.recipient_id,
+          content: m.content?.substring(0, 20)
+        }))
+      });
+      
       setAllMessages((data as Message[]) || []);
     } catch (error) {
       console.error("Error fetching messages:", error);

@@ -711,8 +711,8 @@ const Messages = () => {
   }
 
   return (
-    <div className="h-[100dvh] bg-background flex flex-col">
-      <div className="flex flex-1 min-h-0 pb-48 md:pb-0">
+    <div className="h-[100dvh] bg-background flex flex-col pb-16 md:pb-0">
+      <div className="flex flex-1 min-h-0">
         {/* Sidebar - Conversation List */}
         <div className={cn(
           "w-full md:w-80 lg:w-96 border-r border-border flex flex-col bg-background",
@@ -849,9 +849,9 @@ const Messages = () => {
           </ScrollArea>
         </div>
 
-        {/* Chat Area - uses calc to leave space for bottom nav on mobile */}
+        {/* Chat Area */}
         <div className={cn(
-          "flex-1 flex flex-col bg-muted/30 min-w-0 h-[calc(100dvh-5rem)] md:h-auto",
+          "flex-1 flex flex-col bg-muted/30 min-w-0 overflow-hidden",
           !activeConversation && "hidden md:flex"
         )}>
           {activeConversation ? (
@@ -874,8 +874,8 @@ const Messages = () => {
                 />
               </div>
 
-              {/* Messages - scrollable area with bottom padding for input */}
-              <div className="flex-1 min-h-0 overflow-hidden pb-32 md:pb-0">
+              {/* Messages - scrollable area */}
+              <div className="flex-1 min-h-0 overflow-hidden">
                 <ScrollArea className="h-full p-4 bg-muted/30" ref={scrollRef as any}>
                 <TooltipProvider delayDuration={300}>
                 <div className="max-w-3xl mx-auto py-4 px-2">
@@ -1081,8 +1081,8 @@ const Messages = () => {
                 </ScrollArea>
               </div>
 
-              {/* Bottom input area - fixed at bottom, above nav bar */}
-              <div className="fixed bottom-[4.5rem] left-0 right-0 md:static border-t border-border bg-background p-3 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+              {/* Bottom input area */}
+              <div className="flex-shrink-0 border-t border-border bg-background p-4">
                 {/* Typing indicator */}
                 {typingUsers.size > 0 && (
                   <div className="px-4 py-2 flex items-center gap-2 border-b border-border/50">

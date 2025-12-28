@@ -81,27 +81,36 @@ const ChatHeader = ({
     ? profiles[activeConversation.participantId] 
     : null;
   
+  // Debug logging
+  console.log('ChatHeader rendering:', {
+    participantId: activeConversation.participantId,
+    profilesCount: Object.keys(profiles).length,
+    profilesLoaded,
+    partnerProfile: partnerProfile ? { name: partnerProfile.name, hasPhoto: !!partnerProfile.photo_urls?.[0] } : null,
+    profileKeys: Object.keys(profiles).slice(0, 5)
+  });
+  
   const isLoading = !profilesLoaded && !activeConversation.isGroup;
   const displayName = activeConversation.isGroup 
     ? "Group Chat" 
-    : (partnerProfile?.name || (isLoading ? "Loading..." : "Unknown"));
+    : (partnerProfile?.name || (isLoading ? "Loading..." : activeConversation.name || "Unknown"));
   const displayPhoto = activeConversation.isGroup 
     ? null 
-    : (partnerProfile?.photo_urls?.[0] || null);
+    : (partnerProfile?.photo_urls?.[0] || activeConversation.photo || null);
   
   return (
     <>
       {isLoading ? (
         <Skeleton className="h-10 w-10 rounded-full" />
       ) : (
-        <Avatar className="h-10 w-10" key={`header-avatar-${displayPhoto || 'none'}`}>
+        <Avatar className="h-10 w-10" key={`header-avatar-${activeConversation.participantId}-${displayPhoto || 'none'}`}>
           {activeConversation.isGroup ? (
             <AvatarFallback className="bg-primary/10">
               <Users className="h-4 w-4 text-primary" />
             </AvatarFallback>
           ) : (
             <>
-              {displayPhoto ? <AvatarImage src={displayPhoto} /> : null}
+              {displayPhoto && <AvatarImage src={displayPhoto} />}
               <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
             </>
           )}
@@ -194,6 +203,29 @@ const Messages = () => {
       setSearchParams({});
     }
   }, [searchParams, profiles, conversations]);
+
+  // Update active conversation when profiles load to ensure fresh data
+  useEffect(() => {
+    if (!profilesLoaded || !activeConversation || activeConversation.isGroup) return;
+    
+    const participantId = activeConversation.participantId;
+    if (!participantId) return;
+    
+    const freshProfile = profiles[participantId];
+    if (freshProfile && (activeConversation.name === "Unknown" || !activeConversation.photo)) {
+      console.log('Updating active conversation with fresh profile:', {
+        participantId,
+        oldName: activeConversation.name,
+        newName: freshProfile.name,
+        hasPhoto: !!freshProfile.photo_urls?.[0]
+      });
+      setActiveConversation(prev => prev ? {
+        ...prev,
+        name: freshProfile.name || prev.name,
+        photo: freshProfile.photo_urls?.[0] || prev.photo
+      } : null);
+    }
+  }, [profilesLoaded, profiles, activeConversation?.participantId]);
 
   useEffect(() => {
     if (!userId) return;
@@ -830,11 +862,21 @@ const Messages = () => {
                       <p className="text-muted-foreground">No messages yet. Start the conversation!</p>
                     </div>
                   ) : (
-                    conversationMessages.map((m) => {
+                    conversationMessages.map((m, index) => {
                       const isOwn = m.sender_id === userId;
                       const senderProfile = profiles[m.sender_id];
                       const isRead = isOwn && !activeConversation.isGroup && m.read_by?.includes(activeConversation.participantId!);
                       const msgReactions = getMessageReactions(m.id);
+                      
+                      // Debug log for first few messages
+                      if (index < 3 && !isOwn) {
+                        console.log('Message avatar debug:', {
+                          senderId: m.sender_id,
+                          senderProfile: senderProfile ? { name: senderProfile.name, photo: senderProfile.photo_urls?.[0] } : null,
+                          profilesLoaded,
+                          profilesCount: Object.keys(profiles).length
+                        });
+                      }
                       
                       return (
                         <div 

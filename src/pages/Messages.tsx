@@ -712,7 +712,7 @@ const Messages = () => {
 
   return (
     <div className="h-[100dvh] bg-background flex flex-col">
-      <div className="flex flex-1 min-h-0 overflow-hidden pb-20 md:pb-0">
+      <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Sidebar - Conversation List */}
         <div className={cn(
           "w-full md:w-80 lg:w-96 border-r border-border flex flex-col bg-background",
@@ -851,7 +851,7 @@ const Messages = () => {
 
         {/* Chat Area */}
         <div className={cn(
-          "flex-1 flex flex-col bg-muted/30 min-w-0 overflow-hidden",
+          "flex-1 flex flex-col bg-muted/30 min-w-0 pb-16 md:pb-0",
           !activeConversation && "hidden md:flex"
         )}>
           {activeConversation ? (

@@ -712,7 +712,7 @@ const Messages = () => {
 
   return (
     <div className="h-[100dvh] bg-background flex flex-col">
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-1 min-h-0 pb-16 md:pb-0">
         {/* Sidebar - Conversation List */}
         <div className={cn(
           "w-full md:w-80 lg:w-96 border-r border-border flex flex-col bg-background",
@@ -874,8 +874,8 @@ const Messages = () => {
                 />
               </div>
 
-              {/* Messages - scrollable area, reduced height on mobile to make room for input + nav */}
-              <div className="flex-1 min-h-0 overflow-hidden max-h-[calc(100dvh-16rem)] md:max-h-none">
+              {/* Messages - scrollable area */}
+              <div className="flex-1 min-h-0 overflow-hidden">
                 <ScrollArea className="h-full p-4 bg-muted/30" ref={scrollRef as any}>
                 <TooltipProvider delayDuration={300}>
                 <div className="max-w-3xl mx-auto py-4 px-2">
@@ -1081,8 +1081,8 @@ const Messages = () => {
                 </ScrollArea>
               </div>
 
-              {/* Bottom input area container - pb-20 creates space above the fixed bottom nav */}
-              <div className="flex-shrink-0 border-t border-border bg-background p-4 pb-20 md:pb-4">
+              {/* Bottom input area container */}
+              <div className="flex-shrink-0 border-t border-border bg-background p-4">
                 {/* Typing indicator */}
                 {typingUsers.size > 0 && (
                   <div className="px-4 py-2 flex items-center gap-2 border-b border-border/50">

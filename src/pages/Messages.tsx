@@ -1053,7 +1053,7 @@ const Messages = () => {
               {/* Messages - scrollable area */}
               <div className="flex-1 min-h-0 overflow-hidden">
                 <ScrollArea className="h-full p-4 bg-muted/30" ref={scrollRef as any}>
-                <TooltipProvider delayDuration={300}>
+                <TooltipProvider delayDuration={0}>
                 <div className="max-w-3xl mx-auto py-4 px-2">
                   {conversationMessages.length === 0 ? (
                     <div className="text-center py-16">

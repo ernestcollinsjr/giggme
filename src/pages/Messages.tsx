@@ -2,12 +2,11 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-import { MessageCircle, Users, ChevronRight, Plus } from "lucide-react";
+import { MessageCircle, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
-
+import SwipeableConversation from "@/components/SwipeableConversation";
 interface Message {
   id: string;
   sender_id: string;
@@ -36,10 +35,12 @@ interface Conversation {
 
 const Messages = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [profiles, setProfiles] = useState<Map<string, Profile>>(new Map());
   const [loading, setLoading] = useState(true);
+  const [allMessages, setAllMessages] = useState<Message[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -95,7 +96,7 @@ const Messages = () => {
       if (error) throw error;
 
       const messages = (data as Message[]) || [];
-      
+      setAllMessages(messages);
       // Group messages into conversations
       const conversationMap = new Map<string, Conversation>();
       
@@ -182,6 +183,83 @@ const Messages = () => {
     }
   };
 
+  const markConversationAsRead = async (conversation: Conversation) => {
+    if (!userId) return;
+    
+    try {
+      // Get all unread messages for this conversation
+      const messagesToMark = allMessages.filter((m) => {
+        if (conversation.isGroup) {
+          return m.is_group_message && !m.read_by?.includes(userId);
+        } else {
+          return (
+            !m.is_group_message &&
+            (m.sender_id === conversation.participantId || m.recipient_id === conversation.participantId) &&
+            !m.read_by?.includes(userId)
+          );
+        }
+      });
+
+      // Mark each message as read
+      for (const message of messagesToMark) {
+        await supabase.rpc("mark_message_as_read", {
+          message_id: message.id,
+          user_id: userId,
+        });
+      }
+
+      toast({
+        title: "Marked as read",
+        description: `${messagesToMark.length} message(s) marked as read`,
+      });
+
+      fetchMessages();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message,
+      });
+    }
+  };
+
+  const deleteConversation = async (conversation: Conversation) => {
+    if (!userId) return;
+    
+    try {
+      // Get all messages for this conversation that the user sent
+      const messagesToDelete = allMessages.filter((m) => {
+        if (conversation.isGroup) {
+          return m.is_group_message && m.sender_id === userId;
+        } else {
+          return (
+            !m.is_group_message &&
+            m.sender_id === userId &&
+            (m.recipient_id === conversation.participantId)
+          );
+        }
+      });
+
+      // Delete user's messages in this conversation
+      for (const message of messagesToDelete) {
+        await supabase.from("messages").delete().eq("id", message.id);
+      }
+
+      toast({
+        title: "Deleted",
+        description: `Deleted ${messagesToDelete.length} message(s) you sent`,
+      });
+
+      fetchMessages();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message,
+      });
+    }
+  };
+
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -196,15 +274,6 @@ const Messages = () => {
     } else {
       return date.toLocaleDateString([], { month: "short", day: "numeric" });
     }
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
   };
 
   if (loading) {
@@ -255,53 +324,15 @@ const Messages = () => {
           )}
 
           {conversations.map((conversation) => (
-            <div
+            <SwipeableConversation
               key={conversation.id}
-              className="flex items-center gap-3 p-4 hover:bg-muted/50 cursor-pointer transition-colors"
-              onClick={() => openConversation(conversation)}
-            >
-              {/* Avatar */}
-              <Avatar className="h-12 w-12 shrink-0">
-                {!conversation.isGroup && conversation.participantId && profiles.get(conversation.participantId)?.photo_urls?.[0] && (
-                  <AvatarImage 
-                    src={profiles.get(conversation.participantId)?.photo_urls?.[0]} 
-                    alt={conversation.name}
-                    className="object-cover"
-                  />
-                )}
-                <AvatarFallback className={conversation.isGroup ? "bg-primary text-primary-foreground" : "bg-muted"}>
-                  {conversation.isGroup ? (
-                    <Users className="h-5 w-5" />
-                  ) : (
-                    getInitials(conversation.name)
-                  )}
-                </AvatarFallback>
-              </Avatar>
-
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2">
-                  <span className={`font-medium truncate ${conversation.unreadCount > 0 ? "text-foreground" : "text-foreground/80"}`}>
-                    {conversation.name}
-                  </span>
-                  <span className="text-xs text-muted-foreground shrink-0">
-                    {formatTime(conversation.lastMessageTime)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between gap-2 mt-0.5">
-                  <p className={`text-sm truncate ${conversation.unreadCount > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}>
-                    {conversation.lastMessage}
-                  </p>
-                  {conversation.unreadCount > 0 && (
-                    <Badge variant="destructive" className="h-5 min-w-5 px-1.5 shrink-0">
-                      {conversation.unreadCount}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-
-              <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
-            </div>
+              conversation={conversation}
+              profile={conversation.participantId ? profiles.get(conversation.participantId) : undefined}
+              onOpen={() => openConversation(conversation)}
+              onMarkAsRead={() => markConversationAsRead(conversation)}
+              onDelete={() => deleteConversation(conversation)}
+              formatTime={formatTime}
+            />
           ))}
         </div>
       </ScrollArea>

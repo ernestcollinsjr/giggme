@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, Plus, Users, User, Send, Trash2, ArrowLeft, Check, CheckCheck, Smile, Forward, Pin, X, Reply, CornerDownRight, Search, RefreshCw, MoreVertical, ArrowDown, Flag, Ban, Loader2, Copy } from "lucide-react";
+import { MessageCircle, Plus, Users, User, Send, Trash2, ArrowLeft, Check, CheckCheck, Smile, Forward, Pin, X, Reply, CornerDownRight, Search, RefreshCw, MoreVertical, ArrowDown, Flag, Ban, Loader2, Copy, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -76,7 +76,24 @@ interface PinnedMessage {
 
 const EMOJI_OPTIONS = ['👍', '❤️', '😂', '😮', '😢', '🎉'];
 
-// Separate component to ensure fresh profile data is used
+// Bubble color options
+const BUBBLE_COLORS = [
+  { name: 'Default', value: 'default', class: 'bg-primary' },
+  { name: 'Green', value: 'green', class: 'bg-green-500' },
+  { name: 'Blue', value: 'blue', class: 'bg-blue-500' },
+  { name: 'Purple', value: 'purple', class: 'bg-purple-500' },
+  { name: 'Pink', value: 'pink', class: 'bg-pink-500' },
+  { name: 'Orange', value: 'orange', class: 'bg-orange-500' },
+  { name: 'Red', value: 'red', class: 'bg-red-500' },
+  { name: 'Teal', value: 'teal', class: 'bg-teal-500' },
+  { name: 'Indigo', value: 'indigo', class: 'bg-indigo-500' },
+  { name: 'Yellow', value: 'yellow', class: 'bg-yellow-500' },
+];
+
+const getBubbleColorClass = (colorValue: string) => {
+  const color = BUBBLE_COLORS.find(c => c.value === colorValue);
+  return color?.class || 'bg-primary';
+};
 const ChatHeader = ({ 
   activeConversation, 
   profiles,
@@ -167,6 +184,19 @@ const Messages = () => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingChannelRef = useRef<RealtimeChannel | null>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
+
+  // Bubble color customization
+  const [bubbleColor, setBubbleColor] = useState<string>(() => {
+    return localStorage.getItem('messageBubbleColor') || 'default';
+  });
+  const [showColorPicker, setShowColorPicker] = useState(false);
+
+  const handleColorChange = (color: string) => {
+    setBubbleColor(color);
+    localStorage.setItem('messageBubbleColor', color);
+    setShowColorPicker(false);
+    toast({ title: "Color updated", description: "Your message bubble color has been changed." });
+  };
 
   // Safety features state (Report, Block, Delete - Apple App Store requirements)
   const [selectedConversationForAction, setSelectedConversationForAction] = useState<Conversation | null>(null);
@@ -1150,6 +1180,21 @@ const Messages = () => {
                   profilesLoaded={profilesLoaded}
                   getInitials={getInitials}
                 />
+                <div className="ml-auto">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setShowColorPicker(true)}
+                        className="h-8 w-8"
+                      >
+                        <Palette className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Bubble Color</TooltipContent>
+                  </Tooltip>
+                </div>
               </div>
 
               {/* Messages - scrollable area */}
@@ -1224,10 +1269,10 @@ const Messages = () => {
                               pressingMessageId === m.id && "scale-95"
                             )}>
                               <div className={cn(
-                                "relative px-4 py-2.5 rounded-2xl",
+                                "relative px-4 py-2.5 rounded-2xl text-white",
                                 isOwn 
-                                  ? "bg-primary text-primary-foreground rounded-br-none" 
-                                  : "bg-muted rounded-bl-none"
+                                  ? `${getBubbleColorClass(bubbleColor)} rounded-br-none` 
+                                  : "bg-muted text-foreground rounded-bl-none"
                               )}>
                                 {activeConversation.isGroup && !isOwn && (
                                   <p className="text-xs font-semibold mb-1 opacity-80">{senderProfile?.name}</p>
@@ -1237,7 +1282,7 @@ const Messages = () => {
                                 <div className={cn(
                                   "absolute bottom-0 w-4 h-4",
                                   isOwn 
-                                    ? "-right-2 bg-primary" 
+                                    ? `-right-2 ${getBubbleColorClass(bubbleColor)}` 
                                     : "-left-2 bg-muted"
                                 )} style={{
                                   clipPath: isOwn 
@@ -1620,6 +1665,48 @@ const Messages = () => {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Bubble Color Picker Dialog */}
+      <Dialog open={showColorPicker} onOpenChange={setShowColorPicker}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Palette className="h-5 w-5" />
+              Choose Bubble Color
+            </DialogTitle>
+            <DialogDescription>
+              Select a color for your message bubbles
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-5 gap-3 py-4">
+            {BUBBLE_COLORS.map((color) => (
+              <button
+                key={color.value}
+                onClick={() => handleColorChange(color.value)}
+                className={cn(
+                  "w-12 h-12 rounded-full transition-all hover:scale-110 flex items-center justify-center",
+                  color.class,
+                  bubbleColor === color.value && "ring-2 ring-offset-2 ring-foreground"
+                )}
+                title={color.name}
+              >
+                {bubbleColor === color.value && (
+                  <Check className="h-5 w-5 text-white" />
+                )}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+            <span className="text-sm text-muted-foreground">Preview:</span>
+            <div className={cn(
+              "px-4 py-2 rounded-2xl text-white text-sm",
+              getBubbleColorClass(bubbleColor)
+            )}>
+              Hello! 👋
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 

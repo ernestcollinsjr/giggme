@@ -818,8 +818,9 @@ const Messages = () => {
                 />
               </div>
 
-              {/* Messages */}
-              <ScrollArea className="flex-1 p-4 bg-muted/30" ref={scrollRef as any}>
+              {/* Messages - wrap in flex-1 container to properly constrain height */}
+              <div className="flex-1 min-h-0 overflow-hidden">
+                <ScrollArea className="h-full p-4 bg-muted/30" ref={scrollRef as any}>
                 <TooltipProvider delayDuration={300}>
                 <div className="max-w-3xl mx-auto py-4 px-2">
                   {conversationMessages.length === 0 ? (
@@ -1021,7 +1022,8 @@ const Messages = () => {
                   )}
                 </div>
                 </TooltipProvider>
-              </ScrollArea>
+                </ScrollArea>
+              </div>
 
               {/* Typing indicator */}
               {typingUsers.size > 0 && (

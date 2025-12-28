@@ -22,6 +22,7 @@ import { PlaceAutocomplete } from "@/components/PlaceAutocomplete";
 import { AutoLocationTracker } from "@/components/AutoLocationTracker";
 import { MemberLocationsMap } from "@/components/MemberLocationsMap";
 import { AcceptedGigsCard } from "@/components/AcceptedGigsCard";
+import { UpcomingGigLocationTracker } from "@/components/UpcomingGigLocationTracker";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { BandMemberRoster } from "@/components/BandMemberRoster";
@@ -1315,6 +1316,14 @@ const Dashboard = () => {
           </div>
           <LivePresence />
         </div>
+
+        {/* Upcoming Gig Location Tracker - Shows prominently when gig is within 1 hour */}
+        {user && userRole && (
+          <UpcomingGigLocationTracker 
+            userId={user.id} 
+            userRole={userRole} 
+          />
+        )}
 
         {(userRole === "band_leader" || userRole === "super_admin") && (
           <div className="space-y-4">

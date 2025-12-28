@@ -170,6 +170,8 @@ const Messages = () => {
   const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
   const [userId, setUserId] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [allowedMemberIds, setAllowedMemberIds] = useState<string[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [profilesLoaded, setProfilesLoaded] = useState(false);
@@ -390,6 +392,51 @@ const Messages = () => {
         return;
       }
       setUserId(user.id);
+      
+      // Fetch user role
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .single();
+      
+      if (roleData) {
+        setUserRole(roleData.role);
+        
+        // Fetch associated members based on role
+        if (roleData.role === "band_leader") {
+          // Get bands the user leads
+          const { data: bands } = await supabase
+            .from("bands")
+            .select("id")
+            .eq("band_leader_id", user.id);
+          
+          if (bands && bands.length > 0) {
+            const bandIds = bands.map(b => b.id);
+            // Get band members
+            const { data: members } = await supabase
+              .from("band_members")
+              .select("member_id")
+              .in("band_id", bandIds);
+            
+            if (members) {
+              const memberIds = members.map(m => m.member_id);
+              setAllowedMemberIds(memberIds);
+            }
+          }
+        } else if (roleData.role === "booking_manager") {
+          // Get managed artists
+          const { data: managedArtists } = await supabase
+            .from("booking_manager_artists")
+            .select("artist_id")
+            .eq("booking_manager_id", user.id);
+          
+          if (managedArtists) {
+            const artistIds = managedArtists.map(a => a.artist_id);
+            setAllowedMemberIds(artistIds);
+          }
+        }
+      }
     })();
   }, [navigate]);
 
@@ -441,7 +488,6 @@ const Messages = () => {
 
   useEffect(() => {
     if (!userId) return;
-    fetchProfiles();
     fetchMessages();
     fetchReactionsAndPins();
 
@@ -491,6 +537,13 @@ const Messages = () => {
       supabase.removeChannel(channel);
     };
   }, [userId]);
+
+  // Refetch profiles when role-based member list changes
+  useEffect(() => {
+    if (userId) {
+      fetchProfiles();
+    }
+  }, [userId, userRole, allowedMemberIds]);
 
   // Set up typing indicator channel
   useEffect(() => {
@@ -587,7 +640,14 @@ const Messages = () => {
       const profileObj: Record<string, Profile> = {};
       data.forEach((p) => { profileObj[p.id] = p as Profile; });
       setProfiles(profileObj);
-      setProfilesList(data.filter((p) => p.id !== userId) as Profile[]);
+      // Filter profiles list based on allowed members for role-based messaging
+      const shouldFilter = (userRole === "band_leader" || userRole === "booking_manager") && allowedMemberIds.length > 0;
+      const filteredProfiles = data.filter((p) => {
+        if (p.id === userId) return false;
+        if (shouldFilter) return allowedMemberIds.includes(p.id);
+        return true;
+      });
+      setProfilesList(filteredProfiles as Profile[]);
     }
     setProfilesLoaded(true);
   };
@@ -626,8 +686,10 @@ const Messages = () => {
     if (!userId) return { direct: [], group: null as Conversation | null };
     
     const conversationMap = new Map<string, Conversation>();
+    const shouldFilter = (userRole === "band_leader" || userRole === "booking_manager") && allowedMemberIds.length > 0;
     
-    // Group chat
+    // Group chat - only show if user has a role that uses group chat
+    // For band_leader/booking_manager, group chat is within their own group
     const groupMessages = allMessages.filter((m) => m.is_group_message);
     let groupConv: Conversation | null = null;
     if (groupMessages.length > 0) {
@@ -640,7 +702,7 @@ const Messages = () => {
       
       groupConv = {
         id: "group",
-        name: "Group Chat",
+        name: userRole === "band_leader" ? "Band Group Chat" : userRole === "booking_manager" ? "Artists Group Chat" : "Group Chat",
         isGroup: true,
         lastMessage: sortedGroup[0].content,
         lastMessageTime: sortedGroup[0].created_at,
@@ -648,7 +710,7 @@ const Messages = () => {
       };
     }
 
-    // Direct conversations
+    // Direct conversations - filter by allowed members for role-based messaging
     const directMessages = allMessages.filter((m) => !m.is_group_message);
     directMessages.forEach((message) => {
       const otherParticipantId = message.sender_id === userId 
@@ -656,6 +718,11 @@ const Messages = () => {
         : message.sender_id;
       
       if (!otherParticipantId) return;
+      
+      // Filter to only allowed members if role-based filtering is active
+      if (shouldFilter && !allowedMemberIds.includes(otherParticipantId)) {
+        return;
+      }
       
       const existing = conversationMap.get(otherParticipantId);
       const isNewer = !existing || new Date(message.created_at) > new Date(existing.lastMessageTime);
@@ -684,7 +751,7 @@ const Messages = () => {
     );
 
     return { direct: directConvs, group: groupConv };
-  }, [allMessages, userId, profiles]);
+  }, [allMessages, userId, profiles, userRole, allowedMemberIds]);
 
   // Get messages for active conversation
   const conversationMessages = useMemo(() => {
@@ -1047,9 +1114,11 @@ const Messages = () => {
                 <div>
                   <h1 className="text-xl font-semibold flex items-center gap-2">
                     <MessageCircle className="h-5 w-5 text-primary" />
-                    Messages
+                    {userRole === "band_leader" ? "Band Messages" : userRole === "booking_manager" ? "Artist Messages" : "Messages"}
                   </h1>
-                  <p className="text-xs text-muted-foreground">Direct & group messages</p>
+                  <p className="text-xs text-muted-foreground">
+                    {userRole === "band_leader" ? "Messages with your band members" : userRole === "booking_manager" ? "Messages with your managed artists" : "Direct & group messages"}
+                  </p>
                 </div>
               </div>
             </div>

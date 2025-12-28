@@ -751,16 +751,15 @@ const Messages = () => {
         return !m.is_group_message && m.sender_id === conversation.participantId;
       });
 
-      for (const msg of messagesToProcess) {
-        // Mark as delivered if not already
+      // Fire all mark operations in parallel without blocking UI
+      messagesToProcess.forEach(msg => {
         if (!msg.delivered_to?.includes(userId)) {
-          await supabase.rpc("mark_message_as_delivered", { message_id: msg.id, user_id: userId });
+          void supabase.rpc("mark_message_as_delivered", { message_id: msg.id, user_id: userId });
         }
-        // Mark as read if not already
         if (!msg.read_by?.includes(userId)) {
-          await supabase.rpc("mark_message_as_read", { message_id: msg.id, user_id: userId });
+          void supabase.rpc("mark_message_as_read", { message_id: msg.id, user_id: userId });
         }
-      }
+      });
     }
   };
 

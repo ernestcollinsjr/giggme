@@ -23,6 +23,8 @@ interface NotificationPrefs {
   sound_muted: boolean;
   sound_type: SoundType;
   sound_volume: number;
+  sent_sound_type: SoundType;
+  delivered_sound_type: SoundType;
 }
 
 export const NotificationPreferences = () => {
@@ -63,6 +65,8 @@ export const NotificationPreferences = () => {
     sound_muted: false,
     sound_type: 'chime',
     sound_volume: 0.5,
+    sent_sound_type: 'sent',
+    delivered_sound_type: 'chime',
   });
 
   useEffect(() => {
@@ -97,6 +101,8 @@ export const NotificationPreferences = () => {
           sound_muted: (data as any).sound_muted ?? false,
           sound_type: (data as any).sound_type ?? 'chime',
           sound_volume: (data as any).sound_volume ?? 0.5,
+          sent_sound_type: (data as any).sent_sound_type ?? 'sent',
+          delivered_sound_type: (data as any).delivered_sound_type ?? 'chime',
         });
       }
     } catch (error) {
@@ -208,33 +214,65 @@ export const NotificationPreferences = () => {
             />
           </div>
 
-          {/* Sound Type Selection */}
-          <div className="flex items-center justify-between">
+          {/* Sent Sound Type Selection */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <Send className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <Label className="cursor-pointer">
+                  Sent Sound
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Sound when your message is sent
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 ml-7">
+              {(['sent', 'chime', 'bell', 'ding'] as const).map((type) => (
+                <Button
+                  key={type}
+                  variant={prefs.sent_sound_type === type ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => {
+                    updatePreference("sent_sound_type", type);
+                    playTestSound(type, prefs.sound_volume * 0.7);
+                  }}
+                  disabled={saving || prefs.sound_muted}
+                  className="capitalize"
+                >
+                  {type === 'sent' ? 'Subtle' : type}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {/* Delivered Sound Type Selection */}
+          <div className="space-y-2">
             <div className="flex items-center gap-3">
               <Play className="h-4 w-4 text-muted-foreground" />
               <div>
                 <Label className="cursor-pointer">
-                  Sound Type
+                  Delivered Sound
                 </Label>
                 <p className="text-xs text-muted-foreground">
-                  Choose your notification sound
+                  Sound when your message is delivered
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              {(['chime', 'bell', 'ding'] as const).map((type) => (
+            <div className="flex items-center gap-2 ml-7">
+              {(['chime', 'bell', 'ding', 'sent'] as const).map((type) => (
                 <Button
                   key={type}
-                  variant={prefs.sound_type === type ? "default" : "outline"}
+                  variant={prefs.delivered_sound_type === type ? "default" : "outline"}
                   size="sm"
                   onClick={() => {
-                    updatePreference("sound_type", type);
+                    updatePreference("delivered_sound_type", type);
                     playTestSound(type, prefs.sound_volume);
                   }}
-                  disabled={saving}
+                  disabled={saving || prefs.sound_muted}
                   className="capitalize"
                 >
-                  {type}
+                  {type === 'sent' ? 'Subtle' : type}
                 </Button>
               ))}
             </div>

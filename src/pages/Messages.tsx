@@ -655,8 +655,8 @@ const Messages = () => {
   }
 
   return (
-    <div className="h-screen bg-background flex flex-col pb-16 md:pb-0">
-      <div className="flex flex-1 overflow-hidden">
+    <div className="h-screen bg-background flex flex-col">
+      <div className="flex flex-1 min-h-0">
         {/* Sidebar - Conversation List */}
         <div className={cn(
           "w-full md:w-80 lg:w-96 border-r border-border flex flex-col bg-background",
@@ -795,7 +795,7 @@ const Messages = () => {
 
         {/* Chat Area */}
         <div className={cn(
-          "flex-1 flex flex-col bg-muted/30 overflow-hidden",
+          "flex-1 flex flex-col bg-muted/30 min-h-0",
           !activeConversation && "hidden md:flex"
         )}>
           {activeConversation ? (
@@ -1055,8 +1055,8 @@ const Messages = () => {
                 </div>
               )}
 
-              {/* Message Input - Fixed at bottom */}
-              <div className="shrink-0 p-4 border-t border-border bg-background">
+              {/* Message Input - Fixed at bottom above nav */}
+              <div className="shrink-0 p-4 border-t border-border bg-background pb-20 md:pb-4">
                 <div className="flex gap-2 max-w-3xl mx-auto">
                   <Textarea
                     ref={textareaRef}

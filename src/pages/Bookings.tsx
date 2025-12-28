@@ -50,6 +50,16 @@ interface BandMember {
   instrument: string | null;
 }
 
+// Helper function to convert 24-hour time to 12-hour format
+const formatTime12Hour = (time24: string | null): string => {
+  if (!time24) return '';
+  const [hours, minutes] = time24.split(':').map(Number);
+  if (isNaN(hours) || isNaN(minutes)) return time24;
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const hours12 = hours % 12 || 12;
+  return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`;
+};
+
 const Bookings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -1432,9 +1442,9 @@ const Bookings = () => {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <p className="text-sm font-medium">Rehearsal</p>
-                                  <p className="text-xs text-muted-foreground">
+                              <p className="text-xs text-muted-foreground">
                                     {format(new Date(gigRehearsals[gig.id].date), "EEE, MMM d")} at {format(new Date(gigRehearsals[gig.id].date), "p")}
-                                    {gigRehearsals[gig.id].end_time && ` - ${gigRehearsals[gig.id].end_time}`}
+                                    {gigRehearsals[gig.id].end_time && ` - ${formatTime12Hour(gigRehearsals[gig.id].end_time)}`}
                                   </p>
                                   <p className="text-xs text-muted-foreground truncate">{gigRehearsals[gig.id].venue}</p>
                                 </div>
@@ -1447,9 +1457,9 @@ const Bookings = () => {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <p className="text-sm font-medium">Gig</p>
-                                  <p className="text-xs text-muted-foreground">
+                                <p className="text-xs text-muted-foreground">
                                     {format(new Date(gig.date), "EEE, MMM d")} at {format(new Date(gig.date), "p")}
-                                    {gig.end_time && ` - ${gig.end_time}`}
+                                    {gig.end_time && ` - ${formatTime12Hour(gig.end_time)}`}
                                   </p>
                                   <p className="text-xs text-muted-foreground truncate">{gig.venue_name || gig.venue}</p>
                                 </div>
@@ -1465,20 +1475,20 @@ const Bookings = () => {
                             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                               <Clock className="h-4 w-4" />
                               {format(new Date(gig.date), "p")}
-                              {gig.end_time && ` - ${gig.end_time}`}
+                              {gig.end_time && ` - ${formatTime12Hour(gig.end_time)}`}
                             </div>
                           </>
                         )}
                         {gig.loading_time && (
                           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                             <Clock className="h-4 w-4" />
-                            <span className="font-medium">Load-in:</span> {gig.loading_time}
+                            <span className="font-medium">Load-in:</span> {formatTime12Hour(gig.loading_time)}
                           </div>
                         )}
                         {gig.sound_check_time && (
                           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                             <Clock className="h-4 w-4" />
-                            <span className="font-medium">Sound Check:</span> {gig.sound_check_time}
+                            <span className="font-medium">Sound Check:</span> {formatTime12Hour(gig.sound_check_time)}
                           </div>
                         )}
                         {gig.venue_name && (

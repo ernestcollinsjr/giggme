@@ -849,9 +849,9 @@ const Messages = () => {
           </ScrollArea>
         </div>
 
-        {/* Chat Area */}
+        {/* Chat Area - height accounts for bottom nav on mobile */}
         <div className={cn(
-          "flex-1 flex flex-col bg-muted/30 min-w-0",
+          "flex-1 flex flex-col bg-muted/30 min-w-0 max-h-full",
           !activeConversation && "hidden md:flex"
         )}>
           {activeConversation ? (

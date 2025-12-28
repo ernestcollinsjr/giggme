@@ -118,12 +118,13 @@ const ProfileSetup = () => {
           .eq("id", user.id)
           .single();
         
-        // Fetch role from user_roles table
+        // Fetch role from user_roles table (get first role if multiple exist)
         const { data: roleData } = await supabase
           .from("user_roles")
           .select("role")
           .eq("user_id", user.id)
-          .single();
+          .limit(1)
+          .maybeSingle();
         
         // Fetch next 7 days availability from calendar
         const today = new Date();

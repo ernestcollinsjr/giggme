@@ -81,19 +81,10 @@ const ChatHeader = ({
     ? profiles[activeConversation.participantId] 
     : null;
   
-  // Debug logging
-  console.log('ChatHeader rendering:', {
-    participantId: activeConversation.participantId,
-    profilesCount: Object.keys(profiles).length,
-    profilesLoaded,
-    partnerProfile: partnerProfile ? { name: partnerProfile.name, hasPhoto: !!partnerProfile.photo_urls?.[0] } : null,
-    profileKeys: Object.keys(profiles).slice(0, 5)
-  });
-  
   const isLoading = !profilesLoaded && !activeConversation.isGroup;
   const displayName = activeConversation.isGroup 
     ? "Group Chat" 
-    : (partnerProfile?.name || (isLoading ? "Loading..." : activeConversation.name || "Unknown"));
+    : (partnerProfile?.name || activeConversation.name || (isLoading ? "" : "Unknown"));
   const displayPhoto = activeConversation.isGroup 
     ? null 
     : (partnerProfile?.photo_urls?.[0] || activeConversation.photo || null);
@@ -111,7 +102,7 @@ const ChatHeader = ({
           ) : (
             <>
               {displayPhoto && <AvatarImage src={displayPhoto} />}
-              <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
+              <AvatarFallback>{getInitials(displayName || "?")}</AvatarFallback>
             </>
           )}
         </Avatar>
@@ -213,12 +204,6 @@ const Messages = () => {
     
     const freshProfile = profiles[participantId];
     if (freshProfile && (activeConversation.name === "Unknown" || !activeConversation.photo)) {
-      console.log('Updating active conversation with fresh profile:', {
-        participantId,
-        oldName: activeConversation.name,
-        newName: freshProfile.name,
-        hasPhoto: !!freshProfile.photo_urls?.[0]
-      });
       setActiveConversation(prev => prev ? {
         ...prev,
         name: freshProfile.name || prev.name,
@@ -358,19 +343,14 @@ const Messages = () => {
   }, []);
 
   const fetchProfiles = async () => {
-    console.log('FETCHING PROFILES...');
-    const { data, error } = await supabase.from("profiles").select("id, name, photo_urls");
-    console.log('PROFILES FETCH RESULT:', { data, error, count: data?.length });
+    const { data } = await supabase.from("profiles").select("id, name, photo_urls");
     if (data) {
       const profileObj: Record<string, Profile> = {};
       data.forEach((p) => { profileObj[p.id] = p as Profile; });
-      console.log('PROFILES OBJECT KEYS:', Object.keys(profileObj));
-      console.log('EJ PROFILE:', profileObj['37f6fc80-4c01-4678-b90d-5b9ed36941f6']);
       setProfiles(profileObj);
       setProfilesList(data.filter((p) => p.id !== userId) as Profile[]);
     }
     setProfilesLoaded(true);
-    console.log('PROFILES LOADED SET TO TRUE');
   };
 
   const fetchMessages = async () => {
@@ -383,23 +363,6 @@ const Messages = () => {
         .order("created_at", { ascending: true });
 
       if (error) throw error;
-      
-      // Debug: Check for Timmy's messages
-      const timmyId = '40cb4e99-9eb0-4fe9-97b6-d5822f467848';
-      const timmyMessages = data?.filter(m => 
-        m.sender_id === timmyId || m.recipient_id === timmyId
-      );
-      console.log('MESSAGES FETCH - Timmy messages:', {
-        totalMessages: data?.length,
-        timmyMessageCount: timmyMessages?.length,
-        timmyMessages: timmyMessages?.map(m => ({
-          id: m.id,
-          sender: m.sender_id,
-          recipient: m.recipient_id,
-          content: m.content?.substring(0, 20)
-        }))
-      });
-      
       setAllMessages((data as Message[]) || []);
     } catch (error) {
       console.error("Error fetching messages:", error);
@@ -478,12 +441,6 @@ const Messages = () => {
     const directConvs = Array.from(conversationMap.values()).sort(
       (a, b) => new Date(b.lastMessageTime).getTime() - new Date(a.lastMessageTime).getTime()
     );
-
-    console.log('GROUPED CONVERSATIONS BUILT:', {
-      profileCount: Object.keys(profiles).length,
-      directConvs: directConvs.map(c => ({ id: c.id, name: c.name, participantId: c.participantId })),
-      hasTimmy: directConvs.some(c => c.participantId === '40cb4e99-9eb0-4fe9-97b6-d5822f467848')
-    });
 
     return { direct: directConvs, group: groupConv };
   }, [allMessages, userId, profiles]);
@@ -781,7 +738,8 @@ const Messages = () => {
                   const freshProfile = !conversation.isGroup && conversation.participantId 
                     ? profiles[conversation.participantId] 
                     : null;
-                  const displayName = freshProfile?.name || conversation.name;
+                  const isProfileLoading = !profilesLoaded && !conversation.isGroup;
+                  const displayName = isProfileLoading ? "" : (freshProfile?.name || conversation.name);
                   const displayPhoto = freshProfile?.photo_urls?.[0] || conversation.photo;
                   
                   return (
@@ -793,21 +751,29 @@ const Messages = () => {
                         activeConversation?.id === conversation.id && "bg-muted"
                       )}
                     >
-                      <Avatar className="h-12 w-12">
-                        {conversation.isGroup ? (
-                          <AvatarFallback className="bg-primary/10">
-                            <Users className="h-5 w-5 text-primary" />
-                          </AvatarFallback>
-                        ) : (
-                          <>
-                            <AvatarImage src={displayPhoto || undefined} />
-                            <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
-                          </>
-                        )}
-                      </Avatar>
+                      {isProfileLoading ? (
+                        <Skeleton className="h-12 w-12 rounded-full" />
+                      ) : (
+                        <Avatar className="h-12 w-12">
+                          {conversation.isGroup ? (
+                            <AvatarFallback className="bg-primary/10">
+                              <Users className="h-5 w-5 text-primary" />
+                            </AvatarFallback>
+                          ) : (
+                            <>
+                              <AvatarImage src={displayPhoto || undefined} />
+                              <AvatarFallback>{getInitials(displayName || "?")}</AvatarFallback>
+                            </>
+                          )}
+                        </Avatar>
+                      )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <p className="font-medium text-sm truncate">{displayName}</p>
+                          {isProfileLoading ? (
+                            <Skeleton className="h-4 w-24" />
+                          ) : (
+                            <p className="font-medium text-sm truncate">{displayName}</p>
+                          )}
                           <span className="text-xs text-muted-foreground">{formatTime(conversation.lastMessageTime)}</span>
                         </div>
                         <div className="flex items-center justify-between mt-0.5">
@@ -862,21 +828,11 @@ const Messages = () => {
                       <p className="text-muted-foreground">No messages yet. Start the conversation!</p>
                     </div>
                   ) : (
-                    conversationMessages.map((m, index) => {
+                    conversationMessages.map((m) => {
                       const isOwn = m.sender_id === userId;
                       const senderProfile = profiles[m.sender_id];
                       const isRead = isOwn && !activeConversation.isGroup && m.read_by?.includes(activeConversation.participantId!);
                       const msgReactions = getMessageReactions(m.id);
-                      
-                      // Debug log for first few messages
-                      if (index < 3 && !isOwn) {
-                        console.log('Message avatar debug:', {
-                          senderId: m.sender_id,
-                          senderProfile: senderProfile ? { name: senderProfile.name, photo: senderProfile.photo_urls?.[0] } : null,
-                          profilesLoaded,
-                          profilesCount: Object.keys(profiles).length
-                        });
-                      }
                       
                       return (
                         <div 

@@ -611,19 +611,33 @@ export const MessagesChat = ({
     if (!userId || !text.trim() || !activeConversation) return;
     
     setSending(true);
+    const messageContent = text.trim();
+    const replyId = replyToMessage?.id || null;
+    
     try {
-      const { error } = await supabase.from("messages").insert({
+      const { data, error } = await supabase.from("messages").insert({
         sender_id: userId,
         recipient_id: activeConversation.isGroup ? null : activeConversation.participantId,
         is_group_message: activeConversation.isGroup,
-        content: text.trim(),
-        reply_to_id: replyToMessage?.id || null,
-      });
+        content: messageContent,
+        reply_to_id: replyId,
+      }).select().single();
       
       if (error) throw error;
+      
+      // Optimistically add the message to state in case realtime is slow
+      if (data) {
+        setAllMessages((prev) => {
+          // Only add if not already present (realtime might have already added it)
+          if (prev.some(m => m.id === data.id)) return prev;
+          return [...prev, data as Message];
+        });
+      }
+      
       setText("");
       setReplyToMessage(null);
       broadcastTyping(false);
+      toast({ title: "Sent", description: "Message sent successfully." });
       scrollToBottom();
     } catch (e: any) {
       toast({ variant: "destructive", title: "Failed to send", description: e.message });

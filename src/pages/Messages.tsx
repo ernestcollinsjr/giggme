@@ -86,6 +86,7 @@ const Messages = () => {
   const [forwarding, setForwarding] = useState(false);
   const [newConversationOpen, setNewConversationOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingChannelRef = useRef<RealtimeChannel | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -798,7 +799,10 @@ const Messages = () => {
                             )}>
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setReplyToMessage(m)}>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
+                                    setReplyToMessage(m);
+                                    setTimeout(() => textareaRef.current?.focus(), 100);
+                                  }}>
                                     <Reply className="h-3.5 w-3.5" />
                                   </Button>
                                 </TooltipTrigger>
@@ -912,6 +916,7 @@ const Messages = () => {
               <div className="p-4 border-t border-border bg-background">
                 <div className="flex gap-2 max-w-3xl mx-auto">
                   <Textarea
+                    ref={textareaRef}
                     placeholder="Type a message..."
                     value={text}
                     onChange={(e) => handleTextChange(e.target.value)}

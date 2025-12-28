@@ -157,7 +157,9 @@ const ProfileSetup = () => {
           setPhoneNumber(profile.phone_number || "");
           setEmail(profile.email || "");
           setRiderNotes(profile.rider_notes || "");
-          setTimezone(profile.timezone || "America/Chicago");
+          // Auto-detect timezone from browser if not set in profile
+          const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          setTimezone(profile.timezone || browserTimezone || "America/Chicago");
           const urls = profile.photo_urls || [];
           setPhotoUrls(urls);
           setPhotoPreviews(urls.length > 0 ? [...urls, "", "", "", ""].slice(0, 4) : ["", "", "", ""]);

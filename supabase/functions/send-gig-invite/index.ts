@@ -13,6 +13,7 @@ const corsHeaders = {
 interface GigInviteRequest {
   recipientEmail: string;
   recipientName: string;
+  recipientTimezone?: string;
   venueName: string;
   venueAddress: string;
   gigDate: string;
@@ -29,6 +30,47 @@ interface GigInviteRequest {
   };
   gigId?: string;
   memberId?: string;
+}
+
+// Format date in a specific timezone
+function formatInTimezone(date: Date, timezone: string): { formatted: string; tzAbbrev: string } {
+  try {
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+      timeZone: timezone,
+    };
+    
+    const formatted = date.toLocaleString('en-US', options);
+    
+    // Get timezone abbreviation
+    const tzOptions: Intl.DateTimeFormatOptions = {
+      timeZoneName: 'short',
+      timeZone: timezone,
+    };
+    const tzPart = date.toLocaleString('en-US', tzOptions).split(' ').pop() || timezone;
+    
+    return { formatted, tzAbbrev: tzPart };
+  } catch (e) {
+    // Fallback if timezone is invalid
+    console.error('Invalid timezone:', timezone, e);
+    const formatted = date.toLocaleString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+      timeZone: 'America/Chicago',
+    });
+    return { formatted, tzAbbrev: 'CT' };
+  }
 }
 
 function formatCountdown(deadlineDate: Date): string {
@@ -64,6 +106,7 @@ const handler = async (req: Request): Promise<Response> => {
     const { 
       recipientEmail, 
       recipientName,
+      recipientTimezone,
       venueName,
       venueAddress,
       gigDate,
@@ -78,27 +121,14 @@ const handler = async (req: Request): Promise<Response> => {
       memberId,
     }: GigInviteRequest = await req.json();
 
-    console.log("Sending gig invite to:", recipientEmail);
+    console.log("Sending gig invite to:", recipientEmail, "timezone:", recipientTimezone);
 
     const deadlineDate = new Date(responseDeadline);
     const countdownText = formatCountdown(deadlineDate);
     
-    // Format the deadline with explicit time - more user-friendly
-    // Show date and time in a clear format
-    const deadlineHours = deadlineDate.getUTCHours();
-    const deadlineMinutes = deadlineDate.getUTCMinutes();
-    const deadlineDay = deadlineDate.getUTCDate();
-    const deadlineMonth = deadlineDate.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' });
-    const deadlineYear = deadlineDate.getUTCFullYear();
-    const deadlineWeekday = deadlineDate.toLocaleString('en-US', { weekday: 'short', timeZone: 'UTC' });
-    
-    // Convert to 12-hour format
-    const isPM = deadlineHours >= 12;
-    const displayHour = deadlineHours % 12 || 12;
-    const displayMinutes = deadlineMinutes.toString().padStart(2, '0');
-    const ampm = isPM ? 'PM' : 'AM';
-    
-    const formattedDeadline = `${deadlineWeekday}, ${deadlineMonth} ${deadlineDay}, ${deadlineYear} at ${displayHour}:${displayMinutes} ${ampm} UTC`;
+    // Use recipient's timezone for formatting, default to America/Chicago
+    const timezone = recipientTimezone || 'America/Chicago';
+    const { formatted: formattedDeadline, tzAbbrev } = formatInTimezone(deadlineDate, timezone);
 
     const displayVenue = venueName || venueAddress;
 

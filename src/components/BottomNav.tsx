@@ -23,17 +23,24 @@ const BottomNav = () => {
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
       
       setUserRole(roleData?.role || null);
       fetchUnreadCount(user.id);
 
-      // Subscribe to message changes
+      // Subscribe to message changes with unique channel name
       const channel = supabase
-        .channel("nav-messages")
+        .channel("nav-messages-" + user.id)
         .on(
           "postgres_changes",
-          { event: "*", schema: "public", table: "messages" },
+          { event: "INSERT", schema: "public", table: "messages" },
+          () => {
+            fetchUnreadCount(user.id);
+          }
+        )
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "messages" },
           () => {
             fetchUnreadCount(user.id);
           }
@@ -46,17 +53,29 @@ const BottomNav = () => {
     })();
   }, []);
 
+  // Re-fetch unread count on route changes to catch any missed updates
+  useEffect(() => {
+    if (userId) {
+      fetchUnreadCount(userId);
+    }
+  }, [location.pathname, userId]);
+
   const fetchUnreadCount = async (uid: string) => {
     try {
+      // Only fetch messages relevant to this user (group messages OR messages where user is sender/recipient)
       const { data, error } = await supabase
         .from("messages")
-        .select("id, read_by");
+        .select("id, read_by, sender_id, recipient_id, is_group_message");
 
       if (error) throw error;
 
-      const unread = (data || []).filter(
-        (m: any) => !(m.read_by || []).includes(uid)
-      ).length;
+      const unread = (data || []).filter((m: any) => {
+        // Check if this message is relevant to the user
+        const isRelevant = m.is_group_message || m.sender_id === uid || m.recipient_id === uid;
+        // Check if unread (user not in read_by array)
+        const isUnread = !(m.read_by || []).includes(uid);
+        return isRelevant && isUnread;
+      }).length;
 
       setUnreadCount(unread);
     } catch (error) {

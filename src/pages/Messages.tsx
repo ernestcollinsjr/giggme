@@ -453,7 +453,19 @@ const Messages = () => {
         { event: "*", schema: "public", table: "messages" },
         (payload) => {
           if (payload.eventType === "INSERT") {
-            setAllMessages((prev) => [...prev, payload.new as Message]);
+            const newMsg = payload.new as Message;
+            setAllMessages((prev) => {
+              // Skip if already exists (from optimistic update) or is a temp message
+              if (prev.some(m => m.id === newMsg.id || (m.id.startsWith('temp-') && m.content === newMsg.content && m.sender_id === newMsg.sender_id))) {
+                // Replace temp message with real one
+                return prev.map(m => 
+                  m.id.startsWith('temp-') && m.content === newMsg.content && m.sender_id === newMsg.sender_id 
+                    ? newMsg 
+                    : m
+                ).filter((m, i, arr) => arr.findIndex(x => x.id === m.id) === i);
+              }
+              return [...prev, newMsg];
+            });
             // Auto-scroll to bottom when new message arrives
             setTimeout(() => {
               const allViewports = document.querySelectorAll('[data-radix-scroll-area-viewport]');
@@ -767,23 +779,53 @@ const Messages = () => {
     if (!userId || !text.trim() || !activeConversation) return;
     
     setSending(true);
+    const messageContent = text.trim();
+    const replyId = replyToMessage?.id || null;
+    const recipientId = activeConversation.isGroup ? null : activeConversation.participantId;
+    const isGroupMessage = activeConversation.isGroup;
+    
+    // Create optimistic message immediately for instant UI feedback
+    const optimisticMessage: Message = {
+      id: `temp-${Date.now()}`,
+      sender_id: userId,
+      recipient_id: recipientId || null,
+      is_group_message: isGroupMessage,
+      content: messageContent,
+      created_at: new Date().toISOString(),
+      read_by: [userId],
+      delivered_to: [userId],
+      reply_to_id: replyId,
+    };
+    
+    // Add optimistic message immediately
+    setAllMessages((prev) => [...prev, optimisticMessage]);
+    setText("");
+    setReplyToMessage(null);
+    broadcastTyping(false);
+    scrollToBottom();
+    
     try {
-      const { error } = await supabase.from("messages").insert({
+      const { data, error } = await supabase.from("messages").insert({
         sender_id: userId,
-        recipient_id: activeConversation.isGroup ? null : activeConversation.participantId,
-        is_group_message: activeConversation.isGroup,
-        content: text.trim(),
-        reply_to_id: replyToMessage?.id || null,
-      });
+        recipient_id: recipientId,
+        is_group_message: isGroupMessage,
+        content: messageContent,
+        reply_to_id: replyId,
+      }).select().single();
       
       if (error) throw error;
-      setText("");
-      setReplyToMessage(null);
-      broadcastTyping(false);
       
-      // Scroll to bottom after sending
-      scrollToBottom();
+      // Replace optimistic message with real one
+      if (data) {
+        setAllMessages((prev) => {
+          const filtered = prev.filter(m => m.id !== optimisticMessage.id);
+          if (filtered.some(m => m.id === data.id)) return filtered;
+          return [...filtered, data as Message];
+        });
+      }
     } catch (e: any) {
+      // Remove optimistic message on error
+      setAllMessages((prev) => prev.filter(m => m.id !== optimisticMessage.id));
       toast({ variant: "destructive", title: "Failed to send", description: e.message });
     } finally {
       setSending(false);

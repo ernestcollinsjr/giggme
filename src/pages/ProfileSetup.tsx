@@ -1441,23 +1441,48 @@ const ProfileSetup = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="timezone">Timezone</Label>
+              <Label htmlFor="timezone" className="flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                Timezone
+              </Label>
               <Select value={timezone} onValueChange={setTimezone}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select your timezone" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-[300px]">
+                  {/* US Timezones */}
                   <SelectItem value="America/New_York">Eastern Time (ET)</SelectItem>
                   <SelectItem value="America/Chicago">Central Time (CT)</SelectItem>
                   <SelectItem value="America/Denver">Mountain Time (MT)</SelectItem>
-                  <SelectItem value="America/Phoenix">Arizona Time (MST - No DST)</SelectItem>
+                  <SelectItem value="America/Phoenix">Arizona (MST - No DST)</SelectItem>
                   <SelectItem value="America/Los_Angeles">Pacific Time (PT)</SelectItem>
                   <SelectItem value="America/Anchorage">Alaska Time (AKT)</SelectItem>
-                  <SelectItem value="Pacific/Honolulu">Hawaii Time (HST)</SelectItem>
+                  <SelectItem value="Pacific/Honolulu">Hawaii (HST)</SelectItem>
+                  {/* International */}
+                  <SelectItem value="Europe/London">London (GMT/BST)</SelectItem>
+                  <SelectItem value="Europe/Paris">Paris (CET/CEST)</SelectItem>
+                  <SelectItem value="Europe/Berlin">Berlin (CET/CEST)</SelectItem>
+                  <SelectItem value="Europe/Amsterdam">Amsterdam (CET/CEST)</SelectItem>
+                  <SelectItem value="Europe/Rome">Rome (CET/CEST)</SelectItem>
+                  <SelectItem value="Europe/Madrid">Madrid (CET/CEST)</SelectItem>
+                  <SelectItem value="Asia/Tokyo">Tokyo (JST)</SelectItem>
+                  <SelectItem value="Asia/Shanghai">Shanghai (CST)</SelectItem>
+                  <SelectItem value="Asia/Singapore">Singapore (SGT)</SelectItem>
+                  <SelectItem value="Asia/Dubai">Dubai (GST)</SelectItem>
+                  <SelectItem value="Asia/Kolkata">India (IST)</SelectItem>
+                  <SelectItem value="Australia/Sydney">Sydney (AEST/AEDT)</SelectItem>
+                  <SelectItem value="Australia/Melbourne">Melbourne (AEST/AEDT)</SelectItem>
+                  <SelectItem value="Australia/Perth">Perth (AWST)</SelectItem>
+                  <SelectItem value="Pacific/Auckland">Auckland (NZST/NZDT)</SelectItem>
+                  <SelectItem value="America/Toronto">Toronto (ET)</SelectItem>
+                  <SelectItem value="America/Vancouver">Vancouver (PT)</SelectItem>
+                  <SelectItem value="America/Mexico_City">Mexico City (CST)</SelectItem>
+                  <SelectItem value="America/Sao_Paulo">São Paulo (BRT)</SelectItem>
+                  <SelectItem value="America/Buenos_Aires">Buenos Aires (ART)</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                All dates and times will be displayed in your selected timezone.
+                All dates, times, and email notifications will use your selected timezone.
               </p>
             </div>
             

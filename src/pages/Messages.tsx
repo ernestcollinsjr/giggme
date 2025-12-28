@@ -1062,15 +1062,24 @@ const Messages = () => {
                     ref={textareaRef}
                     placeholder="Type a message..."
                     value={text}
-                    onChange={(e) => handleTextChange(e.target.value)}
+                    onChange={(e) => {
+                      handleTextChange(e.target.value);
+                      // Auto-resize textarea
+                      e.target.style.height = 'auto';
+                      e.target.style.height = Math.min(e.target.scrollHeight, 128) + 'px';
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
                         handleSend();
+                        // Reset height after sending
+                        if (textareaRef.current) {
+                          textareaRef.current.style.height = 'auto';
+                        }
                       }
                     }}
                     rows={1}
-                    className="flex-1 resize-none min-h-[44px] max-h-32"
+                    className="flex-1 resize-none min-h-[44px] max-h-32 overflow-y-auto"
                   />
                   <Button 
                     onClick={handleSend} 

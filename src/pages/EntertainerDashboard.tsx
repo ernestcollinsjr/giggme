@@ -22,6 +22,7 @@ import {
 import { format, parseISO, isToday, isTomorrow, isPast } from "date-fns";
 import { NotificationBell } from "@/components/NotificationBell";
 import { CalloutDialog } from "@/components/entertainer/CalloutDialog";
+import { UpcomingGigLocationTracker } from "@/components/UpcomingGigLocationTracker";
 
 interface Booking {
   id: string;
@@ -46,6 +47,7 @@ const EntertainerDashboard = () => {
   const [activeTab, setActiveTab] = useState("pending");
   const [showCalloutDialog, setShowCalloutDialog] = useState(false);
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchBookings();
@@ -80,6 +82,8 @@ const EntertainerDashboard = () => {
         navigate("/auth");
         return;
       }
+
+      setUserId(user.id);
 
       const { data: bookingsData, error } = await supabase
         .from("entertainment_bookings")
@@ -178,6 +182,14 @@ const EntertainerDashboard = () => {
           </div>
           <NotificationBell />
         </div>
+
+        {/* Upcoming Gig Location Tracker - Shows prominently when gig is within 1 hour */}
+        {userId && (
+          <UpcomingGigLocationTracker 
+            userId={userId} 
+            userRole="artist" 
+          />
+        )}
 
         {/* Quick Stats */}
         <div className="grid grid-cols-3 gap-4 mb-6">

@@ -1124,12 +1124,9 @@ const Messages = () => {
                                 <p className="text-sm whitespace-pre-wrap">{m.content}</p>
                               </div>
                               
-                              {/* Reactions - positioned on the bubble */}
+                              {/* Reactions - positioned on top right of bubble */}
                               {msgReactions.size > 0 && (
-                                <div className={cn(
-                                  "absolute -bottom-2.5 flex gap-0.5",
-                                  isOwn ? "right-2" : "left-2"
-                                )}>
+                                <div className="absolute -top-2.5 right-2 flex gap-0.5">
                                   {Array.from(msgReactions.entries()).map(([emoji, data]) => (
                                     <button
                                       key={emoji}

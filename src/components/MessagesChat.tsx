@@ -290,12 +290,15 @@ export const MessagesChat = ({
     fetchMessages();
     fetchReactionsAndPins();
 
+    console.log("Setting up realtime subscription for messages...");
+    
     const channel = supabase
       .channel("messages-chat-realtime")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "messages" },
         (payload) => {
+          console.log("Realtime message event:", payload.eventType, payload);
           if (payload.eventType === "INSERT") {
             setAllMessages((prev) => {
               if (prev.some(m => m.id === (payload.new as Message).id)) return prev;
@@ -323,6 +326,7 @@ export const MessagesChat = ({
         "postgres_changes",
         { event: "*", schema: "public", table: "message_reactions" },
         (payload) => {
+          console.log("Realtime reaction event:", payload.eventType);
           if (payload.eventType === "INSERT") {
             setReactions(prev => {
               if (prev.some(r => r.id === (payload.new as Reaction).id)) return prev;
@@ -337,6 +341,7 @@ export const MessagesChat = ({
         "postgres_changes",
         { event: "*", schema: "public", table: "pinned_messages" },
         (payload) => {
+          console.log("Realtime pin event:", payload.eventType);
           if (payload.eventType === "INSERT") {
             setPinnedMessages(prev => {
               if (prev.some(p => p.id === (payload.new as PinnedMessage).id)) return prev;
@@ -351,6 +356,7 @@ export const MessagesChat = ({
         "postgres_changes",
         { event: "*", schema: "public", table: "read_receipts" },
         (payload) => {
+          console.log("Realtime read receipt event:", payload.eventType);
           if (payload.eventType === "INSERT") {
             setReadReceipts(prev => {
               if (prev.some(r => r.id === (payload.new as ReadReceipt).id)) return prev;
@@ -359,9 +365,12 @@ export const MessagesChat = ({
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log("Realtime subscription status:", status);
+      });
 
     return () => {
+      console.log("Cleaning up realtime subscription");
       supabase.removeChannel(channel);
     };
   }, [userId]);

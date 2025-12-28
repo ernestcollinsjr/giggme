@@ -168,8 +168,7 @@ const Messages = () => {
   }, []);
 
   const scrollToBottom = useCallback(() => {
-    // Try multiple methods to ensure scroll works
-    setTimeout(() => {
+    const doScroll = () => {
       // Method 1: Use scrollRef
       if (scrollRef.current) {
         const scrollContainer = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
@@ -182,7 +181,14 @@ const Messages = () => {
       allViewports.forEach(viewport => {
         viewport.scrollTop = viewport.scrollHeight;
       });
-    }, 150);
+    };
+    
+    // Scroll multiple times to handle mobile keyboard animation
+    // This mimics native phone messaging behavior
+    doScroll();
+    setTimeout(doScroll, 100);
+    setTimeout(doScroll, 300);
+    setTimeout(doScroll, 500);
   }, []);
 
   // Attach scroll listener

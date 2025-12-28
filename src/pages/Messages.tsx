@@ -711,8 +711,8 @@ const Messages = () => {
   }
 
   return (
-    <div className="h-[100dvh] bg-background flex flex-col pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">
-      <div className="flex flex-1 min-h-0 overflow-hidden">
+    <div className="h-[100dvh] bg-background flex flex-col">
+      <div className="flex flex-1 min-h-0">
         {/* Sidebar - Conversation List */}
         <div className={cn(
           "w-full md:w-80 lg:w-96 border-r border-border flex flex-col bg-background",
@@ -849,9 +849,9 @@ const Messages = () => {
           </ScrollArea>
         </div>
 
-        {/* Chat Area - height accounts for bottom nav on mobile */}
+        {/* Chat Area */}
         <div className={cn(
-          "flex-1 flex flex-col bg-muted/30 min-w-0 max-h-full",
+          "flex-1 flex flex-col bg-muted/30 min-w-0 overflow-hidden",
           !activeConversation && "hidden md:flex"
         )}>
           {activeConversation ? (
@@ -1081,8 +1081,8 @@ const Messages = () => {
                 </ScrollArea>
               </div>
 
-              {/* Bottom input area container with spacer for bottom nav */}
-              <div className="flex-shrink-0 border-t border-border bg-background p-4 pb-20 md:pb-4">
+              {/* Bottom input area container - fixed to bottom with space for nav bar */}
+              <div className="flex-shrink-0 border-t border-border bg-background p-4">
                 {/* Typing indicator */}
                 {typingUsers.size > 0 && (
                   <div className="px-4 py-2 flex items-center gap-2 border-b border-border/50">
@@ -1163,8 +1163,8 @@ const Messages = () => {
                 </div>
               </div>
               
-              {/* Black dividing block to separate from bottom navigation - visible on mobile only */}
-              <div className="flex-shrink-0 h-24 bg-black md:hidden" />
+              {/* Spacer block to push content above bottom navigation bar on mobile */}
+              <div className="flex-shrink-0 h-20 bg-background md:hidden" />
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center">

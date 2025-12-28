@@ -429,24 +429,36 @@ const Messages = () => {
   }, [profilesLoaded, profiles, activeConversation?.participantId]);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+      console.log("Messages: No userId, skipping realtime setup");
+      return;
+    }
+    
+    console.log("Messages: Setting up realtime for userId:", userId);
+    
     fetchProfiles();
     fetchMessages();
     fetchReactionsAndPins();
 
-    // Realtime subscription
+    // Realtime subscription with unique channel name per user
+    const channelName = `messages-realtime-${userId}-${Date.now()}`;
+    console.log("Messages: Creating channel:", channelName);
+    
     const channel = supabase
-      .channel("messages-page-realtime")
+      .channel(channelName)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages" },
         (payload) => {
-          console.log("Realtime INSERT received:", payload);
+          console.log("🔔 REALTIME INSERT:", payload);
           const newMsg = payload.new as Message;
           setAllMessages((prev) => {
             // Check if this exact message ID already exists
             const exists = prev.some(m => m.id === newMsg.id);
-            if (exists) return prev;
+            if (exists) {
+              console.log("Message already exists, skipping:", newMsg.id);
+              return prev;
+            }
             
             // Check for matching temp message to replace
             const tempIndex = prev.findIndex(m => 
@@ -456,12 +468,13 @@ const Messages = () => {
             );
             
             if (tempIndex >= 0) {
-              // Replace temp message with real one
+              console.log("Replacing temp message at index:", tempIndex);
               const updated = [...prev];
               updated[tempIndex] = newMsg;
               return updated;
             }
             
+            console.log("Adding new message to state:", newMsg.id);
             return [...prev, newMsg];
           });
         }
@@ -470,7 +483,7 @@ const Messages = () => {
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "messages" },
         (payload) => {
-          console.log("Realtime UPDATE received:", payload);
+          console.log("🔔 REALTIME UPDATE:", payload);
           setAllMessages((prev) =>
             prev.map((m) => (m.id === (payload.new as Message).id ? (payload.new as Message) : m))
           );
@@ -480,7 +493,7 @@ const Messages = () => {
         "postgres_changes",
         { event: "DELETE", schema: "public", table: "messages" },
         (payload) => {
-          console.log("Realtime DELETE received:", payload);
+          console.log("🔔 REALTIME DELETE:", payload);
           setAllMessages((prev) => prev.filter((m) => m.id !== (payload.old as Message).id));
         }
       )
@@ -499,11 +512,18 @@ const Messages = () => {
         { event: "*", schema: "public", table: "read_receipts" },
         () => fetchReactionsAndPins()
       )
-      .subscribe((status) => {
-        console.log("Realtime subscription status:", status);
+      .subscribe((status, err) => {
+        console.log("📡 Realtime subscription status:", status);
+        if (err) {
+          console.error("Realtime subscription error:", err);
+        }
+        if (status === 'SUBSCRIBED') {
+          console.log("✅ Successfully subscribed to realtime messages");
+        }
       });
 
     return () => {
+      console.log("Messages: Cleaning up channel:", channelName);
       supabase.removeChannel(channel);
     };
   }, [userId]);

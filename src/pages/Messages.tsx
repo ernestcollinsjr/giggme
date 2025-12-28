@@ -742,9 +742,9 @@ const Messages = () => {
                           )}
                         >
                           {/* Avatar */}
-                          <Avatar className="h-8 w-8 flex-shrink-0">
+                          <Avatar className="h-8 w-8 flex-shrink-0 block">
                             <AvatarImage src={isOwn ? profiles.get(userId)?.photo_urls?.[0] : senderProfile?.photo_urls?.[0]} />
-                            <AvatarFallback className="text-xs bg-muted">
+                            <AvatarFallback className="text-xs bg-muted flex items-center justify-center">
                               {getInitials(isOwn ? profiles.get(userId)?.name || "U" : senderProfile?.name || "U")}
                             </AvatarFallback>
                           </Avatar>

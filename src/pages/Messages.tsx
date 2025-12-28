@@ -5,7 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle, Users, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import BottomNav from "@/components/BottomNav";
 
 interface Message {
@@ -21,6 +21,7 @@ interface Message {
 interface Profile {
   id: string;
   name: string;
+  photo_urls: string[] | null;
 }
 
 interface Conversation {
@@ -74,10 +75,10 @@ const Messages = () => {
   }, [userId]);
 
   const fetchProfiles = async () => {
-    const { data } = await supabase.from("profiles").select("id, name");
+    const { data } = await supabase.from("profiles").select("id, name, photo_urls");
     if (data) {
       const profileMap = new Map<string, Profile>();
-      data.forEach((p) => profileMap.set(p.id, p));
+      data.forEach((p) => profileMap.set(p.id, p as Profile));
       setProfiles(profileMap);
     }
   };
@@ -261,6 +262,13 @@ const Messages = () => {
             >
               {/* Avatar */}
               <Avatar className="h-12 w-12 shrink-0">
+                {!conversation.isGroup && conversation.participantId && profiles.get(conversation.participantId)?.photo_urls?.[0] && (
+                  <AvatarImage 
+                    src={profiles.get(conversation.participantId)?.photo_urls?.[0]} 
+                    alt={conversation.name}
+                    className="object-cover"
+                  />
+                )}
                 <AvatarFallback className={conversation.isGroup ? "bg-primary text-primary-foreground" : "bg-muted"}>
                   {conversation.isGroup ? (
                     <Users className="h-5 w-5" />

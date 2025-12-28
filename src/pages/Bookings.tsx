@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
-import { Calendar as CalendarIcon, Clock, MapPin, Plus, Trash2, Music, Navigation, Users, Send, Pencil, Filter, Mail } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, MapPin, Plus, Trash2, Music, Navigation, Users, Send, Pencil, Filter, Mail, MailCheck, MailOpen, MousePointerClick, AlertCircle } from "lucide-react";
 import { EmailTrackingStatus } from "@/components/EmailTrackingStatus";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -65,6 +65,7 @@ const Bookings = () => {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [currentGigForInvite, setCurrentGigForInvite] = useState<string | null>(null);
   const [currentGigInvitedMembers, setCurrentGigInvitedMembers] = useState<{ member_id: string; status: string }[]>([]);
+  const [currentGigEmailTracking, setCurrentGigEmailTracking] = useState<Record<string, { status: string; delivered_at: string | null; opened_at: string | null; clicked_at: string | null }>>({});
   const [resendingMemberId, setResendingMemberId] = useState<string | null>(null);
   const [resendingAll, setResendingAll] = useState(false);
   const [showPendingOnly, setShowPendingOnly] = useState(false);
@@ -688,13 +689,32 @@ const Bookings = () => {
   const openInviteDialog = async (gigId: string) => {
     setCurrentGigForInvite(gigId);
     
-    // Fetch already invited members for this gig
-    const { data: invitedMembers } = await supabase
-      .from("gig_members")
-      .select("member_id, status")
-      .eq("gig_id", gigId);
+    // Fetch already invited members and email tracking for this gig
+    const [invitedMembersRes, emailTrackingRes] = await Promise.all([
+      supabase
+        .from("gig_members")
+        .select("member_id, status")
+        .eq("gig_id", gigId),
+      supabase
+        .from("email_tracking")
+        .select("member_id, status, delivered_at, opened_at, clicked_at")
+        .eq("gig_id", gigId)
+    ]);
     
-    setCurrentGigInvitedMembers(invitedMembers || []);
+    setCurrentGigInvitedMembers(invitedMembersRes.data || []);
+    
+    // Create a map of member_id to email tracking data
+    const trackingMap: Record<string, { status: string; delivered_at: string | null; opened_at: string | null; clicked_at: string | null }> = {};
+    emailTrackingRes.data?.forEach(t => {
+      trackingMap[t.member_id] = {
+        status: t.status,
+        delivered_at: t.delivered_at,
+        opened_at: t.opened_at,
+        clicked_at: t.clicked_at
+      };
+    });
+    setCurrentGigEmailTracking(trackingMap);
+    
     setInviteDialogOpen(true);
   };
 
@@ -1583,18 +1603,56 @@ const Bookings = () => {
                                     </div>
                                     {currentGigInvitedMembers.map((invite) => {
                                       const member = bandMembers.find(m => m.id === invite.member_id);
+                                      const emailTracking = currentGigEmailTracking[invite.member_id];
                                       if (!member) return null;
+                                      
+                                      const getEmailStatusIcon = () => {
+                                        if (!emailTracking) return null;
+                                        if (emailTracking.clicked_at) return <MousePointerClick className="h-3 w-3 text-green-600" />;
+                                        if (emailTracking.opened_at) return <MailOpen className="h-3 w-3 text-blue-600" />;
+                                        if (emailTracking.delivered_at) return <MailCheck className="h-3 w-3 text-cyan-600" />;
+                                        if (emailTracking.status === 'bounced' || emailTracking.status === 'complained') return <AlertCircle className="h-3 w-3 text-destructive" />;
+                                        return <Mail className="h-3 w-3 text-muted-foreground" />;
+                                      };
+                                      
+                                      const getEmailStatusText = () => {
+                                        if (!emailTracking) return null;
+                                        if (emailTracking.clicked_at) return 'Clicked';
+                                        if (emailTracking.opened_at) return 'Opened';
+                                        if (emailTracking.delivered_at) return 'Delivered';
+                                        if (emailTracking.status === 'bounced') return 'Bounced';
+                                        if (emailTracking.status === 'complained') return 'Complained';
+                                        return 'Sent';
+                                      };
+                                      
                                       return (
                                         <div key={invite.member_id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
                                           <div className="flex-1">
                                             <p className="font-semibold text-sm">{member.name}</p>
                                             <p className="text-xs text-muted-foreground">{member.email}</p>
-                                            <Badge 
-                                              variant={invite.status === 'accepted' ? 'default' : invite.status === 'declined' ? 'destructive' : 'secondary'}
-                                              className="mt-1 text-xs"
-                                            >
-                                              {invite.status}
-                                            </Badge>
+                                            <div className="flex items-center gap-2 mt-1">
+                                              <Badge 
+                                                variant={invite.status === 'accepted' ? 'default' : invite.status === 'declined' ? 'destructive' : 'secondary'}
+                                                className="text-xs"
+                                              >
+                                                {invite.status}
+                                              </Badge>
+                                              {emailTracking && (
+                                                <Badge 
+                                                  variant="outline" 
+                                                  className={cn(
+                                                    "text-xs flex items-center gap-1",
+                                                    emailTracking.clicked_at && "border-green-500/30 text-green-700 bg-green-500/10",
+                                                    emailTracking.opened_at && !emailTracking.clicked_at && "border-blue-500/30 text-blue-700 bg-blue-500/10",
+                                                    emailTracking.delivered_at && !emailTracking.opened_at && "border-cyan-500/30 text-cyan-700 bg-cyan-500/10",
+                                                    (emailTracking.status === 'bounced' || emailTracking.status === 'complained') && "border-destructive/30 text-destructive bg-destructive/10"
+                                                  )}
+                                                >
+                                                  {getEmailStatusIcon()}
+                                                  {getEmailStatusText()}
+                                                </Badge>
+                                              )}
+                                            </div>
                                           </div>
                                           <Button
                                             variant="outline"

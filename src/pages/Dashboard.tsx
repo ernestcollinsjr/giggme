@@ -205,22 +205,40 @@ const Dashboard = () => {
       .eq("id", user.id)
       .single();
     
-    // Fetch user role
-    const { data: roleData } = await supabase
+    // Fetch user roles - prioritize super_admin > band_leader > others
+    const { data: rolesData } = await supabase
       .from("user_roles")
       .select("role")
-      .eq("user_id", user.id)
-      .single();
+      .eq("user_id", user.id);
     
-    if (profileData && roleData) {
+    // Determine the primary role based on priority
+    let primaryRole: UserRole | null = null;
+    if (rolesData && rolesData.length > 0) {
+      const roles = rolesData.map(r => r.role);
+      if (roles.includes("super_admin")) {
+        primaryRole = "super_admin";
+      } else if (roles.includes("band_leader")) {
+        primaryRole = "band_leader";
+      } else if (roles.includes("tour_manager")) {
+        primaryRole = "tour_manager";
+      } else if (roles.includes("booking_manager")) {
+        primaryRole = "booking_manager";
+      } else if (roles.includes("artist")) {
+        primaryRole = "artist";
+      } else {
+        primaryRole = roles[0] as UserRole;
+      }
+    }
+    
+    if (profileData && primaryRole) {
       setProfile(profileData);
-      setUserRole(roleData.role as UserRole);
+      setUserRole(primaryRole);
       
       // Fetch bands for band leaders and super admins
-      if (roleData.role === "band_leader" || roleData.role === "super_admin") {
+      if (primaryRole === "band_leader" || primaryRole === "super_admin") {
         // For super_admin, fetch all bands; for band_leader, fetch only their bands
         let bandsQuery = supabase.from("bands").select("*");
-        if (roleData.role !== "super_admin") {
+        if (primaryRole !== "super_admin") {
           bandsQuery = bandsQuery.eq("band_leader_id", user.id);
         }
         const { data: bandsData } = await bandsQuery.order("created_at", { ascending: true });
@@ -263,7 +281,7 @@ const Dashboard = () => {
       }
       
       // Fetch rehearsals for band members, leaders, and super admins
-      if (roleData.role === "band_member" || roleData.role === "band_leader" || roleData.role === "super_admin") {
+      if (primaryRole === "band_member" || primaryRole === "band_leader" || primaryRole === "super_admin") {
         const { data: rehearsalData } = await supabase
           .from("rehearsals")
           .select("*")
@@ -301,7 +319,7 @@ const Dashboard = () => {
       }
       
       // Fetch pending gig invites for band members only
-      if (roleData.role === "band_member") {
+      if (primaryRole === "band_member") {
         const { data: inviteData } = await supabase
           .from("gig_members")
           .select(`
@@ -350,7 +368,7 @@ const Dashboard = () => {
       }
       
       // Booking managers see bands (leaders and members)
-      if (roleData.role === "booking_manager") {
+      if (primaryRole === "booking_manager") {
         const { data: bandLeaders } = await supabase
           .from("user_roles")
           .select("user_id")

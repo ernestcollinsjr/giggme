@@ -349,27 +349,16 @@ const Messages = () => {
   }, []);
 
   const scrollToBottom = useCallback(() => {
+    // Immediate scroll without delay
     const doScroll = () => {
-      // Method 1: Use scrollRef
-      if (scrollRef.current) {
-        const scrollContainer = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
-        if (scrollContainer) {
-          scrollContainer.scrollTop = scrollContainer.scrollHeight;
-        }
-      }
-      // Method 2: Find any scroll viewport in the chat area
       const allViewports = document.querySelectorAll('[data-radix-scroll-area-viewport]');
       allViewports.forEach(viewport => {
         viewport.scrollTop = viewport.scrollHeight;
       });
     };
-    
-    // Scroll multiple times to handle mobile keyboard animation
-    // This mimics native phone messaging behavior
     doScroll();
-    setTimeout(doScroll, 100);
-    setTimeout(doScroll, 300);
-    setTimeout(doScroll, 500);
+    // Single follow-up for dynamic content
+    requestAnimationFrame(doScroll);
   }, []);
 
   // Attach scroll listener
@@ -715,19 +704,18 @@ const Messages = () => {
     ).sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
   }, [allMessages, activeConversation, userId]);
 
-  // Auto-scroll and mark as read
+  // Auto-scroll and mark as read - only on conversation change, not every message
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-    
     if (activeConversation && userId && !activeConversation.isGroup) {
       const unread = conversationMessages.filter(
         m => m.sender_id === activeConversation.participantId && !m.read_by?.includes(userId)
       );
-      unread.forEach(async (msg) => {
-        await supabase.rpc("mark_message_as_read", { message_id: msg.id, user_id: userId });
+      // Mark unread messages as read in background
+      unread.forEach((msg) => {
+        supabase.rpc("mark_message_as_read", { message_id: msg.id, user_id: userId });
       });
     }
-  }, [conversationMessages, activeConversation, userId]);
+  }, [activeConversation?.participantId, userId]);
 
   const filteredConversations = useMemo(() => {
     const list = activeTab === "groups" 
@@ -1701,7 +1689,7 @@ const Messages = () => {
                   />
                   <Button 
                     onClick={handleSend} 
-                    disabled={sending || !text.trim()} 
+                    disabled={!text.trim()} 
                     size="icon" 
                     className="h-11 w-11 rounded-full shrink-0 bg-primary hover:bg-primary/90"
                   >

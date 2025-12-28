@@ -1113,15 +1113,26 @@ const Messages = () => {
                             
                             <div className="relative">
                               <div className={cn(
-                                "px-4 py-2.5 rounded-2xl",
+                                "relative px-4 py-2.5 rounded-2xl",
                                 isOwn 
-                                  ? "bg-primary text-primary-foreground rounded-br-sm" 
-                                  : "bg-card border border-border rounded-bl-sm"
+                                  ? "bg-primary text-primary-foreground rounded-br-none" 
+                                  : "bg-muted rounded-bl-none"
                               )}>
                                 {activeConversation.isGroup && !isOwn && (
                                   <p className="text-xs font-semibold mb-1 opacity-80">{senderProfile?.name}</p>
                                 )}
                                 <p className="text-sm whitespace-pre-wrap">{m.content}</p>
+                                {/* iMessage-style tail */}
+                                <div className={cn(
+                                  "absolute bottom-0 w-4 h-4",
+                                  isOwn 
+                                    ? "-right-2 bg-primary" 
+                                    : "-left-2 bg-muted"
+                                )} style={{
+                                  clipPath: isOwn 
+                                    ? 'polygon(0 0, 0% 100%, 100% 100%)' 
+                                    : 'polygon(100% 0, 0% 100%, 100% 100%)'
+                                }} />
                               </div>
                               
                               {/* Reactions - positioned on top right of bubble */}

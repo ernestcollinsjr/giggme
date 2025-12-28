@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MessageCircle, Send, Trash2, ArrowLeft, Users, User, Check, CheckCheck } from "lucide-react";
+import { MessageCircle, Send, Trash2, ArrowLeft, Users, User, Check, CheckCheck, Smile } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import BottomNav from "@/components/BottomNav";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -44,6 +45,16 @@ interface TypingUser {
   isTyping: boolean;
 }
 
+interface Reaction {
+  id: string;
+  message_id: string;
+  user_id: string;
+  emoji: string;
+  created_at: string;
+}
+
+const EMOJI_OPTIONS = ['👍', '❤️', '😂', '😮', '😢', '🎉'];
+
 const Chat = () => {
   const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
@@ -56,6 +67,7 @@ const Chat = () => {
   const [sending, setSending] = useState(false);
   const [activeConversation, setActiveConversation] = useState<string | null>(null);
   const [typingUsers, setTypingUsers] = useState<Map<string, string>>(new Map());
+  const [reactions, setReactions] = useState<Reaction[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const typingChannelRef = useRef<RealtimeChannel | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -103,9 +115,17 @@ const Chat = () => {
         }
       }
 
+      // Load reactions
+      const { data: reactionsData } = await supabase
+        .from("message_reactions")
+        .select("*");
+      if (reactionsData) {
+        setReactions(reactionsData as Reaction[]);
+      }
+
       // Realtime subscription for new messages and updates (read receipts)
       const channel = supabase
-        .channel("messages")
+        .channel("messages-and-reactions")
         .on(
           "postgres_changes",
           { event: "INSERT", schema: "public", table: "messages" },
@@ -122,6 +142,22 @@ const Chat = () => {
             setMessages((prev) => 
               prev.map((m) => m.id === updatedMsg.id ? updatedMsg : m)
             );
+          }
+        )
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "message_reactions" },
+          (payload) => {
+            const newReaction = payload.new as Reaction;
+            setReactions((prev) => [...prev, newReaction]);
+          }
+        )
+        .on(
+          "postgres_changes",
+          { event: "DELETE", schema: "public", table: "message_reactions" },
+          (payload) => {
+            const deletedReaction = payload.old as Reaction;
+            setReactions((prev) => prev.filter((r) => r.id !== deletedReaction.id));
           }
         )
         .subscribe();
@@ -382,6 +418,53 @@ const Chat = () => {
     }
   };
 
+  const toggleReaction = async (messageId: string, emoji: string) => {
+    if (!userId) return;
+    
+    const existingReaction = reactions.find(
+      r => r.message_id === messageId && r.user_id === userId && r.emoji === emoji
+    );
+
+    try {
+      if (existingReaction) {
+        // Remove reaction
+        const { error } = await supabase
+          .from("message_reactions")
+          .delete()
+          .eq("id", existingReaction.id);
+        if (error) throw error;
+        setReactions(prev => prev.filter(r => r.id !== existingReaction.id));
+      } else {
+        // Add reaction
+        const { data, error } = await supabase
+          .from("message_reactions")
+          .insert({ message_id: messageId, user_id: userId, emoji })
+          .select()
+          .single();
+        if (error) throw error;
+        if (data) {
+          setReactions(prev => [...prev, data as Reaction]);
+        }
+      }
+    } catch (e: any) {
+      toast({ variant: "destructive", title: "Failed to react", description: e.message || "Unknown error" });
+    }
+  };
+
+  const getMessageReactions = (messageId: string) => {
+    const messageReactions = reactions.filter(r => r.message_id === messageId);
+    const grouped = new Map<string, { count: number; hasUserReacted: boolean }>();
+    
+    messageReactions.forEach(r => {
+      const existing = grouped.get(r.emoji) || { count: 0, hasUserReacted: false };
+      existing.count++;
+      if (r.user_id === userId) existing.hasUserReacted = true;
+      grouped.set(r.emoji, existing);
+    });
+    
+    return grouped;
+  };
+
   const openConversation = async (participantId: string) => {
     setActiveConversation(participantId);
     setTargetType("direct");
@@ -479,52 +562,109 @@ const Chat = () => {
                   {conversationMessages.map((m) => {
                     const isOwnMessage = m.sender_id === userId;
                     const isRead = isOwnMessage && m.read_by?.includes(activeConversation);
+                    const messageReactions = getMessageReactions(m.id);
                     return (
                       <div
                         key={m.id}
                         className={cn(
-                          "flex",
-                          isOwnMessage ? "justify-end" : "justify-start"
+                          "flex flex-col",
+                          isOwnMessage ? "items-end" : "items-start"
                         )}
                       >
-                        <div
-                          className={cn(
-                            "max-w-[75%] p-3 rounded-lg",
-                            isOwnMessage
-                              ? "bg-primary text-primary-foreground rounded-br-sm"
-                              : "bg-muted rounded-bl-sm"
-                          )}
-                        >
-                          <p className="text-sm">{m.content}</p>
+                        <div className="group relative">
+                          <div
+                            className={cn(
+                              "max-w-[75%] p-3 rounded-lg",
+                              isOwnMessage
+                                ? "bg-primary text-primary-foreground rounded-br-sm"
+                                : "bg-muted rounded-bl-sm"
+                            )}
+                          >
+                            <p className="text-sm">{m.content}</p>
+                            <div className={cn(
+                              "flex items-center gap-1.5 mt-1",
+                              isOwnMessage ? "justify-end" : "justify-start"
+                            )}>
+                              <span className={cn(
+                                "text-[10px]",
+                                isOwnMessage ? "text-primary-foreground/70" : "text-muted-foreground"
+                              )}>
+                                {formatMessageTime(m.created_at)}
+                              </span>
+                              {isOwnMessage && (
+                                <>
+                                  {isRead ? (
+                                    <CheckCheck className="h-3.5 w-3.5 text-primary-foreground/90" />
+                                  ) : (
+                                    <Check className="h-3.5 w-3.5 text-primary-foreground/70" />
+                                  )}
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-5 w-5 text-primary-foreground/70 hover:text-destructive hover:bg-primary-foreground/10"
+                                    onClick={() => handleDelete(m.id)}
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          {/* Reaction picker button */}
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className={cn(
+                                  "absolute -bottom-2 h-6 w-6 rounded-full bg-background border shadow-sm opacity-0 group-hover:opacity-100 transition-opacity",
+                                  isOwnMessage ? "left-0 -translate-x-1/2" : "right-0 translate-x-1/2"
+                                )}
+                              >
+                                <Smile className="h-3.5 w-3.5 text-muted-foreground" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-2" side={isOwnMessage ? "left" : "right"}>
+                              <div className="flex gap-1">
+                                {EMOJI_OPTIONS.map((emoji) => (
+                                  <button
+                                    key={emoji}
+                                    onClick={() => toggleReaction(m.id, emoji)}
+                                    className={cn(
+                                      "text-lg hover:bg-muted p-1.5 rounded transition-colors",
+                                      messageReactions.get(emoji)?.hasUserReacted && "bg-primary/10"
+                                    )}
+                                  >
+                                    {emoji}
+                                  </button>
+                                ))}
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                        {/* Reactions display */}
+                        {messageReactions.size > 0 && (
                           <div className={cn(
-                            "flex items-center gap-1.5 mt-1",
+                            "flex flex-wrap gap-1 mt-1",
                             isOwnMessage ? "justify-end" : "justify-start"
                           )}>
-                            <span className={cn(
-                              "text-[10px]",
-                              isOwnMessage ? "text-primary-foreground/70" : "text-muted-foreground"
-                            )}>
-                              {formatMessageTime(m.created_at)}
-                            </span>
-                            {isOwnMessage && (
-                              <>
-                                {isRead ? (
-                                  <CheckCheck className="h-3.5 w-3.5 text-primary-foreground/90" />
-                                ) : (
-                                  <Check className="h-3.5 w-3.5 text-primary-foreground/70" />
+                            {Array.from(messageReactions.entries()).map(([emoji, data]) => (
+                              <button
+                                key={emoji}
+                                onClick={() => toggleReaction(m.id, emoji)}
+                                className={cn(
+                                  "flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs border transition-colors",
+                                  data.hasUserReacted 
+                                    ? "bg-primary/10 border-primary/30" 
+                                    : "bg-muted/50 border-border hover:bg-muted"
                                 )}
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-5 w-5 text-primary-foreground/70 hover:text-destructive hover:bg-primary-foreground/10"
-                                  onClick={() => handleDelete(m.id)}
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              </>
-                            )}
+                              >
+                                <span>{emoji}</span>
+                                <span className="text-muted-foreground">{data.count}</span>
+                              </button>
+                            ))}
                           </div>
-                        </div>
+                        )}
                       </div>
                     );
                   })}

@@ -430,6 +430,12 @@ const Messages = () => {
       (a, b) => new Date(b.lastMessageTime).getTime() - new Date(a.lastMessageTime).getTime()
     );
 
+    console.log('GROUPED CONVERSATIONS BUILT:', {
+      profileCount: Object.keys(profiles).length,
+      directConvs: directConvs.map(c => ({ id: c.id, name: c.name, participantId: c.participantId })),
+      hasTimmy: directConvs.some(c => c.participantId === '40cb4e99-9eb0-4fe9-97b6-d5822f467848')
+    });
+
     return { direct: directConvs, group: groupConv };
   }, [allMessages, userId, profiles]);
 

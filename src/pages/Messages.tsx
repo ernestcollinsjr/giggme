@@ -795,7 +795,7 @@ const Messages = () => {
 
         {/* Chat Area */}
         <div className={cn(
-          "flex-1 flex flex-col bg-muted/30 overflow-hidden pb-16 md:pb-0",
+          "flex-1 flex flex-col bg-muted/30 overflow-hidden",
           !activeConversation && "hidden md:flex"
         )}>
           {activeConversation ? (
@@ -1054,7 +1054,7 @@ const Messages = () => {
               )}
 
               {/* Message Input - Fixed at bottom */}
-              <div className="sticky bottom-0 p-4 border-t border-border bg-background z-50">
+              <div className="shrink-0 p-4 border-t border-border bg-background mb-16 md:mb-0">
                 <div className="flex gap-2 max-w-3xl mx-auto">
                   <Textarea
                     ref={textareaRef}

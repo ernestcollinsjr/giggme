@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MessageCircle, Send, Trash2, ArrowLeft, Users, User } from "lucide-react";
+import { MessageCircle, Send, Trash2, ArrowLeft, Users, User, Check, CheckCheck } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -103,7 +103,7 @@ const Chat = () => {
         }
       }
 
-      // Realtime subscription
+      // Realtime subscription for new messages and updates (read receipts)
       const channel = supabase
         .channel("messages")
         .on(
@@ -112,6 +112,16 @@ const Chat = () => {
           (payload) => {
             const newMsg = payload.new as Message;
             setMessages((prev) => [...prev, newMsg]);
+          }
+        )
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "messages" },
+          (payload) => {
+            const updatedMsg = payload.new as Message;
+            setMessages((prev) => 
+              prev.map((m) => m.id === updatedMsg.id ? updatedMsg : m)
+            );
           }
         )
         .subscribe();
@@ -224,7 +234,29 @@ const Chat = () => {
   useEffect(() => {
     // Auto-scroll to bottom on new messages
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, activeConversation]);
+    
+    // Mark incoming messages as read when conversation is open
+    if (activeConversation && userId) {
+      const unreadFromActiveConversation = messages.filter(
+        m => m.sender_id === activeConversation && 
+             m.recipient_id === userId && 
+             !m.read_by?.includes(userId)
+      );
+      
+      unreadFromActiveConversation.forEach(async (msg) => {
+        await supabase.rpc("mark_message_as_read", {
+          message_id: msg.id,
+          user_id: userId,
+        });
+        // Update local state
+        setMessages((prev) =>
+          prev.map((m) => 
+            m.id === msg.id ? { ...m, read_by: [...(m.read_by || []), userId] } : m
+          )
+        );
+      });
+    }
+  }, [messages, activeConversation, userId]);
 
   const profilesById = useMemo(() => {
     const map = new Map<string, Profile>();
@@ -350,7 +382,7 @@ const Chat = () => {
     }
   };
 
-  const openConversation = (participantId: string) => {
+  const openConversation = async (participantId: string) => {
     setActiveConversation(participantId);
     setTargetType("direct");
     setRecipientId(participantId);
@@ -359,12 +391,26 @@ const Chat = () => {
     const unreadInConversation = messages.filter(
       m => m.sender_id === participantId && !m.read_by?.includes(userId!)
     );
-    unreadInConversation.forEach(async (msg) => {
+    
+    // Mark all unread messages as read and update local state
+    for (const msg of unreadInConversation) {
       await supabase.rpc("mark_message_as_read", {
         message_id: msg.id,
         user_id: userId!,
       });
-    });
+    }
+    
+    // Update local state to reflect read status immediately
+    if (unreadInConversation.length > 0) {
+      setMessages((prev) =>
+        prev.map((m) => {
+          if (unreadInConversation.some((um) => um.id === m.id)) {
+            return { ...m, read_by: [...(m.read_by || []), userId!] };
+          }
+          return m;
+        })
+      );
+    }
   };
 
   const startNewConversation = (participantId: string) => {
@@ -432,6 +478,7 @@ const Chat = () => {
                   )}
                   {conversationMessages.map((m) => {
                     const isOwnMessage = m.sender_id === userId;
+                    const isRead = isOwnMessage && m.read_by?.includes(activeConversation);
                     return (
                       <div
                         key={m.id}
@@ -450,7 +497,7 @@ const Chat = () => {
                         >
                           <p className="text-sm">{m.content}</p>
                           <div className={cn(
-                            "flex items-center gap-2 mt-1",
+                            "flex items-center gap-1.5 mt-1",
                             isOwnMessage ? "justify-end" : "justify-start"
                           )}>
                             <span className={cn(
@@ -460,14 +507,21 @@ const Chat = () => {
                               {formatMessageTime(m.created_at)}
                             </span>
                             {isOwnMessage && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-5 w-5 text-primary-foreground/70 hover:text-destructive hover:bg-primary-foreground/10"
-                                onClick={() => handleDelete(m.id)}
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
+                              <>
+                                {isRead ? (
+                                  <CheckCheck className="h-3.5 w-3.5 text-primary-foreground/90" />
+                                ) : (
+                                  <Check className="h-3.5 w-3.5 text-primary-foreground/70" />
+                                )}
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-5 w-5 text-primary-foreground/70 hover:text-destructive hover:bg-primary-foreground/10"
+                                  onClick={() => handleDelete(m.id)}
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </>
                             )}
                           </div>
                         </div>

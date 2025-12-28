@@ -725,11 +725,16 @@ const Messages = () => {
     
     setActiveConversation(updatedConversation);
     
-    if (!conversation.isGroup && userId) {
+    if (userId) {
       const unread = allMessages.filter(
-        m => !m.is_group_message && 
-             m.sender_id === conversation.participantId && 
-             !m.read_by?.includes(userId)
+        m => {
+          if (conversation.isGroup) {
+            return m.is_group_message && !m.read_by?.includes(userId);
+          }
+          return !m.is_group_message && 
+                 m.sender_id === conversation.participantId && 
+                 !m.read_by?.includes(userId);
+        }
       );
       for (const msg of unread) {
         await supabase.rpc("mark_message_as_read", { message_id: msg.id, user_id: userId });
@@ -1331,12 +1336,69 @@ const Messages = () => {
                               )}
                             </div>
                             
-                            {/* Timestamp below bubble - add extra margin if reactions exist */}
+                            {/* Timestamp and read receipts below bubble */}
                             <div className={cn(
                               "flex items-center gap-1 px-1",
                               msgReactions.size > 0 ? "mt-3" : "mt-1",
                               isOwn ? "justify-end" : "justify-start"
                             )}>
+                              {/* Read receipts for group chats - show who has read */}
+                              {isOwn && activeConversation.isGroup && m.read_by && m.read_by.length > 0 && (() => {
+                                const readers = m.read_by.filter(id => id !== userId);
+                                if (readers.length === 0) return null;
+                                
+                                const maxDisplay = 3;
+                                const displayReaders = readers.slice(0, maxDisplay);
+                                const remainingCount = readers.length - maxDisplay;
+                                
+                                return (
+                                  <Popover>
+                                    <PopoverTrigger asChild>
+                                      <button className="flex items-center -space-x-1.5 hover:opacity-80 transition-opacity">
+                                        {displayReaders.map((readerId) => {
+                                          const reader = profiles[readerId];
+                                          return (
+                                            <Avatar key={readerId} className="h-4 w-4 border border-background">
+                                              {reader?.photo_urls?.[0] ? (
+                                                <AvatarImage src={reader.photo_urls[0]} />
+                                              ) : null}
+                                              <AvatarFallback className="text-[8px] bg-muted">
+                                                {getInitials(reader?.name || "?")}
+                                              </AvatarFallback>
+                                            </Avatar>
+                                          );
+                                        })}
+                                        {remainingCount > 0 && (
+                                          <div className="h-4 w-4 rounded-full bg-muted border border-background flex items-center justify-center">
+                                            <span className="text-[8px] text-muted-foreground">+{remainingCount}</span>
+                                          </div>
+                                        )}
+                                      </button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-48 p-2" side="top">
+                                      <p className="text-xs font-medium mb-2 text-muted-foreground">Read by</p>
+                                      <div className="space-y-1.5">
+                                        {readers.map((readerId) => {
+                                          const reader = profiles[readerId];
+                                          return (
+                                            <div key={readerId} className="flex items-center gap-2">
+                                              <Avatar className="h-5 w-5">
+                                                {reader?.photo_urls?.[0] ? (
+                                                  <AvatarImage src={reader.photo_urls[0]} />
+                                                ) : null}
+                                                <AvatarFallback className="text-[10px]">
+                                                  {getInitials(reader?.name || "?")}
+                                                </AvatarFallback>
+                                              </Avatar>
+                                              <span className="text-xs">{reader?.name || "Unknown"}</span>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </PopoverContent>
+                                  </Popover>
+                                );
+                              })()}
                               {isOwn && !activeConversation.isGroup && (
                                 isRead ? <CheckCheck className="h-3 w-3 text-muted-foreground" /> : <Check className="h-3 w-3 text-muted-foreground" />
                               )}

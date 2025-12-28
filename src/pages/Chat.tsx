@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,6 +68,7 @@ const EMOJI_OPTIONS = ['👍', '❤️', '😂', '😮', '😢', '🎉'];
 
 const Chat = () => {
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [userId, setUserId] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -82,9 +84,31 @@ const Chat = () => {
   const [forwarding, setForwarding] = useState(false);
   const [pinnedMessages, setPinnedMessages] = useState<PinnedMessage[]>([]);
   const [replyToMessage, setReplyToMessage] = useState<Message | null>(null);
+  const [urlParamsProcessed, setUrlParamsProcessed] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const typingChannelRef = useRef<RealtimeChannel | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Handle URL parameters to open specific conversations
+  useEffect(() => {
+    if (urlParamsProcessed) return;
+    
+    const conversationId = searchParams.get("conversation");
+    const view = searchParams.get("view");
+    
+    if (conversationId) {
+      setActiveConversation(conversationId);
+      setTargetType("direct");
+      setRecipientId(conversationId);
+      // Clear the URL params after processing
+      setSearchParams({});
+      setUrlParamsProcessed(true);
+    } else if (view === "group") {
+      setTargetType("group");
+      setSearchParams({});
+      setUrlParamsProcessed(true);
+    }
+  }, [searchParams, setSearchParams, urlParamsProcessed]);
 
   useEffect(() => {
     (async () => {

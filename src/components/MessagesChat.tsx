@@ -550,20 +550,21 @@ export const MessagesChat = ({
     }
   }, [conversationMessages, activeConversation, userId]);
 
-  // Search suggestions - profiles that match search query but aren't in current conversations
+  // Search suggestions - ALL profiles that match search query (both new and existing conversations)
   const searchSuggestions = useMemo(() => {
     if (!searchQuery.trim() || searchQuery.length < 2) return [];
     const query = searchQuery.toLowerCase();
-    const existingParticipantIds = new Set(groupedConversations.direct.map(c => c.participantId).filter(Boolean));
     
-    return profilesList
-      .filter(p => 
-        p.id !== userId && 
-        p.name.toLowerCase().includes(query) &&
-        !existingParticipantIds.has(p.id)
-      )
-      .slice(0, 5); // Limit to 5 suggestions
-  }, [profilesList, searchQuery, groupedConversations.direct, userId]);
+    // Find all matching profiles
+    const matches = profilesList.filter(p => 
+      p.id !== userId && 
+      p.name.toLowerCase().includes(query)
+    ).slice(0, 8); // Limit to 8 suggestions
+    
+    console.log('Search suggestions:', { query, profilesCount: profilesList.length, matchesCount: matches.length, matches: matches.map(p => p.name) });
+    
+    return matches;
+  }, [profilesList, searchQuery, userId]);
 
   const filteredConversations = useMemo(() => {
     const list = activeTab === "groups" 
@@ -899,26 +900,39 @@ export const MessagesChat = ({
               {showSearchSuggestions && searchSuggestions.length > 0 && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-lg z-50 overflow-hidden">
                   <div className="px-2 py-1.5 text-xs text-muted-foreground border-b border-border">
-                    Start conversation with:
+                    Message:
                   </div>
-                  {searchSuggestions.map((profile) => (
-                    <button
-                      key={profile.id}
-                      className="w-full flex items-center gap-2 px-2 py-2 hover:bg-muted/50 transition-colors text-left"
-                      onMouseDown={(e) => {
-                        e.preventDefault(); // Prevent blur
-                        startNewConversation(profile.id);
-                        setSearchQuery("");
-                        setShowSearchSuggestions(false);
-                      }}
-                    >
-                      <Avatar className="h-7 w-7">
-                        {profile.photo_urls?.[0] && <AvatarImage src={profile.photo_urls[0]} />}
-                        <AvatarFallback className="text-xs">{getInitials(profile.name)}</AvatarFallback>
-                      </Avatar>
-                      <span className="text-sm font-medium truncate">{profile.name}</span>
-                    </button>
-                  ))}
+                  {searchSuggestions.map((profile) => {
+                    // Check if there's already a conversation with this person
+                    const existingConv = groupedConversations.direct.find(c => c.participantId === profile.id);
+                    return (
+                      <button
+                        key={profile.id}
+                        className="w-full flex items-center gap-2 px-2 py-2 hover:bg-muted/50 transition-colors text-left"
+                        onMouseDown={(e) => {
+                          e.preventDefault(); // Prevent blur
+                          if (existingConv) {
+                            openConversation(existingConv);
+                          } else {
+                            startNewConversation(profile.id);
+                          }
+                          setSearchQuery("");
+                          setShowSearchSuggestions(false);
+                        }}
+                      >
+                        <Avatar className="h-7 w-7">
+                          {profile.photo_urls?.[0] && <AvatarImage src={profile.photo_urls[0]} />}
+                          <AvatarFallback className="text-xs">{getInitials(profile.name)}</AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm font-medium truncate">{profile.name}</span>
+                        {existingConv && existingConv.unreadCount > 0 && (
+                          <Badge variant="destructive" className="ml-auto text-xs h-5 min-w-5 flex items-center justify-center">
+                            {existingConv.unreadCount}
+                          </Badge>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>

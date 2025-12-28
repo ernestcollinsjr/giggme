@@ -37,10 +37,10 @@ export async function sendGigPushNotifications({
     day: 'numeric',
   });
 
-  // Get member profiles for emails
+  // Get member profiles for emails including timezone
   const { data: memberProfiles } = await supabase
     .from('profiles')
-    .select('id, name, email')
+    .select('id, name, email, timezone')
     .in('id', memberIds);
 
   // Get band name and leader name
@@ -99,6 +99,7 @@ export async function sendGigPushNotifications({
         const emailBody: Record<string, unknown> = {
           recipientEmail: member.email,
           recipientName: member.name,
+          recipientTimezone: member.timezone || 'America/Chicago',
           venueName: venueName || '',
           venueAddress: venue,
           gigDate: gigDateFormatted,

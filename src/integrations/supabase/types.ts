@@ -1944,6 +1944,14 @@ export type Database = {
         Args: { _band_id: string; _user_id: string }
         Returns: boolean
       }
+      is_gig_member: {
+        Args: { _gig_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_gig_owner: {
+        Args: { _gig_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_in_sharing_window: {
         Args: { earliest_time: string; gig_date: string }
         Returns: boolean

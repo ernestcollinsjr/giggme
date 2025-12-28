@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StarRating } from "@/components/StarRating";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Music, CheckCircle } from "lucide-react";
+import { Loader2, Music, CheckCircle, MapPin } from "lucide-react";
 
 interface ArtistInfo {
   name: string;
@@ -18,13 +18,23 @@ interface ArtistInfo {
   genre: string | null;
 }
 
+interface VenueInfo {
+  name: string;
+  id: string;
+}
+
 const RatePerformer = () => {
   const { artistId } = useParams<{ artistId: string }>();
+  const [searchParams] = useSearchParams();
+  const venueId = searchParams.get("venue");
+  const bookingId = searchParams.get("booking");
+  
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [artist, setArtist] = useState<ArtistInfo | null>(null);
+  const [venueInfo, setVenueInfo] = useState<VenueInfo | null>(null);
   
   const [rating, setRating] = useState(0);
   const [customerName, setCustomerName] = useState("");
@@ -36,6 +46,29 @@ const RatePerformer = () => {
       fetchArtistInfo();
     }
   }, [artistId]);
+
+  useEffect(() => {
+    if (venueId) {
+      fetchVenueInfo();
+    }
+  }, [venueId]);
+
+  const fetchVenueInfo = async () => {
+    try {
+      const { data: venue } = await supabase
+        .from("venues")
+        .select("id, name")
+        .eq("id", venueId)
+        .maybeSingle();
+
+      if (venue) {
+        setVenueInfo(venue);
+        setVenueName(venue.name);
+      }
+    } catch (error) {
+      console.error("Error fetching venue:", error);
+    }
+  };
 
   const fetchArtistInfo = async () => {
     try {
@@ -88,6 +121,8 @@ const RatePerformer = () => {
         customer_name: customerName || null,
         venue_name: venueName || null,
         comment: comment || null,
+        venue_id: venueId || null,
+        booking_id: bookingId || null,
       });
 
       if (error) throw error;
@@ -165,6 +200,12 @@ const RatePerformer = () => {
           {artist.genre && (
             <CardDescription className="text-lg">{artist.genre}</CardDescription>
           )}
+          {venueInfo && (
+            <div className="flex items-center justify-center gap-1 text-muted-foreground mt-2">
+              <MapPin className="h-4 w-4" />
+              <span className="text-sm">at {venueInfo.name}</span>
+            </div>
+          )}
         </CardHeader>
         
         <CardContent className="space-y-6">
@@ -190,15 +231,17 @@ const RatePerformer = () => {
               />
             </div>
 
-            <div>
-              <Label htmlFor="venue">Venue Name (optional)</Label>
-              <Input
-                id="venue"
-                value={venueName}
-                onChange={(e) => setVenueName(e.target.value)}
-                placeholder="Where did you see this performer?"
-              />
-            </div>
+            {!venueInfo && (
+              <div>
+                <Label htmlFor="venue">Venue Name (optional)</Label>
+                <Input
+                  id="venue"
+                  value={venueName}
+                  onChange={(e) => setVenueName(e.target.value)}
+                  placeholder="Where did you see this performer?"
+                />
+              </div>
+            )}
 
             <div>
               <Label htmlFor="comment">Comment (optional)</Label>

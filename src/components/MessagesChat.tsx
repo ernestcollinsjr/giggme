@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useSoundPreference } from "@/hooks/useSoundPreference";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 const REPORT_REASONS = [
@@ -171,6 +172,7 @@ export const MessagesChat = ({
 }: MessagesChatProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { playNotificationSound } = useSoundPreference();
   const isMobile = useIsMobile();
   const [userId, setUserId] = useState<string | null>(null);
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
@@ -311,6 +313,7 @@ export const MessagesChat = ({
               (!oldMsg.delivered_to || oldMsg.delivered_to.length === 0)
             ) {
               toast({ title: "Message delivered", description: "Your message was delivered." });
+              playNotificationSound();
             }
             
             setAllMessages((prev) =>

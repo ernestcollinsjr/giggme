@@ -180,16 +180,20 @@ const Messages = () => {
 
   // Long press state for mobile context menu
   const [longPressMessage, setLongPressMessage] = useState<Message | null>(null);
+  const [pressingMessageId, setPressingMessageId] = useState<string | null>(null);
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Long press handlers
   const handleTouchStart = useCallback((message: Message) => {
+    setPressingMessageId(message.id);
     longPressTimerRef.current = setTimeout(() => {
       setLongPressMessage(message);
+      setPressingMessageId(null);
     }, 500);
   }, []);
 
   const handleTouchEnd = useCallback(() => {
+    setPressingMessageId(null);
     if (longPressTimerRef.current) {
       clearTimeout(longPressTimerRef.current);
       longPressTimerRef.current = null;
@@ -197,6 +201,7 @@ const Messages = () => {
   }, []);
 
   const handleTouchMove = useCallback(() => {
+    setPressingMessageId(null);
     if (longPressTimerRef.current) {
       clearTimeout(longPressTimerRef.current);
       longPressTimerRef.current = null;
@@ -1149,7 +1154,10 @@ const Messages = () => {
                               );
                             })()}
                             
-                            <div className="relative">
+                            <div className={cn(
+                              "relative transition-transform duration-150",
+                              pressingMessageId === m.id && "scale-95"
+                            )}>
                               <div className={cn(
                                 "relative px-4 py-2.5 rounded-2xl",
                                 isOwn 

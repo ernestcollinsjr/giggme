@@ -75,6 +75,13 @@ interface PinnedMessage {
   pinned_at: string;
 }
 
+interface ReadReceipt {
+  id: string;
+  message_id: string;
+  user_id: string;
+  read_at: string;
+}
+
 const EMOJI_OPTIONS = ['👍', '❤️', '😂', '😮', '😢', '🎉'];
 
 // Bubble color options
@@ -177,6 +184,7 @@ const Messages = () => {
   const [typingUsers, setTypingUsers] = useState<Map<string, string>>(new Map());
   const [reactions, setReactions] = useState<Reaction[]>([]);
   const [pinnedMessages, setPinnedMessages] = useState<PinnedMessage[]>([]);
+  const [readReceipts, setReadReceipts] = useState<ReadReceipt[]>([]);
   const [replyToMessage, setReplyToMessage] = useState<Message | null>(null);
   const [forwardMessage, setForwardMessage] = useState<Message | null>(null);
   const [forwarding, setForwarding] = useState(false);
@@ -472,6 +480,11 @@ const Messages = () => {
         { event: "*", schema: "public", table: "pinned_messages" },
         () => fetchReactionsAndPins()
       )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "read_receipts" },
+        () => fetchReactionsAndPins()
+      )
       .subscribe();
 
     return () => {
@@ -598,12 +611,14 @@ const Messages = () => {
   };
 
   const fetchReactionsAndPins = async () => {
-    const [reactionsRes, pinsRes] = await Promise.all([
+    const [reactionsRes, pinsRes, receiptsRes] = await Promise.all([
       supabase.from("message_reactions").select("*"),
-      supabase.from("pinned_messages").select("*")
+      supabase.from("pinned_messages").select("*"),
+      supabase.from("read_receipts").select("*")
     ]);
     if (reactionsRes.data) setReactions(reactionsRes.data as Reaction[]);
     if (pinsRes.data) setPinnedMessages(pinsRes.data as PinnedMessage[]);
+    if (receiptsRes.data) setReadReceipts(receiptsRes.data as ReadReceipt[]);
   };
 
   // Build conversations from messages
@@ -851,6 +866,28 @@ const Messages = () => {
   };
 
   const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+
+  // Get read receipt timestamp for a message and specific user
+  const getReadTime = (messageId: string, readerId: string) => {
+    const receipt = readReceipts.find(r => r.message_id === messageId && r.user_id === readerId);
+    return receipt?.read_at || null;
+  };
+
+  // Format read time for display
+  const formatReadTime = (readAt: string) => {
+    const date = new Date(readAt);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    
+    if (minutes < 1) return "Just now";
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    if (days < 7) return `${days}d ago`;
+    return date.toLocaleDateString();
+  };
   
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -1387,6 +1424,7 @@ const Messages = () => {
                                       <div className="space-y-1.5">
                                         {readers.map((readerId) => {
                                           const reader = profiles[readerId];
+                                          const readTime = getReadTime(m.id, readerId);
                                           return (
                                             <div key={readerId} className="flex items-center gap-2">
                                               <Avatar className="h-5 w-5">
@@ -1397,7 +1435,14 @@ const Messages = () => {
                                                   {getInitials(reader?.name || "?")}
                                                 </AvatarFallback>
                                               </Avatar>
-                                              <span className="text-xs">{reader?.name || "Unknown"}</span>
+                                              <div className="flex flex-col">
+                                                <span className="text-xs">{reader?.name || "Unknown"}</span>
+                                                {readTime && (
+                                                  <span className="text-[10px] text-muted-foreground">
+                                                    Read {formatReadTime(readTime)}
+                                                  </span>
+                                                )}
+                                              </div>
                                             </div>
                                           );
                                         })}
@@ -1406,13 +1451,32 @@ const Messages = () => {
                                   </Popover>
                                 );
                               })()}
-                              {isOwn && !activeConversation.isGroup && (
-                                isRead 
-                                  ? <CheckCheck className="h-3 w-3 text-primary" /> 
-                                  : isDelivered 
-                                    ? <CheckCheck className="h-3 w-3 text-muted-foreground" />
-                                    : <Check className="h-3 w-3 text-muted-foreground" />
-                              )}
+                              {isOwn && !activeConversation.isGroup && (() => {
+                                const readTime = activeConversation.participantId 
+                                  ? getReadTime(m.id, activeConversation.participantId) 
+                                  : null;
+                                
+                                if (isRead) {
+                                  return (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <div className="flex items-center gap-0.5 cursor-help">
+                                          <CheckCheck className="h-3 w-3 text-primary" />
+                                        </div>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="top" className="text-xs">
+                                        {readTime ? `Read ${formatReadTime(readTime)}` : "Read"}
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  );
+                                }
+                                
+                                if (isDelivered) {
+                                  return <CheckCheck className="h-3 w-3 text-muted-foreground" />;
+                                }
+                                
+                                return <Check className="h-3 w-3 text-muted-foreground" />;
+                              })()}
                               <span className="text-[10px] text-muted-foreground">
                                 {formatMessageTime(m.created_at)}
                               </span>

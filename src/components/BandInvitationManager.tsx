@@ -165,6 +165,22 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
       return;
     }
 
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Check if there's already an invitation for this email in this band
+    const existingInvite = invitations.find(inv => inv.email.toLowerCase() === normalizedEmail);
+    
+    if (existingInvite) {
+      // If there's an existing invite, resend it instead
+      await resendInvitation({
+        ...existingInvite,
+        recipient_name: recipientName.trim() // Use the new name if provided
+      });
+      setRecipientName("");
+      setEmail("");
+      return;
+    }
+
     setSending(true);
 
     try {
@@ -179,7 +195,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
 
       console.log("Creating invitation with:", {
         band_id: bandId,
-        email: email.toLowerCase().trim(),
+        email: normalizedEmail,
         invited_by: user.id,
       });
 
@@ -188,7 +204,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
         .from("band_invitations")
         .insert({
           band_id: bandId,
-          email: email.toLowerCase().trim(),
+          email: normalizedEmail,
           recipient_name: recipientName.trim(),
           invited_by: user.id,
         })
@@ -205,7 +221,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
       // Send email via edge function
       const { error: emailError } = await supabase.functions.invoke("send-band-invite", {
         body: {
-          recipientEmail: email.toLowerCase().trim(),
+          recipientEmail: normalizedEmail,
           recipientName: recipientName.trim(),
           bandName: bandName,
           inviteToken: invitation.token,

@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle, Eye, Trash2 } from "lucide-react";
+import { MessageCircle, Eye, Trash2, Reply } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
@@ -28,10 +29,26 @@ interface MessageInboxProps {
 }
 
 export const MessageInbox = ({ userId, onUnreadCountChange }: MessageInboxProps) => {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
   const [profiles, setProfiles] = useState<Map<string, Profile>>(new Map());
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+
+  const openConversation = (message: Message) => {
+    // Determine the other participant in the conversation
+    const otherParticipantId = message.sender_id === userId 
+      ? message.recipient_id 
+      : message.sender_id;
+    
+    if (message.is_group_message) {
+      // Navigate to chat with group view
+      navigate("/chat?view=group");
+    } else if (otherParticipantId) {
+      // Navigate to chat with the specific conversation open
+      navigate(`/chat?conversation=${otherParticipantId}`);
+    }
+  };
 
   useEffect(() => {
     if (!userId) return;
@@ -190,7 +207,8 @@ export const MessageInbox = ({ userId, onUnreadCountChange }: MessageInboxProps)
             {unreadMessages.map((message) => (
               <div
                 key={message.id}
-                className="p-3 rounded-md border bg-destructive/5 border-destructive/20"
+                className="p-3 rounded-md border bg-destructive/5 border-destructive/20 cursor-pointer hover:bg-destructive/10 transition-colors"
+                onClick={() => openConversation(message)}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 space-y-1">
@@ -246,7 +264,8 @@ export const MessageInbox = ({ userId, onUnreadCountChange }: MessageInboxProps)
             {readMessages.map((message) => (
               <div
                 key={message.id}
-                className="p-3 rounded-md border bg-background opacity-60"
+                className="p-3 rounded-md border bg-background opacity-60 cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => openConversation(message)}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 space-y-1">

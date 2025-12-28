@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
@@ -716,6 +717,7 @@ const Messages = () => {
 
               {/* Messages */}
               <ScrollArea className="flex-1 p-4" ref={scrollRef as any}>
+                <TooltipProvider delayDuration={300}>
                 <div className="space-y-4 max-w-3xl mx-auto">
                   {conversationMessages.length === 0 ? (
                     <div className="text-center py-16">
@@ -794,28 +796,48 @@ const Messages = () => {
                               "absolute top-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity",
                               isOwn ? "left-0 -translate-x-full pr-2" : "right-0 translate-x-full pl-2"
                             )}>
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setReplyToMessage(m)}>
-                                <Reply className="h-3.5 w-3.5" />
-                              </Button>
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setForwardMessage(m)}>
-                                <Forward className="h-3.5 w-3.5" />
-                              </Button>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setReplyToMessage(m)}>
+                                    <Reply className="h-3.5 w-3.5" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Reply</TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setForwardMessage(m)}>
+                                    <Forward className="h-3.5 w-3.5" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Forward</TooltipContent>
+                              </Tooltip>
                               {!activeConversation.isGroup && (
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon" 
-                                  className={cn("h-7 w-7", pinnedMessages.some(p => p.message_id === m.id) && "text-primary")}
-                                  onClick={() => togglePin(m)}
-                                >
-                                  <Pin className="h-3.5 w-3.5" />
-                                </Button>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon" 
+                                      className={cn("h-7 w-7", pinnedMessages.some(p => p.message_id === m.id) && "text-primary")}
+                                      onClick={() => togglePin(m)}
+                                    >
+                                      <Pin className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>{pinnedMessages.some(p => p.message_id === m.id) ? "Unpin" : "Pin"}</TooltipContent>
+                                </Tooltip>
                               )}
                               <Popover>
-                                <PopoverTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-7 w-7">
-                                    <Smile className="h-3.5 w-3.5" />
-                                  </Button>
-                                </PopoverTrigger>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <PopoverTrigger asChild>
+                                      <Button variant="ghost" size="icon" className="h-7 w-7">
+                                        <Smile className="h-3.5 w-3.5" />
+                                      </Button>
+                                    </PopoverTrigger>
+                                  </TooltipTrigger>
+                                  <TooltipContent>React</TooltipContent>
+                                </Tooltip>
                                 <PopoverContent className="w-auto p-2">
                                   <div className="flex gap-1">
                                     {EMOJI_OPTIONS.map((emoji) => (
@@ -831,9 +853,14 @@ const Messages = () => {
                                 </PopoverContent>
                               </Popover>
                               {isOwn && (
-                                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete(m.id)}>
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </Button>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete(m.id)}>
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Delete</TooltipContent>
+                                </Tooltip>
                               )}
                             </div>
                           </div>
@@ -848,6 +875,7 @@ const Messages = () => {
                     })
                   )}
                 </div>
+                </TooltipProvider>
               </ScrollArea>
 
               {/* Typing indicator */}

@@ -681,33 +681,52 @@ export const MessagesChat = ({
     setSending(true);
     const messageContent = text.trim();
     const replyId = replyToMessage?.id || null;
+    const recipientId = activeConversation.isGroup ? null : activeConversation.participantId;
+    const isGroupMessage = activeConversation.isGroup;
+    
+    // Create optimistic message immediately for instant UI feedback
+    const optimisticMessage: Message = {
+      id: `temp-${Date.now()}`,
+      sender_id: userId,
+      recipient_id: recipientId || null,
+      is_group_message: isGroupMessage,
+      content: messageContent,
+      created_at: new Date().toISOString(),
+      read_by: [userId],
+      delivered_to: [userId],
+      reply_to_id: replyId,
+    };
+    
+    // Add optimistic message immediately
+    setAllMessages((prev) => [...prev, optimisticMessage]);
+    setText("");
+    setReplyToMessage(null);
+    broadcastTyping(false);
+    scrollToBottom();
     
     try {
       const { data, error } = await supabase.from("messages").insert({
         sender_id: userId,
-        recipient_id: activeConversation.isGroup ? null : activeConversation.participantId,
-        is_group_message: activeConversation.isGroup,
+        recipient_id: recipientId,
+        is_group_message: isGroupMessage,
         content: messageContent,
         reply_to_id: replyId,
       }).select().single();
       
       if (error) throw error;
       
-      // Optimistically add the message to state in case realtime is slow
+      // Replace optimistic message with real one
       if (data) {
         setAllMessages((prev) => {
-          // Only add if not already present (realtime might have already added it)
-          if (prev.some(m => m.id === data.id)) return prev;
-          return [...prev, data as Message];
+          // Remove optimistic message and add real one if not already present
+          const filtered = prev.filter(m => m.id !== optimisticMessage.id);
+          if (filtered.some(m => m.id === data.id)) return filtered;
+          return [...filtered, data as Message];
         });
       }
-      
-      setText("");
-      setReplyToMessage(null);
-      broadcastTyping(false);
-      toast({ title: "Sent", description: "Message sent successfully." });
-      scrollToBottom();
     } catch (e: any) {
+      // Remove optimistic message on error
+      setAllMessages((prev) => prev.filter(m => m.id !== optimisticMessage.id));
       toast({ variant: "destructive", title: "Failed to send", description: e.message });
     } finally {
       setSending(false);

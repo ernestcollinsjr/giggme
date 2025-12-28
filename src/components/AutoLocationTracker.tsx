@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { MapPin, AlertCircle } from "lucide-react";
+import { MapPin, X } from "lucide-react";
 
 interface AutoLocationTrackerProps {
   userId: string;
@@ -12,6 +10,7 @@ interface AutoLocationTrackerProps {
 export const AutoLocationTracker = ({ userId, isEnabled }: AutoLocationTrackerProps) => {
   const [isTracking, setIsTracking] = useState(false);
   const [permissionDenied, setPermissionDenied] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(false);
 
   useEffect(() => {
     if (!isEnabled || !navigator.geolocation) return;
@@ -30,17 +29,13 @@ export const AutoLocationTracker = ({ userId, isEnabled }: AutoLocationTrackerPr
         
         // Permission granted, start tracking
         setPermissionDenied(false);
+        setIsDismissed(false);
         startTracking();
       } catch (error: any) {
         console.error("Geolocation permission error:", error);
         if (error.code === 1) { // PERMISSION_DENIED
           setPermissionDenied(true);
           setIsTracking(false);
-          toast({
-            variant: "destructive",
-            title: "Location permission needed",
-            description: "Please click 'Allow' when your browser asks for location access, then try again.",
-          });
         }
       }
     };
@@ -89,33 +84,18 @@ export const AutoLocationTracker = ({ userId, isEnabled }: AutoLocationTrackerPr
     };
   }, [userId, isEnabled]);
 
-  const handleRetryPermission = () => {
-    setPermissionDenied(false);
-    // Trigger permission request by reloading the component
-    window.location.reload();
-  };
-
-  if (permissionDenied) {
+  if (permissionDenied && !isDismissed) {
     return (
-      <div className="fixed bottom-20 right-4 bg-destructive text-destructive-foreground px-4 py-3 rounded-lg shadow-lg max-w-sm">
-        <div className="flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
-          <div className="flex-1">
-            <p className="font-semibold text-sm mb-1">Location Access Blocked</p>
-            <p className="text-xs mb-3 opacity-90">
-              To share your location, click the location icon in your browser's address bar and allow location access.
-            </p>
-            <Button 
-              size="sm" 
-              variant="secondary"
-              onClick={handleRetryPermission}
-              className="w-full"
-            >
-              <MapPin className="h-3 w-3 mr-2" />
-              Retry After Enabling
-            </Button>
-          </div>
-        </div>
+      <div className="fixed bottom-20 right-4 bg-muted/95 backdrop-blur-sm text-foreground px-3 py-2 rounded-lg shadow-md max-w-xs border border-border flex items-center gap-2 text-sm animate-in slide-in-from-right-5">
+        <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+        <span className="flex-1">Location access needed for sharing</span>
+        <button 
+          onClick={() => setIsDismissed(true)}
+          className="p-1 hover:bg-accent rounded-full transition-colors"
+          aria-label="Dismiss"
+        >
+          <X className="h-3 w-3" />
+        </button>
       </div>
     );
   }
@@ -123,9 +103,9 @@ export const AutoLocationTracker = ({ userId, isEnabled }: AutoLocationTrackerPr
   if (!isTracking) return null;
 
   return (
-    <div className="fixed bottom-20 right-4 bg-primary text-primary-foreground px-4 py-2 rounded-full shadow-lg flex items-center gap-2 animate-pulse">
-      <div className="w-2 h-2 bg-green-400 rounded-full" />
-      <span className="text-sm">Location tracking active</span>
+    <div className="fixed bottom-20 right-4 bg-primary/90 backdrop-blur-sm text-primary-foreground px-3 py-1.5 rounded-full shadow-md flex items-center gap-2 text-sm">
+      <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
+      <span>Tracking location</span>
     </div>
   );
 };

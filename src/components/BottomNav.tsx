@@ -22,6 +22,7 @@ const BottomNav = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [allowedMemberIds, setAllowedMemberIds] = useState<string[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -36,8 +37,40 @@ const BottomNav = () => {
         .eq("user_id", user.id)
         .maybeSingle();
       
-      setUserRole(roleData?.role || null);
-      fetchUnreadCount(user.id);
+      const role = roleData?.role || null;
+      setUserRole(role);
+      
+      // Fetch associated members based on role
+      let memberIds: string[] = [];
+      if (role === "band_leader") {
+        const { data: bands } = await supabase
+          .from("bands")
+          .select("id")
+          .eq("band_leader_id", user.id);
+        
+        if (bands && bands.length > 0) {
+          const bandIds = bands.map(b => b.id);
+          const { data: members } = await supabase
+            .from("band_members")
+            .select("member_id")
+            .in("band_id", bandIds);
+          
+          if (members) {
+            memberIds = members.map(m => m.member_id);
+          }
+        }
+      } else if (role === "booking_manager") {
+        const { data: managedArtists } = await supabase
+          .from("booking_manager_artists")
+          .select("artist_id")
+          .eq("booking_manager_id", user.id);
+        
+        if (managedArtists) {
+          memberIds = managedArtists.map(a => a.artist_id);
+        }
+      }
+      setAllowedMemberIds(memberIds);
+      fetchUnreadCount(user.id, role, memberIds);
 
       // Subscribe to message changes with unique channel name
       const channel = supabase
@@ -46,14 +79,14 @@ const BottomNav = () => {
           "postgres_changes",
           { event: "INSERT", schema: "public", table: "messages" },
           () => {
-            fetchUnreadCount(user.id);
+            fetchUnreadCount(user.id, role, memberIds);
           }
         )
         .on(
           "postgres_changes",
           { event: "UPDATE", schema: "public", table: "messages" },
           () => {
-            fetchUnreadCount(user.id);
+            fetchUnreadCount(user.id, role, memberIds);
           }
         )
         .subscribe();
@@ -67,12 +100,14 @@ const BottomNav = () => {
   // Re-fetch unread count on route changes to catch any missed updates
   useEffect(() => {
     if (userId) {
-      fetchUnreadCount(userId);
+      fetchUnreadCount(userId, userRole, allowedMemberIds);
     }
-  }, [location.pathname, userId]);
+  }, [location.pathname, userId, userRole, allowedMemberIds]);
 
-  const fetchUnreadCount = async (uid: string) => {
+  const fetchUnreadCount = async (uid: string, role: string | null, memberIds: string[]) => {
     try {
+      const shouldFilter = (role === "band_leader" || role === "booking_manager") && memberIds.length > 0;
+      
       // Only fetch messages relevant to this user (group messages OR messages where user is sender/recipient)
       const { data, error } = await supabase
         .from("messages")
@@ -82,21 +117,22 @@ const BottomNav = () => {
 
       const relevantMessages = (data || []).filter((m: any) => {
         // Check if this message is relevant to the user
-        return m.is_group_message || m.sender_id === uid || m.recipient_id === uid;
+        const isRelevant = m.is_group_message || m.sender_id === uid || m.recipient_id === uid;
+        if (!isRelevant) return false;
+        
+        // For role-based filtering, only count messages from/to allowed members
+        if (shouldFilter && !m.is_group_message) {
+          const otherParticipant = m.sender_id === uid ? m.recipient_id : m.sender_id;
+          return memberIds.includes(otherParticipant);
+        }
+        
+        return true;
       });
 
       const unread = relevantMessages.filter((m: any) => {
-        // Check if unread (user not in read_by array)
+        // Check if unread (user not in read_by array) and user is not the sender
         const readByArray = m.read_by || [];
-        return !readByArray.includes(uid);
-      });
-
-      console.log("BottomNav fetchUnreadCount:", { 
-        uid, 
-        totalMessages: data?.length, 
-        relevantMessages: relevantMessages.length,
-        unreadCount: unread.length,
-        unreadMessages: unread.map((m: any) => ({ id: m.id, read_by: m.read_by }))
+        return m.sender_id !== uid && !readByArray.includes(uid);
       });
 
       setUnreadCount(unread.length);

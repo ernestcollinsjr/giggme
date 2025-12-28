@@ -711,7 +711,7 @@ const Messages = () => {
   }
 
   return (
-    <div className="h-[100dvh] bg-background flex flex-col">
+    <div className="h-[calc(100dvh-4rem)] md:h-[100dvh] bg-background flex flex-col">
       <div className="flex flex-1 min-h-0">
         {/* Sidebar - Conversation List */}
         <div className={cn(
@@ -1162,9 +1162,6 @@ const Messages = () => {
                   </Button>
                 </div>
               </div>
-              
-              {/* Spacer block to push content above bottom navigation bar on mobile */}
-              <div className="flex-shrink-0 h-20 bg-background md:hidden" />
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center">

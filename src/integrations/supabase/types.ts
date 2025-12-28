@@ -891,32 +891,53 @@ export type Database = {
       performer_ratings: {
         Row: {
           artist_id: string
+          booking_id: string | null
           comment: string | null
           created_at: string
           customer_name: string | null
           id: string
           rating: number
+          venue_id: string | null
           venue_name: string | null
         }
         Insert: {
           artist_id: string
+          booking_id?: string | null
           comment?: string | null
           created_at?: string
           customer_name?: string | null
           id?: string
           rating: number
+          venue_id?: string | null
           venue_name?: string | null
         }
         Update: {
           artist_id?: string
+          booking_id?: string | null
           comment?: string | null
           created_at?: string
           customer_name?: string | null
           id?: string
           rating?: number
+          venue_id?: string | null
           venue_name?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "performer_ratings_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "entertainment_bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "performer_ratings_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {

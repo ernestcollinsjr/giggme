@@ -17,13 +17,16 @@ import {
   Music,
   AlertCircle,
   CheckCircle,
-  XCircle
+  XCircle,
+  QrCode
 } from "lucide-react";
 import { format, parseISO, isToday } from "date-fns";
 import { NotificationBell } from "@/components/NotificationBell";
 import { BookingCalendar } from "@/components/venue/BookingCalendar";
 import { CreateBookingDialog } from "@/components/venue/CreateBookingDialog";
 import { VenueSetup } from "@/components/venue/VenueSetup";
+import { VenueBookingQRCode } from "@/components/venue/VenueBookingQRCode";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface Venue {
   id: string;
@@ -303,12 +306,35 @@ const VenueDashboard = () => {
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
                           {getStatusBadge(booking.status)}
                           {booking.payment_amount && (
                             <span className="text-sm font-medium text-green-600">
                               ${booking.payment_amount}
                             </span>
+                          )}
+                          {booking.status === "confirmed" && (
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button variant="outline" size="sm" className="gap-1">
+                                  <QrCode className="h-4 w-4" />
+                                  QR
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="sm:max-w-md">
+                                <DialogHeader>
+                                  <DialogTitle>Customer Rating QR Code</DialogTitle>
+                                </DialogHeader>
+                                <VenueBookingQRCode
+                                  bookingId={booking.id}
+                                  entertainerId={booking.entertainer_id}
+                                  entertainerName={booking.entertainer?.name || "Entertainer"}
+                                  venueName={venue.name}
+                                  venueId={venue.id}
+                                  bookingDate={booking.date}
+                                />
+                              </DialogContent>
+                            </Dialog>
                           )}
                         </div>
                       </div>

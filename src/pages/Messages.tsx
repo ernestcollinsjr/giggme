@@ -763,22 +763,17 @@ const Messages = () => {
     }
   };
 
-  const handleSend = async () => {
+  const handleSend = () => {
     if (!userId || !text.trim() || !activeConversation) return;
     
-    // Capture values immediately and clear input FIRST for instant feedback
+    // Capture values immediately
     const messageContent = text.trim();
     const replyId = replyToMessage?.id || null;
     const recipientId = activeConversation.isGroup ? null : activeConversation.participantId;
     const isGroupMessage = activeConversation.isGroup;
     const tempId = `temp-${Date.now()}`;
     
-    // Clear input immediately - no waiting
-    setText("");
-    setReplyToMessage(null);
-    broadcastTyping(false);
-    
-    // Create and add optimistic message immediately
+    // Create optimistic message
     const optimisticMessage: Message = {
       id: tempId,
       sender_id: userId,
@@ -791,8 +786,16 @@ const Messages = () => {
       reply_to_id: replyId,
     };
     
+    // Batch all state updates together - React will batch these
+    setText("");
+    setReplyToMessage(null);
     setAllMessages((prev) => [...prev, optimisticMessage]);
-    scrollToBottom();
+    
+    // Defer non-critical work
+    queueMicrotask(() => {
+      scrollToBottom();
+      broadcastTyping(false);
+    });
     
     // Database insert happens in background - don't block UI
     supabase.from("messages").insert({

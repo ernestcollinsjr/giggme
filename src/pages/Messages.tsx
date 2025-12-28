@@ -439,38 +439,49 @@ const Messages = () => {
       .channel("messages-page-realtime")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "messages" },
+        { event: "INSERT", schema: "public", table: "messages" },
         (payload) => {
-          if (payload.eventType === "INSERT") {
-            const newMsg = payload.new as Message;
-            setAllMessages((prev) => {
-              // Check if this exact message ID already exists
-              const exists = prev.some(m => m.id === newMsg.id);
-              if (exists) return prev;
-              
-              // Check for matching temp message to replace
-              const tempIndex = prev.findIndex(m => 
-                m.id.startsWith('temp-') && 
-                m.content === newMsg.content && 
-                m.sender_id === newMsg.sender_id
-              );
-              
-              if (tempIndex >= 0) {
-                // Replace temp message with real one
-                const updated = [...prev];
-                updated[tempIndex] = newMsg;
-                return updated;
-              }
-              
-              return [...prev, newMsg];
-            });
-          } else if (payload.eventType === "UPDATE") {
-            setAllMessages((prev) =>
-              prev.map((m) => (m.id === (payload.new as Message).id ? (payload.new as Message) : m))
+          console.log("Realtime INSERT received:", payload);
+          const newMsg = payload.new as Message;
+          setAllMessages((prev) => {
+            // Check if this exact message ID already exists
+            const exists = prev.some(m => m.id === newMsg.id);
+            if (exists) return prev;
+            
+            // Check for matching temp message to replace
+            const tempIndex = prev.findIndex(m => 
+              m.id.startsWith('temp-') && 
+              m.content === newMsg.content && 
+              m.sender_id === newMsg.sender_id
             );
-          } else if (payload.eventType === "DELETE") {
-            setAllMessages((prev) => prev.filter((m) => m.id !== (payload.old as Message).id));
-          }
+            
+            if (tempIndex >= 0) {
+              // Replace temp message with real one
+              const updated = [...prev];
+              updated[tempIndex] = newMsg;
+              return updated;
+            }
+            
+            return [...prev, newMsg];
+          });
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "messages" },
+        (payload) => {
+          console.log("Realtime UPDATE received:", payload);
+          setAllMessages((prev) =>
+            prev.map((m) => (m.id === (payload.new as Message).id ? (payload.new as Message) : m))
+          );
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "messages" },
+        (payload) => {
+          console.log("Realtime DELETE received:", payload);
+          setAllMessages((prev) => prev.filter((m) => m.id !== (payload.old as Message).id));
         }
       )
       .on(
@@ -488,7 +499,9 @@ const Messages = () => {
         { event: "*", schema: "public", table: "read_receipts" },
         () => fetchReactionsAndPins()
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log("Realtime subscription status:", status);
+      });
 
     return () => {
       supabase.removeChannel(channel);

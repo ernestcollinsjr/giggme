@@ -818,8 +818,8 @@ const Messages = () => {
                 />
               </div>
 
-              {/* Messages - scrollable area */}
-              <div className="flex-1 overflow-y-auto">
+              {/* Messages - scrollable area with calc to leave room for input */}
+              <div className="flex-1 min-h-0 overflow-hidden" style={{ maxHeight: 'calc(100% - 80px)' }}>
                 <ScrollArea className="h-full p-4 bg-muted/30" ref={scrollRef as any}>
                 <TooltipProvider delayDuration={300}>
                 <div className="max-w-3xl mx-auto py-4 px-2">
@@ -1055,8 +1055,8 @@ const Messages = () => {
                 </div>
               )}
 
-              {/* Message Input */}
-              <div className="flex-shrink-0 p-3 border-t border-border bg-background">
+              {/* Message Input - fixed height */}
+              <div className="h-20 flex-shrink-0 p-3 border-t border-border bg-background">
                 <div className="flex gap-2 max-w-3xl mx-auto items-end">
                   <Textarea
                     ref={textareaRef}

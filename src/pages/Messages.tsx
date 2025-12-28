@@ -718,9 +718,9 @@ const Messages = () => {
               </div>
 
               {/* Messages */}
-              <ScrollArea className="flex-1 p-4" ref={scrollRef as any}>
+              <ScrollArea className="flex-1 p-4 bg-muted/30" ref={scrollRef as any}>
                 <TooltipProvider delayDuration={300}>
-                <div className="space-y-4 max-w-3xl mx-auto">
+                <div className="space-y-2 max-w-3xl mx-auto py-4">
                   {conversationMessages.length === 0 ? (
                     <div className="text-center py-16">
                       <MessageCircle className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
@@ -734,21 +734,37 @@ const Messages = () => {
                       const msgReactions = getMessageReactions(m.id);
                       
                       return (
-                        <div key={m.id} className={cn("flex gap-2", isOwn ? "justify-end" : "justify-start")}>
+                        <div 
+                          key={m.id} 
+                          className={cn(
+                            "flex gap-3 mb-4",
+                            isOwn ? "justify-end pl-12" : "justify-start pr-12"
+                          )}
+                        >
                           {!isOwn && (
-                            <Avatar className="h-8 w-8 mt-1">
+                            <Avatar className="h-9 w-9 mt-1 flex-shrink-0">
                               <AvatarImage src={senderProfile?.photo_urls?.[0]} />
-                              <AvatarFallback className="text-xs">{getInitials(senderProfile?.name || "U")}</AvatarFallback>
+                              <AvatarFallback className="text-xs bg-muted">{getInitials(senderProfile?.name || "U")}</AvatarFallback>
                             </Avatar>
                           )}
-                          <div className={cn("max-w-[70%] group relative", isOwn && "order-first")}>
+                          <div className={cn("max-w-[75%] group relative", isOwn && "order-first")}>
+                            {/* Sender name for received messages */}
+                            {!isOwn && (
+                              <p className="text-xs font-medium text-muted-foreground mb-1 ml-1">
+                                {senderProfile?.name || "Unknown"}
+                              </p>
+                            )}
+                            
                             {/* Reply quote */}
                             {m.reply_to_id && (() => {
                               const repliedMsg = allMessages.find(msg => msg.id === m.reply_to_id);
                               if (!repliedMsg) return null;
                               const repliedSender = repliedMsg.sender_id === userId ? 'You' : profiles.get(repliedMsg.sender_id)?.name || 'Unknown';
                               return (
-                                <div className="mb-1 px-2 py-1 rounded border-l-2 border-primary/50 bg-muted/50 text-xs">
+                                <div className={cn(
+                                  "mb-1 px-3 py-2 rounded-lg border-l-2 border-primary/50 text-xs",
+                                  isOwn ? "bg-primary/20" : "bg-muted/50"
+                                )}>
                                   <span className="font-medium text-primary">{repliedSender}</span>
                                   <p className="text-muted-foreground line-clamp-1">{repliedMsg.content}</p>
                                 </div>
@@ -756,16 +772,16 @@ const Messages = () => {
                             })()}
                             
                             <div className={cn(
-                              "p-3 rounded-2xl",
+                              "px-4 py-3 rounded-2xl shadow-sm",
                               isOwn 
-                                ? "bg-primary text-primary-foreground rounded-br-md" 
-                                : "bg-background border border-border rounded-bl-md"
+                                ? "bg-primary text-primary-foreground rounded-br-sm" 
+                                : "bg-card border border-border rounded-bl-sm"
                             )}>
                               {activeConversation.isGroup && !isOwn && (
-                                <p className="text-xs font-medium mb-1 opacity-70">{senderProfile?.name}</p>
+                                <p className="text-xs font-semibold mb-1 opacity-80">{senderProfile?.name}</p>
                               )}
-                              <p className="text-sm whitespace-pre-wrap">{m.content}</p>
-                              <div className={cn("flex items-center gap-1 mt-1", isOwn ? "justify-end" : "")}>
+                              <p className="text-sm whitespace-pre-wrap leading-relaxed">{m.content}</p>
+                              <div className={cn("flex items-center gap-1.5 mt-2", isOwn ? "justify-end" : "")}>
                                 <span className={cn("text-[10px]", isOwn ? "text-primary-foreground/70" : "text-muted-foreground")}>
                                   {formatMessageTime(m.created_at)}
                                 </span>

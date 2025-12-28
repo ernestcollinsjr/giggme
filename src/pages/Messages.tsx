@@ -403,7 +403,19 @@ const Messages = () => {
   }, [groupedConversations, activeTab, searchQuery]);
 
   const openConversation = async (conversation: Conversation) => {
-    setActiveConversation(conversation);
+    // Get fresh profile data if available
+    const freshProfile = conversation.participantId 
+      ? profiles.get(conversation.participantId) 
+      : null;
+    
+    // Update conversation with fresh profile data
+    const updatedConversation = freshProfile ? {
+      ...conversation,
+      name: freshProfile.name || conversation.name,
+      photo: freshProfile.photo_urls?.[0] || conversation.photo
+    } : conversation;
+    
+    setActiveConversation(updatedConversation);
     
     if (!conversation.isGroup && userId) {
       const unread = allMessages.filter(
@@ -638,43 +650,52 @@ const Messages = () => {
               </div>
             ) : (
               <div className="divide-y divide-border">
-                {filteredConversations.map((conversation) => (
-                  <button
-                    key={conversation.id}
-                    onClick={() => openConversation(conversation)}
-                    className={cn(
-                      "w-full p-3 flex items-center gap-3 hover:bg-muted/50 transition-colors text-left",
-                      activeConversation?.id === conversation.id && "bg-muted"
-                    )}
-                  >
-                    <Avatar className="h-12 w-12">
-                      {conversation.isGroup ? (
-                        <AvatarFallback className="bg-primary/10">
-                          <Users className="h-5 w-5 text-primary" />
-                        </AvatarFallback>
-                      ) : (
-                        <>
-                          <AvatarImage src={conversation.photo || undefined} />
-                          <AvatarFallback>{getInitials(conversation.name)}</AvatarFallback>
-                        </>
+                {filteredConversations.map((conversation) => {
+                  // Get fresh profile data for display
+                  const freshProfile = !conversation.isGroup && conversation.participantId 
+                    ? profiles.get(conversation.participantId) 
+                    : null;
+                  const displayName = freshProfile?.name || conversation.name;
+                  const displayPhoto = freshProfile?.photo_urls?.[0] || conversation.photo;
+                  
+                  return (
+                    <button
+                      key={conversation.id}
+                      onClick={() => openConversation(conversation)}
+                      className={cn(
+                        "w-full p-3 flex items-center gap-3 hover:bg-muted/50 transition-colors text-left",
+                        activeConversation?.id === conversation.id && "bg-muted"
                       )}
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <p className="font-medium text-sm truncate">{conversation.name}</p>
-                        <span className="text-xs text-muted-foreground">{formatTime(conversation.lastMessageTime)}</span>
-                      </div>
-                      <div className="flex items-center justify-between mt-0.5">
-                        <p className="text-xs text-muted-foreground truncate pr-2">{conversation.lastMessage}</p>
-                        {conversation.unreadCount > 0 && (
-                          <Badge variant="default" className="h-5 min-w-5 px-1.5 text-xs">
-                            {conversation.unreadCount}
-                          </Badge>
+                    >
+                      <Avatar className="h-12 w-12">
+                        {conversation.isGroup ? (
+                          <AvatarFallback className="bg-primary/10">
+                            <Users className="h-5 w-5 text-primary" />
+                          </AvatarFallback>
+                        ) : (
+                          <>
+                            <AvatarImage src={displayPhoto || undefined} />
+                            <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
+                          </>
                         )}
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <p className="font-medium text-sm truncate">{displayName}</p>
+                          <span className="text-xs text-muted-foreground">{formatTime(conversation.lastMessageTime)}</span>
+                        </div>
+                        <div className="flex items-center justify-between mt-0.5">
+                          <p className="text-xs text-muted-foreground truncate pr-2">{conversation.lastMessage}</p>
+                          {conversation.unreadCount > 0 && (
+                            <Badge variant="default" className="h-5 min-w-5 px-1.5 text-xs">
+                              {conversation.unreadCount}
+                            </Badge>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </ScrollArea>
@@ -687,60 +708,54 @@ const Messages = () => {
         )}>
           {activeConversation ? (
             <>
-              {/* Chat Header */}
-              {(() => {
-                // Get current profile for conversation partner (in case it loaded after conversation was opened)
-                const partnerProfile = activeConversation.participantId 
-                  ? profiles.get(activeConversation.participantId) 
-                  : null;
-                
-                // Compute display values with proper fallbacks
-                const displayName = activeConversation.isGroup 
-                  ? "Group Chat" 
-                  : (partnerProfile?.name || activeConversation.name || "Unknown");
-                const displayPhoto = activeConversation.isGroup 
-                  ? null 
-                  : (partnerProfile?.photo_urls?.[0] || activeConversation.photo || null);
-                
-                // Debug: verify values
-                console.log('HEADER RENDER:', { 
-                  participantId: activeConversation.participantId,
-                  partnerProfileName: partnerProfile?.name,
-                  convName: activeConversation.name,
-                  finalDisplayName: displayName 
-                });
-                
-                return (
-                  <div className="p-4 border-b border-border bg-background flex items-center gap-3">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setActiveConversation(null)}
-                      className="md:hidden"
-                    >
-                      <ArrowLeft className="h-5 w-5" />
-                    </Button>
-                    <Avatar className="h-10 w-10">
-                      {activeConversation.isGroup ? (
-                        <AvatarFallback className="bg-primary/10">
-                          <Users className="h-4 w-4 text-primary" />
-                        </AvatarFallback>
-                      ) : (
-                        <>
-                          <AvatarImage src={displayPhoto || undefined} />
-                          <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
-                        </>
-                      )}
-                    </Avatar>
-                    <div className="flex-1">
-                      <h2 className="font-semibold">{displayName}</h2>
-                      <p className="text-xs text-muted-foreground">
-                        {activeConversation.isGroup ? "Group Message" : "Direct Message"}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })()}
+              {/* Chat Header - use key to force re-render when profiles change */}
+              <div key={`header-${activeConversation.participantId}-${profiles.size}`} className="p-4 border-b border-border bg-background flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setActiveConversation(null)}
+                  className="md:hidden"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+                {(() => {
+                  // Get current profile for conversation partner
+                  const partnerProfile = activeConversation.participantId 
+                    ? profiles.get(activeConversation.participantId) 
+                    : null;
+                  
+                  // Compute display values - prioritize fresh profile data
+                  const displayName = activeConversation.isGroup 
+                    ? "Group Chat" 
+                    : (partnerProfile?.name || activeConversation.name || "Unknown");
+                  const displayPhoto = activeConversation.isGroup 
+                    ? null 
+                    : (partnerProfile?.photo_urls?.[0] || activeConversation.photo || null);
+                  
+                  return (
+                    <>
+                      <Avatar className="h-10 w-10">
+                        {activeConversation.isGroup ? (
+                          <AvatarFallback className="bg-primary/10">
+                            <Users className="h-4 w-4 text-primary" />
+                          </AvatarFallback>
+                        ) : (
+                          <>
+                            <AvatarImage src={displayPhoto || undefined} />
+                            <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
+                          </>
+                        )}
+                      </Avatar>
+                      <div className="flex-1">
+                        <h2 className="font-semibold">{displayName}</h2>
+                        <p className="text-xs text-muted-foreground">
+                          {activeConversation.isGroup ? "Group Message" : "Direct Message"}
+                        </p>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
 
               {/* Messages */}
               <ScrollArea className="flex-1 p-4 bg-muted/30" ref={scrollRef as any}>

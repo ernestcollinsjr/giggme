@@ -750,7 +750,7 @@ const Messages = () => {
                           </Avatar>
                           
                           {/* Message bubble */}
-                          <div className="max-w-[60%] group relative">
+                          <div className="max-w-[70%] sm:max-w-[60%] group relative">
                             {/* Reply quote */}
                             {m.reply_to_id && (() => {
                               const repliedMsg = allMessages.find(msg => msg.id === m.reply_to_id);

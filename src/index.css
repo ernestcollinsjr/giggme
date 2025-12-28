@@ -100,3 +100,14 @@ All colors MUST be HSL.
 .pac-matched {
   font-weight: 600 !important;
 }
+
+/* Safe area for mobile devices with notches/home indicators */
+.safe-area-bottom {
+  padding-bottom: max(2rem, env(safe-area-inset-bottom, 2rem));
+}
+
+@media (max-width: 768px) {
+  .safe-area-bottom {
+    padding-bottom: max(2.5rem, env(safe-area-inset-bottom, 2.5rem));
+  }
+}

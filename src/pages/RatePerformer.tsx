@@ -127,6 +127,33 @@ const RatePerformer = () => {
 
       if (error) throw error;
 
+      // Send push notification to the artist
+      const displayName = artist.stage_name || artist.name;
+      const ratingText = rating === 5 ? "⭐⭐⭐⭐⭐" : `${rating} star${rating > 1 ? "s" : ""}`;
+      const notificationBody = customerName 
+        ? `${customerName} rated you ${ratingText}${venueInfo ? ` at ${venueInfo.name}` : ""}!`
+        : `You received a ${ratingText} rating${venueInfo ? ` at ${venueInfo.name}` : ""}!`;
+
+      supabase.functions.invoke("send-push-notification", {
+        body: {
+          user_id: artistId,
+          title: "New Rating Received!",
+          body: notificationBody,
+          url: "/artist-profile",
+          data: { type: "rating" },
+        },
+      }).catch(console.error);
+
+      // Also create an in-app notification
+      supabase.from("notifications").insert({
+        user_id: artistId,
+        title: "New Rating Received!",
+        message: notificationBody,
+        type: "rating",
+      }).then(({ error }) => {
+        if (error) console.error("Error creating notification:", error);
+      });
+
       setSubmitted(true);
       toast({
         title: "Thank you!",

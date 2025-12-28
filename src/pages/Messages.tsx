@@ -693,6 +693,12 @@ const Messages = () => {
                 const partnerProfile = activeConversation.participantId 
                   ? profiles.get(activeConversation.participantId) 
                   : null;
+                
+                console.log('Header Debug - participantId:', activeConversation.participantId, 
+                  'partnerProfile:', partnerProfile?.name, 
+                  'profiles size:', profiles.size,
+                  'all profile IDs:', Array.from(profiles.keys()));
+                
                 const displayName = activeConversation.isGroup 
                   ? "Group Chat" 
                   : partnerProfile?.name || activeConversation.name || "Unknown";
@@ -747,6 +753,11 @@ const Messages = () => {
                       const senderProfile = profiles.get(m.sender_id);
                       const isRead = isOwn && !activeConversation.isGroup && m.read_by?.includes(activeConversation.participantId!);
                       const msgReactions = getMessageReactions(m.id);
+                      
+                      // Debug logging
+                      if (!isOwn) {
+                        console.log('Received msg debug - sender_id:', m.sender_id, 'senderProfile:', senderProfile?.name, 'userId:', userId);
+                      }
                       
                       return (
                         <div 

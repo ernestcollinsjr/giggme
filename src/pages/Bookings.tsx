@@ -13,7 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
-import { Calendar as CalendarIcon, Clock, MapPin, Plus, Trash2, Music, Navigation, Users, Send, Pencil, Filter } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, MapPin, Plus, Trash2, Music, Navigation, Users, Send, Pencil, Filter, Mail } from "lucide-react";
+import { EmailTrackingStatus } from "@/components/EmailTrackingStatus";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import BottomNav from "@/components/BottomNav";
@@ -1238,6 +1239,16 @@ const Bookings = () => {
                               )}
                             </>
                           )}
+                        </div>
+                        
+                        {/* Email Tracking Status */}
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">Email status:</span>
+                          <EmailTrackingStatus 
+                            gigId={gig.id} 
+                            memberProfiles={bandMembers.map(m => ({ id: m.id, name: m.name }))}
+                          />
                         </div>
                         
                         {/* Visual Timeline */}

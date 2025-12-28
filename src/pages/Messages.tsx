@@ -183,30 +183,94 @@ const Messages = () => {
   const [pressingMessageId, setPressingMessageId] = useState<string | null>(null);
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Long press handlers
-  const handleTouchStart = useCallback((message: Message) => {
+  // Swipe gesture state
+  const [swipeState, setSwipeState] = useState<{
+    messageId: string | null;
+    startX: number;
+    currentX: number;
+    isOwn: boolean;
+  }>({ messageId: null, startX: 0, currentX: 0, isOwn: false });
+
+  const SWIPE_THRESHOLD = 80;
+
+  // Combined touch handlers for long press and swipe
+  const handleTouchStart = useCallback((message: Message, e: React.TouchEvent, isOwn: boolean) => {
+    const touch = e.touches[0];
     setPressingMessageId(message.id);
+    setSwipeState({
+      messageId: message.id,
+      startX: touch.clientX,
+      currentX: touch.clientX,
+      isOwn
+    });
     longPressTimerRef.current = setTimeout(() => {
       setLongPressMessage(message);
       setPressingMessageId(null);
+      setSwipeState({ messageId: null, startX: 0, currentX: 0, isOwn: false });
     }, 500);
   }, []);
 
-  const handleTouchEnd = useCallback(() => {
-    setPressingMessageId(null);
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    const deltaX = touch.clientX - swipeState.startX;
+    
+    // If swiping horizontally, cancel long press
+    if (Math.abs(deltaX) > 10) {
+      setPressingMessageId(null);
+      if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current);
+        longPressTimerRef.current = null;
+      }
     }
-  }, []);
+    
+    setSwipeState(prev => ({
+      ...prev,
+      currentX: touch.clientX
+    }));
+  }, [swipeState.startX]);
 
-  const handleTouchMove = useCallback(() => {
+  const handleTouchEnd = useCallback((message: Message) => {
     setPressingMessageId(null);
     if (longPressTimerRef.current) {
       clearTimeout(longPressTimerRef.current);
       longPressTimerRef.current = null;
     }
-  }, []);
+
+    const deltaX = swipeState.currentX - swipeState.startX;
+    
+    // Swipe right to reply
+    if (deltaX > SWIPE_THRESHOLD) {
+      setReplyToMessage(message);
+      setTimeout(() => textareaRef.current?.focus(), 100);
+    }
+    // Swipe left to delete (only for own messages)
+    else if (deltaX < -SWIPE_THRESHOLD && swipeState.isOwn) {
+      // Delete via supabase directly here to avoid circular dependency
+      (async () => {
+        try {
+          await supabase.from("messages").delete().eq("id", message.id);
+          toast({ title: "Deleted", description: "Message deleted." });
+        } catch (e: any) {
+          toast({ variant: "destructive", title: "Error", description: e.message });
+        }
+      })();
+    }
+
+    setSwipeState({ messageId: null, startX: 0, currentX: 0, isOwn: false });
+  }, [swipeState, toast]);
+
+  const getSwipeTransform = useCallback((messageId: string) => {
+    if (swipeState.messageId !== messageId) return 0;
+    const deltaX = swipeState.currentX - swipeState.startX;
+    // Limit swipe distance and add resistance
+    const maxSwipe = 100;
+    if (deltaX > 0) {
+      return Math.min(deltaX * 0.5, maxSwipe);
+    } else if (swipeState.isOwn) {
+      return Math.max(deltaX * 0.5, -maxSwipe);
+    }
+    return 0;
+  }, [swipeState]);
 
   const handleCopyMessage = useCallback((content: string) => {
     navigator.clipboard.writeText(content);
@@ -1134,9 +1198,10 @@ const Messages = () => {
                           {/* Message bubble */}
                           <div 
                             className="max-w-[70%] sm:max-w-[60%] group relative"
-                            onTouchStart={() => isMobile && handleTouchStart(m)}
-                            onTouchEnd={handleTouchEnd}
+                            onTouchStart={(e) => isMobile && handleTouchStart(m, e, isOwn)}
+                            onTouchEnd={() => handleTouchEnd(m)}
                             onTouchMove={handleTouchMove}
+                            style={{ transform: `translateX(${getSwipeTransform(m.id)}px)`, transition: swipeState.messageId === m.id ? 'none' : 'transform 0.2s ease-out' }}
                           >
                             {/* Reply quote */}
                             {m.reply_to_id && (() => {

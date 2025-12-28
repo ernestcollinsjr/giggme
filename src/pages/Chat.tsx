@@ -836,25 +836,26 @@ const Chat = () => {
                               </PopoverContent>
                             </Popover>
                           </div>
-                          {/* Reactions display - positioned on bubble */}
+                          {/* Reactions display - positioned on top right of bubble */}
                           {messageReactions.size > 0 && (
                             <div className={cn(
-                              "absolute -bottom-3 flex flex-wrap gap-1",
-                              isOwnMessage ? "right-2" : "left-2"
+                              "absolute -top-2 flex flex-row-reverse",
+                              isOwnMessage ? "left-0 -translate-x-1/2" : "right-0 translate-x-1/2"
                             )}>
-                              {Array.from(messageReactions.entries()).map(([emoji, data]) => (
+                              {Array.from(messageReactions.entries()).map(([emoji, data], index) => (
                                 <button
                                   key={emoji}
                                   onClick={() => toggleReaction(m.id, emoji)}
+                                  style={{ marginLeft: index > 0 ? '-8px' : '0' }}
                                   className={cn(
-                                    "flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs border shadow-sm transition-colors",
+                                    "flex items-center gap-0.5 px-1 py-0.5 rounded-full text-xs border shadow-sm transition-colors z-10",
                                     data.hasUserReacted 
                                       ? "bg-primary/10 border-primary/30" 
                                       : "bg-background border-border hover:bg-muted"
                                   )}
                                 >
-                                  <span>{emoji}</span>
-                                  <span className="text-muted-foreground">{data.count}</span>
+                                  <span className="text-sm">{emoji}</span>
+                                  {data.count > 1 && <span className="text-[10px] text-muted-foreground">{data.count}</span>}
                                 </button>
                               ))}
                             </div>

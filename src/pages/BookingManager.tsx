@@ -29,6 +29,8 @@ import { ArtistAvailabilityManager } from "@/components/ArtistAvailabilityManage
 import { ScheduledRemindersManager } from "@/components/ScheduledRemindersManager";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MessagesChat } from "@/components/MessagesChat";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Profile {
   id: string;
@@ -401,6 +403,8 @@ export default function BookingManager() {
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const managedArtistIds = managedArtists.map(a => a.artist_id);
+
   return (
     <div className="min-h-screen bg-background">
       <TopNav userRole="booking_manager" />
@@ -429,6 +433,25 @@ export default function BookingManager() {
             </Button>
           </div>
         </div>
+
+        {/* Messages Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" />
+              Messages
+            </CardTitle>
+            <CardDescription>
+              Chat with your managed artists - includes read receipts, reactions, pinning, and more
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <MessagesChat 
+              className="h-[500px]" 
+              filterToManagedArtists={managedArtistIds.length > 0 ? managedArtistIds : undefined}
+            />
+          </CardContent>
+        </Card>
 
         {/* Managed Artists (Solo, Duo, Trio) */}
         <Card>

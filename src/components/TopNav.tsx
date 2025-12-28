@@ -3,6 +3,13 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "next-themes";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { 
   Home, 
   Calendar, 
@@ -20,7 +27,8 @@ import {
   Sun,
   Moon,
   Bell,
-  Plus
+  Plus,
+  Menu
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationBell } from "./NotificationBell";
@@ -133,8 +141,8 @@ export const TopNav = ({ userRole }: TopNavProps) => {
           <span className="font-bold text-lg hidden sm:inline">GigMe</span>
         </Link>
         
-        {/* Right side - Nav links, Theme toggle, Notifications, Profile & Logout */}
-        <div className="flex items-center gap-2">
+        {/* Desktop Nav */}
+        <div className="hidden sm:flex items-center gap-2">
           <Button
             variant="ghost"
             size="sm"
@@ -191,6 +199,63 @@ export const TopNav = ({ userRole }: TopNavProps) => {
             <LogOut className="h-4 w-4" />
             <span className="hidden sm:inline">Logout</span>
           </Button>
+        </div>
+
+        {/* Mobile Nav */}
+        <div className="flex sm:hidden items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          >
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </Button>
+          
+          <NotificationBell />
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 bg-popover">
+              {(userRole === "band_leader" || userRole === "super_admin") && (
+                <>
+                  <DropdownMenuItem onClick={() => navigate("/bookings")}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Book Gig
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
+              {links.map((link) => {
+                const Icon = link.icon;
+                return (
+                  <DropdownMenuItem 
+                    key={link.path} 
+                    onClick={() => navigate(link.path)}
+                    className={isActive(link.path) ? "bg-accent" : ""}
+                  >
+                    <Icon className="mr-2 h-4 w-4" />
+                    {link.label}
+                  </DropdownMenuItem>
+                );
+              })}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => navigate("/profile-setup")}>
+                <User className="mr-2 h-4 w-4" />
+                Profile
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={handleLogout}
+                className="text-destructive focus:text-destructive"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </nav>

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.75.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -26,6 +27,8 @@ interface GigInviteRequest {
     time: string;
     venue: string;
   };
+  gigId?: string;
+  memberId?: string;
 }
 
 function formatCountdown(deadlineDate: Date): string {
@@ -71,6 +74,8 @@ const handler = async (req: Request): Promise<Response> => {
       notes,
       attire,
       rehearsalInfo,
+      gigId,
+      memberId,
     }: GigInviteRequest = await req.json();
 
     console.log("Sending gig invite to:", recipientEmail);
@@ -203,6 +208,31 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     console.log("Gig invite email sent successfully:", emailResponse);
+
+    // Track the email if we have gig and member IDs
+    const resendEmailId = (emailResponse as { data?: { id?: string } })?.data?.id;
+    if (gigId && memberId && resendEmailId) {
+      try {
+        const supabaseUrl = Deno.env.get("SUPABASE_URL");
+        const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+        
+        if (supabaseUrl && supabaseServiceKey) {
+          const supabase = createClient(supabaseUrl, supabaseServiceKey);
+          
+          await supabase.from('email_tracking').insert({
+            gig_id: gigId,
+            member_id: memberId,
+            email: recipientEmail,
+            resend_email_id: resendEmailId,
+            status: 'sent',
+          });
+          
+          console.log("Email tracking record created for:", resendEmailId);
+        }
+      } catch (trackingError) {
+        console.error("Failed to create email tracking record:", trackingError);
+      }
+    }
 
     return new Response(JSON.stringify(emailResponse), {
       status: 200,

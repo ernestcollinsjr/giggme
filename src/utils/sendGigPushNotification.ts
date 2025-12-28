@@ -108,6 +108,8 @@ export async function sendGigPushNotifications({
           bandName: bandName,
           notes: notes || undefined,
           attire: attire || undefined,
+          gigId: gigId,
+          memberId: member.id,
         };
         
         // Add rehearsal info if present

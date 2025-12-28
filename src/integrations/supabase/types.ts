@@ -372,6 +372,59 @@ export type Database = {
           },
         ]
       }
+      email_tracking: {
+        Row: {
+          clicked_at: string | null
+          created_at: string
+          delivered_at: string | null
+          email: string
+          gig_id: string | null
+          id: string
+          member_id: string
+          opened_at: string | null
+          resend_email_id: string | null
+          sent_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          clicked_at?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          email: string
+          gig_id?: string | null
+          id?: string
+          member_id: string
+          opened_at?: string | null
+          resend_email_id?: string | null
+          sent_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          clicked_at?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          email?: string
+          gig_id?: string | null
+          id?: string
+          member_id?: string
+          opened_at?: string | null
+          resend_email_id?: string | null
+          sent_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_tracking_gig_id_fkey"
+            columns: ["gig_id"]
+            isOneToOne: false
+            referencedRelation: "gigs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       entertainment_bookings: {
         Row: {
           callout_reason: string | null

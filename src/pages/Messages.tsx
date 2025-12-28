@@ -914,21 +914,26 @@ const Messages = () => {
               )}
 
               {/* Message Input */}
-              <div className="p-4 border-t border-border bg-background">
+              <div className="p-4 border-t border-border bg-background relative z-50">
                 <div className="flex gap-2 max-w-3xl mx-auto">
                   <Textarea
                     ref={textareaRef}
                     placeholder="Type a message..."
                     value={text}
-                    onChange={(e) => handleTextChange(e.target.value)}
+                    onChange={(e) => {
+                      console.log("onChange triggered:", e.target.value);
+                      handleTextChange(e.target.value);
+                    }}
+                    onFocus={() => console.log("Textarea focused")}
                     onKeyDown={(e) => {
+                      console.log("Key pressed:", e.key);
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
                         handleSend();
                       }
                     }}
                     rows={1}
-                    className="flex-1 resize-none min-h-[44px] max-h-32"
+                    className="flex-1 resize-none min-h-[44px] max-h-32 pointer-events-auto"
                   />
                   <Button onClick={handleSend} disabled={sending || !text.trim()} size="icon" className="h-11 w-11 rounded-full">
                     <Send className="h-4 w-4" />

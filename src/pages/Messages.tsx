@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 interface Message {
@@ -66,11 +67,13 @@ const EMOJI_OPTIONS = ['👍', '❤️', '😂', '😮', '😢', '🎉'];
 // Separate component to ensure fresh profile data is used
 const ChatHeader = ({ 
   activeConversation, 
-  profiles, 
+  profiles,
+  profilesLoaded,
   getInitials 
 }: { 
   activeConversation: Conversation; 
   profiles: Record<string, Profile>;
+  profilesLoaded: boolean;
   getInitials: (name: string) => string;
 }) => {
   // ALWAYS get fresh profile data directly from profiles object
@@ -78,32 +81,46 @@ const ChatHeader = ({
     ? profiles[activeConversation.participantId] 
     : null;
   
+  const isLoading = !profilesLoaded && !activeConversation.isGroup;
   const displayName = activeConversation.isGroup 
     ? "Group Chat" 
-    : (partnerProfile?.name || "Unknown");
+    : (partnerProfile?.name || (isLoading ? "Loading..." : "Unknown"));
   const displayPhoto = activeConversation.isGroup 
     ? null 
     : (partnerProfile?.photo_urls?.[0] || null);
   
   return (
     <>
-      <Avatar className="h-10 w-10" key={`header-avatar-${displayPhoto || 'none'}`}>
-        {activeConversation.isGroup ? (
-          <AvatarFallback className="bg-primary/10">
-            <Users className="h-4 w-4 text-primary" />
-          </AvatarFallback>
+      {isLoading ? (
+        <Skeleton className="h-10 w-10 rounded-full" />
+      ) : (
+        <Avatar className="h-10 w-10" key={`header-avatar-${displayPhoto || 'none'}`}>
+          {activeConversation.isGroup ? (
+            <AvatarFallback className="bg-primary/10">
+              <Users className="h-4 w-4 text-primary" />
+            </AvatarFallback>
+          ) : (
+            <>
+              {displayPhoto ? <AvatarImage src={displayPhoto} /> : null}
+              <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
+            </>
+          )}
+        </Avatar>
+      )}
+      <div className="flex-1">
+        {isLoading ? (
+          <>
+            <Skeleton className="h-5 w-24 mb-1" />
+            <Skeleton className="h-3 w-16" />
+          </>
         ) : (
           <>
-            {displayPhoto ? <AvatarImage src={displayPhoto} /> : null}
-            <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
+            <h2 className="font-semibold">{displayName}</h2>
+            <p className="text-xs text-muted-foreground">
+              {activeConversation.isGroup ? "Group Message" : "Direct Message"}
+            </p>
           </>
         )}
-      </Avatar>
-      <div className="flex-1">
-        <h2 className="font-semibold">{displayName}</h2>
-        <p className="text-xs text-muted-foreground">
-          {activeConversation.isGroup ? "Group Message" : "Direct Message"}
-        </p>
       </div>
     </>
   );
@@ -117,6 +134,7 @@ const Messages = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
+  const [profilesLoaded, setProfilesLoaded] = useState(false);
   const [profilesList, setProfilesList] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [allMessages, setAllMessages] = useState<Message[]>([]);
@@ -315,6 +333,7 @@ const Messages = () => {
       setProfiles(profileObj);
       setProfilesList(data.filter((p) => p.id !== userId) as Profile[]);
     }
+    setProfilesLoaded(true);
   };
 
   const fetchMessages = async () => {
@@ -768,6 +787,7 @@ const Messages = () => {
                 <ChatHeader 
                   activeConversation={activeConversation}
                   profiles={profiles}
+                  profilesLoaded={profilesLoaded}
                   getInitials={getInitials}
                 />
               </div>
@@ -799,14 +819,18 @@ const Messages = () => {
                           {/* Avatar - Left side for received messages */}
                           {!isOwn && (
                             <div className="flex-shrink-0">
-                              <Avatar className="h-8 w-8" key={`avatar-${m.sender_id}-${senderProfile?.photo_urls?.[0] || 'none'}`}>
-                                {senderProfile?.photo_urls?.[0] ? (
-                                  <AvatarImage src={senderProfile.photo_urls[0]} />
-                                ) : null}
-                                <AvatarFallback className="text-xs bg-muted border border-border">
-                                  {getInitials(senderProfile?.name || "U")}
-                                </AvatarFallback>
-                              </Avatar>
+                              {!profilesLoaded ? (
+                                <Skeleton className="h-8 w-8 rounded-full" />
+                              ) : (
+                                <Avatar className="h-8 w-8" key={`avatar-${m.sender_id}-${senderProfile?.photo_urls?.[0] || 'none'}`}>
+                                  {senderProfile?.photo_urls?.[0] ? (
+                                    <AvatarImage src={senderProfile.photo_urls[0]} />
+                                  ) : null}
+                                  <AvatarFallback className="text-xs bg-muted border border-border">
+                                    {getInitials(senderProfile?.name || "U")}
+                                  </AvatarFallback>
+                                </Avatar>
+                              )}
                             </div>
                           )}
                           
@@ -951,14 +975,18 @@ const Messages = () => {
                           {/* Avatar - Right side for sent */}
                           {isOwn && (
                             <div className="flex-shrink-0">
-                              <Avatar className="h-8 w-8" key={`avatar-own-${profiles[userId!]?.photo_urls?.[0] || 'none'}`}>
-                                {profiles[userId!]?.photo_urls?.[0] ? (
-                                  <AvatarImage src={profiles[userId!].photo_urls[0]} />
-                                ) : null}
-                                <AvatarFallback className="text-xs bg-primary/30 border border-primary/50">
-                                  {getInitials(profiles[userId!]?.name || "U")}
-                                </AvatarFallback>
-                              </Avatar>
+                              {!profilesLoaded ? (
+                                <Skeleton className="h-8 w-8 rounded-full" />
+                              ) : (
+                                <Avatar className="h-8 w-8" key={`avatar-own-${profiles[userId!]?.photo_urls?.[0] || 'none'}`}>
+                                  {profiles[userId!]?.photo_urls?.[0] ? (
+                                    <AvatarImage src={profiles[userId!].photo_urls[0]} />
+                                  ) : null}
+                                  <AvatarFallback className="text-xs bg-primary/30 border border-primary/50">
+                                    {getInitials(profiles[userId!]?.name || "U")}
+                                  </AvatarFallback>
+                                </Avatar>
+                              )}
                             </div>
                           )}
                         </div>

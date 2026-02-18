@@ -62,7 +62,7 @@ export function usePushNotifications() {
 
   const checkSubscription = async () => {
     try {
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await navigator.serviceWorker.ready as ServiceWorkerRegistration & { pushManager: PushManager };
       const subscription = await registration.pushManager.getSubscription();
       setIsSubscribed(!!subscription);
       return subscription;
@@ -104,7 +104,8 @@ export function usePushNotifications() {
       }
 
       // Subscribe to push
-      const subscription = await registration.pushManager.subscribe({
+      const reg = registration as ServiceWorkerRegistration & { pushManager: PushManager };
+      const subscription = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       });
@@ -166,7 +167,7 @@ export function usePushNotifications() {
     setIsLoading(true);
 
     try {
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await navigator.serviceWorker.ready as ServiceWorkerRegistration & { pushManager: PushManager };
       const subscription = await registration.pushManager.getSubscription();
       
       if (subscription) {

@@ -338,9 +338,9 @@ export default function BookingManagerAdmin() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-20 overflow-x-hidden">
       <TopNav userRole="booking_manager" />
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-3 sm:px-4 py-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold">Booking Manager Admin</h1>
           <p className="text-muted-foreground">Manage your artists and upcoming gigs</p>
@@ -360,24 +360,25 @@ export default function BookingManagerAdmin() {
 
           {/* Artists Tab */}
           <TabsContent value="artists">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
               <div>
                 <h2 className="text-lg font-semibold">Managed Artists</h2>
                 <p className="text-sm text-muted-foreground">{managedArtists.length} artists in your roster</p>
               </div>
               <div className="flex gap-2">
-                <div className="relative w-64">
+                <div className="relative flex-1 sm:w-48">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search artists..."
+                    placeholder="Search..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-9"
                   />
                 </div>
-                <Button onClick={() => navigate("/artists")} className="gap-2">
+                <Button onClick={() => navigate("/artists")} size="sm" className="gap-1 flex-shrink-0">
                   <UserPlus className="h-4 w-4" />
-                  Add Artist
+                  <span className="hidden sm:inline">Add Artist</span>
+                  <span className="sm:hidden">Add</span>
                 </Button>
               </div>
             </div>
@@ -389,10 +390,10 @@ export default function BookingManagerAdmin() {
                     <TableRow className="bg-muted/50">
                       <TableHead>Name</TableHead>
                       <TableHead>Email</TableHead>
-                      <TableHead>Phone</TableHead>
-                      <TableHead>Instrument</TableHead>
-                      <TableHead>Group Type</TableHead>
-                      <TableHead>Added</TableHead>
+                      <TableHead className="hidden md:table-cell">Phone</TableHead>
+                      <TableHead className="hidden lg:table-cell">Instrument</TableHead>
+                      <TableHead className="hidden sm:table-cell">Group Type</TableHead>
+                      <TableHead className="hidden lg:table-cell">Added</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -407,21 +408,21 @@ export default function BookingManagerAdmin() {
                       filteredArtists.map((artist) => (
                         <TableRow key={artist.id}>
                           <TableCell className="font-medium">{artist.profile.name}</TableCell>
-                          <TableCell className="text-muted-foreground">{artist.profile.email}</TableCell>
-                          <TableCell className="text-muted-foreground">
+                          <TableCell className="text-muted-foreground text-xs sm:text-sm truncate max-w-[120px] sm:max-w-none">{artist.profile.email}</TableCell>
+                          <TableCell className="hidden md:table-cell text-muted-foreground">
                             {artist.profile.phone_number || "—"}
                           </TableCell>
-                          <TableCell className="text-muted-foreground">
+                          <TableCell className="hidden lg:table-cell text-muted-foreground">
                             {artist.profile.instrument || "—"}
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="hidden sm:table-cell">
                             {artist.group_type ? (
                               <Badge variant="outline">{artist.group_type}</Badge>
                             ) : (
                               <span className="text-muted-foreground">—</span>
                             )}
                           </TableCell>
-                          <TableCell className="text-muted-foreground">
+                          <TableCell className="hidden lg:table-cell text-muted-foreground">
                             {new Date(artist.created_at).toLocaleDateString()}
                           </TableCell>
                           <TableCell className="text-right">

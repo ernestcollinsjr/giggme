@@ -183,12 +183,12 @@ const BottomNav = () => {
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <div className="relative">
-                <Icon className="h-5 w-5 mb-1" />
+              <div className="flex items-center gap-1 mb-1">
+                <Icon className="h-5 w-5" />
                 {item.badge && item.badge > 0 && (
                   <Badge
                     variant="destructive"
-                    className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs"
+                    className="h-4 min-w-[16px] px-1 flex items-center justify-center text-[10px] leading-none"
                   >
                     {item.badge > 99 ? "99+" : item.badge}
                   </Badge>

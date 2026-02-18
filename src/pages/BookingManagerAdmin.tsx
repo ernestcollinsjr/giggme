@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -62,6 +62,8 @@ interface UpcomingGig {
 
 export default function BookingManagerAdmin() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const artistFilter = searchParams.get("artist");
   const { toast } = useToast();
   const [managedArtists, setManagedArtists] = useState<ManagedArtist[]>([]);
   const [upcomingGigs, setUpcomingGigs] = useState<UpcomingGig[]>([]);
@@ -318,10 +320,13 @@ export default function BookingManagerAdmin() {
   );
 
   const filteredGigs = upcomingGigs.filter(
-    (gig) =>
-      gig.venue.toLowerCase().includes(gigSearchTerm.toLowerCase()) ||
-      gig.artist_name.toLowerCase().includes(gigSearchTerm.toLowerCase()) ||
-      (gig.venue_name && gig.venue_name.toLowerCase().includes(gigSearchTerm.toLowerCase()))
+    (gig) => {
+      const matchesSearch = gig.venue.toLowerCase().includes(gigSearchTerm.toLowerCase()) ||
+        gig.artist_name.toLowerCase().includes(gigSearchTerm.toLowerCase()) ||
+        (gig.venue_name && gig.venue_name.toLowerCase().includes(gigSearchTerm.toLowerCase()));
+      const matchesArtist = !artistFilter || gig.artist_id === artistFilter;
+      return matchesSearch && matchesArtist;
+    }
   );
 
   if (loading) {
@@ -341,7 +346,7 @@ export default function BookingManagerAdmin() {
           <p className="text-muted-foreground">Manage your artists and upcoming gigs</p>
         </div>
 
-        <Tabs defaultValue="artists" className="w-full">
+        <Tabs defaultValue={artistFilter ? "gigs" : "artists"} className="w-full">
           <TabsList className="mb-6">
             <TabsTrigger value="artists" className="gap-2">
               <Users className="h-4 w-4" />

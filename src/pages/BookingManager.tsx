@@ -449,17 +449,17 @@ export default function BookingManager() {
                 No individual artists in your roster yet. Click on an artist below to add them.
               </p>
             ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                 {managedArtists.map((artist) => (
                   <Card 
                     key={artist.id} 
-                    className="border-primary/20 cursor-pointer hover:border-primary/50 transition-colors"
+                    className="border-primary/20 cursor-pointer hover:border-primary/50 transition-colors p-0"
                     onClick={() => navigate(`/booking-admin?artist=${artist.artist_id}`)}
                   >
-                    <CardHeader className="pb-2">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full overflow-hidden bg-muted">
+                    <CardHeader className="p-2 pb-1">
+                      <div className="flex items-start justify-between gap-1">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="w-8 h-8 rounded-full overflow-hidden bg-muted flex-shrink-0">
                             {artist.profile.photo_urls?.[0] ? (
                               <img
                                 src={artist.profile.photo_urls[0]}
@@ -468,29 +468,30 @@ export default function BookingManager() {
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
-                                <UsersIcon className="h-5 w-5 text-muted-foreground" />
+                                <UsersIcon className="h-4 w-4 text-muted-foreground" />
                               </div>
                             )}
                           </div>
-                          <div>
-                            <CardTitle className="text-sm">{artist.profile.name}</CardTitle>
-                            <Badge variant="secondary" className="text-xs mt-1">
+                          <div className="min-w-0">
+                            <CardTitle className="text-xs truncate">{artist.profile.name}</CardTitle>
+                            <Badge variant="secondary" className="text-[10px] px-1 py-0 mt-0.5">
                               {artist.group_type}
                             </Badge>
                           </div>
                         </div>
                         <Button
                           variant="ghost"
-                          size="sm"
+                          size="icon"
+                          className="h-5 w-5 flex-shrink-0"
                           onClick={(e) => { e.stopPropagation(); removeArtistFromRoster(artist.artist_id); }}
                         >
-                          <X className="h-4 w-4" />
+                          <X className="h-3 w-3" />
                         </Button>
                       </div>
                     </CardHeader>
                     {artist.profile.instrument && (
-                      <CardContent className="pt-0">
-                        <p className="text-xs text-muted-foreground">{artist.profile.instrument}</p>
+                      <CardContent className="p-2 pt-0">
+                        <p className="text-[10px] text-muted-foreground">{artist.profile.instrument}</p>
                       </CardContent>
                     )}
                   </Card>

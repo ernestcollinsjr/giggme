@@ -451,7 +451,11 @@ export default function BookingManager() {
             ) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {managedArtists.map((artist) => (
-                  <Card key={artist.id} className="border-primary/20">
+                  <Card 
+                    key={artist.id} 
+                    className="border-primary/20 cursor-pointer hover:border-primary/50 transition-colors"
+                    onClick={() => navigate(`/booking-admin?artist=${artist.artist_id}`)}
+                  >
                     <CardHeader className="pb-2">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
@@ -478,7 +482,7 @@ export default function BookingManager() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => removeArtistFromRoster(artist.artist_id)}
+                          onClick={(e) => { e.stopPropagation(); removeArtistFromRoster(artist.artist_id); }}
                         >
                           <X className="h-4 w-4" />
                         </Button>

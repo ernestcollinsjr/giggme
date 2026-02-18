@@ -1220,7 +1220,7 @@ const Messages = () => {
                             <span className="text-xs text-muted-foreground">{formatTime(conversation.lastMessageTime)}</span>
                           </div>
                           <div className="flex items-center justify-between mt-0.5">
-                            <p className="text-xs text-muted-foreground truncate pr-2">{conversation.lastMessage}</p>
+                            <p className="text-xs text-muted-foreground truncate pr-2 max-w-[180px]">{conversation.lastMessage?.slice(0, 40)}{conversation.lastMessage?.length > 40 ? "…" : ""}</p>
                             {conversation.unreadCount > 0 && (
                               <Badge variant="default" className="h-5 min-w-5 px-1.5 text-xs">
                                 {conversation.unreadCount}

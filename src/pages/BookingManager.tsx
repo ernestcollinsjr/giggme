@@ -408,28 +408,28 @@ export default function BookingManager() {
   return (
     <div className="min-h-screen bg-background">
       <TopNav userRole="booking_manager" />
-      <div className="p-6">
+      <div className="p-4 sm:p-6 overflow-x-hidden">
         <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => navigate("/dashboard")}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 min-w-0">
+            <Button variant="ghost" onClick={() => navigate("/dashboard")} className="self-start">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
+              Back
             </Button>
-            <div>
-              <h1 className="text-3xl font-bold">Booking Manager</h1>
-              <p className="text-muted-foreground">Manage your roster and discover new talent</p>
+            <div className="min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-bold truncate">Booking Manager</h1>
+              <p className="text-sm text-muted-foreground truncate">Manage your roster and discover new talent</p>
             </div>
           </div>
-          <div className="flex gap-2">
-            <Button onClick={() => navigate("/schedule-reminder?type=custom")} variant="outline" className="gap-2">
+          <div className="flex gap-2 flex-shrink-0">
+            <Button onClick={() => navigate("/schedule-reminder?type=custom")} variant="outline" size="sm" className="gap-1 text-xs sm:text-sm">
               <Bell className="h-4 w-4" />
-              Schedule Reminder
+              <span className="hidden sm:inline">Schedule</span> Reminder
             </Button>
-            <Button onClick={() => navigate("/artists")} className="gap-2">
+            <Button onClick={() => navigate("/artists")} size="sm" className="gap-1 text-xs sm:text-sm">
               <Search className="h-4 w-4" />
-              Discover Artists
+              <span className="hidden sm:inline">Discover</span> Artists
             </Button>
           </div>
         </div>

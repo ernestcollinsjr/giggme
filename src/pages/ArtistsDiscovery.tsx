@@ -230,67 +230,58 @@ const ArtistsDiscovery = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
             {filteredArtists.map((artist) => (
-              <Card key={artist.id} className="hover:shadow-xl transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start gap-4 mb-4">
-                    <Avatar className="h-16 w-16">
+              <Card key={artist.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader className="p-3 pb-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Avatar className="h-9 w-9 flex-shrink-0">
                       <AvatarImage src={artist.profile.photo_urls?.[0]} />
-                      <AvatarFallback>{artist.profile.name[0]}</AvatarFallback>
+                      <AvatarFallback className="text-xs">{artist.profile.name[0]}</AvatarFallback>
                     </Avatar>
-                    <div className="flex-1">
-                      <CardTitle>{artist.stage_name || artist.profile.name}</CardTitle>
+                    <div className="min-w-0 flex-1">
+                      <CardTitle className="text-sm truncate">{artist.stage_name || artist.profile.name}</CardTitle>
                       {artist.stage_name && (
-                        <p className="text-sm text-muted-foreground">{artist.profile.name}</p>
-                      )}
-                      {artist.genre && (
-                        <Badge variant="secondary" className="mt-2">
-                          <Music className="h-3 w-3 mr-1" />
-                          {artist.genre}
-                        </Badge>
+                        <p className="text-xs text-muted-foreground truncate">{artist.profile.name}</p>
                       )}
                     </div>
                   </div>
-                  <CardDescription className="line-clamp-3">
-                    {artist.profile.bio || "No bio available"}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {artist.years_experience && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span>{artist.years_experience} years experience</span>
-                    </div>
+                  {artist.genre && (
+                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0 w-fit">
+                      <Music className="h-2.5 w-2.5 mr-0.5" />
+                      {artist.genre}
+                    </Badge>
                   )}
-
-                  {artist.availability && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <span>{artist.availability}</span>
+                </CardHeader>
+                <CardContent className="p-3 pt-0 space-y-1">
+                  {artist.years_experience && (
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Calendar className="h-3 w-3" />
+                      <span>{artist.years_experience}yr exp</span>
                     </div>
                   )}
 
                   {artist.rate_range && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <DollarSign className="h-4 w-4 text-muted-foreground" />
-                      <span>{artist.rate_range}</span>
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <DollarSign className="h-3 w-3" />
+                      <span className="truncate">{artist.rate_range}</span>
                     </div>
                   )}
 
                   {artist.youtube_videos && artist.youtube_videos.length > 0 && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <Youtube className="h-4 w-4 text-red-500" />
-                      <span>{artist.youtube_videos.length} performance video(s)</span>
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Youtube className="h-3 w-3 text-red-500" />
+                      <span>{artist.youtube_videos.length} video(s)</span>
                     </div>
                   )}
 
                   <Button 
                     variant="outline" 
-                    className="w-full mt-4"
+                    size="sm"
+                    className="w-full mt-2 text-xs h-7"
                     onClick={() => navigate(`/artist-profile/${artist.user_id}`)}
                   >
-                    View Full Profile
+                    View Profile
                   </Button>
                 </CardContent>
               </Card>

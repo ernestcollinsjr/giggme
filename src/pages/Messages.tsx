@@ -425,16 +425,8 @@ const Messages = () => {
             }
           }
         } else if (roleData.role === "booking_manager") {
-          // Get managed artists
-          const { data: managedArtists } = await supabase
-            .from("booking_manager_artists")
-            .select("artist_id")
-            .eq("booking_manager_id", user.id);
-          
-          if (managedArtists) {
-            const artistIds = managedArtists.map(a => a.artist_id);
-            setAllowedMemberIds(artistIds);
-          }
+          // Booking managers can see ALL their messages - no filtering
+          setAllowedMemberIds([]);
         }
       }
     })();
@@ -642,7 +634,7 @@ const Messages = () => {
       setProfiles(profileObj);
       // Filter profiles list based on allowed members for role-based messaging
       // For band_leader/booking_manager: ONLY show their assigned members
-      const isRestrictedRole = userRole === "band_leader" || userRole === "booking_manager";
+      const isRestrictedRole = userRole === "band_leader";
       const filteredProfiles = data.filter((p) => {
         if (p.id === userId) return false;
         if (isRestrictedRole) return allowedMemberIds.includes(p.id);
@@ -688,7 +680,7 @@ const Messages = () => {
     
     const conversationMap = new Map<string, Conversation>();
     // Always filter for band_leader and booking_manager roles
-    const isRestrictedRole = userRole === "band_leader" || userRole === "booking_manager";
+    const isRestrictedRole = userRole === "band_leader";
     
     // Group chat - only show if user has a role that uses group chat
     // For band_leader/booking_manager, group chat is within their own group

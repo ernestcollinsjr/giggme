@@ -434,25 +434,6 @@ export default function BookingManager() {
           </div>
         </div>
 
-        {/* Messages Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5" />
-              Messages
-            </CardTitle>
-            <CardDescription>
-              Chat with your managed artists - includes read receipts, reactions, pinning, and more
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <MessagesChat 
-              className="h-[500px]" 
-              filterToManagedArtists={managedArtistIds.length > 0 ? managedArtistIds : undefined}
-            />
-          </CardContent>
-        </Card>
-
         {/* Managed Artists (Solo, Duo, Trio) */}
         <Card>
           <CardHeader>

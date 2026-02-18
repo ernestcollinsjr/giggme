@@ -406,9 +406,9 @@ export default function BookingManager() {
   const managedArtistIds = managedArtists.map(a => a.artist_id);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <TopNav userRole="booking_manager" />
-      <div className="p-4 sm:p-6 overflow-x-hidden">
+      <div className="p-4 sm:p-6">
         <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

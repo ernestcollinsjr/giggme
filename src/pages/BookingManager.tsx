@@ -599,17 +599,17 @@ export default function BookingManager() {
         {/* Artists/Musicians Directory */}
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="min-w-0">
                 <CardTitle className="flex items-center gap-2">
-                  <UsersIcon className="h-5 w-5" />
+                  <UsersIcon className="h-5 w-5 flex-shrink-0" />
                   Artists & Musicians Directory
                 </CardTitle>
                 <CardDescription>
                   Browse and contact individual artists
                 </CardDescription>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-shrink-0">
                 <Dialog open={gigRequestDialogOpen} onOpenChange={setGigRequestDialogOpen}>
                   <DialogTrigger asChild>
                     <Button size="sm" variant="outline" className="gap-2">

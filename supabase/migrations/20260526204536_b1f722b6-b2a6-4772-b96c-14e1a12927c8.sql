@@ -1,0 +1,2 @@
+ALTER TABLE public.gigs ADD COLUMN IF NOT EXISTS auto_reminders_disabled boolean NOT NULL DEFAULT false;
+ALTER TABLE public.booking_requests ADD COLUMN IF NOT EXISTS auto_reminders_disabled boolean NOT NULL DEFAULT false;

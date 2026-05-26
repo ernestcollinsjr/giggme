@@ -374,6 +374,7 @@ export type Database = {
       }
       booking_requests: {
         Row: {
+          auto_reminders_disabled: boolean
           booker_email: string | null
           booker_id: string
           booker_name: string | null
@@ -400,6 +401,7 @@ export type Database = {
           venue_phone: string | null
         }
         Insert: {
+          auto_reminders_disabled?: boolean
           booker_email?: string | null
           booker_id: string
           booker_name?: string | null
@@ -426,6 +428,7 @@ export type Database = {
           venue_phone?: string | null
         }
         Update: {
+          auto_reminders_disabled?: boolean
           booker_email?: string | null
           booker_id?: string
           booker_name?: string | null
@@ -709,6 +712,7 @@ export type Database = {
       gigs: {
         Row: {
           attire: string | null
+          auto_reminders_disabled: boolean
           band_id: string | null
           created_at: string | null
           date: string
@@ -733,6 +737,7 @@ export type Database = {
         }
         Insert: {
           attire?: string | null
+          auto_reminders_disabled?: boolean
           band_id?: string | null
           created_at?: string | null
           date: string
@@ -757,6 +762,7 @@ export type Database = {
         }
         Update: {
           attire?: string | null
+          auto_reminders_disabled?: boolean
           band_id?: string | null
           created_at?: string | null
           date?: string

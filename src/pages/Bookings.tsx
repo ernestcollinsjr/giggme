@@ -126,6 +126,7 @@ const Bookings = () => {
   const [editFoodProvided, setEditFoodProvided] = useState("");
   const [editVenueContactPerson, setEditVenueContactPerson] = useState("");
   const [editSoundManInfo, setEditSoundManInfo] = useState("");
+  const [editAutoRemindersDisabled, setEditAutoRemindersDisabled] = useState(false);
 
   useEffect(() => {
     checkAuthAndFetchData();

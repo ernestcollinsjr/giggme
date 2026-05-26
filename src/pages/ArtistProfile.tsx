@@ -95,11 +95,11 @@ const ArtistProfile = () => {
   });
 
   const handleSendBookingRequest = async () => {
-    if (!bookingForm.date || !bookingForm.venue.trim()) {
+    if (bookingForm.dates.length === 0 || !bookingForm.venue.trim()) {
       toast({
         variant: "destructive",
         title: "Missing information",
-        description: "Please enter at least a date and venue.",
+        description: "Please select at least one date and venue.",
       });
       return;
     }
@@ -109,9 +109,15 @@ const ArtistProfile = () => {
       const user = session?.user ?? null;
       if (!user) throw new Error("Not authenticated");
 
+      const sortedDates = [...bookingForm.dates].sort((a, b) => a.getTime() - b.getTime());
+      const datesStr = sortedDates.map((d) => format(d, "EEE, MMM d, yyyy")).join("; ");
+      const timeStr = bookingForm.startTime || bookingForm.endTime
+        ? ` (${bookingForm.startTime}${bookingForm.endTime ? ` – ${bookingForm.endTime}` : ""})`
+        : "";
+
       const lines = [
         `Booking request for ${profile?.name || "you"}`,
-        `Date: ${bookingForm.date}${bookingForm.startTime ? ` at ${bookingForm.startTime}` : ""}${bookingForm.endTime ? ` – ${bookingForm.endTime}` : ""}`,
+        `Date${sortedDates.length > 1 ? "s" : ""}: ${datesStr}${timeStr}`,
         `Venue: ${bookingForm.venue.trim()}`,
         bookingForm.venuePhone.trim() ? `Venue Phone: ${bookingForm.venuePhone.trim()}` : null,
         bookingForm.budget.trim() ? `Budget: ${bookingForm.budget.trim()}` : null,

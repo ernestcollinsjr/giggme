@@ -80,7 +80,7 @@ export const SentBookingRequests = () => {
 
     const { data, error } = await supabase
       .from("booking_requests")
-      .select("id, performer_name, performer_email, venue, dates_text, time_text, status, expires_at, created_at, responded_at")
+      .select("id, performer_name, performer_email, venue, dates_text, time_text, status, expires_at, created_at, responded_at, auto_reminders_disabled")
       .eq("booker_id", user.id)
       .order("created_at", { ascending: false });
 

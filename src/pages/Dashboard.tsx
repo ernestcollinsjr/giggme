@@ -442,6 +442,14 @@ const Dashboard = () => {
     };
   }, [navigate]);
 
+  // Booking managers use the dedicated /booking-manager dashboard
+  useEffect(() => {
+    if (userRole === "booking_manager") {
+      navigate("/booking-manager", { replace: true });
+    }
+  }, [userRole, navigate]);
+
+
   // Real-time updates for gig member responses (for band leaders and super admins)
   useEffect(() => {
     if ((userRole !== "band_leader" && userRole !== "super_admin") || !user) return;

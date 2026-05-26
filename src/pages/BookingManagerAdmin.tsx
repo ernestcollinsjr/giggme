@@ -400,7 +400,24 @@ export default function BookingManagerAdmin() {
                                       </AvatarFallback>
                                     </Avatar>
                                     <div className="min-w-0 flex-1">
-                                      <p className="text-sm font-medium truncate">{artist.profile.name}</p>
+                                      <div className="flex items-center gap-1.5 min-w-0">
+                                        <span
+                                          className={cn(
+                                            "h-2 w-2 rounded-full flex-shrink-0",
+                                            getArtistStatus(artist.artist_id) === "booked" && "bg-green-500",
+                                            getArtistStatus(artist.artist_id) === "pending" && "bg-yellow-500",
+                                            getArtistStatus(artist.artist_id) === "none" && "bg-red-500"
+                                          )}
+                                          title={
+                                            getArtistStatus(artist.artist_id) === "booked"
+                                              ? "Booked"
+                                              : getArtistStatus(artist.artist_id) === "pending"
+                                              ? "Pending"
+                                              : "Not booked"
+                                          }
+                                        />
+                                        <p className="text-sm font-medium truncate">{artist.profile.name}</p>
+                                      </div>
                                       {artist.profile.instrument && (
                                         <p className="text-[11px] text-muted-foreground truncate">
                                           {artist.profile.instrument}

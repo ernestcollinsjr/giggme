@@ -234,6 +234,20 @@ export default function BookingManagerAdmin() {
 
     gigs.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     setUpcomingGigs(gigs);
+
+    // Fetch pending booking requests to mark artists as pending
+    const { data: pendingReqs } = await supabase
+      .from("booking_requests")
+      .select("performer_id")
+      .in("performer_id", artistIds)
+      .eq("status", "pending");
+    setPendingArtistIds(new Set((pendingReqs || []).map((r: any) => r.performer_id)));
+  };
+
+  const getArtistStatus = (artistId: string): "booked" | "pending" | "none" => {
+    if (upcomingGigs.some((g) => g.artist_id === artistId)) return "booked";
+    if (pendingArtistIds.has(artistId)) return "pending";
+    return "none";
   };
 
 

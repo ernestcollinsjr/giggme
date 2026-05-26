@@ -450,11 +450,19 @@ const ArtistProfile = () => {
             {profile?.name || "Artist"}{artistProfile?.genre ? ` - ${artistProfile.genre}` : ""} Profile
           </h1>
           
-          {/* Contact Artist Button - Only show when viewing another artist's profile */}
+          {/* Booking Actions - Only show when viewing another artist's profile */}
           {!isOwnProfile && (
+            <div className="flex flex-wrap gap-2">
+              <Button
+                className="flex items-center gap-2"
+                onClick={() => navigate(`/chat?recipient=${userId}&intent=booking&subject=${encodeURIComponent(`Booking inquiry for ${profile?.name || "you"}`)}`)}
+              >
+                <CalendarCheck className="h-4 w-4" />
+                Book This Performer
+              </Button>
             <Dialog>
               <DialogTrigger asChild>
-                <Button className="flex items-center gap-2">
+                <Button variant="outline" className="flex items-center gap-2">
                   <MessageCircle className="h-4 w-4" />
                   Contact Artist
                 </Button>

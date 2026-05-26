@@ -319,6 +319,15 @@ export default function BookingManagerAdmin() {
     return upcomingGigs.filter((g) => g.artist_id === artistFilter);
   }, [upcomingGigs, artistFilter]);
 
+  const upcomingVisible = useMemo(
+    () => visibleGigs.filter((g) => !isGigCompleted(g)),
+    [visibleGigs]
+  );
+  const completedVisible = useMemo(
+    () => visibleGigs.filter((g) => isGigCompleted(g)).reverse(),
+    [visibleGigs]
+  );
+
   const setArtistFilter = (id: string | null) => {
     const next = new URLSearchParams(searchParams);
     if (id) next.set("artist", id);

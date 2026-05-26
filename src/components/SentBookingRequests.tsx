@@ -58,7 +58,6 @@ export const SentBookingRequests = () => {
     setRequests((prev) => prev.filter((r) => r.id !== id));
     toast({ title: "Booking request deleted" });
   };
-  const [loading, setLoading] = useState(true);
 
   const fetchRequests = async () => {
     const { data: { session } } = await supabase.auth.getSession();

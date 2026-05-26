@@ -154,6 +154,7 @@ const ProfileSetup = () => {
         
         if (profile) {
           setName(profile.name || "");
+          setBandName((profile as any).band_name || "");
           setBio(profile.bio || "");
           setInstrument(profile.instrument || "");
           setPhoneNumber(profile.phone_number || "");

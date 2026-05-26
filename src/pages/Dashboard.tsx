@@ -236,6 +236,8 @@ const Dashboard = () => {
     if (profileData && primaryRole) {
       setProfile(profileData);
       setUserRole(primaryRole);
+
+
       
       // Fetch bands for band leaders and super admins
       if (primaryRole === "band_leader" || primaryRole === "super_admin") {
@@ -439,6 +441,14 @@ const Dashboard = () => {
       subscription.subscription.unsubscribe();
     };
   }, [navigate]);
+
+  // Booking managers use the dedicated /booking-manager dashboard
+  useEffect(() => {
+    if (userRole === "booking_manager") {
+      navigate("/booking-manager", { replace: true });
+    }
+  }, [userRole, navigate]);
+
 
   // Real-time updates for gig member responses (for band leaders and super admins)
   useEffect(() => {

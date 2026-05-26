@@ -65,7 +65,15 @@ interface Tip {
 const ArtistProfile = () => {
   const navigate = useNavigate();
   const { userId } = useParams<{ userId: string }>();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (searchParams.get("book") === "1") {
+      setBookingOpen(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);

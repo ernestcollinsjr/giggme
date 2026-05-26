@@ -73,6 +73,17 @@ interface UpcomingGig {
   artist_id: string;
 }
 
+interface PendingInvite {
+  id: string;
+  date: string;
+  venue: string;
+  venue_name: string | null;
+  status: string;
+  artist_name: string;
+  artist_id: string;
+  source: "gig" | "booking_request";
+}
+
 function normalizeCategory(value: string | null): Category {
   if (!value) return "Soloist";
   const v = value.toLowerCase();

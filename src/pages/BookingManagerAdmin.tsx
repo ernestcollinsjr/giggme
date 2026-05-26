@@ -185,7 +185,7 @@ export default function BookingManagerAdmin() {
     const artistIds = artistLinks.map((a) => a.artist_id);
     const { data: gigMembers } = await supabase
       .from("gig_members")
-      .select(`member_id, gigs ( id, date, venue, venue_name, status )`)
+      .select(`member_id, gigs ( id, date, end_time, venue, venue_name, status )`)
       .in("member_id", artistIds)
       .eq("status", "accepted");
 
@@ -196,12 +196,12 @@ export default function BookingManagerAdmin() {
 
     const profileMap = new Map(profiles?.map((p) => [p.id, p.name]) || []);
 
-    const today = new Date().toISOString().split("T")[0];
     const gigs: UpcomingGig[] = (gigMembers || [])
-      .filter((gm: any) => gm.gigs && gm.gigs.date >= today)
+      .filter((gm: any) => gm.gigs)
       .map((gm: any) => ({
         id: gm.gigs.id,
         date: gm.gigs.date,
+        end_time: gm.gigs.end_time,
         venue: gm.gigs.venue,
         venue_name: gm.gigs.venue_name,
         status: gm.gigs.status,
@@ -216,15 +216,15 @@ export default function BookingManagerAdmin() {
       .in("performer_id", artistIds)
       .eq("status", "accepted");
 
-    const nowMs = Date.now();
     (bookingReqs || []).forEach((br: any) => {
       const dateStr = br.event_date || br.dates_text;
       if (!dateStr) return;
       const t = new Date(dateStr).getTime();
-      if (isNaN(t) || t < nowMs - 24 * 60 * 60 * 1000) return;
+      if (isNaN(t)) return;
       gigs.push({
         id: br.id,
         date: br.event_date || br.dates_text,
+        end_time: null,
         venue: br.venue,
         venue_name: null,
         status: "confirmed",

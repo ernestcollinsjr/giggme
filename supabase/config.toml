@@ -62,3 +62,12 @@ verify_jwt = false
 
 [functions.notify-new-message]
 verify_jwt = false
+
+[functions.send-booking-request-email]
+verify_jwt = true
+
+[functions.respond-booking-request]
+verify_jwt = true
+
+[functions.expire-booking-requests]
+verify_jwt = false

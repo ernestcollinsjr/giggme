@@ -28,28 +28,31 @@ export const LivePresence = () => {
       return { user, profile };
     };
 
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let cancelled = false;
+
     const setupPresence = async () => {
       const userData = await fetchProfile();
-      if (!userData) return;
+      if (!userData || cancelled) return;
 
-      const channel = supabase.channel("online-users");
+      channel = supabase.channel(`online-users-${Math.random().toString(36).slice(2)}`);
 
       channel
         .on("presence", { event: "sync" }, () => {
-          const state = channel.presenceState();
+          const state = channel!.presenceState();
           const users: OnlineUser[] = [];
-          
+
           Object.keys(state).forEach((key) => {
             const presences = state[key] as any[];
             presences.forEach((presence) => {
               users.push(presence as OnlineUser);
             });
           });
-          
+
           setOnlineUsers(users);
         })
         .subscribe(async (status) => {
-          if (status === "SUBSCRIBED") {
+          if (status === "SUBSCRIBED" && channel) {
             await channel.track({
               user_id: userData.user.id,
               name: userData.profile?.name || "Unknown",
@@ -57,13 +60,14 @@ export const LivePresence = () => {
             });
           }
         });
-
-      return () => {
-        channel.unsubscribe();
-      };
     };
 
     setupPresence();
+
+    return () => {
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
+    };
   }, []);
 
   if (onlineUsers.length === 0) return null;

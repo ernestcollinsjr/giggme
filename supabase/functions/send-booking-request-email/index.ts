@@ -75,6 +75,7 @@ Deno.serve(async (req) => {
         contact_person: p.contactPerson,
         dress_code: p.dressCode,
         note: p.note,
+        event_date: p.eventDate || null,
       })
       .select()
       .single();

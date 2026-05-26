@@ -73,6 +73,64 @@ const ArtistProfile = () => {
   const [newTip, setNewTip] = useState({ tipper_name: "", amount: "", payment_method: "venmo", note: "" });
   const [addingTip, setAddingTip] = useState(false);
   const [profileUserId, setProfileUserId] = useState<string>("");
+  const [bookingOpen, setBookingOpen] = useState(false);
+  const [bookingSubmitting, setBookingSubmitting] = useState(false);
+  const [bookingForm, setBookingForm] = useState({
+    date: "",
+    startTime: "",
+    endTime: "",
+    venue: "",
+    budget: "",
+    notes: "",
+  });
+
+  const handleSendBookingRequest = async () => {
+    if (!bookingForm.date || !bookingForm.venue.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Missing information",
+        description: "Please enter at least a date and venue.",
+      });
+      return;
+    }
+    setBookingSubmitting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user ?? null;
+      if (!user) throw new Error("Not authenticated");
+
+      const lines = [
+        `Booking request for ${profile?.name || "you"}`,
+        `Date: ${bookingForm.date}${bookingForm.startTime ? ` at ${bookingForm.startTime}` : ""}${bookingForm.endTime ? ` – ${bookingForm.endTime}` : ""}`,
+        `Venue: ${bookingForm.venue.trim()}`,
+        bookingForm.budget.trim() ? `Budget: ${bookingForm.budget.trim()}` : null,
+        bookingForm.notes.trim() ? `Notes: ${bookingForm.notes.trim()}` : null,
+      ].filter(Boolean).join("\n");
+
+      const { error } = await supabase.from("messages").insert({
+        sender_id: user.id,
+        recipient_id: userId,
+        content: lines,
+      });
+      if (error) throw error;
+
+      toast({
+        title: "Booking request sent",
+        description: `Your request was sent to ${profile?.name || "the performer"}.`,
+      });
+      setBookingOpen(false);
+      setBookingForm({ date: "", startTime: "", endTime: "", venue: "", budget: "", notes: "" });
+      navigate(`/chat?recipient=${userId}`);
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: "Could not send request",
+        description: err.message || "Please try again.",
+      });
+    } finally {
+      setBookingSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     fetchProfiles();

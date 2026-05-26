@@ -397,6 +397,21 @@ export default function BookingManagerAdmin() {
     setSearchParams(next, { replace: true });
   };
 
+  useEffect(() => {
+    if (!artistFilter) {
+      setArtistAvailability([]);
+      return;
+    }
+    const today = new Date().toISOString().split("T")[0];
+    supabase
+      .from("member_availability")
+      .select("date, status, notes")
+      .eq("user_id", artistFilter)
+      .gte("date", today)
+      .order("date", { ascending: true })
+      .then(({ data }) => setArtistAvailability(data || []));
+  }, [artistFilter]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">

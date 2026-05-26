@@ -81,7 +81,7 @@ const ArtistProfile = () => {
   const [bookingOpen, setBookingOpen] = useState(false);
   const [bookingSubmitting, setBookingSubmitting] = useState(false);
   const [bookingForm, setBookingForm] = useState({
-    date: "",
+    dates: [] as Date[],
     startTime: "",
     endTime: "",
     venue: "",

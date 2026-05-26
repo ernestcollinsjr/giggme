@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Mail, MapPin, Calendar, Clock, Trash2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Mail, MapPin, Calendar, Clock, Trash2, BellOff } from "lucide-react";
 
 interface BookingRequest {
   id: string;

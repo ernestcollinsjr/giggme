@@ -1119,6 +1119,7 @@ export type Database = {
       profiles: {
         Row: {
           availability_status: string | null
+          band_name: string | null
           bio: string | null
           created_at: string | null
           email: string
@@ -1143,6 +1144,7 @@ export type Database = {
         }
         Insert: {
           availability_status?: string | null
+          band_name?: string | null
           bio?: string | null
           created_at?: string | null
           email: string
@@ -1167,6 +1169,7 @@ export type Database = {
         }
         Update: {
           availability_status?: string | null
+          band_name?: string | null
           bio?: string | null
           created_at?: string | null
           email?: string

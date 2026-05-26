@@ -518,6 +518,7 @@ const ArtistProfile = () => {
                 </div>
               </DialogContent>
             </Dialog>
+            </div>
           )}
         </div>
 

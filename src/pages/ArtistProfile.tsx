@@ -142,6 +142,17 @@ const ArtistProfile = () => {
           .eq("id", user.id)
           .maybeSingle();
 
+        // Compute event_date from first selected date + startTime (HH:mm)
+        let eventDateIso: string | undefined;
+        if (sortedDates.length > 0) {
+          const first = new Date(sortedDates[0]);
+          if (bookingForm.startTime) {
+            const [hh, mm] = bookingForm.startTime.split(":").map(Number);
+            if (!Number.isNaN(hh)) first.setHours(hh, Number.isNaN(mm) ? 0 : mm, 0, 0);
+          }
+          eventDateIso = first.toISOString();
+        }
+
         const { error: emailError } = await supabase.functions.invoke("send-booking-request-email", {
           body: {
             performerId: profileUserId || userId,
@@ -157,6 +168,7 @@ const ArtistProfile = () => {
             contactPerson: bookingForm.contactPerson.trim() || undefined,
             dressCode: bookingForm.dressCode.trim() || undefined,
             note: bookingForm.foodDiscounts.trim() || undefined,
+            eventDate: eventDateIso,
             appUrl: window.location.hostname.endsWith("lovable.app") || window.location.hostname.endsWith("lovable.dev") ? "https://giggme.com" : window.location.origin,
           },
         });

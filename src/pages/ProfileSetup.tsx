@@ -1314,6 +1314,16 @@ const ProfileSetup = () => {
                       required
                       className="text-center"
                     />
+                    {(role === "band_member" || role === "band_leader") && (
+                      <Input
+                        id="band_name"
+                        type="text"
+                        placeholder="Band name (e.g. The Headliners)"
+                        value={bandName}
+                        onChange={(e) => setBandName(e.target.value)}
+                        className="text-center"
+                      />
+                    )}
                     {memberSince && (
                       <span className="text-xs text-muted-foreground">
                         Member since {memberSince}

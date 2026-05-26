@@ -43,6 +43,7 @@ const ProfileSetup = () => {
   const [hasRole, setHasRole] = useState(false);
   
   const [name, setName] = useState("");
+  const [bandName, setBandName] = useState("");
   const [bio, setBio] = useState("");
   const [instrument, setInstrument] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -153,6 +154,7 @@ const ProfileSetup = () => {
         
         if (profile) {
           setName(profile.name || "");
+          setBandName((profile as any).band_name || "");
           setBio(profile.bio || "");
           setInstrument(profile.instrument || "");
           setPhoneNumber(profile.phone_number || "");
@@ -370,6 +372,7 @@ const ProfileSetup = () => {
       const updates = {
         id: user.id,
         name,
+        band_name: (role === "band_member" || role === "band_leader") ? (bandName || null) : null,
         bio,
         email,
         instrument: (role === "band_leader" || role === "band_member" ? instrument : null) as any,
@@ -1311,6 +1314,16 @@ const ProfileSetup = () => {
                       required
                       className="text-center"
                     />
+                    {(role === "band_member" || role === "band_leader") && (
+                      <Input
+                        id="band_name"
+                        type="text"
+                        placeholder="Band name (e.g. The Headliners)"
+                        value={bandName}
+                        onChange={(e) => setBandName(e.target.value)}
+                        className="text-center"
+                      />
+                    )}
                     {memberSince && (
                       <span className="text-xs text-muted-foreground">
                         Member since {memberSince}

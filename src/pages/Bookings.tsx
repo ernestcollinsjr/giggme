@@ -771,6 +771,7 @@ const Bookings = () => {
     setEditFoodProvided(gig.food_provided || "");
     setEditVenueContactPerson(gig.venue_contact_person || "");
     setEditSoundManInfo(gig.sound_man_info || "");
+    setEditAutoRemindersDisabled((gig as any).auto_reminders_disabled ?? false);
     setEditDialogOpen(true);
   };
 

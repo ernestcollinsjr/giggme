@@ -63,7 +63,8 @@ const App = () => (
             <Route path="/tours/:tourId" element={<TourDetail />} />
             <Route path="/tour-invite/:token" element={<TourInvite />} />
             <Route path="/band-invite/:token" element={<BandInvite />} />
-            <Route path="/booking-manager" element={<BookingManager />} />
+            <Route path="/booking-manager" element={<BookingManagerAdmin />} />
+            <Route path="/booking-manager/roster" element={<BookingManager />} />
             <Route path="/venue-dashboard" element={<VenueDashboard />} />
             <Route path="/entertainers" element={<EntertainerMarketplace />} />
             <Route path="/entertainer-dashboard" element={<EntertainerDashboard />} />

@@ -168,7 +168,6 @@ const ArtistProfile = () => {
       });
       setBookingOpen(false);
       setBookingForm({ dates: [], startTime: "", endTime: "", venue: "", venueLat: null, venueLng: null, venuePhone: "", budget: "", foodDiscounts: "", dressCode: "", contactPerson: "" });
-      navigate(`/chat?recipient=${userId}`);
     } catch (err: any) {
       toast({
         variant: "destructive",

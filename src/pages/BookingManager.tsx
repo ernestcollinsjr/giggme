@@ -94,7 +94,8 @@ export default function BookingManager() {
   }, []);
 
   const checkRole = async () => {
-    const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
+    const { waitForUser } = await import("@/lib/requireAuth");
+    const user = await waitForUser();
     if (!user) {
       navigate("/auth");
       return;

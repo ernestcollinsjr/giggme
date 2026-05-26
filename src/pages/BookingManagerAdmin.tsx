@@ -245,8 +245,16 @@ export default function BookingManagerAdmin() {
     setPendingArtistIds(new Set((pendingReqs || []).map((r: any) => r.performer_id)));
   };
 
+  const isGigCompleted = (gig: UpcomingGig): boolean => {
+    const dateOnly = gig.date.split("T")[0];
+    const endIso = gig.end_time
+      ? `${dateOnly}T${gig.end_time}`
+      : `${dateOnly}T23:59:59`;
+    return new Date(endIso).getTime() < Date.now();
+  };
+
   const getArtistStatus = (artistId: string): "booked" | "pending" | "none" => {
-    if (upcomingGigs.some((g) => g.artist_id === artistId)) return "booked";
+    if (upcomingGigs.some((g) => g.artist_id === artistId && !isGigCompleted(g))) return "booked";
     if (pendingArtistIds.has(artistId)) return "pending";
     return "none";
   };

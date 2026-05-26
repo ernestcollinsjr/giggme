@@ -101,6 +101,10 @@ Deno.serve(async (req) => {
         <div style="padding:20px 24px;">
           <p style="margin:0 0 12px;color:#111827;font-size:15px;">Hi${p.performerName ? ' ' + p.performerName : ''},</p>
           <p style="margin:0 0 16px;color:#374151;font-size:14px;line-height:1.5;">You have received a new booking request${p.bookerName ? ' from <strong>' + p.bookerName + '</strong>' : ''}. Please respond within <strong>${expiresIn}</strong> or it will be automatically declined.</p>
+          <div style="margin:0 0 20px;text-align:center;">
+            <a href="${respondUrl}" style="display:inline-block;background:#6d28d9;color:#fff;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:600;font-size:16px;">Accept or Decline</a>
+            <div style="margin-top:10px;color:#6b7280;font-size:12px;">Or open this link: <a href="${respondUrl}" style="color:#6d28d9;">${respondUrl}</a></div>
+          </div>
           <table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
             ${row('Date(s)', p.dates + (p.time ? ' ' + p.time : ''))}
             ${row('Venue', p.venue)}
@@ -111,11 +115,8 @@ Deno.serve(async (req) => {
             ${row('Note', p.note)}
             ${row('From', p.bookerEmail || user.email || undefined)}
           </table>
-          <div style="margin-top:24px;text-align:center;">
-            <a href="${respondUrl}" style="display:inline-block;background:#6d28d9;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:600;font-size:15px;">Accept or Decline</a>
-          </div>
-          <p style="margin:16px 0 0;color:#6b7280;font-size:12px;text-align:center;">Tap above to respond in GigGme. Request expires in ${expiresIn}.</p>
-          <p style="margin:20px 0 0;color:#9ca3af;font-size:12px;">Sent via GigGme</p>
+          <p style="margin:16px 0 0;color:#6b7280;font-size:12px;text-align:center;">Request expires in ${expiresIn}.</p>
+          <p style="margin:20px 0 0;color:#9ca3af;font-size:11px;">Sent via GigGme · Ref ${bookingRequest.id}</p>
         </div>
       </div>
     </body></html>`;

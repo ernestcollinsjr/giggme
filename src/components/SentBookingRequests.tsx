@@ -171,6 +171,18 @@ export const SentBookingRequests = () => {
                       <Countdown expiresAt={r.expires_at} />
                     </div>
                   )}
+                  {r.status === "accepted" && (
+                    <label
+                      className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer"
+                      title="Disable automatic 1-day and 2-hour reminder emails"
+                    >
+                      <BellOff className="h-3.5 w-3.5" />
+                      <Switch
+                        checked={r.auto_reminders_disabled}
+                        onCheckedChange={(v) => handleToggleReminders(r.id, v)}
+                      />
+                    </label>
+                  )}
                   <Button
                     variant="ghost"
                     size="icon"

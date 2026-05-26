@@ -375,6 +375,11 @@ export default function BookingManagerAdmin() {
     return upcomingGigs.filter((g) => g.artist_id === artistFilter);
   }, [upcomingGigs, artistFilter]);
 
+  const visibleInvites = useMemo(() => {
+    if (!artistFilter) return pendingInvites;
+    return pendingInvites.filter((i) => i.artist_id === artistFilter);
+  }, [pendingInvites, artistFilter]);
+
   const upcomingVisible = useMemo(
     () => visibleGigs.filter((g) => !isGigCompleted(g)),
     [visibleGigs]

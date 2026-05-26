@@ -120,16 +120,73 @@ serve(async (req) => {
       ).join("\n")}`);
     }
 
+    // Proactive analysis: detect scheduling conflicts and rehearsal gaps
+    const proactiveAlerts: string[] = [];
+    const now = new Date();
+    const dayMs = 24 * 60 * 60 * 1000;
+
+    const allEvents = [
+      ...upcomingGigs.map((g: any) => ({ type: "gig", date: g.date, label: g.venue_name || g.venue })),
+      ...upcomingRehearsals.map((r: any) => ({ type: "rehearsal", date: r.date, label: r.venue })),
+    ].filter(e => e.date && new Date(e.date) >= now);
+
+    const byDay = new Map<string, typeof allEvents>();
+    for (const ev of allEvents) {
+      const key = new Date(ev.date).toISOString().slice(0, 10);
+      if (!byDay.has(key)) byDay.set(key, []);
+      byDay.get(key)!.push(ev);
+    }
+    for (const [day, events] of byDay) {
+      if (events.length > 1) {
+        proactiveAlerts.push(
+          `⚠️ CONFLICT on ${day}: ${events.map(e => `${e.type} (${e.label})`).join(" + ")}`
+        );
+      }
+    }
+
+    const soonGigs = upcomingGigs.filter((g: any) => {
+      const d = new Date(g.date).getTime();
+      return d >= now.getTime() && d <= now.getTime() + 14 * dayMs;
+    });
+    for (const gig of soonGigs) {
+      const gigTime = new Date(gig.date).getTime();
+      const hasRehearsal = upcomingRehearsals.some((r: any) => {
+        const rt = new Date(r.date).getTime();
+        return rt >= gigTime - 10 * dayMs && rt <= gigTime;
+      });
+      if (!hasRehearsal) {
+        proactiveAlerts.push(
+          `🎯 No rehearsal scheduled before gig on ${new Date(gig.date).toLocaleDateString()} at ${gig.venue_name || gig.venue} — suggest one.`
+        );
+      }
+    }
+
+    if (setlists.length === 0 && soonGigs.length > 0) {
+      proactiveAlerts.push(`📋 ${soonGigs.length} gig(s) coming up but no setlists found — suggest creating one.`);
+    }
+
+    if (proactiveAlerts.length > 0) {
+      contextParts.push(`\nPROACTIVE ALERTS (raise these unprompted when relevant):\n${proactiveAlerts.join("\n")}`);
+    }
+
     const systemPrompt = contextParts.join("\n") + `
 
-You can help with:
-- Answering questions about gigs, rehearsals, and setlists
-- Suggesting setlist orders based on venue type and show length
-- Recommending rehearsal schedules before gigs
-- Creating gig summaries and reminders
-- Offering performance tips and band management advice
+You are a PROACTIVE band management assistant — don't just answer questions, anticipate problems and surface them.
 
-Keep responses concise and actionable. Always reference specific data when available.`;
+ON EVERY RESPONSE:
+1. If PROACTIVE ALERTS are listed above, lead with the most urgent one (conflicts > missing rehearsals > missing setlists), even if the user didn't ask about it.
+2. Cross-check dates for scheduling conflicts (two events on the same day, or within 2 hours of each other).
+3. For any gig within 14 days, verify a rehearsal is scheduled in the prior 10 days. If not, recommend a specific rehearsal date and time.
+4. Flag gigs missing key info: venue, setlist, or band member assignments.
+5. Suggest setlist refinements when a gig is within 7 days (length, opener/closer, energy curve).
+
+TONE:
+- Direct and concise. No filler ("Great question!", "I'd be happy to...").
+- Use ⚠️ for conflicts, 🎯 for action items, ✅ for confirmations.
+- Always reference specific dates, venues, and names from the user's data — never generic advice.
+- End every response with ONE clear next-step suggestion the user can act on.
+
+You can help with: gig/rehearsal/setlist questions, conflict detection, rehearsal scheduling, setlist ordering by venue type and show length, gig summaries and reminders, and performance/band management advice.`;
 
     console.log("System prompt:", systemPrompt);
 

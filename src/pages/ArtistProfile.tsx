@@ -9,8 +9,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Plus, Trash2, Youtube, ArrowLeft, Loader2, Mail, Phone, MessageCircle, DollarSign, History, TrendingUp, CalendarCheck, Navigation } from "lucide-react";
+import { Upload, Plus, Trash2, Youtube, ArrowLeft, Loader2, Mail, Phone, MessageCircle, DollarSign, History, TrendingUp, CalendarCheck, Navigation, CalendarIcon, X } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { PlaceAutocomplete } from "@/components/PlaceAutocomplete";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
 import { TopNav } from "@/components/TopNav";
@@ -77,7 +81,7 @@ const ArtistProfile = () => {
   const [bookingOpen, setBookingOpen] = useState(false);
   const [bookingSubmitting, setBookingSubmitting] = useState(false);
   const [bookingForm, setBookingForm] = useState({
-    date: "",
+    dates: [] as Date[],
     startTime: "",
     endTime: "",
     venue: "",
@@ -91,11 +95,11 @@ const ArtistProfile = () => {
   });
 
   const handleSendBookingRequest = async () => {
-    if (!bookingForm.date || !bookingForm.venue.trim()) {
+    if (bookingForm.dates.length === 0 || !bookingForm.venue.trim()) {
       toast({
         variant: "destructive",
         title: "Missing information",
-        description: "Please enter at least a date and venue.",
+        description: "Please select at least one date and venue.",
       });
       return;
     }
@@ -105,9 +109,15 @@ const ArtistProfile = () => {
       const user = session?.user ?? null;
       if (!user) throw new Error("Not authenticated");
 
+      const sortedDates = [...bookingForm.dates].sort((a, b) => a.getTime() - b.getTime());
+      const datesStr = sortedDates.map((d) => format(d, "EEE, MMM d, yyyy")).join("; ");
+      const timeStr = bookingForm.startTime || bookingForm.endTime
+        ? ` (${bookingForm.startTime}${bookingForm.endTime ? ` – ${bookingForm.endTime}` : ""})`
+        : "";
+
       const lines = [
         `Booking request for ${profile?.name || "you"}`,
-        `Date: ${bookingForm.date}${bookingForm.startTime ? ` at ${bookingForm.startTime}` : ""}${bookingForm.endTime ? ` – ${bookingForm.endTime}` : ""}`,
+        `Date${sortedDates.length > 1 ? "s" : ""}: ${datesStr}${timeStr}`,
         `Venue: ${bookingForm.venue.trim()}`,
         bookingForm.venuePhone.trim() ? `Venue Phone: ${bookingForm.venuePhone.trim()}` : null,
         bookingForm.budget.trim() ? `Budget: ${bookingForm.budget.trim()}` : null,
@@ -129,7 +139,7 @@ const ArtistProfile = () => {
         description: `Your request was sent to ${profile?.name || "the performer"}.`,
       });
       setBookingOpen(false);
-      setBookingForm({ date: "", startTime: "", endTime: "", venue: "", venueLat: null, venueLng: null, venuePhone: "", budget: "", foodDiscounts: "", dressCode: "", contactPerson: "" });
+      setBookingForm({ dates: [], startTime: "", endTime: "", venue: "", venueLat: null, venueLng: null, venuePhone: "", budget: "", foodDiscounts: "", dressCode: "", contactPerson: "" });
       navigate(`/chat?recipient=${userId}`);
     } catch (err: any) {
       toast({
@@ -537,16 +547,61 @@ const ArtistProfile = () => {
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 pt-2">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div className="space-y-1.5">
-                        <Label htmlFor="booking-date">Date *</Label>
-                        <Input
-                          id="booking-date"
-                          type="date"
-                          value={bookingForm.date}
-                          onChange={(e) => setBookingForm({ ...bookingForm, date: e.target.value })}
-                        />
-                      </div>
+                    <div className="space-y-1.5">
+                      <Label>Dates * <span className="text-xs text-muted-foreground font-normal">(select one or more)</span></Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              bookingForm.dates.length === 0 && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {bookingForm.dates.length === 0
+                              ? "Pick one or more dates"
+                              : `${bookingForm.dates.length} date${bookingForm.dates.length > 1 ? "s" : ""} selected`}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="multiple"
+                            selected={bookingForm.dates}
+                            onSelect={(dates) => setBookingForm({ ...bookingForm, dates: dates || [] })}
+                            disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0))}
+                            initialFocus
+                            className={cn("p-3 pointer-events-auto")}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      {bookingForm.dates.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 pt-1">
+                          {[...bookingForm.dates]
+                            .sort((a, b) => a.getTime() - b.getTime())
+                            .map((d) => (
+                              <Badge key={d.toISOString()} variant="secondary" className="gap-1 pr-1">
+                                {format(d, "MMM d")}
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setBookingForm({
+                                      ...bookingForm,
+                                      dates: bookingForm.dates.filter((x) => x.getTime() !== d.getTime()),
+                                    })
+                                  }
+                                  className="ml-0.5 rounded-sm hover:bg-muted-foreground/20 p-0.5"
+                                  aria-label={`Remove ${format(d, "MMM d")}`}
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </Badge>
+                            ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1.5">
                         <Label htmlFor="booking-start">Start</Label>
                         <Input

@@ -205,11 +205,36 @@ export default function BookingManagerAdmin() {
         status: gm.gigs.status,
         artist_name: profileMap.get(gm.member_id) || "Unknown",
         artist_id: gm.member_id,
-      }))
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      }));
 
+    // Also include accepted booking requests (direct bookings without a gig record)
+    const { data: bookingReqs } = await supabase
+      .from("booking_requests")
+      .select("id, performer_id, event_date, dates_text, venue, status")
+      .in("performer_id", artistIds)
+      .eq("status", "accepted");
+
+    const nowMs = Date.now();
+    (bookingReqs || []).forEach((br: any) => {
+      const dateStr = br.event_date || br.dates_text;
+      if (!dateStr) return;
+      const t = new Date(dateStr).getTime();
+      if (isNaN(t) || t < nowMs - 24 * 60 * 60 * 1000) return;
+      gigs.push({
+        id: br.id,
+        date: br.event_date || br.dates_text,
+        venue: br.venue,
+        venue_name: null,
+        status: "confirmed",
+        artist_name: profileMap.get(br.performer_id) || "Unknown",
+        artist_id: br.performer_id,
+      });
+    });
+
+    gigs.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     setUpcomingGigs(gigs);
   };
+
 
   const handleAssignCategory = async (artist: ManagedArtist, category: Category) => {
     // Optimistic update

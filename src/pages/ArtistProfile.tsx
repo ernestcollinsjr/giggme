@@ -144,6 +144,7 @@ const ArtistProfile = () => {
 
         const { error: emailError } = await supabase.functions.invoke("send-booking-request-email", {
           body: {
+            performerId: profileUserId || userId,
             performerEmail: profile.email,
             performerName: profile?.name,
             bookerName: senderProfile?.name,
@@ -156,7 +157,7 @@ const ArtistProfile = () => {
             contactPerson: bookingForm.contactPerson.trim() || undefined,
             dressCode: bookingForm.dressCode.trim() || undefined,
             note: bookingForm.foodDiscounts.trim() || undefined,
-            chatUrl: `${window.location.origin}/chat?recipient=${user.id}`,
+            appUrl: window.location.origin,
           },
         });
         if (emailError) console.error("Email send failed:", emailError);

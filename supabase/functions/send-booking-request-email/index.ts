@@ -83,7 +83,9 @@ Deno.serve(async (req) => {
       throw new Error('Could not create booking request');
     }
 
-    const appUrl = p.appUrl || 'https://giggme.com';
+    const rawAppUrl = p.appUrl || 'https://giggme.com';
+    // Force production URL — preview/lovable URLs require a Lovable login and break email links
+    const appUrl = /lovable\.(app|dev)/i.test(rawAppUrl) ? 'https://giggme.com' : rawAppUrl;
     const respondUrl = `${appUrl}/booking-request/${bookingRequest.id}`;
     const expiresIn = '2 minutes';
 

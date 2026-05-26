@@ -81,8 +81,13 @@ const ArtistProfile = () => {
     startTime: "",
     endTime: "",
     venue: "",
+    venueLat: null as number | null,
+    venueLng: null as number | null,
+    venuePhone: "",
     budget: "",
-    notes: "",
+    foodDiscounts: "",
+    dressCode: "",
+    contactPerson: "",
   });
 
   const handleSendBookingRequest = async () => {

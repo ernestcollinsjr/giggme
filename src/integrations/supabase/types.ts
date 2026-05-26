@@ -372,6 +372,78 @@ export type Database = {
           },
         ]
       }
+      booking_requests: {
+        Row: {
+          booker_email: string | null
+          booker_id: string
+          booker_name: string | null
+          budget: string | null
+          contact_person: string | null
+          created_at: string
+          dates_text: string
+          dress_code: string | null
+          expired_notified_at: string | null
+          expires_at: string
+          id: string
+          note: string | null
+          performer_email: string | null
+          performer_id: string
+          performer_name: string | null
+          responded_at: string | null
+          status: Database["public"]["Enums"]["booking_request_status"]
+          time_text: string | null
+          updated_at: string
+          venue: string
+          venue_phone: string | null
+        }
+        Insert: {
+          booker_email?: string | null
+          booker_id: string
+          booker_name?: string | null
+          budget?: string | null
+          contact_person?: string | null
+          created_at?: string
+          dates_text: string
+          dress_code?: string | null
+          expired_notified_at?: string | null
+          expires_at?: string
+          id?: string
+          note?: string | null
+          performer_email?: string | null
+          performer_id: string
+          performer_name?: string | null
+          responded_at?: string | null
+          status?: Database["public"]["Enums"]["booking_request_status"]
+          time_text?: string | null
+          updated_at?: string
+          venue: string
+          venue_phone?: string | null
+        }
+        Update: {
+          booker_email?: string | null
+          booker_id?: string
+          booker_name?: string | null
+          budget?: string | null
+          contact_person?: string | null
+          created_at?: string
+          dates_text?: string
+          dress_code?: string | null
+          expired_notified_at?: string | null
+          expires_at?: string
+          id?: string
+          note?: string | null
+          performer_email?: string | null
+          performer_id?: string
+          performer_name?: string | null
+          responded_at?: string | null
+          status?: Database["public"]["Enums"]["booking_request_status"]
+          time_text?: string | null
+          updated_at?: string
+          venue?: string
+          venue_phone?: string | null
+        }
+        Relationships: []
+      }
       email_tracking: {
         Row: {
           clicked_at: string | null
@@ -1981,6 +2053,7 @@ export type Database = {
         | "tour_manager"
         | "venue_owner"
         | "super_admin"
+      booking_request_status: "pending" | "accepted" | "declined" | "expired"
       booking_status:
         | "pending"
         | "confirmed"
@@ -2135,6 +2208,7 @@ export const Constants = {
         "venue_owner",
         "super_admin",
       ],
+      booking_request_status: ["pending", "accepted", "declined", "expired"],
       booking_status: [
         "pending",
         "confirmed",

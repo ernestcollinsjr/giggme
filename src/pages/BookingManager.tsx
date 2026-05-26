@@ -82,6 +82,8 @@ export default function BookingManager() {
   const [addArtistDialogOpen, setAddArtistDialogOpen] = useState(false);
   const [selectedArtistToAdd, setSelectedArtistToAdd] = useState<Profile | null>(null);
   const [artistGroupType, setArtistGroupType] = useState("solo");
+  const [bookTalentOpen, setBookTalentOpen] = useState(false);
+  const [bookTalentSearch, setBookTalentSearch] = useState("");
 
   useEffect(() => {
     checkRole();
@@ -427,7 +429,7 @@ export default function BookingManager() {
               <Bell className="h-4 w-4" />
               <span className="hidden sm:inline">Schedule</span> Reminder
             </Button>
-            <Button onClick={() => navigate("/bookings?newGig=true")} variant="default" size="sm" className="gap-1 text-xs sm:text-sm">
+            <Button onClick={() => setBookTalentOpen(true)} variant="default" size="sm" className="gap-1 text-xs sm:text-sm">
               <CalendarIcon className="h-4 w-4" />
               Book Talent
             </Button>
@@ -883,6 +885,70 @@ export default function BookingManager() {
                   Add to Roster
                 </Button>
               </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Book Talent — pick a performer */}
+        <Dialog open={bookTalentOpen} onOpenChange={setBookTalentOpen}>
+          <DialogContent className="max-w-2xl bg-black/60 backdrop-blur-sm">
+            <DialogHeader>
+              <DialogTitle>Book Talent</DialogTitle>
+              <DialogDescription>
+                Choose a performer from your roster to start a booking.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search your roster..."
+                  className="pl-9"
+                  value={bookTalentSearch}
+                  onChange={(e) => setBookTalentSearch(e.target.value)}
+                />
+              </div>
+              {managedArtists.length === 0 ? (
+                <div className="text-center py-8 space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    No performers in your roster yet.
+                  </p>
+                  <Button onClick={() => { setBookTalentOpen(false); navigate("/artists"); }}>
+                    <Search className="h-4 w-4 mr-2" />
+                    Search Talent
+                  </Button>
+                </div>
+              ) : (
+                <div className="max-h-[50vh] overflow-y-auto space-y-2">
+                  {managedArtists
+                    .filter((a) => {
+                      const q = bookTalentSearch.toLowerCase().trim();
+                      if (!q) return true;
+                      return (a.profile?.name || "").toLowerCase().includes(q);
+                    })
+                    .map((artist) => (
+                      <button
+                        key={artist.id}
+                        onClick={() => {
+                          setBookTalentOpen(false);
+                          navigate(`/artist-profile/${artist.artist_id}`);
+                        }}
+                        className="w-full flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors text-left"
+                      >
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <Music className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">{artist.profile?.name || "Unnamed"}</p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {artist.group_type || "solo"}
+                          </p>
+                        </div>
+                        <CalendarIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      </button>
+                    ))}
+                </div>
+              )}
             </div>
           </DialogContent>
         </Dialog>

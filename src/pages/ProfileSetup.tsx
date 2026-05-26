@@ -372,6 +372,7 @@ const ProfileSetup = () => {
       const updates = {
         id: user.id,
         name,
+        band_name: (role === "band_member" || role === "band_leader") ? (bandName || null) : null,
         bio,
         email,
         instrument: (role === "band_leader" || role === "band_member" ? instrument : null) as any,

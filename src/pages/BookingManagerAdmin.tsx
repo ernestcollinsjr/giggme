@@ -101,6 +101,7 @@ export default function BookingManagerAdmin() {
   const [managedArtists, setManagedArtists] = useState<ManagedArtist[]>([]);
   const [upcomingGigs, setUpcomingGigs] = useState<UpcomingGig[]>([]);
   const [pendingArtistIds, setPendingArtistIds] = useState<Set<string>>(new Set());
+  const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [userId, setUserId] = useState<string | null>(null);

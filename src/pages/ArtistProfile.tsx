@@ -9,8 +9,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Plus, Trash2, Youtube, ArrowLeft, Loader2, Mail, Phone, MessageCircle, DollarSign, History, TrendingUp, CalendarCheck } from "lucide-react";
+import { Upload, Plus, Trash2, Youtube, ArrowLeft, Loader2, Mail, Phone, MessageCircle, DollarSign, History, TrendingUp, CalendarCheck, Navigation } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { PlaceAutocomplete } from "@/components/PlaceAutocomplete";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
 import { TopNav } from "@/components/TopNav";
 import { AvailabilityCalendar } from "@/components/AvailabilityCalendar";

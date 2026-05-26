@@ -63,6 +63,7 @@ interface ManagedArtist {
 interface UpcomingGig {
   id: string;
   date: string;
+  end_time: string | null;
   venue: string;
   venue_name: string | null;
   status: string;

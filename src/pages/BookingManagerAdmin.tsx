@@ -250,12 +250,54 @@ export default function BookingManagerAdmin() {
     gigs.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     setUpcomingGigs(gigs);
 
-    // Fetch pending booking requests to mark artists as pending
+    // Fetch pending booking requests (sent invites awaiting response)
     const { data: pendingReqs } = await supabase
       .from("booking_requests")
-      .select("performer_id")
+      .select("id, performer_id, event_date, dates_text, venue, status, expires_at")
       .in("performer_id", artistIds)
       .eq("status", "pending");
+
+    // Fetch pending gig invitations (gig_members not yet responded)
+    const { data: pendingGigInvites } = await supabase
+      .from("gig_members")
+      .select(`id, member_id, status, gigs ( id, date, venue, venue_name )`)
+      .in("member_id", artistIds)
+      .eq("status", "pending");
+
+    const invites: PendingInvite[] = [];
+
+    (pendingReqs || []).forEach((br: any) => {
+      const dateStr = br.event_date || br.dates_text;
+      if (!dateStr) return;
+      const expired = br.expires_at && new Date(br.expires_at).getTime() < Date.now();
+      invites.push({
+        id: br.id,
+        date: dateStr,
+        venue: br.venue,
+        venue_name: null,
+        status: expired ? "expired" : "pending",
+        artist_name: profileMap.get(br.performer_id) || "Unknown",
+        artist_id: br.performer_id,
+        source: "booking_request",
+      });
+    });
+
+    (pendingGigInvites || []).forEach((gm: any) => {
+      if (!gm.gigs) return;
+      invites.push({
+        id: gm.id,
+        date: gm.gigs.date,
+        venue: gm.gigs.venue,
+        venue_name: gm.gigs.venue_name,
+        status: "pending",
+        artist_name: profileMap.get(gm.member_id) || "Unknown",
+        artist_id: gm.member_id,
+        source: "gig",
+      });
+    });
+
+    invites.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    setPendingInvites(invites);
     setPendingArtistIds(new Set((pendingReqs || []).map((r: any) => r.performer_id)));
   };
 

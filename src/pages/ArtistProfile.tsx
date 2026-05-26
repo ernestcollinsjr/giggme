@@ -123,7 +123,7 @@ const ArtistProfile = () => {
         bookingForm.budget.trim() ? `Budget: ${bookingForm.budget.trim()}` : null,
         bookingForm.contactPerson.trim() ? `Contact Person: ${bookingForm.contactPerson.trim()}` : null,
         bookingForm.dressCode.trim() ? `Dress Code: ${bookingForm.dressCode.trim()}` : null,
-        bookingForm.foodDiscounts.trim() ? `Food/Discounts: ${bookingForm.foodDiscounts.trim()}` : null,
+        bookingForm.foodDiscounts.trim() ? `Note: ${bookingForm.foodDiscounts.trim()}` : null,
       ].filter(Boolean).join("\n");
 
       const { error } = await supabase.from("messages").insert({
@@ -697,10 +697,10 @@ const ArtistProfile = () => {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label htmlFor="booking-food">Food / Discounts</Label>
+                      <Label htmlFor="booking-note">Note (optional)</Label>
                       <Textarea
-                        id="booking-food"
-                        placeholder="Meal provided, drink discounts, etc."
+                        id="booking-note"
+                        placeholder="Any extra details..."
                         value={bookingForm.foodDiscounts}
                         onChange={(e) => setBookingForm({ ...bookingForm, foodDiscounts: e.target.value })}
                       />

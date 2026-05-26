@@ -514,11 +514,96 @@ const ArtistProfile = () => {
             <div className="flex flex-wrap gap-2">
               <Button
                 className="flex items-center gap-2"
-                onClick={() => navigate(`/chat?recipient=${userId}&intent=booking&subject=${encodeURIComponent(`Booking inquiry for ${profile?.name || "you"}`)}`)}
+                onClick={() => setBookingOpen(true)}
               >
                 <CalendarCheck className="h-4 w-4" />
                 Book This Performer
               </Button>
+              <Dialog open={bookingOpen} onOpenChange={setBookingOpen}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Book {profile?.name || "this performer"}</DialogTitle>
+                    <DialogDescription>
+                      Send a booking request with the gig details. The performer will receive it as a direct message.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 pt-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="booking-date">Date *</Label>
+                        <Input
+                          id="booking-date"
+                          type="date"
+                          value={bookingForm.date}
+                          onChange={(e) => setBookingForm({ ...bookingForm, date: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="booking-start">Start</Label>
+                        <Input
+                          id="booking-start"
+                          type="time"
+                          value={bookingForm.startTime}
+                          onChange={(e) => setBookingForm({ ...bookingForm, startTime: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="booking-end">End</Label>
+                        <Input
+                          id="booking-end"
+                          type="time"
+                          value={bookingForm.endTime}
+                          onChange={(e) => setBookingForm({ ...bookingForm, endTime: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="booking-venue">Venue *</Label>
+                      <Input
+                        id="booking-venue"
+                        placeholder="Venue name or address"
+                        value={bookingForm.venue}
+                        onChange={(e) => setBookingForm({ ...bookingForm, venue: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="booking-budget">Budget (optional)</Label>
+                      <Input
+                        id="booking-budget"
+                        placeholder="e.g. $500"
+                        value={bookingForm.budget}
+                        onChange={(e) => setBookingForm({ ...bookingForm, budget: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="booking-notes">Notes (optional)</Label>
+                      <Textarea
+                        id="booking-notes"
+                        placeholder="Set length, genre, dress code, etc."
+                        value={bookingForm.notes}
+                        onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })}
+                      />
+                    </div>
+                    <Button
+                      className="w-full"
+                      onClick={handleSendBookingRequest}
+                      disabled={bookingSubmitting}
+                    >
+                      {bookingSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <CalendarCheck className="mr-2 h-4 w-4" />
+                          Send Booking Request
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             <Dialog>
               <DialogTrigger asChild>
                 <Button variant="outline" className="flex items-center gap-2">

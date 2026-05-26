@@ -123,7 +123,7 @@ const ArtistProfile = () => {
         bookingForm.budget.trim() ? `Budget: ${bookingForm.budget.trim()}` : null,
         bookingForm.contactPerson.trim() ? `Contact Person: ${bookingForm.contactPerson.trim()}` : null,
         bookingForm.dressCode.trim() ? `Dress Code: ${bookingForm.dressCode.trim()}` : null,
-        bookingForm.foodDiscounts.trim() ? `Food/Discounts: ${bookingForm.foodDiscounts.trim()}` : null,
+        bookingForm.foodDiscounts.trim() ? `Note: ${bookingForm.foodDiscounts.trim()}` : null,
       ].filter(Boolean).join("\n");
 
       const { error } = await supabase.from("messages").insert({

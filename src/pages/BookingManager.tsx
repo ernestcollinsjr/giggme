@@ -428,7 +428,7 @@ export default function BookingManager() {
               <span className="hidden sm:inline">Schedule</span> Reminder
             </Button>
             <Button onClick={() => navigate("/bookings?newGig=true")} variant="default" size="sm" className="gap-1 text-xs sm:text-sm">
-              <Calendar className="h-4 w-4" />
+              <CalendarIcon className="h-4 w-4" />
               Book Talent
             </Button>
             <Button onClick={() => navigate("/artists")} size="sm" variant="secondary" className="gap-1 text-xs sm:text-sm">

@@ -429,7 +429,7 @@ export default function BookingManager() {
               <Bell className="h-4 w-4" />
               <span className="hidden sm:inline">Schedule</span> Reminder
             </Button>
-            <Button onClick={() => navigate("/bookings?newGig=true")} variant="default" size="sm" className="gap-1 text-xs sm:text-sm">
+            <Button onClick={() => setBookTalentOpen(true)} variant="default" size="sm" className="gap-1 text-xs sm:text-sm">
               <CalendarIcon className="h-4 w-4" />
               Book Talent
             </Button>

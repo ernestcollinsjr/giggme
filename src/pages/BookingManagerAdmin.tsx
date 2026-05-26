@@ -30,6 +30,8 @@ import {
   Users,
   Music2,
   X,
+  Bell,
+  CalendarPlus,
 } from "lucide-react";
 import { TopNav } from "@/components/TopNav";
 import BottomNav from "@/components/BottomNav";
@@ -354,10 +356,34 @@ export default function BookingManagerAdmin() {
               Organize your roster by group type and track booked dates.
             </p>
           </div>
-          <Button onClick={() => navigate("/artists")} size="sm" className="gap-1 self-start sm:self-auto">
-            <UserPlus className="h-4 w-4" />
-            Add artist
-          </Button>
+          <div className="flex flex-wrap gap-2 self-start sm:self-auto">
+            <Button
+              onClick={() => navigate("/schedule-reminder?type=custom")}
+              size="sm"
+              variant="outline"
+              className="gap-1 text-xs sm:text-sm"
+            >
+              <Bell className="h-4 w-4" />
+              <span className="hidden sm:inline">Schedule</span> Reminder
+            </Button>
+            <Button
+              onClick={() => navigate("/booking-manager/roster")}
+              size="sm"
+              className="gap-1 text-xs sm:text-sm"
+            >
+              <CalendarPlus className="h-4 w-4" />
+              Book Talent
+            </Button>
+            <Button
+              onClick={() => navigate("/artists")}
+              size="sm"
+              variant="secondary"
+              className="gap-1 text-xs sm:text-sm"
+            >
+              <Search className="h-4 w-4" />
+              <span className="hidden sm:inline">Search</span> Talent
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[20rem_1fr] gap-4">

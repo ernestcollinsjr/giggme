@@ -895,43 +895,62 @@ export default function BookingManager() {
             <DialogHeader>
               <DialogTitle>Book Talent</DialogTitle>
               <DialogDescription>
-                Choose a performer from your roster to start a booking.
+                Choose a performer, band, or artist to start a booking.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-3">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search your roster..."
+                  placeholder="Search performers..."
                   className="pl-9"
                   value={bookTalentSearch}
                   onChange={(e) => setBookTalentSearch(e.target.value)}
                 />
               </div>
-              {managedArtists.length === 0 ? (
-                <div className="text-center py-8 space-y-3">
-                  <p className="text-sm text-muted-foreground">
-                    No performers in your roster yet.
-                  </p>
-                  <Button onClick={() => { setBookTalentOpen(false); navigate("/artists"); }}>
-                    <Search className="h-4 w-4 mr-2" />
-                    Search Talent
-                  </Button>
-                </div>
-              ) : (
-                <div className="max-h-[50vh] overflow-y-auto space-y-2">
-                  {managedArtists
-                    .filter((a) => {
-                      const q = bookTalentSearch.toLowerCase().trim();
-                      if (!q) return true;
-                      return (a.profile?.name || "").toLowerCase().includes(q);
-                    })
-                    .map((artist) => (
+              {(() => {
+                const q = bookTalentSearch.toLowerCase().trim();
+                const managedIds = new Set(managedArtists.map((a) => a.artist_id));
+                const rosterItems = managedArtists.map((a) => ({
+                  key: `r-${a.id}`,
+                  id: a.artist_id,
+                  name: a.profile?.name || "Unnamed",
+                  subtitle: a.group_type || "solo",
+                  inRoster: true,
+                }));
+                const otherItems = profiles
+                  .filter((p) => !managedIds.has(p.id))
+                  .map((p) => ({
+                    key: `p-${p.id}`,
+                    id: p.id,
+                    name: p.name || "Unnamed",
+                    subtitle: (p as any).instrument || "Performer",
+                    inRoster: false,
+                  }));
+                const all = [...rosterItems, ...otherItems].filter((i) =>
+                  q ? i.name.toLowerCase().includes(q) : true
+                );
+                if (all.length === 0) {
+                  return (
+                    <div className="text-center py-8 space-y-3">
+                      <p className="text-sm text-muted-foreground">
+                        No performers found.
+                      </p>
+                      <Button onClick={() => { setBookTalentOpen(false); navigate("/artists"); }}>
+                        <Search className="h-4 w-4 mr-2" />
+                        Search Talent
+                      </Button>
+                    </div>
+                  );
+                }
+                return (
+                  <div className="max-h-[50vh] overflow-y-auto space-y-2">
+                    {all.map((item) => (
                       <button
-                        key={artist.id}
+                        key={item.key}
                         onClick={() => {
                           setBookTalentOpen(false);
-                          navigate(`/artist-profile/${artist.artist_id}`);
+                          navigate(`/artist-profile/${item.id}`);
                         }}
                         className="w-full flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors text-left"
                       >
@@ -939,16 +958,18 @@ export default function BookingManager() {
                           <Music className="h-5 w-5 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">{artist.profile?.name || "Unnamed"}</p>
-                          <p className="text-xs text-muted-foreground truncate">
-                            {artist.group_type || "solo"}
-                          </p>
+                          <p className="font-medium truncate">{item.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{item.subtitle}</p>
                         </div>
+                        {item.inRoster && (
+                          <Badge variant="secondary" className="text-xs">Roster</Badge>
+                        )}
                         <CalendarIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                       </button>
                     ))}
-                </div>
-              )}
+                  </div>
+                );
+              })()}
             </div>
           </DialogContent>
         </Dialog>

@@ -236,6 +236,13 @@ const Dashboard = () => {
     if (profileData && primaryRole) {
       setProfile(profileData);
       setUserRole(primaryRole);
+
+      // Booking managers have a dedicated dashboard layout
+      if (primaryRole === "booking_manager") {
+        navigate("/booking-manager", { replace: true });
+        return;
+      }
+
       
       // Fetch bands for band leaders and super admins
       if (primaryRole === "band_leader" || primaryRole === "super_admin") {

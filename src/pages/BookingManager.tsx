@@ -462,7 +462,7 @@ export default function BookingManager() {
                   <Card 
                     key={artist.id} 
                     className="border-primary/20 cursor-pointer hover:border-primary/50 transition-colors p-0"
-                    onClick={() => navigate(`/booking-admin?artist=${artist.artist_id}`)}
+                    onClick={() => navigate(`/artist-profile/${artist.artist_id}?book=1`)}
                   >
                     <CardHeader className="p-2 pb-1">
                       <div className="flex items-start justify-between gap-1">

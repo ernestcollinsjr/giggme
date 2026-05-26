@@ -265,7 +265,7 @@ const Auth = () => {
       setIsResettingPassword(false);
       setNewPassword("");
       setConfirmPassword("");
-      navigate("/dashboard");
+      navigate(postAuthPath);
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         toast({

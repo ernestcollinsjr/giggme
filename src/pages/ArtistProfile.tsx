@@ -139,7 +139,7 @@ const ArtistProfile = () => {
         description: `Your request was sent to ${profile?.name || "the performer"}.`,
       });
       setBookingOpen(false);
-      setBookingForm({ date: "", startTime: "", endTime: "", venue: "", venueLat: null, venueLng: null, venuePhone: "", budget: "", foodDiscounts: "", dressCode: "", contactPerson: "" });
+      setBookingForm({ dates: [], startTime: "", endTime: "", venue: "", venueLat: null, venueLng: null, venuePhone: "", budget: "", foodDiscounts: "", dressCode: "", contactPerson: "" });
       navigate(`/chat?recipient=${userId}`);
     } catch (err: any) {
       toast({

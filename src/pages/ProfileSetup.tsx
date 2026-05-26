@@ -43,6 +43,7 @@ const ProfileSetup = () => {
   const [hasRole, setHasRole] = useState(false);
   
   const [name, setName] = useState("");
+  const [bandName, setBandName] = useState("");
   const [bio, setBio] = useState("");
   const [instrument, setInstrument] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");

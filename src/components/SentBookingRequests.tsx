@@ -26,6 +26,18 @@ const statusVariant: Record<string, "default" | "secondary" | "destructive" | "o
   expired: "outline",
 };
 
+function formatTime12h(text: string): string {
+  // Convert any "HH:MM" (24h) occurrences within the string to 12-hour format with am/pm.
+  return text.replace(/\b(\d{1,2}):(\d{2})\b/g, (_, hh, mm) => {
+    let h = parseInt(hh, 10);
+    if (isNaN(h) || h < 0 || h > 23) return `${hh}:${mm}`;
+    const period = h >= 12 ? "pm" : "am";
+    h = h % 12;
+    if (h === 0) h = 12;
+    return mm === "00" ? `${h}${period}` : `${h}:${mm}${period}`;
+  });
+}
+
 function Countdown({ expiresAt }: { expiresAt: string }) {
   const [now, setNow] = useState(Date.now());
   useEffect(() => {

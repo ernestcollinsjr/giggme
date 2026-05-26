@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
               <div style="font-size:20px;font-weight:700;margin-top:4px;">Booking Request Expired</div>
             </div>
             <div style="padding:20px 24px;">
-              <p style="margin:0 0 16px;color:#374151;font-size:14px;line-height:1.5;">Your booking request to <strong>${br.performer_name || 'the performer'}</strong> for <strong>${br.venue}</strong> expired after 2 hours with no response. We recommend booking another performer.</p>
+              <p style="margin:0 0 16px;color:#374151;font-size:14px;line-height:1.5;">Your booking request to <strong>${br.performer_name || 'the performer'}</strong> for <strong>${br.venue}</strong> expired after 2 minutes with no response. We recommend booking another performer.</p>
               <table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
                 <tr><td style="padding:8px 12px;color:#6b7280;font-size:13px;width:140px;">Date(s)</td><td style="padding:8px 12px;color:#111827;font-size:14px;">${br.dates_text}${br.time_text ? ' ' + br.time_text : ''}</td></tr>
                 <tr><td style="padding:8px 12px;color:#6b7280;font-size:13px;">Venue</td><td style="padding:8px 12px;color:#111827;font-size:14px;">${br.venue}</td></tr>

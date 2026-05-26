@@ -568,11 +568,50 @@ const ArtistProfile = () => {
                     </div>
                     <div className="space-y-1.5">
                       <Label htmlFor="booking-venue">Venue *</Label>
+                      <div className="flex gap-2">
+                        <div className="flex-1">
+                          <PlaceAutocomplete
+                            value={bookingForm.venue}
+                            onChange={(val, place) => {
+                              const lat = place?.geometry?.location?.lat?.();
+                              const lng = place?.geometry?.location?.lng?.();
+                              const phone = (place as any)?.formatted_phone_number || (place as any)?.international_phone_number;
+                              setBookingForm((prev) => ({
+                                ...prev,
+                                venue: val,
+                                venueLat: typeof lat === "number" ? lat : prev.venueLat,
+                                venueLng: typeof lng === "number" ? lng : prev.venueLng,
+                                venuePhone: phone || prev.venuePhone,
+                              }));
+                            }}
+                            placeholder="Search venue or address"
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          title="Navigate"
+                          disabled={!bookingForm.venue.trim() && bookingForm.venueLat == null}
+                          onClick={() => {
+                            const dest = bookingForm.venueLat != null && bookingForm.venueLng != null
+                              ? `${bookingForm.venueLat},${bookingForm.venueLng}`
+                              : bookingForm.venue.trim();
+                            window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(dest)}`, "_blank");
+                          }}
+                        >
+                          <Navigation className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="booking-phone">Venue Phone</Label>
                       <Input
-                        id="booking-venue"
-                        placeholder="Venue name or address"
-                        value={bookingForm.venue}
-                        onChange={(e) => setBookingForm({ ...bookingForm, venue: e.target.value })}
+                        id="booking-phone"
+                        type="tel"
+                        placeholder="In case you're running late"
+                        value={bookingForm.venuePhone}
+                        onChange={(e) => setBookingForm({ ...bookingForm, venuePhone: e.target.value })}
                       />
                     </div>
                     <div className="space-y-1.5">
@@ -585,12 +624,30 @@ const ArtistProfile = () => {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label htmlFor="booking-notes">Notes (optional)</Label>
+                      <Label htmlFor="booking-contact">Contact Person</Label>
+                      <Input
+                        id="booking-contact"
+                        placeholder="Venue contact name"
+                        value={bookingForm.contactPerson}
+                        onChange={(e) => setBookingForm({ ...bookingForm, contactPerson: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="booking-dress">Dress Code</Label>
+                      <Input
+                        id="booking-dress"
+                        placeholder="e.g. all black, formal"
+                        value={bookingForm.dressCode}
+                        onChange={(e) => setBookingForm({ ...bookingForm, dressCode: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="booking-food">Food / Discounts</Label>
                       <Textarea
-                        id="booking-notes"
-                        placeholder="Set length, genre, dress code, etc."
-                        value={bookingForm.notes}
-                        onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })}
+                        id="booking-food"
+                        placeholder="Meal provided, drink discounts, etc."
+                        value={bookingForm.foodDiscounts}
+                        onChange={(e) => setBookingForm({ ...bookingForm, foodDiscounts: e.target.value })}
                       />
                     </div>
                     <Button

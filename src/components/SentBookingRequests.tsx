@@ -18,6 +18,7 @@ interface BookingRequest {
   expires_at: string;
   created_at: string;
   responded_at: string | null;
+  auto_reminders_disabled: boolean;
 }
 
 const statusVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {

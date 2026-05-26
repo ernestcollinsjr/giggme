@@ -137,6 +137,7 @@ Deno.serve(async (req) => {
     .from('booking_requests')
     .select('id, performer_email, performer_name, venue, event_date, note')
     .eq('status', 'accepted')
+    .eq('auto_reminders_disabled', false)
     .is('reminder_2h_sent_at', null)
     .not('event_date', 'is', null)
     .gt('event_date', lower2h)

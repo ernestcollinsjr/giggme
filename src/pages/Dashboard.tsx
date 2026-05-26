@@ -190,8 +190,12 @@ const Dashboard = () => {
   const [bmViewingRequestId, setBmViewingRequestId] = useState<string | null>(null);
 
   const checkAuth = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    
+    // Use getSession first — it reads from storage synchronously and avoids
+    // the race condition where getUser() returns null before the session is
+    // restored on a fresh page load / navigation.
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user ?? null;
+
     if (!user) {
       navigate("/auth");
       return;

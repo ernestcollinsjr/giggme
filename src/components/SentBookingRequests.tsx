@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Mail, MapPin, Calendar, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { Mail, MapPin, Calendar, Clock, Trash2 } from "lucide-react";
 
 interface BookingRequest {
   id: string;
@@ -44,6 +46,18 @@ function Countdown({ expiresAt }: { expiresAt: string }) {
 export const SentBookingRequests = () => {
   const [requests, setRequests] = useState<BookingRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this booking request?")) return;
+    const { error } = await supabase.from("booking_requests").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Failed to delete", description: error.message, variant: "destructive" });
+      return;
+    }
+    setRequests((prev) => prev.filter((r) => r.id !== id));
+    toast({ title: "Booking request deleted" });
+  };
 
   const fetchRequests = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -123,12 +137,23 @@ export const SentBookingRequests = () => {
                     {r.time_text && <span>{r.time_text}</span>}
                   </div>
                 </div>
-                {r.status === "pending" && (
-                  <div className="flex items-center gap-1 text-sm flex-shrink-0">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <Countdown expiresAt={r.expires_at} />
-                  </div>
-                )}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {r.status === "pending" && (
+                    <div className="flex items-center gap-1 text-sm">
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <Countdown expiresAt={r.expires_at} />
+                    </div>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                    onClick={() => handleDelete(r.id)}
+                    aria-label="Delete booking request"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>

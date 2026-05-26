@@ -157,7 +157,7 @@ const ArtistProfile = () => {
             contactPerson: bookingForm.contactPerson.trim() || undefined,
             dressCode: bookingForm.dressCode.trim() || undefined,
             note: bookingForm.foodDiscounts.trim() || undefined,
-            appUrl: window.location.origin,
+            appUrl: window.location.hostname.endsWith("lovable.app") || window.location.hostname.endsWith("lovable.dev") ? "https://giggme.com" : window.location.origin,
           },
         });
         if (emailError) console.error("Email send failed:", emailError);

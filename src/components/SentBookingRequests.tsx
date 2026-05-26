@@ -137,12 +137,23 @@ export const SentBookingRequests = () => {
                     {r.time_text && <span>{r.time_text}</span>}
                   </div>
                 </div>
-                {r.status === "pending" && (
-                  <div className="flex items-center gap-1 text-sm flex-shrink-0">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <Countdown expiresAt={r.expires_at} />
-                  </div>
-                )}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {r.status === "pending" && (
+                    <div className="flex items-center gap-1 text-sm">
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <Countdown expiresAt={r.expires_at} />
+                    </div>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                    onClick={() => handleDelete(r.id)}
+                    aria-label="Delete booking request"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>

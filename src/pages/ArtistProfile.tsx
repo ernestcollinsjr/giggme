@@ -86,7 +86,7 @@ const ArtistProfile = () => {
 
   const fetchTips = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) return;
 
       const { data, error } = await supabase
@@ -110,7 +110,7 @@ const ArtistProfile = () => {
 
     setAddingTip(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) throw new Error("Not authenticated");
 
       const { error } = await supabase.from("artist_tips").insert({
@@ -148,7 +148,7 @@ const ArtistProfile = () => {
 
   const fetchProfiles = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       
       // Determine which user's profile to load
       const targetUserId = userId || user?.id;
@@ -247,7 +247,7 @@ const ArtistProfile = () => {
 
     setUploadingPhoto(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) throw new Error("Not authenticated");
 
       // Show processing toast
@@ -305,7 +305,7 @@ const ArtistProfile = () => {
 
   const handleRemovePhoto = async (indexToRemove: number) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) throw new Error("Not authenticated");
 
       const newPhotoUrls = profile?.photo_urls?.filter((_, i) => i !== indexToRemove) || [];
@@ -331,7 +331,7 @@ const ArtistProfile = () => {
   const handleSaveProfile = async () => {
     setSaving(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) throw new Error("Not authenticated");
 
       // Update basic profile
@@ -381,7 +381,7 @@ const ArtistProfile = () => {
     }
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) throw new Error("Not authenticated");
 
       const newVideos = [...(artistProfile?.youtube_videos || []), { url: youtubeUrl, title: youtubeTitle }];
@@ -408,7 +408,7 @@ const ArtistProfile = () => {
 
   const handleRemoveVideo = async (index: number) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) throw new Error("Not authenticated");
 
       const newVideos = artistProfile?.youtube_videos.filter((_, i) => i !== index) || [];

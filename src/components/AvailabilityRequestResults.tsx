@@ -136,7 +136,7 @@ export function AvailabilityRequestResults({ requestId, onBack }: AvailabilityRe
 
     setCreatingGig(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) throw new Error("Not authenticated");
 
       // Create the gig

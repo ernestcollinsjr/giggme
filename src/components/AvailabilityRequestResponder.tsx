@@ -46,7 +46,7 @@ export function AvailabilityRequestResponder() {
 
   const fetchRequests = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) return;
 
       const allRequests: AvailabilityRequest[] = [];
@@ -145,7 +145,7 @@ export function AvailabilityRequestResponder() {
 
     setSubmitting(requestId);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) throw new Error("Not authenticated");
 
       const availableDates = dates.map(d => format(d, "yyyy-MM-dd"));

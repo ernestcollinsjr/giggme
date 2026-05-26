@@ -132,7 +132,7 @@ export const SetlistManager = () => {
 
   const fetchBands = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       console.log('[SetlistManager] Current user:', user?.id);
       if (!user) return;
 
@@ -171,7 +171,7 @@ export const SetlistManager = () => {
     }
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) return;
 
       const { data: setlistsData, error: setlistsError } = await supabase
@@ -288,7 +288,7 @@ export const SetlistManager = () => {
     }
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) return;
 
       const { error } = await supabase.from("setlists").insert({
@@ -644,7 +644,7 @@ export const SetlistManager = () => {
     
     setGeneratingShare(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) throw new Error("Not authenticated");
 
       const { data, error } = await supabase
@@ -768,7 +768,7 @@ export const SetlistManager = () => {
     setUploading(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) return;
 
       const setlist = setlists.find((s) => s.id === selectedSetlist);

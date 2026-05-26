@@ -62,7 +62,7 @@ const Notifications = () => {
     let channel: ReturnType<typeof supabase.channel> | null = null;
 
     const init = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) {
         navigate("/auth");
         return;

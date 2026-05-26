@@ -66,7 +66,7 @@ export default function Tours() {
   }, []);
 
   const checkUserRole = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
     if (!user) {
       navigate("/auth");
       return;
@@ -115,7 +115,7 @@ export default function Tours() {
   const handleCreateTour = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
     if (!user) return;
 
     try {
@@ -167,7 +167,7 @@ export default function Tours() {
       return;
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
     if (!user) return;
 
     setIsBookingGig(true);

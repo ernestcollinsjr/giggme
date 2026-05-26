@@ -60,7 +60,7 @@ const EntertainerMarketplace = () => {
 
   const fetchEntertainers = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       
       // Fetch venue for this owner
       if (user) {

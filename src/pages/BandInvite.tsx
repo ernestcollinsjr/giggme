@@ -119,6 +119,26 @@ const BandInvite = () => {
 
       if (updateError) throw updateError;
 
+      // Auto-fill the member's band_name on their profile if not already set
+      try {
+        const bandName = (invitation as any).bands?.name;
+        if (bandName) {
+          const { data: existingProfile } = await supabase
+            .from("profiles")
+            .select("band_name")
+            .eq("id", user.id)
+            .maybeSingle();
+          if (!existingProfile?.band_name) {
+            await supabase
+              .from("profiles")
+              .update({ band_name: bandName })
+              .eq("id", user.id);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to set band_name on profile:", e);
+      }
+
       // Notify band leader via edge function (fire and forget)
       supabase.functions.invoke("notify-invitation-accepted", {
         body: {

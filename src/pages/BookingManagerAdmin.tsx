@@ -562,7 +562,8 @@ export default function BookingManagerAdmin() {
             )}
           </aside>
 
-          {/* RIGHT: Booked dates */}
+          {/* RIGHT: Booked dates + pending invites */}
+          <div className="space-y-4">
           <section className="bg-card border rounded-lg p-4">
             <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
               <div className="flex items-center gap-2 min-w-0">

@@ -433,7 +433,7 @@ export default function BookingManager() {
             </Button>
             <Button onClick={() => navigate("/artists")} size="sm" variant="secondary" className="gap-1 text-xs sm:text-sm">
               <Search className="h-4 w-4" />
-              <span className="hidden sm:inline">Discover</span> Talent
+              <span className="hidden sm:inline">Search</span> Talent
             </Button>
           </div>
         </div>

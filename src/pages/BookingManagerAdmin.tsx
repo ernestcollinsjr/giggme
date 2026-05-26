@@ -498,56 +498,108 @@ export default function BookingManagerAdmin() {
             {visibleGigs.length === 0 ? (
               <div className="text-center py-12 text-sm text-muted-foreground">
                 {selectedArtist
-                  ? "No upcoming bookings for this performer."
-                  : "No upcoming bookings yet."}
+                  ? "No bookings for this performer."
+                  : "No bookings yet."}
               </div>
             ) : (
-              <ul className="divide-y">
-                {visibleGigs.map((gig) => {
-                  const artist = managedArtists.find((a) => a.artist_id === gig.artist_id);
-                  const photo = artist?.profile.photo_urls?.[0];
-                  const d = new Date(gig.date);
-                  return (
-                    <li key={`${gig.id}-${gig.artist_id}`} className="py-3 flex items-center gap-3">
-                      <div className="flex flex-col items-center justify-center w-12 h-12 rounded-md bg-muted text-center flex-shrink-0">
-                        <span className="text-[10px] uppercase font-medium text-muted-foreground leading-none">
-                          {d.toLocaleDateString("en-US", { month: "short" })}
-                        </span>
-                        <span className="text-lg font-bold leading-none mt-0.5">{d.getDate()}</span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{gig.venue_name || gig.venue}</p>
-                        {gig.venue_name && (
-                          <p className="text-xs text-muted-foreground truncate">{gig.venue}</p>
-                        )}
-                        <div className="flex items-center gap-2 mt-1">
-                          <Avatar className="h-5 w-5">
-                            {photo && <AvatarImage src={photo} alt={gig.artist_name} />}
-                            <AvatarFallback className="text-[10px]">
-                              {gig.artist_name.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="text-xs text-muted-foreground truncate">
-                            {gig.artist_name}
-                          </span>
-                        </div>
-                      </div>
-                      <Badge
-                        variant={
-                          gig.status === "confirmed"
-                            ? "default"
-                            : gig.status === "pending"
-                            ? "secondary"
-                            : "outline"
-                        }
-                        className="flex-shrink-0"
-                      >
-                        {gig.status}
-                      </Badge>
-                    </li>
-                  );
-                })}
-              </ul>
+              <div className="space-y-6">
+                {upcomingVisible.length > 0 && (
+                  <ul className="divide-y">
+                    {upcomingVisible.map((gig) => {
+                      const artist = managedArtists.find((a) => a.artist_id === gig.artist_id);
+                      const photo = artist?.profile.photo_urls?.[0];
+                      const d = new Date(gig.date);
+                      return (
+                        <li key={`${gig.id}-${gig.artist_id}`} className="py-3 flex items-center gap-3">
+                          <div className="flex flex-col items-center justify-center w-12 h-12 rounded-md bg-muted text-center flex-shrink-0">
+                            <span className="text-[10px] uppercase font-medium text-muted-foreground leading-none">
+                              {d.toLocaleDateString("en-US", { month: "short" })}
+                            </span>
+                            <span className="text-lg font-bold leading-none mt-0.5">{d.getDate()}</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium truncate">{gig.venue_name || gig.venue}</p>
+                            {gig.venue_name && (
+                              <p className="text-xs text-muted-foreground truncate">{gig.venue}</p>
+                            )}
+                            <div className="flex items-center gap-2 mt-1">
+                              <Avatar className="h-5 w-5">
+                                {photo && <AvatarImage src={photo} alt={gig.artist_name} />}
+                                <AvatarFallback className="text-[10px]">
+                                  {gig.artist_name.charAt(0)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="text-xs text-muted-foreground truncate">
+                                {gig.artist_name}
+                              </span>
+                            </div>
+                          </div>
+                          <Badge
+                            variant={
+                              gig.status === "confirmed"
+                                ? "default"
+                                : gig.status === "pending"
+                                ? "secondary"
+                                : "outline"
+                            }
+                            className="flex-shrink-0"
+                          >
+                            {gig.status}
+                          </Badge>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+
+                {completedVisible.length > 0 && (
+                  <div>
+                    <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+                      Completed
+                    </h3>
+                    <ul className="divide-y opacity-60">
+                      {completedVisible.map((gig) => {
+                        const artist = managedArtists.find((a) => a.artist_id === gig.artist_id);
+                        const photo = artist?.profile.photo_urls?.[0];
+                        const d = new Date(gig.date);
+                        return (
+                          <li
+                            key={`${gig.id}-${gig.artist_id}-done`}
+                            className="py-3 flex items-center gap-3 text-muted-foreground"
+                          >
+                            <div className="flex flex-col items-center justify-center w-12 h-12 rounded-md bg-muted/50 text-center flex-shrink-0">
+                              <span className="text-[10px] uppercase font-medium leading-none">
+                                {d.toLocaleDateString("en-US", { month: "short" })}
+                              </span>
+                              <span className="text-lg font-bold leading-none mt-0.5">{d.getDate()}</span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium truncate line-through decoration-muted-foreground/40">
+                                {gig.venue_name || gig.venue}
+                              </p>
+                              {gig.venue_name && (
+                                <p className="text-xs truncate">{gig.venue}</p>
+                              )}
+                              <div className="flex items-center gap-2 mt-1">
+                                <Avatar className="h-5 w-5 grayscale">
+                                  {photo && <AvatarImage src={photo} alt={gig.artist_name} />}
+                                  <AvatarFallback className="text-[10px]">
+                                    {gig.artist_name.charAt(0)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="text-xs truncate">{gig.artist_name}</span>
+                              </div>
+                            </div>
+                            <Badge variant="outline" className="flex-shrink-0">
+                              Completed
+                            </Badge>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                )}
+              </div>
             )}
           </section>
         </div>

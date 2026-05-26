@@ -109,8 +109,11 @@ const ArtistProfile = () => {
         `Booking request for ${profile?.name || "you"}`,
         `Date: ${bookingForm.date}${bookingForm.startTime ? ` at ${bookingForm.startTime}` : ""}${bookingForm.endTime ? ` – ${bookingForm.endTime}` : ""}`,
         `Venue: ${bookingForm.venue.trim()}`,
+        bookingForm.venuePhone.trim() ? `Venue Phone: ${bookingForm.venuePhone.trim()}` : null,
         bookingForm.budget.trim() ? `Budget: ${bookingForm.budget.trim()}` : null,
-        bookingForm.notes.trim() ? `Notes: ${bookingForm.notes.trim()}` : null,
+        bookingForm.contactPerson.trim() ? `Contact Person: ${bookingForm.contactPerson.trim()}` : null,
+        bookingForm.dressCode.trim() ? `Dress Code: ${bookingForm.dressCode.trim()}` : null,
+        bookingForm.foodDiscounts.trim() ? `Food/Discounts: ${bookingForm.foodDiscounts.trim()}` : null,
       ].filter(Boolean).join("\n");
 
       const { error } = await supabase.from("messages").insert({
@@ -126,7 +129,7 @@ const ArtistProfile = () => {
         description: `Your request was sent to ${profile?.name || "the performer"}.`,
       });
       setBookingOpen(false);
-      setBookingForm({ date: "", startTime: "", endTime: "", venue: "", budget: "", notes: "" });
+      setBookingForm({ date: "", startTime: "", endTime: "", venue: "", venueLat: null, venueLng: null, venuePhone: "", budget: "", foodDiscounts: "", dressCode: "", contactPerson: "" });
       navigate(`/chat?recipient=${userId}`);
     } catch (err: any) {
       toast({

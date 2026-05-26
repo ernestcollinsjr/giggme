@@ -72,6 +72,19 @@ export const SentBookingRequests = () => {
     setRequests((prev) => prev.filter((r) => r.id !== id));
     toast({ title: "Booking request deleted" });
   };
+  const handleToggleReminders = async (id: string, disabled: boolean) => {
+    const { error } = await supabase
+      .from("booking_requests")
+      .update({ auto_reminders_disabled: disabled })
+      .eq("id", id);
+    if (error) {
+      toast({ title: "Failed to update", description: error.message, variant: "destructive" });
+      return;
+    }
+    setRequests((prev) => prev.map((r) => (r.id === id ? { ...r, auto_reminders_disabled: disabled } : r)));
+    toast({ title: disabled ? "Auto reminders off" : "Auto reminders on" });
+  };
+
 
   const fetchRequests = async () => {
     const { data: { session } } = await supabase.auth.getSession();

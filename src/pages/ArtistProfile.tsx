@@ -547,16 +547,61 @@ const ArtistProfile = () => {
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 pt-2">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div className="space-y-1.5">
-                        <Label htmlFor="booking-date">Date *</Label>
-                        <Input
-                          id="booking-date"
-                          type="date"
-                          value={bookingForm.date}
-                          onChange={(e) => setBookingForm({ ...bookingForm, date: e.target.value })}
-                        />
-                      </div>
+                    <div className="space-y-1.5">
+                      <Label>Dates * <span className="text-xs text-muted-foreground font-normal">(select one or more)</span></Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              bookingForm.dates.length === 0 && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {bookingForm.dates.length === 0
+                              ? "Pick one or more dates"
+                              : `${bookingForm.dates.length} date${bookingForm.dates.length > 1 ? "s" : ""} selected`}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="multiple"
+                            selected={bookingForm.dates}
+                            onSelect={(dates) => setBookingForm({ ...bookingForm, dates: dates || [] })}
+                            disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0))}
+                            initialFocus
+                            className={cn("p-3 pointer-events-auto")}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      {bookingForm.dates.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 pt-1">
+                          {[...bookingForm.dates]
+                            .sort((a, b) => a.getTime() - b.getTime())
+                            .map((d) => (
+                              <Badge key={d.toISOString()} variant="secondary" className="gap-1 pr-1">
+                                {format(d, "MMM d")}
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setBookingForm({
+                                      ...bookingForm,
+                                      dates: bookingForm.dates.filter((x) => x.getTime() !== d.getTime()),
+                                    })
+                                  }
+                                  className="ml-0.5 rounded-sm hover:bg-muted-foreground/20 p-0.5"
+                                  aria-label={`Remove ${format(d, "MMM d")}`}
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </Badge>
+                            ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1.5">
                         <Label htmlFor="booking-start">Start</Label>
                         <Input

@@ -1913,6 +1913,20 @@ const Bookings = () => {
               />
             </div>
 
+            <div className="flex items-center justify-between rounded-lg border p-3">
+              <div className="space-y-0.5 pr-3">
+                <Label>Disable automatic reminders</Label>
+                <p className="text-xs text-muted-foreground">
+                  Turn off the auto 1-day and 2-hour reminder emails for this gig.
+                </p>
+              </div>
+              <Switch
+                checked={editAutoRemindersDisabled}
+                onCheckedChange={setEditAutoRemindersDisabled}
+              />
+            </div>
+
+
             <Button onClick={handleUpdateGig} disabled={isSubmitting} className="w-full">
               Save Changes
             </Button>

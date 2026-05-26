@@ -20,7 +20,7 @@
     "noUnusedParameters": false,
     "noImplicitAny": false,
     "noFallthroughCasesInSwitch": false,
-    "types": ["vite/client", "google.maps"],
+    
     "paths": {
       "@/*": [
         "./src/*"

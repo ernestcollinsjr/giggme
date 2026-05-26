@@ -82,6 +82,8 @@ export default function BookingManager() {
   const [addArtistDialogOpen, setAddArtistDialogOpen] = useState(false);
   const [selectedArtistToAdd, setSelectedArtistToAdd] = useState<Profile | null>(null);
   const [artistGroupType, setArtistGroupType] = useState("solo");
+  const [bookTalentOpen, setBookTalentOpen] = useState(false);
+  const [bookTalentSearch, setBookTalentSearch] = useState("");
 
   useEffect(() => {
     checkRole();

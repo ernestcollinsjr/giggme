@@ -382,6 +382,7 @@ export type Database = {
           created_at: string
           dates_text: string
           dress_code: string | null
+          event_date: string | null
           expired_notified_at: string | null
           expires_at: string
           id: string
@@ -389,6 +390,8 @@ export type Database = {
           performer_email: string | null
           performer_id: string
           performer_name: string | null
+          reminder_1d_sent_at: string | null
+          reminder_2h_sent_at: string | null
           responded_at: string | null
           status: Database["public"]["Enums"]["booking_request_status"]
           time_text: string | null
@@ -405,6 +408,7 @@ export type Database = {
           created_at?: string
           dates_text: string
           dress_code?: string | null
+          event_date?: string | null
           expired_notified_at?: string | null
           expires_at?: string
           id?: string
@@ -412,6 +416,8 @@ export type Database = {
           performer_email?: string | null
           performer_id: string
           performer_name?: string | null
+          reminder_1d_sent_at?: string | null
+          reminder_2h_sent_at?: string | null
           responded_at?: string | null
           status?: Database["public"]["Enums"]["booking_request_status"]
           time_text?: string | null
@@ -428,6 +434,7 @@ export type Database = {
           created_at?: string
           dates_text?: string
           dress_code?: string | null
+          event_date?: string | null
           expired_notified_at?: string | null
           expires_at?: string
           id?: string
@@ -435,6 +442,8 @@ export type Database = {
           performer_email?: string | null
           performer_id?: string
           performer_name?: string | null
+          reminder_1d_sent_at?: string | null
+          reminder_2h_sent_at?: string | null
           responded_at?: string | null
           status?: Database["public"]["Enums"]["booking_request_status"]
           time_text?: string | null
@@ -578,6 +587,8 @@ export type Database = {
           id: string
           location_sharing_enabled: boolean | null
           member_id: string
+          reminder_1d_sent_at: string | null
+          reminder_2h_sent_at: string | null
           replaced_by: string | null
           replacement_reason: string | null
           replacement_triggered: boolean | null
@@ -591,6 +602,8 @@ export type Database = {
           id?: string
           location_sharing_enabled?: boolean | null
           member_id: string
+          reminder_1d_sent_at?: string | null
+          reminder_2h_sent_at?: string | null
           replaced_by?: string | null
           replacement_reason?: string | null
           replacement_triggered?: boolean | null
@@ -604,6 +617,8 @@ export type Database = {
           id?: string
           location_sharing_enabled?: boolean | null
           member_id?: string
+          reminder_1d_sent_at?: string | null
+          reminder_2h_sent_at?: string | null
           replaced_by?: string | null
           replacement_reason?: string | null
           replacement_triggered?: boolean | null

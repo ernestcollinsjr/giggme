@@ -703,6 +703,55 @@ export default function BookingManagerAdmin() {
             )}
           </section>
 
+          {/* Availability (when an artist is selected) */}
+          {selectedArtist && (
+            <section className="bg-card border rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-4">
+                <Calendar className="h-5 w-5 text-muted-foreground" />
+                <h2 className="text-lg font-semibold">
+                  {selectedArtist.profile.name}'s availability
+                </h2>
+                <Badge variant="secondary" className="ml-auto">
+                  {artistAvailability.length}
+                </Badge>
+              </div>
+              {artistAvailability.length === 0 ? (
+                <div className="text-center py-8 text-sm text-muted-foreground">
+                  No availability set by this performer.
+                </div>
+              ) : (
+                <ul className="divide-y">
+                  {artistAvailability.map((a) => {
+                    const d = new Date(a.date);
+                    const isAvailable = a.status === "available";
+                    return (
+                      <li key={a.date} className="py-3 flex items-center gap-3">
+                        <div className="flex flex-col items-center justify-center w-12 h-12 rounded-md bg-muted text-center flex-shrink-0">
+                          <span className="text-[10px] uppercase font-medium text-muted-foreground leading-none">
+                            {d.toLocaleDateString("en-US", { month: "short" })}
+                          </span>
+                          <span className="text-lg font-bold leading-none mt-0.5">{d.getDate()}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium capitalize">{a.status}</p>
+                          {a.notes && (
+                            <p className="text-xs text-muted-foreground truncate">{a.notes}</p>
+                          )}
+                        </div>
+                        <span
+                          className={cn(
+                            "h-2.5 w-2.5 rounded-full flex-shrink-0",
+                            isAvailable ? "bg-green-500" : "bg-red-500"
+                          )}
+                        />
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </section>
+          )}
+
           {/* Pending invites box */}
           <section className="bg-card border rounded-lg p-4">
             <div className="flex items-center gap-2 mb-4">

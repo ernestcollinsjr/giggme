@@ -539,7 +539,7 @@ const ArtistProfile = () => {
                 Book This Performer
               </Button>
               <Dialog open={bookingOpen} onOpenChange={setBookingOpen}>
-                <DialogContent>
+                <DialogContent className="max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>Book {profile?.name || "this performer"}</DialogTitle>
                     <DialogDescription>

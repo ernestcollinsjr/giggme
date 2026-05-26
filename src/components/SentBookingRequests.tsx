@@ -46,6 +46,19 @@ function Countdown({ expiresAt }: { expiresAt: string }) {
 export const SentBookingRequests = () => {
   const [requests, setRequests] = useState<BookingRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this booking request?")) return;
+    const { error } = await supabase.from("booking_requests").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Failed to delete", description: error.message, variant: "destructive" });
+      return;
+    }
+    setRequests((prev) => prev.filter((r) => r.id !== id));
+    toast({ title: "Booking request deleted" });
+  };
+  const [loading, setLoading] = useState(true);
 
   const fetchRequests = async () => {
     const { data: { session } } = await supabase.auth.getSession();

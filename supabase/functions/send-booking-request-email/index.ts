@@ -85,7 +85,7 @@ Deno.serve(async (req) => {
 
     const appUrl = p.appUrl || 'https://giggme.com';
     const respondUrl = `${appUrl}/booking-request/${bookingRequest.id}`;
-    const expiresIn = '2 hours';
+    const expiresIn = '2 minutes';
 
     const row = (label: string, value?: string) =>
       value

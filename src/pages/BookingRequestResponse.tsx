@@ -167,7 +167,7 @@ export default function BookingRequestResponse() {
             {effectiveStatus === "expired" && (
               <div className="rounded-lg border bg-muted/40 p-4 text-sm">
                 <div className="font-medium">This request has expired.</div>
-                <div className="text-muted-foreground text-xs mt-1">It was not responded to within the 2-hour window.</div>
+                <div className="text-muted-foreground text-xs mt-1">It was not responded to within the 2-minute window.</div>
               </div>
             )}
 

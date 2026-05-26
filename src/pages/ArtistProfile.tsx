@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Plus, Trash2, Youtube, ArrowLeft, Loader2, Mail, Phone, MessageCircle, DollarSign, History, TrendingUp } from "lucide-react";
+import { Upload, Plus, Trash2, Youtube, ArrowLeft, Loader2, Mail, Phone, MessageCircle, DollarSign, History, TrendingUp, CalendarCheck } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
 import { TopNav } from "@/components/TopNav";
@@ -450,11 +450,19 @@ const ArtistProfile = () => {
             {profile?.name || "Artist"}{artistProfile?.genre ? ` - ${artistProfile.genre}` : ""} Profile
           </h1>
           
-          {/* Contact Artist Button - Only show when viewing another artist's profile */}
+          {/* Booking Actions - Only show when viewing another artist's profile */}
           {!isOwnProfile && (
+            <div className="flex flex-wrap gap-2">
+              <Button
+                className="flex items-center gap-2"
+                onClick={() => navigate(`/chat?recipient=${userId}&intent=booking&subject=${encodeURIComponent(`Booking inquiry for ${profile?.name || "you"}`)}`)}
+              >
+                <CalendarCheck className="h-4 w-4" />
+                Book This Performer
+              </Button>
             <Dialog>
               <DialogTrigger asChild>
-                <Button className="flex items-center gap-2">
+                <Button variant="outline" className="flex items-center gap-2">
                   <MessageCircle className="h-4 w-4" />
                   Contact Artist
                 </Button>
@@ -510,6 +518,7 @@ const ArtistProfile = () => {
                 </div>
               </DialogContent>
             </Dialog>
+            </div>
           )}
         </div>
 

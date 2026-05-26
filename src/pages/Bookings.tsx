@@ -126,6 +126,7 @@ const Bookings = () => {
   const [editFoodProvided, setEditFoodProvided] = useState("");
   const [editVenueContactPerson, setEditVenueContactPerson] = useState("");
   const [editSoundManInfo, setEditSoundManInfo] = useState("");
+  const [editAutoRemindersDisabled, setEditAutoRemindersDisabled] = useState(false);
 
   useEffect(() => {
     checkAuthAndFetchData();
@@ -770,6 +771,7 @@ const Bookings = () => {
     setEditFoodProvided(gig.food_provided || "");
     setEditVenueContactPerson(gig.venue_contact_person || "");
     setEditSoundManInfo(gig.sound_man_info || "");
+    setEditAutoRemindersDisabled((gig as any).auto_reminders_disabled ?? false);
     setEditDialogOpen(true);
   };
 
@@ -805,6 +807,7 @@ const Bookings = () => {
           food_provided: editFoodProvided.trim() || null,
           venue_contact_person: editVenueContactPerson.trim() || null,
           sound_man_info: editSoundManInfo.trim() || null,
+          auto_reminders_disabled: editAutoRemindersDisabled,
         })
         .eq("id", editingGig.id);
 
@@ -1909,6 +1912,20 @@ const Bookings = () => {
                 onChange={(e) => setEditSoundManInfo(e.target.value)}
               />
             </div>
+
+            <div className="flex items-center justify-between rounded-lg border p-3">
+              <div className="space-y-0.5 pr-3">
+                <Label>Disable automatic reminders</Label>
+                <p className="text-xs text-muted-foreground">
+                  Turn off the auto 1-day and 2-hour reminder emails for this gig.
+                </p>
+              </div>
+              <Switch
+                checked={editAutoRemindersDisabled}
+                onCheckedChange={setEditAutoRemindersDisabled}
+              />
+            </div>
+
 
             <Button onClick={handleUpdateGig} disabled={isSubmitting} className="w-full">
               Save Changes

@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Mail, MapPin, Calendar, Clock, Trash2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Mail, MapPin, Calendar, Clock, Trash2, BellOff } from "lucide-react";
 
 interface BookingRequest {
   id: string;
@@ -17,6 +18,7 @@ interface BookingRequest {
   expires_at: string;
   created_at: string;
   responded_at: string | null;
+  auto_reminders_disabled: boolean;
 }
 
 const statusVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
@@ -70,6 +72,19 @@ export const SentBookingRequests = () => {
     setRequests((prev) => prev.filter((r) => r.id !== id));
     toast({ title: "Booking request deleted" });
   };
+  const handleToggleReminders = async (id: string, disabled: boolean) => {
+    const { error } = await supabase
+      .from("booking_requests")
+      .update({ auto_reminders_disabled: disabled })
+      .eq("id", id);
+    if (error) {
+      toast({ title: "Failed to update", description: error.message, variant: "destructive" });
+      return;
+    }
+    setRequests((prev) => prev.map((r) => (r.id === id ? { ...r, auto_reminders_disabled: disabled } : r)));
+    toast({ title: disabled ? "Auto reminders off" : "Auto reminders on" });
+  };
+
 
   const fetchRequests = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -78,7 +93,7 @@ export const SentBookingRequests = () => {
 
     const { data, error } = await supabase
       .from("booking_requests")
-      .select("id, performer_name, performer_email, venue, dates_text, time_text, status, expires_at, created_at, responded_at")
+      .select("id, performer_name, performer_email, venue, dates_text, time_text, status, expires_at, created_at, responded_at, auto_reminders_disabled")
       .eq("booker_id", user.id)
       .order("created_at", { ascending: false });
 
@@ -155,6 +170,18 @@ export const SentBookingRequests = () => {
                       <Clock className="h-4 w-4 text-muted-foreground" />
                       <Countdown expiresAt={r.expires_at} />
                     </div>
+                  )}
+                  {r.status === "accepted" && (
+                    <label
+                      className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer"
+                      title="Disable automatic 1-day and 2-hour reminder emails"
+                    >
+                      <BellOff className="h-3.5 w-3.5" />
+                      <Switch
+                        checked={r.auto_reminders_disabled}
+                        onCheckedChange={(v) => handleToggleReminders(r.id, v)}
+                      />
+                    </label>
                   )}
                   <Button
                     variant="ghost"

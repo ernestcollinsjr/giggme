@@ -103,6 +103,7 @@ Deno.serve(async (req) => {
     .from('booking_requests')
     .select('id, performer_email, performer_name, venue, event_date, note')
     .eq('status', 'accepted')
+    .eq('auto_reminders_disabled', false)
     .is('reminder_1d_sent_at', null)
     .not('event_date', 'is', null)
     .gt('event_date', lower1d)
@@ -136,6 +137,7 @@ Deno.serve(async (req) => {
     .from('booking_requests')
     .select('id, performer_email, performer_name, venue, event_date, note')
     .eq('status', 'accepted')
+    .eq('auto_reminders_disabled', false)
     .is('reminder_2h_sent_at', null)
     .not('event_date', 'is', null)
     .gt('event_date', lower2h)
@@ -169,8 +171,9 @@ Deno.serve(async (req) => {
   async function processGigWindow(field: 'reminder_1d_sent_at' | 'reminder_2h_sent_at', lo: string, hi: string, label: string, subjectPrefix: string) {
     const { data: gms } = await supabase
       .from('gig_members')
-      .select(`id, member_id, ${field}, gigs!inner(id, date, venue, venue_name, notes)`)
+      .select(`id, member_id, ${field}, gigs!inner(id, date, venue, venue_name, notes, auto_reminders_disabled)`)
       .eq('status', 'accepted')
+      .eq('gigs.auto_reminders_disabled', false)
       .is(field, null)
       .gt('gigs.date', lo)
       .lte('gigs.date', hi);

@@ -1,5 +1,4 @@
 // Ambient declarations for Google Maps JS API loaded at runtime via script tag.
-// Using `any` keeps the surface minimal — we don't need full type fidelity.
 declare namespace google.maps {
   type LatLngLiteral = any;
   type Map = any;
@@ -17,3 +16,5 @@ declare namespace google.maps {
     function clearInstanceListeners(instance: any): void;
   }
 }
+
+declare var google: any;

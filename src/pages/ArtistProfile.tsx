@@ -73,6 +73,65 @@ const ArtistProfile = () => {
   const [newTip, setNewTip] = useState({ tipper_name: "", amount: "", payment_method: "venmo", note: "" });
   const [addingTip, setAddingTip] = useState(false);
   const [profileUserId, setProfileUserId] = useState<string>("");
+  const [bookingOpen, setBookingOpen] = useState(false);
+  const [bookingSubmitting, setBookingSubmitting] = useState(false);
+  const [bookingForm, setBookingForm] = useState({
+    date: "",
+    startTime: "",
+    endTime: "",
+    venue: "",
+    budget: "",
+    notes: "",
+  });
+
+  const handleSendBookingRequest = async () => {
+    if (!bookingForm.date || !bookingForm.venue.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Missing information",
+        description: "Please enter at least a date and venue.",
+      });
+      return;
+    }
+    setBookingSubmitting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user ?? null;
+      if (!user) throw new Error("Not authenticated");
+
+      const lines = [
+        `Booking request for ${profile?.name || "you"}`,
+        `Date: ${bookingForm.date}${bookingForm.startTime ? ` at ${bookingForm.startTime}` : ""}${bookingForm.endTime ? ` – ${bookingForm.endTime}` : ""}`,
+        `Venue: ${bookingForm.venue.trim()}`,
+        bookingForm.budget.trim() ? `Budget: ${bookingForm.budget.trim()}` : null,
+        bookingForm.notes.trim() ? `Notes: ${bookingForm.notes.trim()}` : null,
+      ].filter(Boolean).join("\n");
+
+      const { error } = await supabase.from("messages").insert({
+        sender_id: user.id,
+        recipient_id: userId,
+        content: lines,
+        is_group_message: false,
+      });
+      if (error) throw error;
+
+      toast({
+        title: "Booking request sent",
+        description: `Your request was sent to ${profile?.name || "the performer"}.`,
+      });
+      setBookingOpen(false);
+      setBookingForm({ date: "", startTime: "", endTime: "", venue: "", budget: "", notes: "" });
+      navigate(`/chat?recipient=${userId}`);
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: "Could not send request",
+        description: err.message || "Please try again.",
+      });
+    } finally {
+      setBookingSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     fetchProfiles();
@@ -455,11 +514,96 @@ const ArtistProfile = () => {
             <div className="flex flex-wrap gap-2">
               <Button
                 className="flex items-center gap-2"
-                onClick={() => navigate(`/chat?recipient=${userId}&intent=booking&subject=${encodeURIComponent(`Booking inquiry for ${profile?.name || "you"}`)}`)}
+                onClick={() => setBookingOpen(true)}
               >
                 <CalendarCheck className="h-4 w-4" />
                 Book This Performer
               </Button>
+              <Dialog open={bookingOpen} onOpenChange={setBookingOpen}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Book {profile?.name || "this performer"}</DialogTitle>
+                    <DialogDescription>
+                      Send a booking request with the gig details. The performer will receive it as a direct message.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 pt-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="booking-date">Date *</Label>
+                        <Input
+                          id="booking-date"
+                          type="date"
+                          value={bookingForm.date}
+                          onChange={(e) => setBookingForm({ ...bookingForm, date: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="booking-start">Start</Label>
+                        <Input
+                          id="booking-start"
+                          type="time"
+                          value={bookingForm.startTime}
+                          onChange={(e) => setBookingForm({ ...bookingForm, startTime: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="booking-end">End</Label>
+                        <Input
+                          id="booking-end"
+                          type="time"
+                          value={bookingForm.endTime}
+                          onChange={(e) => setBookingForm({ ...bookingForm, endTime: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="booking-venue">Venue *</Label>
+                      <Input
+                        id="booking-venue"
+                        placeholder="Venue name or address"
+                        value={bookingForm.venue}
+                        onChange={(e) => setBookingForm({ ...bookingForm, venue: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="booking-budget">Budget (optional)</Label>
+                      <Input
+                        id="booking-budget"
+                        placeholder="e.g. $500"
+                        value={bookingForm.budget}
+                        onChange={(e) => setBookingForm({ ...bookingForm, budget: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="booking-notes">Notes (optional)</Label>
+                      <Textarea
+                        id="booking-notes"
+                        placeholder="Set length, genre, dress code, etc."
+                        value={bookingForm.notes}
+                        onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })}
+                      />
+                    </div>
+                    <Button
+                      className="w-full"
+                      onClick={handleSendBookingRequest}
+                      disabled={bookingSubmitting}
+                    >
+                      {bookingSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <CalendarCheck className="mr-2 h-4 w-4" />
+                          Send Booking Request
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             <Dialog>
               <DialogTrigger asChild>
                 <Button variant="outline" className="flex items-center gap-2">

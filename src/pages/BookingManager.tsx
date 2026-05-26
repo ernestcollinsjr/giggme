@@ -833,6 +833,9 @@ export default function BookingManager() {
           />
         )}
 
+        {/* Sent Booking Requests */}
+        <SentBookingRequests />
+
         {/* Scheduled Reminders */}
         <ScheduledRemindersManager />
 

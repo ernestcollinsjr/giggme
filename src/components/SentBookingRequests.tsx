@@ -134,7 +134,7 @@ export const SentBookingRequests = () => {
                       <Calendar className="h-3 w-3" />
                       {r.dates_text}
                     </span>
-                    {r.time_text && <span>{r.time_text}</span>}
+                    {r.time_text && <span>{formatTime12h(r.time_text)}</span>}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">

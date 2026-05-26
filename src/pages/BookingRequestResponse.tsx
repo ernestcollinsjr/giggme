@@ -221,8 +221,13 @@ export default function BookingRequestResponse() {
               <div className="text-sm text-muted-foreground">You don't have permission to respond to this request.</div>
             )}
 
-            <div className="text-xs text-muted-foreground pt-2">
-              Sent {format(new Date(request.created_at), "MMM d, yyyy 'at' h:mm a")}
+            <div className="flex items-center justify-between gap-3 pt-2 flex-wrap">
+              <div className="text-xs text-muted-foreground">
+                Sent {format(new Date(request.created_at), "MMM d, yyyy 'at' h:mm a")}
+              </div>
+              <Button variant="outline" size="sm" onClick={() => navigate("/dashboard")}>
+                Go to dashboard
+              </Button>
             </div>
           </CardContent>
         </Card>

@@ -807,6 +807,7 @@ const Bookings = () => {
           food_provided: editFoodProvided.trim() || null,
           venue_contact_person: editVenueContactPerson.trim() || null,
           sound_man_info: editSoundManInfo.trim() || null,
+          auto_reminders_disabled: editAutoRemindersDisabled,
         })
         .eq("id", editingGig.id);
 

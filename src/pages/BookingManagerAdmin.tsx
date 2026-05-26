@@ -30,6 +30,8 @@ import {
   Users,
   Music2,
   X,
+  Bell,
+  CalendarPlus,
 } from "lucide-react";
 import { TopNav } from "@/components/TopNav";
 import BottomNav from "@/components/BottomNav";

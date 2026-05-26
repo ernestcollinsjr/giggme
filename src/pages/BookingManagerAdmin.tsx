@@ -445,10 +445,10 @@ export default function BookingManagerAdmin() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[20rem_1fr] gap-4">
-          {/* LEFT: Categorized roster */}
-          <aside className="bg-card border rounded-lg p-3 lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
-            <div className="relative mb-3">
+        <div className="space-y-4">
+          {/* TOP: Categorized roster (3 columns) */}
+          <aside className="bg-card border rounded-lg p-3">
+            <div className="relative mb-3 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search roster..."
@@ -463,12 +463,12 @@ export default function BookingManagerAdmin() {
                 No artists yet. Add some from Discover.
               </p>
             ) : (
-              <div className="space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {CATEGORIES.map((cat) => {
                   const Icon = CATEGORY_ICON[cat];
                   const items = grouped[cat];
                   return (
-                    <section key={cat}>
+                    <section key={cat} className="bg-muted/30 rounded-md p-3">
                       <header className="flex items-center gap-2 mb-2 px-1">
                         <Icon className="h-4 w-4 text-muted-foreground" />
                         <h2 className="text-sm font-semibold">{cat}</h2>
@@ -562,7 +562,7 @@ export default function BookingManagerAdmin() {
             )}
           </aside>
 
-          {/* RIGHT: Booked dates + pending invites */}
+          {/* BELOW: Booked dates + pending invites */}
           <div className="space-y-4">
           <section className="bg-card border rounded-lg p-4">
             <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">

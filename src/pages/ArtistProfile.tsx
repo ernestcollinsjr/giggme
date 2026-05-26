@@ -111,6 +111,7 @@ const ArtistProfile = () => {
         sender_id: user.id,
         recipient_id: userId,
         content: lines,
+        is_group_message: false,
       });
       if (error) throw error;
 

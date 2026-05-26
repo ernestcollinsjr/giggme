@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +36,10 @@ const newPasswordSchema = z.object({
 
 const Auth = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectParam = searchParams.get("redirect");
+  const safeRedirect = redirectParam && redirectParam.startsWith("/") && !redirectParam.startsWith("//") ? redirectParam : null;
+  const postAuthPath = safeRedirect || "/dashboard";
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [role, setRole] = useState<"band_leader" | "band_member" | "booking_manager" | "artist" | "venue_owner">("band_leader");
@@ -93,7 +97,7 @@ const Auth = () => {
         description: "You've successfully logged in.",
       });
       
-      navigate("/dashboard");
+      navigate(postAuthPath);
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         toast({
@@ -261,7 +265,7 @@ const Auth = () => {
       setIsResettingPassword(false);
       setNewPassword("");
       setConfirmPassword("");
-      navigate("/dashboard");
+      navigate(postAuthPath);
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         toast({

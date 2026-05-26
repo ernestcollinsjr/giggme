@@ -66,7 +66,7 @@ export const TopNav = ({ userRole }: TopNavProps) => {
 
   const bookingManagerLinks = [
     { path: "/booking-admin", label: "Admin", icon: Shield },
-    { path: "/booking-manager", label: "Roster", icon: Briefcase },
+    { path: "/booking-manager", label: "Dashboard", icon: Briefcase },
     { path: "/artists", label: "Discover", icon: Search },
   ];
 

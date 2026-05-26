@@ -97,7 +97,7 @@ const Auth = () => {
         description: "You've successfully logged in.",
       });
       
-      navigate("/dashboard");
+      navigate(postAuthPath);
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         toast({

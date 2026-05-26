@@ -134,6 +134,34 @@ const ArtistProfile = () => {
       });
       if (error) throw error;
 
+      // Send email notification to performer via Resend
+      if (profile?.email) {
+        const { data: senderProfile } = await supabase
+          .from("profiles")
+          .select("name, email")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        const { error: emailError } = await supabase.functions.invoke("send-booking-request-email", {
+          body: {
+            performerEmail: profile.email,
+            performerName: profile?.name,
+            bookerName: senderProfile?.name,
+            bookerEmail: senderProfile?.email || user.email,
+            dates: datesStr,
+            time: timeStr.trim(),
+            venue: bookingForm.venue.trim(),
+            venuePhone: bookingForm.venuePhone.trim() || undefined,
+            budget: bookingForm.budget.trim() || undefined,
+            contactPerson: bookingForm.contactPerson.trim() || undefined,
+            dressCode: bookingForm.dressCode.trim() || undefined,
+            note: bookingForm.foodDiscounts.trim() || undefined,
+            chatUrl: `${window.location.origin}/chat?recipient=${user.id}`,
+          },
+        });
+        if (emailError) console.error("Email send failed:", emailError);
+      }
+
       toast({
         title: "Booking request sent",
         description: `Your request was sent to ${profile?.name || "the performer"}.`,

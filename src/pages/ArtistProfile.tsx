@@ -9,8 +9,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Plus, Trash2, Youtube, ArrowLeft, Loader2, Mail, Phone, MessageCircle, DollarSign, History, TrendingUp, CalendarCheck } from "lucide-react";
+import { Upload, Plus, Trash2, Youtube, ArrowLeft, Loader2, Mail, Phone, MessageCircle, DollarSign, History, TrendingUp, CalendarCheck, Navigation } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { PlaceAutocomplete } from "@/components/PlaceAutocomplete";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
 import { TopNav } from "@/components/TopNav";
 import { AvailabilityCalendar } from "@/components/AvailabilityCalendar";
@@ -80,8 +81,13 @@ const ArtistProfile = () => {
     startTime: "",
     endTime: "",
     venue: "",
+    venueLat: null as number | null,
+    venueLng: null as number | null,
+    venuePhone: "",
     budget: "",
-    notes: "",
+    foodDiscounts: "",
+    dressCode: "",
+    contactPerson: "",
   });
 
   const handleSendBookingRequest = async () => {
@@ -103,8 +109,11 @@ const ArtistProfile = () => {
         `Booking request for ${profile?.name || "you"}`,
         `Date: ${bookingForm.date}${bookingForm.startTime ? ` at ${bookingForm.startTime}` : ""}${bookingForm.endTime ? ` – ${bookingForm.endTime}` : ""}`,
         `Venue: ${bookingForm.venue.trim()}`,
+        bookingForm.venuePhone.trim() ? `Venue Phone: ${bookingForm.venuePhone.trim()}` : null,
         bookingForm.budget.trim() ? `Budget: ${bookingForm.budget.trim()}` : null,
-        bookingForm.notes.trim() ? `Notes: ${bookingForm.notes.trim()}` : null,
+        bookingForm.contactPerson.trim() ? `Contact Person: ${bookingForm.contactPerson.trim()}` : null,
+        bookingForm.dressCode.trim() ? `Dress Code: ${bookingForm.dressCode.trim()}` : null,
+        bookingForm.foodDiscounts.trim() ? `Food/Discounts: ${bookingForm.foodDiscounts.trim()}` : null,
       ].filter(Boolean).join("\n");
 
       const { error } = await supabase.from("messages").insert({
@@ -120,7 +129,7 @@ const ArtistProfile = () => {
         description: `Your request was sent to ${profile?.name || "the performer"}.`,
       });
       setBookingOpen(false);
-      setBookingForm({ date: "", startTime: "", endTime: "", venue: "", budget: "", notes: "" });
+      setBookingForm({ date: "", startTime: "", endTime: "", venue: "", venueLat: null, venueLng: null, venuePhone: "", budget: "", foodDiscounts: "", dressCode: "", contactPerson: "" });
       navigate(`/chat?recipient=${userId}`);
     } catch (err: any) {
       toast({
@@ -559,11 +568,50 @@ const ArtistProfile = () => {
                     </div>
                     <div className="space-y-1.5">
                       <Label htmlFor="booking-venue">Venue *</Label>
+                      <div className="flex gap-2">
+                        <div className="flex-1">
+                          <PlaceAutocomplete
+                            value={bookingForm.venue}
+                            onChange={(val, place) => {
+                              const lat = place?.geometry?.location?.lat?.();
+                              const lng = place?.geometry?.location?.lng?.();
+                              const phone = (place as any)?.formatted_phone_number || (place as any)?.international_phone_number;
+                              setBookingForm((prev) => ({
+                                ...prev,
+                                venue: val,
+                                venueLat: typeof lat === "number" ? lat : prev.venueLat,
+                                venueLng: typeof lng === "number" ? lng : prev.venueLng,
+                                venuePhone: phone || prev.venuePhone,
+                              }));
+                            }}
+                            placeholder="Search venue or address"
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          title="Navigate"
+                          disabled={!bookingForm.venue.trim() && bookingForm.venueLat == null}
+                          onClick={() => {
+                            const dest = bookingForm.venueLat != null && bookingForm.venueLng != null
+                              ? `${bookingForm.venueLat},${bookingForm.venueLng}`
+                              : bookingForm.venue.trim();
+                            window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(dest)}`, "_blank");
+                          }}
+                        >
+                          <Navigation className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="booking-phone">Venue Phone</Label>
                       <Input
-                        id="booking-venue"
-                        placeholder="Venue name or address"
-                        value={bookingForm.venue}
-                        onChange={(e) => setBookingForm({ ...bookingForm, venue: e.target.value })}
+                        id="booking-phone"
+                        type="tel"
+                        placeholder="In case you're running late"
+                        value={bookingForm.venuePhone}
+                        onChange={(e) => setBookingForm({ ...bookingForm, venuePhone: e.target.value })}
                       />
                     </div>
                     <div className="space-y-1.5">
@@ -576,12 +624,30 @@ const ArtistProfile = () => {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label htmlFor="booking-notes">Notes (optional)</Label>
+                      <Label htmlFor="booking-contact">Contact Person</Label>
+                      <Input
+                        id="booking-contact"
+                        placeholder="Venue contact name"
+                        value={bookingForm.contactPerson}
+                        onChange={(e) => setBookingForm({ ...bookingForm, contactPerson: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="booking-dress">Dress Code</Label>
+                      <Input
+                        id="booking-dress"
+                        placeholder="e.g. all black, formal"
+                        value={bookingForm.dressCode}
+                        onChange={(e) => setBookingForm({ ...bookingForm, dressCode: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="booking-food">Food / Discounts</Label>
                       <Textarea
-                        id="booking-notes"
-                        placeholder="Set length, genre, dress code, etc."
-                        value={bookingForm.notes}
-                        onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })}
+                        id="booking-food"
+                        placeholder="Meal provided, drink discounts, etc."
+                        value={bookingForm.foodDiscounts}
+                        onChange={(e) => setBookingForm({ ...bookingForm, foodDiscounts: e.target.value })}
                       />
                     </div>
                     <Button

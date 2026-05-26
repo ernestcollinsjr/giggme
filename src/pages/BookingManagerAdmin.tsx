@@ -509,7 +509,7 @@ export default function BookingManagerAdmin() {
                                 >
                                   <button
                                     type="button"
-                                    onClick={() => setArtistFilter(isActive ? null : artist.artist_id)}
+                                    onClick={() => navigate(`/artist-profile/${artist.artist_id}?book=1`)}
                                     className="flex items-center gap-2 flex-1 min-w-0 text-left"
                                   >
                                     <Avatar className="h-8 w-8">

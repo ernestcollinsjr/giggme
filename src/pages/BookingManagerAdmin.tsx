@@ -462,11 +462,9 @@ export default function BookingManagerAdmin() {
                                         />
                                         <p className="text-sm font-medium truncate">{artist.profile.name}</p>
                                       </div>
-                                      {artist.profile.instrument && (
-                                        <p className="text-[11px] text-muted-foreground truncate">
-                                          {artist.profile.instrument}
-                                        </p>
-                                      )}
+                                      <p className="text-[11px] text-muted-foreground truncate">
+                                        {normalizeCategory(artist.group_type)}
+                                      </p>
                                     </div>
                                   </button>
                                   <Select

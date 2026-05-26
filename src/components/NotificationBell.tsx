@@ -30,12 +30,8 @@ export const NotificationBell = () => {
 
   useEffect(() => {
     fetchNotifications();
-    setupRealtimeSubscription();
-  }, []);
-
-  const setupRealtimeSubscription = () => {
     const channel = supabase
-      .channel("notifications")
+      .channel(`notifications-${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         {
@@ -52,7 +48,7 @@ export const NotificationBell = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  };
+  }, []);
 
   const fetchNotifications = async () => {
     const { data: { user } } = await supabase.auth.getUser();

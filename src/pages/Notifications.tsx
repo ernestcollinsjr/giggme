@@ -156,7 +156,7 @@ const Notifications = () => {
       if (prefs.id) {
         const { error } = await supabase
           .from("notification_preferences")
-          .update({ [key]: value, updated_at: new Date().toISOString() })
+          .update({ [key]: value, updated_at: new Date().toISOString() } as any)
           .eq("id", prefs.id);
 
         if (error) throw error;

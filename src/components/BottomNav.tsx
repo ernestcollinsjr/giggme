@@ -25,21 +25,24 @@ const BottomNav = () => {
   const [allowedMemberIds, setAllowedMemberIds] = useState<string[]>([]);
 
   useEffect(() => {
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let cancelled = false;
+
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user || cancelled) return;
       setUserId(user.id);
-      
+
       // Get user role
       const { data: roleData } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id)
         .maybeSingle();
-      
+
       const role = roleData?.role || null;
       setUserRole(role);
-      
+
       // Fetch associated members based on role
       let memberIds: string[] = [];
       if (role === "band_leader") {
@@ -47,14 +50,14 @@ const BottomNav = () => {
           .from("bands")
           .select("id")
           .eq("band_leader_id", user.id);
-        
+
         if (bands && bands.length > 0) {
           const bandIds = bands.map(b => b.id);
           const { data: members } = await supabase
             .from("band_members")
             .select("member_id")
             .in("band_id", bandIds);
-          
+
           if (members) {
             memberIds = members.map(m => m.member_id);
           }
@@ -64,17 +67,18 @@ const BottomNav = () => {
           .from("booking_manager_artists")
           .select("artist_id")
           .eq("booking_manager_id", user.id);
-        
+
         if (managedArtists) {
           memberIds = managedArtists.map(a => a.artist_id);
         }
       }
+      if (cancelled) return;
       setAllowedMemberIds(memberIds);
       fetchUnreadCount(user.id, role, memberIds);
 
       // Subscribe to message changes with unique channel name
-      const channel = supabase
-        .channel("nav-messages-" + user.id)
+      channel = supabase
+        .channel(`nav-messages-${user.id}-${Math.random().toString(36).slice(2)}`)
         .on(
           "postgres_changes",
           { event: "INSERT", schema: "public", table: "messages" },
@@ -90,11 +94,12 @@ const BottomNav = () => {
           }
         )
         .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
     })();
+
+    return () => {
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
+    };
   }, []);
 
   // Re-fetch unread count on route changes to catch any missed updates

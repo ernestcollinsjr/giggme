@@ -697,10 +697,10 @@ const ArtistProfile = () => {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label htmlFor="booking-food">Food / Discounts</Label>
+                      <Label htmlFor="booking-note">Note (optional)</Label>
                       <Textarea
-                        id="booking-food"
-                        placeholder="Meal provided, drink discounts, etc."
+                        id="booking-note"
+                        placeholder="Any extra details..."
                         value={bookingForm.foodDiscounts}
                         onChange={(e) => setBookingForm({ ...bookingForm, foodDiscounts: e.target.value })}
                       />

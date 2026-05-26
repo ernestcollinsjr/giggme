@@ -63,6 +63,7 @@ interface ManagedArtist {
 interface UpcomingGig {
   id: string;
   date: string;
+  end_time: string | null;
   venue: string;
   venue_name: string | null;
   status: string;
@@ -184,7 +185,7 @@ export default function BookingManagerAdmin() {
     const artistIds = artistLinks.map((a) => a.artist_id);
     const { data: gigMembers } = await supabase
       .from("gig_members")
-      .select(`member_id, gigs ( id, date, venue, venue_name, status )`)
+      .select(`member_id, gigs ( id, date, end_time, venue, venue_name, status )`)
       .in("member_id", artistIds)
       .eq("status", "accepted");
 
@@ -195,12 +196,12 @@ export default function BookingManagerAdmin() {
 
     const profileMap = new Map(profiles?.map((p) => [p.id, p.name]) || []);
 
-    const today = new Date().toISOString().split("T")[0];
     const gigs: UpcomingGig[] = (gigMembers || [])
-      .filter((gm: any) => gm.gigs && gm.gigs.date >= today)
+      .filter((gm: any) => gm.gigs)
       .map((gm: any) => ({
         id: gm.gigs.id,
         date: gm.gigs.date,
+        end_time: gm.gigs.end_time,
         venue: gm.gigs.venue,
         venue_name: gm.gigs.venue_name,
         status: gm.gigs.status,
@@ -215,15 +216,15 @@ export default function BookingManagerAdmin() {
       .in("performer_id", artistIds)
       .eq("status", "accepted");
 
-    const nowMs = Date.now();
     (bookingReqs || []).forEach((br: any) => {
       const dateStr = br.event_date || br.dates_text;
       if (!dateStr) return;
       const t = new Date(dateStr).getTime();
-      if (isNaN(t) || t < nowMs - 24 * 60 * 60 * 1000) return;
+      if (isNaN(t)) return;
       gigs.push({
         id: br.id,
         date: br.event_date || br.dates_text,
+        end_time: null,
         venue: br.venue,
         venue_name: null,
         status: "confirmed",
@@ -244,8 +245,16 @@ export default function BookingManagerAdmin() {
     setPendingArtistIds(new Set((pendingReqs || []).map((r: any) => r.performer_id)));
   };
 
+  const isGigCompleted = (gig: UpcomingGig): boolean => {
+    const dateOnly = gig.date.split("T")[0];
+    const endIso = gig.end_time
+      ? `${dateOnly}T${gig.end_time}`
+      : `${dateOnly}T23:59:59`;
+    return new Date(endIso).getTime() < Date.now();
+  };
+
   const getArtistStatus = (artistId: string): "booked" | "pending" | "none" => {
-    if (upcomingGigs.some((g) => g.artist_id === artistId)) return "booked";
+    if (upcomingGigs.some((g) => g.artist_id === artistId && !isGigCompleted(g))) return "booked";
     if (pendingArtistIds.has(artistId)) return "pending";
     return "none";
   };
@@ -309,6 +318,15 @@ export default function BookingManagerAdmin() {
     if (!artistFilter) return upcomingGigs;
     return upcomingGigs.filter((g) => g.artist_id === artistFilter);
   }, [upcomingGigs, artistFilter]);
+
+  const upcomingVisible = useMemo(
+    () => visibleGigs.filter((g) => !isGigCompleted(g)),
+    [visibleGigs]
+  );
+  const completedVisible = useMemo(
+    () => visibleGigs.filter((g) => isGigCompleted(g)).reverse(),
+    [visibleGigs]
+  );
 
   const setArtistFilter = (id: string | null) => {
     const next = new URLSearchParams(searchParams);
@@ -480,56 +498,108 @@ export default function BookingManagerAdmin() {
             {visibleGigs.length === 0 ? (
               <div className="text-center py-12 text-sm text-muted-foreground">
                 {selectedArtist
-                  ? "No upcoming bookings for this performer."
-                  : "No upcoming bookings yet."}
+                  ? "No bookings for this performer."
+                  : "No bookings yet."}
               </div>
             ) : (
-              <ul className="divide-y">
-                {visibleGigs.map((gig) => {
-                  const artist = managedArtists.find((a) => a.artist_id === gig.artist_id);
-                  const photo = artist?.profile.photo_urls?.[0];
-                  const d = new Date(gig.date);
-                  return (
-                    <li key={`${gig.id}-${gig.artist_id}`} className="py-3 flex items-center gap-3">
-                      <div className="flex flex-col items-center justify-center w-12 h-12 rounded-md bg-muted text-center flex-shrink-0">
-                        <span className="text-[10px] uppercase font-medium text-muted-foreground leading-none">
-                          {d.toLocaleDateString("en-US", { month: "short" })}
-                        </span>
-                        <span className="text-lg font-bold leading-none mt-0.5">{d.getDate()}</span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{gig.venue_name || gig.venue}</p>
-                        {gig.venue_name && (
-                          <p className="text-xs text-muted-foreground truncate">{gig.venue}</p>
-                        )}
-                        <div className="flex items-center gap-2 mt-1">
-                          <Avatar className="h-5 w-5">
-                            {photo && <AvatarImage src={photo} alt={gig.artist_name} />}
-                            <AvatarFallback className="text-[10px]">
-                              {gig.artist_name.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="text-xs text-muted-foreground truncate">
-                            {gig.artist_name}
-                          </span>
-                        </div>
-                      </div>
-                      <Badge
-                        variant={
-                          gig.status === "confirmed"
-                            ? "default"
-                            : gig.status === "pending"
-                            ? "secondary"
-                            : "outline"
-                        }
-                        className="flex-shrink-0"
-                      >
-                        {gig.status}
-                      </Badge>
-                    </li>
-                  );
-                })}
-              </ul>
+              <div className="space-y-6">
+                {upcomingVisible.length > 0 && (
+                  <ul className="divide-y">
+                    {upcomingVisible.map((gig) => {
+                      const artist = managedArtists.find((a) => a.artist_id === gig.artist_id);
+                      const photo = artist?.profile.photo_urls?.[0];
+                      const d = new Date(gig.date);
+                      return (
+                        <li key={`${gig.id}-${gig.artist_id}`} className="py-3 flex items-center gap-3">
+                          <div className="flex flex-col items-center justify-center w-12 h-12 rounded-md bg-muted text-center flex-shrink-0">
+                            <span className="text-[10px] uppercase font-medium text-muted-foreground leading-none">
+                              {d.toLocaleDateString("en-US", { month: "short" })}
+                            </span>
+                            <span className="text-lg font-bold leading-none mt-0.5">{d.getDate()}</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium truncate">{gig.venue_name || gig.venue}</p>
+                            {gig.venue_name && (
+                              <p className="text-xs text-muted-foreground truncate">{gig.venue}</p>
+                            )}
+                            <div className="flex items-center gap-2 mt-1">
+                              <Avatar className="h-5 w-5">
+                                {photo && <AvatarImage src={photo} alt={gig.artist_name} />}
+                                <AvatarFallback className="text-[10px]">
+                                  {gig.artist_name.charAt(0)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="text-xs text-muted-foreground truncate">
+                                {gig.artist_name}
+                              </span>
+                            </div>
+                          </div>
+                          <Badge
+                            variant={
+                              gig.status === "confirmed"
+                                ? "default"
+                                : gig.status === "pending"
+                                ? "secondary"
+                                : "outline"
+                            }
+                            className="flex-shrink-0"
+                          >
+                            {gig.status}
+                          </Badge>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+
+                {completedVisible.length > 0 && (
+                  <div>
+                    <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+                      Completed
+                    </h3>
+                    <ul className="divide-y opacity-60">
+                      {completedVisible.map((gig) => {
+                        const artist = managedArtists.find((a) => a.artist_id === gig.artist_id);
+                        const photo = artist?.profile.photo_urls?.[0];
+                        const d = new Date(gig.date);
+                        return (
+                          <li
+                            key={`${gig.id}-${gig.artist_id}-done`}
+                            className="py-3 flex items-center gap-3 text-muted-foreground"
+                          >
+                            <div className="flex flex-col items-center justify-center w-12 h-12 rounded-md bg-muted/50 text-center flex-shrink-0">
+                              <span className="text-[10px] uppercase font-medium leading-none">
+                                {d.toLocaleDateString("en-US", { month: "short" })}
+                              </span>
+                              <span className="text-lg font-bold leading-none mt-0.5">{d.getDate()}</span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium truncate line-through decoration-muted-foreground/40">
+                                {gig.venue_name || gig.venue}
+                              </p>
+                              {gig.venue_name && (
+                                <p className="text-xs truncate">{gig.venue}</p>
+                              )}
+                              <div className="flex items-center gap-2 mt-1">
+                                <Avatar className="h-5 w-5 grayscale">
+                                  {photo && <AvatarImage src={photo} alt={gig.artist_name} />}
+                                  <AvatarFallback className="text-[10px]">
+                                    {gig.artist_name.charAt(0)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="text-xs truncate">{gig.artist_name}</span>
+                              </div>
+                            </div>
+                            <Badge variant="outline" className="flex-shrink-0">
+                              Completed
+                            </Badge>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                )}
+              </div>
             )}
           </section>
         </div>

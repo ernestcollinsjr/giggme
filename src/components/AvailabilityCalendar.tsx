@@ -69,7 +69,7 @@ export function AvailabilityCalendar({ userId, readOnly = false, onTodayStatusCh
     const existing = availability.find(a => a.date === dateStr);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) {
         toast({ title: "Please log in", variant: "destructive" });
         return;
@@ -129,7 +129,7 @@ export function AvailabilityCalendar({ userId, readOnly = false, onTodayStatusCh
 
     setApplyingRange(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) {
         toast({ title: "Please log in", variant: "destructive" });
         return;

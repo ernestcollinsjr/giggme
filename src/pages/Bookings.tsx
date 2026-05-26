@@ -198,7 +198,7 @@ const Bookings = () => {
   }, [userRole, gigs, toast]);
 
   const checkAuthAndFetchData = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
     
     if (!user) {
       navigate("/auth");
@@ -314,7 +314,7 @@ const Bookings = () => {
 
     setIsSubmitting(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) throw new Error("Not authenticated");
 
       if (!selectedBandId) {
@@ -981,7 +981,7 @@ const Bookings = () => {
                       // Auto-save as template if venue has coordinates
                       if (value && lat && lng) {
                         try {
-                          const { data: { user } } = await supabase.auth.getUser();
+                          const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
                           if (!user) return;
                           
                           // Check if template already exists for this venue

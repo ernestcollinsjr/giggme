@@ -113,7 +113,7 @@ export function usePushNotifications() {
       console.log('Push subscription:', subscription);
 
       // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       
       if (!user) {
         toast({
@@ -174,7 +174,7 @@ export function usePushNotifications() {
         await subscription.unsubscribe();
         
         // Remove from database
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
         if (user) {
           await supabase
             .from('push_tokens')

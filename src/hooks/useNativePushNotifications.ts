@@ -59,7 +59,7 @@ export const useNativePushNotifications = () => {
 
         // Save token to Supabase
         try {
-          const { data: { user } } = await supabase.auth.getUser();
+          const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
           if (user) {
             const platform = Capacitor.getPlatform();
             const { error } = await supabase.from('push_tokens').upsert({
@@ -118,7 +118,7 @@ export const useNativePushNotifications = () => {
       setIsLoading(true);
 
       // Remove token from Supabase
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (user && token) {
         await supabase.from('push_tokens').delete().match({
           user_id: user.id,

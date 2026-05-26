@@ -92,7 +92,7 @@ export default function BookingManager() {
   }, []);
 
   const checkRole = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
     if (!user) {
       navigate("/auth");
       return;
@@ -112,7 +112,7 @@ export default function BookingManager() {
 
   const fetchManagedBands = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) return;
 
       const { data, error } = await supabase
@@ -149,7 +149,7 @@ export default function BookingManager() {
 
   const fetchManagedArtists = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) return;
 
       const { data, error } = await supabase
@@ -190,7 +190,7 @@ export default function BookingManager() {
 
   const fetchAvailableBands = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) return;
 
       // Get all bands that this manager doesn't manage yet
@@ -249,7 +249,7 @@ export default function BookingManager() {
 
   const addBandToRoster = async (bandId: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) return;
 
       const { error } = await supabase
@@ -279,7 +279,7 @@ export default function BookingManager() {
 
   const removeBandFromRoster = async (bandId: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) return;
 
       const { error } = await supabase
@@ -310,7 +310,7 @@ export default function BookingManager() {
     if (!selectedArtistToAdd) return;
     
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) return;
 
       const { error } = await supabase
@@ -343,7 +343,7 @@ export default function BookingManager() {
 
   const removeArtistFromRoster = async (artistId: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) return;
 
       const { error } = await supabase
@@ -373,7 +373,7 @@ export default function BookingManager() {
     if (!groupMessage.trim()) return;
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) return;
 
       await supabase.functions.invoke("send-manager-sms", {

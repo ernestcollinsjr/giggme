@@ -104,7 +104,7 @@ export default function ScheduleReminder() {
 
   const checkAuth = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) {
         navigate("/auth");
         return;
@@ -258,7 +258,7 @@ export default function ScheduleReminder() {
 
     setSaving(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) throw new Error("Not authenticated");
 
       // Create a reminder for each selected date

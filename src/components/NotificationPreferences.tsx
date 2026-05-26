@@ -71,7 +71,7 @@ export const NotificationPreferences = () => {
 
   const fetchPreferences = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) return;
 
       const { data, error } = await supabase
@@ -112,7 +112,7 @@ export const NotificationPreferences = () => {
     setPrefs(newPrefs);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) return;
 
       if (prefs.id) {

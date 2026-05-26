@@ -51,7 +51,7 @@ export const NotificationBell = () => {
   }, []);
 
   const fetchNotifications = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
     if (!user) return;
 
     const { data } = await supabase
@@ -76,7 +76,7 @@ export const NotificationBell = () => {
   };
 
   const markAllAsRead = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
     if (!user) return;
 
     await supabase

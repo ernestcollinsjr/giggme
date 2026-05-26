@@ -16,6 +16,7 @@ interface BookingPayload {
   dressCode?: string;
   note?: string;
   appUrl?: string;
+  eventDate?: string; // ISO timestamp of the first performance date+time, used for reminders
 }
 
 Deno.serve(async (req) => {

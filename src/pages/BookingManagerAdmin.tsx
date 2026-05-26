@@ -73,6 +73,17 @@ interface UpcomingGig {
   artist_id: string;
 }
 
+interface PendingInvite {
+  id: string;
+  date: string;
+  venue: string;
+  venue_name: string | null;
+  status: string;
+  artist_name: string;
+  artist_id: string;
+  source: "gig" | "booking_request";
+}
+
 function normalizeCategory(value: string | null): Category {
   if (!value) return "Soloist";
   const v = value.toLowerCase();
@@ -90,6 +101,7 @@ export default function BookingManagerAdmin() {
   const [managedArtists, setManagedArtists] = useState<ManagedArtist[]>([]);
   const [upcomingGigs, setUpcomingGigs] = useState<UpcomingGig[]>([]);
   const [pendingArtistIds, setPendingArtistIds] = useState<Set<string>>(new Set());
+  const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
@@ -238,12 +250,54 @@ export default function BookingManagerAdmin() {
     gigs.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     setUpcomingGigs(gigs);
 
-    // Fetch pending booking requests to mark artists as pending
+    // Fetch pending booking requests (sent invites awaiting response)
     const { data: pendingReqs } = await supabase
       .from("booking_requests")
-      .select("performer_id")
+      .select("id, performer_id, event_date, dates_text, venue, status, expires_at")
       .in("performer_id", artistIds)
       .eq("status", "pending");
+
+    // Fetch pending gig invitations (gig_members not yet responded)
+    const { data: pendingGigInvites } = await supabase
+      .from("gig_members")
+      .select(`id, member_id, status, gigs ( id, date, venue, venue_name )`)
+      .in("member_id", artistIds)
+      .eq("status", "pending");
+
+    const invites: PendingInvite[] = [];
+
+    (pendingReqs || []).forEach((br: any) => {
+      const dateStr = br.event_date || br.dates_text;
+      if (!dateStr) return;
+      const expired = br.expires_at && new Date(br.expires_at).getTime() < Date.now();
+      invites.push({
+        id: br.id,
+        date: dateStr,
+        venue: br.venue,
+        venue_name: null,
+        status: expired ? "expired" : "pending",
+        artist_name: profileMap.get(br.performer_id) || "Unknown",
+        artist_id: br.performer_id,
+        source: "booking_request",
+      });
+    });
+
+    (pendingGigInvites || []).forEach((gm: any) => {
+      if (!gm.gigs) return;
+      invites.push({
+        id: gm.id,
+        date: gm.gigs.date,
+        venue: gm.gigs.venue,
+        venue_name: gm.gigs.venue_name,
+        status: "pending",
+        artist_name: profileMap.get(gm.member_id) || "Unknown",
+        artist_id: gm.member_id,
+        source: "gig",
+      });
+    });
+
+    invites.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    setPendingInvites(invites);
     setPendingArtistIds(new Set((pendingReqs || []).map((r: any) => r.performer_id)));
   };
 
@@ -320,6 +374,11 @@ export default function BookingManagerAdmin() {
     if (!artistFilter) return upcomingGigs;
     return upcomingGigs.filter((g) => g.artist_id === artistFilter);
   }, [upcomingGigs, artistFilter]);
+
+  const visibleInvites = useMemo(() => {
+    if (!artistFilter) return pendingInvites;
+    return pendingInvites.filter((i) => i.artist_id === artistFilter);
+  }, [pendingInvites, artistFilter]);
 
   const upcomingVisible = useMemo(
     () => visibleGigs.filter((g) => !isGigCompleted(g)),
@@ -503,7 +562,8 @@ export default function BookingManagerAdmin() {
             )}
           </aside>
 
-          {/* RIGHT: Booked dates */}
+          {/* RIGHT: Booked dates + pending invites */}
+          <div className="space-y-4">
           <section className="bg-card border rounded-lg p-4">
             <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
               <div className="flex items-center gap-2 min-w-0">
@@ -626,6 +686,80 @@ export default function BookingManagerAdmin() {
               </div>
             )}
           </section>
+
+          {/* Pending invites box */}
+          <section className="bg-card border rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-4">
+              <Bell className="h-5 w-5 text-muted-foreground" />
+              <h2 className="text-lg font-semibold">
+                {selectedArtist ? `${selectedArtist.profile.name}'s pending invites` : "Pending invites"}
+              </h2>
+              <Badge variant="secondary" className="ml-auto">
+                {visibleInvites.length}
+              </Badge>
+            </div>
+
+            {visibleInvites.length === 0 ? (
+              <div className="text-center py-8 text-sm text-muted-foreground">
+                No pending invites.
+              </div>
+            ) : (
+              <ul className="divide-y">
+                {visibleInvites.map((inv) => {
+                  const artist = managedArtists.find((a) => a.artist_id === inv.artist_id);
+                  const photo = artist?.profile.photo_urls?.[0];
+                  const d = new Date(inv.date);
+                  const validDate = !isNaN(d.getTime());
+                  return (
+                    <li
+                      key={`${inv.source}-${inv.id}`}
+                      className="py-3 flex items-center gap-3"
+                    >
+                      <div className="flex flex-col items-center justify-center w-12 h-12 rounded-md bg-muted text-center flex-shrink-0">
+                        {validDate ? (
+                          <>
+                            <span className="text-[10px] uppercase font-medium text-muted-foreground leading-none">
+                              {d.toLocaleDateString("en-US", { month: "short" })}
+                            </span>
+                            <span className="text-lg font-bold leading-none mt-0.5">{d.getDate()}</span>
+                          </>
+                        ) : (
+                          <span className="text-[10px] text-muted-foreground">TBD</span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{inv.venue_name || inv.venue || "Untitled"}</p>
+                        {inv.venue_name && (
+                          <p className="text-xs text-muted-foreground truncate">{inv.venue}</p>
+                        )}
+                        <div className="flex items-center gap-2 mt-1">
+                          <Avatar className="h-5 w-5">
+                            {photo && <AvatarImage src={photo} alt={inv.artist_name} />}
+                            <AvatarFallback className="text-[10px]">
+                              {inv.artist_name.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-xs text-muted-foreground truncate">
+                            {inv.artist_name}
+                          </span>
+                        </div>
+                      </div>
+                      <Badge
+                        variant={inv.status === "expired" ? "outline" : "secondary"}
+                        className={cn(
+                          "flex-shrink-0",
+                          inv.status === "pending" && "bg-yellow-500/15 text-yellow-700 dark:text-yellow-400 border-yellow-500/30"
+                        )}
+                      >
+                        {inv.status}
+                      </Badge>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
+          </div>
         </div>
 
         <Dialog open={!!deleteConfirmArtist} onOpenChange={() => setDeleteConfirmArtist(null)}>

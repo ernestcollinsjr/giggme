@@ -86,6 +86,7 @@ export default function BookingManagerAdmin() {
 
   const [managedArtists, setManagedArtists] = useState<ManagedArtist[]>([]);
   const [upcomingGigs, setUpcomingGigs] = useState<UpcomingGig[]>([]);
+  const [pendingArtistIds, setPendingArtistIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
@@ -233,6 +234,20 @@ export default function BookingManagerAdmin() {
 
     gigs.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     setUpcomingGigs(gigs);
+
+    // Fetch pending booking requests to mark artists as pending
+    const { data: pendingReqs } = await supabase
+      .from("booking_requests")
+      .select("performer_id")
+      .in("performer_id", artistIds)
+      .eq("status", "pending");
+    setPendingArtistIds(new Set((pendingReqs || []).map((r: any) => r.performer_id)));
+  };
+
+  const getArtistStatus = (artistId: string): "booked" | "pending" | "none" => {
+    if (upcomingGigs.some((g) => g.artist_id === artistId)) return "booked";
+    if (pendingArtistIds.has(artistId)) return "pending";
+    return "none";
   };
 
 
@@ -385,7 +400,24 @@ export default function BookingManagerAdmin() {
                                       </AvatarFallback>
                                     </Avatar>
                                     <div className="min-w-0 flex-1">
-                                      <p className="text-sm font-medium truncate">{artist.profile.name}</p>
+                                      <div className="flex items-center gap-1.5 min-w-0">
+                                        <span
+                                          className={cn(
+                                            "h-2 w-2 rounded-full flex-shrink-0",
+                                            getArtistStatus(artist.artist_id) === "booked" && "bg-green-500",
+                                            getArtistStatus(artist.artist_id) === "pending" && "bg-yellow-500",
+                                            getArtistStatus(artist.artist_id) === "none" && "bg-red-500"
+                                          )}
+                                          title={
+                                            getArtistStatus(artist.artist_id) === "booked"
+                                              ? "Booked"
+                                              : getArtistStatus(artist.artist_id) === "pending"
+                                              ? "Pending"
+                                              : "Not booked"
+                                          }
+                                        />
+                                        <p className="text-sm font-medium truncate">{artist.profile.name}</p>
+                                      </div>
                                       {artist.profile.instrument && (
                                         <p className="text-[11px] text-muted-foreground truncate">
                                           {artist.profile.instrument}

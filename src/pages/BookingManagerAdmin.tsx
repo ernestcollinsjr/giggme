@@ -489,14 +489,12 @@ export default function BookingManagerAdmin() {
     return pendingInvites.filter((i) => i.artist_id === artistFilter);
   }, [pendingInvites, artistFilter]);
 
-  const upcomingVisible = useMemo(
-    () => visibleGigs.filter((g) => !isGigCompleted(g)),
-    [visibleGigs]
-  );
-  const completedVisible = useMemo(
-    () => visibleGigs.filter((g) => isGigCompleted(g)).reverse(),
-    [visibleGigs]
-  );
+  const upcomingVisible = useMemo(() => {
+    const upcoming = visibleGigs.filter((g) => !isGigCompleted(g));
+    const completed = visibleGigs.filter((g) => isGigCompleted(g));
+    return [...upcoming, ...completed];
+  }, [visibleGigs]);
+  const completedVisible: UpcomingGig[] = [];
 
   const setArtistFilter = (id: string | null) => {
     const next = new URLSearchParams(searchParams);

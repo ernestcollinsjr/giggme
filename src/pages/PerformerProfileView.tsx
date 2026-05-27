@@ -18,6 +18,7 @@ import { TopNav } from "@/components/TopNav";
 import { PlaceAutocomplete } from "@/components/PlaceAutocomplete";
 import { PerformerRatingsDisplay } from "@/components/PerformerRatingsDisplay";
 import { YouTubePlayer, getYoutubeVideoId } from "@/components/YouTubePlayer";
+import { AvailabilityCalendar } from "@/components/AvailabilityCalendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
@@ -549,54 +550,12 @@ const PerformerProfileView = () => {
                       <Clock className="h-5 w-5 text-primary" /> Availability
                     </h3>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Next 7 days. Send a booking request to confirm a specific date.
+                      Full schedule view. Send a booking request to confirm a specific date.
                     </p>
                   </div>
-                  {weekAvailability.length > 0 ? (
-                    <>
-                      <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border">
-                        <div className="flex items-center gap-2">
-                          {profile.availability_status === "available" ? (
-                            <><span className="w-3 h-3 rounded-full bg-green-500 animate-pulse" /><span className="text-sm font-medium text-green-600">Available</span></>
-                          ) : profile.availability_status === "unavailable" ? (
-                            <><span className="w-3 h-3 rounded-full bg-red-500" /><span className="text-sm font-medium text-red-600">Unavailable</span></>
-                          ) : profile.availability_status === "tentative" ? (
-                            <><span className="w-3 h-3 rounded-full bg-yellow-500" /><span className="text-sm font-medium text-yellow-600">Tentative</span></>
-                          ) : (
-                            <><span className="w-3 h-3 rounded-full bg-muted-foreground/30" /><span className="text-sm text-muted-foreground">Not set</span></>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-1 ml-auto">
-                          {weekAvailability.map((day, idx) => {
-                            const dt = new Date(day.date + "T00:00:00");
-                            const dayLabel = dt.toLocaleDateString("en-US", { weekday: "short" }).charAt(0);
-                            const dayNum = dt.getDate();
-                            return (
-                              <div key={day.date} className="flex flex-col items-center" title={`${dt.toLocaleDateString()} — ${day.status || "not set"}`}>
-                                <span className="text-[10px] text-muted-foreground">{dayLabel}</span>
-                                <div className={`w-6 h-6 sm:w-5 sm:h-5 rounded-sm flex items-center justify-center text-[10px] sm:text-[9px] font-medium text-white ${
-                                  day.status === "available" ? "bg-green-500"
-                                    : day.status === "unavailable" ? "bg-red-500"
-                                    : day.status === "tentative" ? "bg-yellow-500"
-                                    : "bg-muted-foreground/20 text-muted-foreground"
-                                } ${idx === 0 ? "ring-2 ring-primary ring-offset-1" : ""}`}>
-                                  {dayNum}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-                        <span className="flex items-center gap-1"><Check className="h-3 w-3 text-green-500" />Available</span>
-                        <span className="flex items-center gap-1"><HelpCircle className="h-3 w-3 text-yellow-500" />Tentative</span>
-                        <span className="flex items-center gap-1"><X className="h-3 w-3 text-red-500" />Unavailable</span>
-                      </div>
-                    </>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">No availability set for the next 7 days.</p>
-                  )}
+                  {userId && <AvailabilityCalendar userId={userId} readOnly />}
                 </TabsContent>
+
 
                 <TabsContent value="rider" className="mt-0 space-y-4">
                   <div>

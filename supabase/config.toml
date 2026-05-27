@@ -74,3 +74,6 @@ verify_jwt = false
 
 [functions.send-performance-reminders]
 verify_jwt = false
+
+[functions.public-respond-booking-request]
+verify_jwt = false

@@ -391,6 +391,7 @@ export type Database = {
           reminder_1d_sent_at: string | null
           reminder_2h_sent_at: string | null
           responded_at: string | null
+          response_token: string
           status: Database["public"]["Enums"]["booking_request_status"]
           time_text: string | null
           updated_at: string
@@ -418,6 +419,7 @@ export type Database = {
           reminder_1d_sent_at?: string | null
           reminder_2h_sent_at?: string | null
           responded_at?: string | null
+          response_token?: string
           status?: Database["public"]["Enums"]["booking_request_status"]
           time_text?: string | null
           updated_at?: string
@@ -445,6 +447,7 @@ export type Database = {
           reminder_1d_sent_at?: string | null
           reminder_2h_sent_at?: string | null
           responded_at?: string | null
+          response_token?: string
           status?: Database["public"]["Enums"]["booking_request_status"]
           time_text?: string | null
           updated_at?: string

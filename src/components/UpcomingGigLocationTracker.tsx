@@ -123,8 +123,31 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
 
         if (error) throw error;
 
+        const { data: bookingRequests } = await supabase
+          .from("booking_requests")
+          .select("id, performer_id, event_date, dates_text, venue, status")
+          .eq("booker_id", userId)
+          .eq("status", "accepted");
 
-        const gigsWithinWindow = (gigs || []).filter((gig: any) => {
+        const requestGigs = (bookingRequests || []).map((request: any) => {
+          const rawVenue = request.venue || "";
+          const separator = rawVenue.includes(" — ") ? " — " : rawVenue.includes(" - ") ? " - " : null;
+          const [venueName, venueAddress] = separator ? rawVenue.split(separator, 2) : [null, rawVenue];
+
+          return {
+            id: request.id,
+            user_id: request.performer_id,
+            date: request.event_date || request.dates_text,
+            venue: venueAddress || rawVenue,
+            venue_name: venueName,
+            venue_lat: null,
+            venue_lng: null,
+            loading_time: null,
+            sound_check_time: null,
+          };
+        }).filter((gig: any) => Boolean(gig.date));
+
+        const gigsWithinWindow = [...(gigs || []), ...requestGigs].filter((gig: any) => {
           const gigDate = parseISO(gig.date);
           let earliestTime = gigDate;
           if (gig.loading_time) {

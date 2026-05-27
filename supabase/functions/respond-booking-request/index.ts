@@ -27,7 +27,14 @@ Deno.serve(async (req) => {
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
     const { data: br } = await admin.from('booking_requests').select('*').eq('id', bookingRequestId).maybeSingle();
     if (!br) return new Response(JSON.stringify({ error: 'Not found' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-    if (br.performer_id !== user.id) return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    const emailMatches = !!user.email && !!br.performer_email && user.email.toLowerCase() === br.performer_email.toLowerCase();
+    if (br.performer_id !== user.id && !emailMatches) {
+      return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+    // If matched by email but performer_id differs (performer signed up after request was created), reconcile it
+    if (br.performer_id !== user.id && emailMatches) {
+      await admin.from('booking_requests').update({ performer_id: user.id }).eq('id', bookingRequestId);
+    }
     if (br.status !== 'pending') return new Response(JSON.stringify({ error: `Already ${br.status}` }), { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     if (new Date(br.expires_at).getTime() < Date.now()) return new Response(JSON.stringify({ error: 'Request has expired' }), { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 

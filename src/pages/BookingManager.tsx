@@ -588,8 +588,14 @@ export default function BookingManager() {
         {/* Scheduled Reminders */}
         <ScheduledRemindersManager />
 
+        {/* Uber-style upcoming gig card (2.5 hr before each gig) */}
+        {currentUserId && (
+          <UpcomingGigLocationTracker userId={currentUserId} userRole="booking_manager" />
+        )}
+
         {/* Location Tracking */}
         <BookingManagerClientLocations />
+
 
         {/* Individual SMS Dialog */}
         <Dialog open={individualSmsOpen} onOpenChange={setIndividualSmsOpen}>

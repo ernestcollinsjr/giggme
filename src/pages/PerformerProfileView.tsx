@@ -358,8 +358,8 @@ const PerformerProfileView = () => {
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     {extraPhotos.map((url, i) => (
                       <div key={i}>
-                        <div className="h-72 rounded-lg overflow-hidden bg-muted flex items-center justify-center sm:h-80">
-                          <img src={url} alt={`Photo ${i + 2}`} className="h-full w-full object-contain object-top" />
+                        <div className="h-72 rounded-lg overflow-hidden sm:h-80">
+                          <img src={url} alt={`Photo ${i + 2}`} className="h-full w-full object-cover object-top" />
                         </div>
                         <p className="text-xs text-muted-foreground text-center mt-1">Photo {i + 2}</p>
                       </div>

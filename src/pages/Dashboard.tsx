@@ -1541,10 +1541,7 @@ const Dashboard = () => {
                                   {profiles.slice(0, 8).map((profile) => (
                                     <div
                                       key={profile.id}
-                                      onClick={() => {
-                                        setSelectedArtist(profile);
-                                        setArtistProfileDialogOpen(true);
-                                      }}
+                                      onClick={() => openArtistProfile(profile)}
                                       className="relative flex flex-col items-center p-2 border rounded-md hover:shadow-md hover:border-primary hover:bg-primary/5 transition-all cursor-pointer bg-card"
                                     >
                                       <div className="w-10 h-10 rounded-full overflow-hidden bg-muted mb-1">

@@ -277,6 +277,30 @@ const PerformerProfileView = () => {
             </CardHeader>
 
             <CardContent className="space-y-6">
+              <Tabs defaultValue="profile" className="w-full">
+                <TabsList className="w-full grid grid-cols-6 h-auto p-1 mb-6">
+                  <TabsTrigger value="profile" className="flex items-center gap-1.5 text-xs sm:text-sm py-2">
+                    <Music className="h-3.5 w-3.5" /><span className="hidden sm:inline">Profile</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="role" className="flex items-center gap-1.5 text-xs sm:text-sm py-2">
+                    <Crown className="h-3.5 w-3.5" /><span className="hidden sm:inline">Role</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="alerts" className="flex items-center gap-1.5 text-xs sm:text-sm py-2">
+                    <Bell className="h-3.5 w-3.5" /><span className="hidden sm:inline">Alerts</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="safety" className="flex items-center gap-1.5 text-xs sm:text-sm py-2">
+                    <Shield className="h-3.5 w-3.5" /><span className="hidden sm:inline">Safety</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="availability" className="flex items-center gap-1.5 text-xs sm:text-sm py-2">
+                    <Clock className="h-3.5 w-3.5" /><span className="hidden sm:inline">Availability</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="rider" className="flex items-center gap-1.5 text-xs sm:text-sm py-2">
+                    <FileText className="h-3.5 w-3.5" /><span className="hidden sm:inline">Rider</span>
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="profile" className="mt-0 space-y-6">
+
               {/* Profile Completeness */}
               {(() => {
                 const checks = [

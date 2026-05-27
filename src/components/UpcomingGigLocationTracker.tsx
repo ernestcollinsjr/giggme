@@ -3,8 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Clock, Navigation, AlertCircle, ExternalLink, CheckCircle2, Car, Flag } from "lucide-react";
+import { MapPin, Clock, Navigation, AlertCircle, ExternalLink, CheckCircle2, Car, Flag, Send } from "lucide-react";
 import { format, parseISO, differenceInMinutes, isToday } from "date-fns";
+import { toast } from "sonner";
 import { AutoLocationTracker } from "./AutoLocationTracker";
 
 // Haversine distance in meters

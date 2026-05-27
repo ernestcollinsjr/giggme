@@ -587,7 +587,16 @@ const ProfileSetup = () => {
 
   const addYoutubeLink = () => {
     if (!newYoutubeLink.trim()) return;
-    
+
+    if (youtubeLinks.length >= 6) {
+      toast({
+        variant: "destructive",
+        title: "Limit reached",
+        description: "You can add up to 6 YouTube videos.",
+      });
+      return;
+    }
+
     if (!newYoutubeLink.includes("youtube.com") && !newYoutubeLink.includes("youtu.be")) {
       toast({
         variant: "destructive",

@@ -87,6 +87,8 @@ export default function BookingManager() {
   const [bookTalentOpen, setBookTalentOpen] = useState(false);
   const [bookTalentSearch, setBookTalentSearch] = useState("");
 
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
   useEffect(() => {
     checkRole();
     fetchManagedBands();

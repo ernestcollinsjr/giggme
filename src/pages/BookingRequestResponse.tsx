@@ -57,6 +57,7 @@ export default function BookingRequestResponse() {
         return;
       }
       setUserId(session.user.id);
+      setUserEmail(session.user.email ?? null);
       const { data, error } = await supabase
         .from("booking_requests")
         .select("*")

@@ -36,6 +36,7 @@ import {
 import { TopNav } from "@/components/TopNav";
 import BottomNav from "@/components/BottomNav";
 import { SentBookingRequests } from "@/components/SentBookingRequests";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 const CATEGORIES = ["Soloist", "Duo", "Band"] as const;
@@ -489,14 +490,12 @@ export default function BookingManagerAdmin() {
     return pendingInvites.filter((i) => i.artist_id === artistFilter);
   }, [pendingInvites, artistFilter]);
 
-  const upcomingVisible = useMemo(
-    () => visibleGigs.filter((g) => !isGigCompleted(g)),
-    [visibleGigs]
-  );
-  const completedVisible = useMemo(
-    () => visibleGigs.filter((g) => isGigCompleted(g)).reverse(),
-    [visibleGigs]
-  );
+  const upcomingVisible = useMemo(() => {
+    const upcoming = visibleGigs.filter((g) => !isGigCompleted(g));
+    const completed = visibleGigs.filter((g) => isGigCompleted(g));
+    return [...upcoming, ...completed];
+  }, [visibleGigs]);
+  const completedVisible: UpcomingGig[] = [];
 
   const setArtistFilter = (id: string | null) => {
     const next = new URLSearchParams(searchParams);
@@ -763,22 +762,30 @@ export default function BookingManagerAdmin() {
                                   {isCompleted ? "completed" : gig.status}
                                 </Badge>
                                 {isCompleted && (
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      togglePaymentStatus(gig);
-                                    }}
-                                    className={cn(
-                                      "text-[11px] font-semibold px-2 py-0.5 rounded-full border transition-colors",
-                                      isPaid
-                                        ? "bg-green-500/20 text-green-600 border-green-500/30 hover:bg-green-500/30"
-                                        : "bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20"
-                                    )}
-                                    title={isPaid ? "Click to mark as pending payment" : "Click to confirm payment was sent"}
-                                  >
-                                    {isPaid ? "Paid" : "Pending Payment"}
-                                  </button>
+                                  <TooltipProvider delayDuration={150}>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            togglePaymentStatus(gig);
+                                          }}
+                                          className={cn(
+                                            "text-[11px] font-semibold px-2 py-0.5 rounded-full border transition-colors",
+                                            isPaid
+                                              ? "bg-green-500/20 text-green-600 border-green-500/30 hover:bg-green-500/30"
+                                              : "bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20"
+                                          )}
+                                        >
+                                          {isPaid ? "Paid" : "Pending Payment"}
+                                        </button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        {isPaid ? "Click to mark as pending payment" : "Click to confirm payment was sent"}
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
                                 )}
                               </div>
                             );

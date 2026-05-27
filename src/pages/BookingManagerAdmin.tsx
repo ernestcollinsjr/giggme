@@ -392,21 +392,29 @@ export default function BookingManagerAdmin() {
       return;
     }
 
-    // Also remove any pending/other booking_requests for the same artist on the same date
-    // (e.g., earlier invites that were superseded by the one we just deleted).
+    // Also remove any related booking_requests AND gigs for the same artist on the same date
+    // (e.g., earlier invites that were superseded, or gigs auto-created when a request was confirmed).
     try {
       const dateOnly = deleteConfirmGig.date.split("T")[0];
       const dayStart = new Date(`${dateOnly}T00:00:00`).toISOString();
       const dayEnd = new Date(`${dateOnly}T23:59:59.999`).toISOString();
-      await supabase
-        .from("booking_requests")
-        .delete()
-        .eq("performer_id", deleteConfirmGig.artist_id)
-        .eq("booker_id", userId)
-        .gte("event_date", dayStart)
-        .lte("event_date", dayEnd);
+      await Promise.all([
+        supabase
+          .from("booking_requests")
+          .delete()
+          .eq("performer_id", deleteConfirmGig.artist_id)
+          .eq("booker_id", userId)
+          .gte("event_date", dayStart)
+          .lte("event_date", dayEnd),
+        supabase
+          .from("gigs")
+          .delete()
+          .eq("user_id", deleteConfirmGig.artist_id)
+          .gte("date", dayStart)
+          .lte("date", dayEnd),
+      ]);
     } catch (e) {
-      console.warn("Cleanup of related booking_requests failed", e);
+      console.warn("Cleanup of related bookings failed", e);
     }
 
     toast({ title: "Booking deleted", description: deleteConfirmGig.venue_name || deleteConfirmGig.venue });

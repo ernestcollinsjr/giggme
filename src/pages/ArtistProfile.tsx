@@ -321,7 +321,7 @@ const ArtistProfile = () => {
         return;
       }
       
-      setProfile(profileData);
+      setProfile(profileData as any);
 
       // Fetch artist profile
       const { data: artistData, error: artistError } = await supabase

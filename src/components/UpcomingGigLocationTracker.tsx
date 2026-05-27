@@ -113,6 +113,9 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
   const [upcomingGigs, setUpcomingGigs] = useState<UpcomingGig[]>([]);
   const [loading, setLoading] = useState(true);
   const [travelByGig, setTravelByGig] = useState<Record<string, TravelRow[]>>({});
+  const [locByUser, setLocByUser] = useState<Record<string, { lat: number; lng: number }>>({});
+  // Persist the starting distance (per user+gig) so we can compute progress %
+  const startDistRef = useRef<Record<string, number>>({});
 
   const fetchTravelStatus = useCallback(async (gigIds: string[]) => {
     if (gigIds.length === 0) return;

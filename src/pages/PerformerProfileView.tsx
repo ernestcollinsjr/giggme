@@ -67,6 +67,7 @@ const PerformerProfileView = () => {
   const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);
+  const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
   const [profile, setProfile] = useState<PerformerProfile | null>(null);
   const [performerRole, setPerformerRole] = useState<string | null>(null);
   const [weekAvailability, setWeekAvailability] = useState<{ date: string; status: string | null }[]>([]);
@@ -331,7 +332,13 @@ const PerformerProfileView = () => {
               <div className="flex items-start gap-4">
                 <div className="h-24 w-24 shrink-0 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
                   {primaryPhoto ? (
-                    <img src={primaryPhoto} alt={profile.name} className="max-h-full max-w-full object-contain" />
+                    <button
+                      type="button"
+                      onClick={() => setLightboxPhoto(primaryPhoto)}
+                      className="h-full w-full flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <img src={primaryPhoto} alt={profile.name} className="max-h-full max-w-full object-contain" />
+                    </button>
                   ) : (
                     <span className="text-lg font-semibold text-muted-foreground">{initials}</span>
                   )}
@@ -358,9 +365,13 @@ const PerformerProfileView = () => {
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                     {extraPhotos.map((url, i) => (
                       <div key={i}>
-                        <div className="h-36 rounded-lg overflow-hidden sm:h-40">
+                        <button
+                          type="button"
+                          onClick={() => setLightboxPhoto(url)}
+                          className="h-36 w-full rounded-lg overflow-hidden sm:h-40 block focus:outline-none focus:ring-2 focus:ring-primary transition-transform hover:scale-[1.02]"
+                        >
                           <img src={url} alt={`Photo ${i + 2}`} className="h-full w-full object-cover object-top" />
-                        </div>
+                        </button>
                         <p className="text-xs text-muted-foreground text-center mt-1">Photo {i + 2}</p>
                       </div>
                     ))}
@@ -746,6 +757,18 @@ const PerformerProfileView = () => {
               )}
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!lightboxPhoto} onOpenChange={(o) => !o && setLightboxPhoto(null)}>
+        <DialogContent className="max-w-3xl p-2 backdrop-blur-sm bg-black/60 border-0">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Photo</DialogTitle>
+            <DialogDescription>Full size photo preview</DialogDescription>
+          </DialogHeader>
+          {lightboxPhoto && (
+            <img src={lightboxPhoto} alt="Full size" className="w-full max-h-[85vh] object-contain rounded-md" />
+          )}
         </DialogContent>
       </Dialog>
     </div>

@@ -104,7 +104,7 @@ Deno.serve(async (req) => {
   // 1-day reminders for accepted booking_requests with event_date set
   const { data: br1d } = await supabase
     .from('booking_requests')
-    .select('id, performer_email, performer_name, venue, event_date, note')
+    .select('id, performer_email, performer_name, venue, event_date, note, booker_id')
     .eq('status', 'accepted')
     .eq('auto_reminders_disabled', false)
     .is('reminder_1d_sent_at', null)
@@ -113,10 +113,13 @@ Deno.serve(async (req) => {
     .lte('event_date', upper1d);
 
   for (const r of br1d ?? []) {
-    if (!r.performer_email || !r.event_date) continue;
+    if (!r.event_date) continue;
+    const bookerEmail = await getBookerEmail(supabase, r.booker_id);
+    const recipients = [r.performer_email, bookerEmail];
+    if (!recipients.some((e) => !!e)) continue;
     const when = fmtDate(new Date(r.event_date));
     const ok = await sendEmail(
-      r.performer_email,
+      recipients,
       `Reminder: performance tomorrow at ${r.venue}`,
       buildHtml({
         recipientName: r.performer_name,
@@ -138,7 +141,7 @@ Deno.serve(async (req) => {
   // 2-hour reminders for accepted booking_requests
   const { data: br2h } = await supabase
     .from('booking_requests')
-    .select('id, performer_email, performer_name, venue, event_date, note')
+    .select('id, performer_email, performer_name, venue, event_date, note, booker_id')
     .eq('status', 'accepted')
     .eq('auto_reminders_disabled', false)
     .is('reminder_2h_sent_at', null)

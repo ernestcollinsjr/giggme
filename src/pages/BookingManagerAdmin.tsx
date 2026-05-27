@@ -71,6 +71,7 @@ interface UpcomingGig {
   status: string;
   artist_name: string;
   artist_id: string;
+  source: "gig" | "booking_request";
 }
 
 interface PendingInvite {
@@ -106,6 +107,7 @@ export default function BookingManagerAdmin() {
   const [searchTerm, setSearchTerm] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
   const [deleteConfirmArtist, setDeleteConfirmArtist] = useState<ManagedArtist | null>(null);
+  const [deleteConfirmGig, setDeleteConfirmGig] = useState<UpcomingGig | null>(null);
   const [artistAvailability, setArtistAvailability] = useState<Array<{ date: string; status: string; notes: string | null }>>([]);
 
   useEffect(() => {
@@ -240,6 +242,7 @@ export default function BookingManagerAdmin() {
         status: gm.gigs.status,
         artist_name: profileMap.get(gm.member_id) || "Unknown",
         artist_id: gm.member_id,
+        source: "gig" as const,
       }));
 
     // Also include accepted booking requests (direct bookings without a gig record)
@@ -263,6 +266,7 @@ export default function BookingManagerAdmin() {
         status: "confirmed",
         artist_name: profileMap.get(br.performer_id) || "Unknown",
         artist_id: br.performer_id,
+        source: "booking_request" as const,
       });
     });
 
@@ -371,6 +375,19 @@ export default function BookingManagerAdmin() {
     if (userId) {
       await Promise.all([fetchManagedArtists(userId), fetchUpcomingGigs(userId)]);
     }
+  };
+
+  const handleDeleteGig = async () => {
+    if (!deleteConfirmGig) return;
+    const table = deleteConfirmGig.source === "booking_request" ? "booking_requests" : "gigs";
+    const { error } = await supabase.from(table).delete().eq("id", deleteConfirmGig.id);
+    if (error) {
+      toast({ variant: "destructive", title: "Error", description: error.message });
+      return;
+    }
+    toast({ title: "Booking deleted", description: deleteConfirmGig.venue_name || deleteConfirmGig.venue });
+    setDeleteConfirmGig(null);
+    if (userId) await fetchUpcomingGigs(userId);
   };
 
   const grouped = useMemo(() => {
@@ -664,6 +681,15 @@ export default function BookingManagerAdmin() {
                           >
                             {gig.status}
                           </Badge>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 flex-shrink-0 text-muted-foreground hover:text-destructive"
+                            onClick={() => setDeleteConfirmGig(gig)}
+                            aria-label="Delete booking"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </li>
                       );
                     })}
@@ -859,6 +885,25 @@ export default function BookingManagerAdmin() {
               </Button>
               <Button variant="destructive" onClick={handleRemoveArtist}>
                 Remove
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={!!deleteConfirmGig} onOpenChange={() => setDeleteConfirmGig(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete booking</DialogTitle>
+              <DialogDescription>
+                Delete this booking at {deleteConfirmGig?.venue_name || deleteConfirmGig?.venue} for {deleteConfirmGig?.artist_name}? This can't be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDeleteConfirmGig(null)}>
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={handleDeleteGig}>
+                Delete
               </Button>
             </DialogFooter>
           </DialogContent>

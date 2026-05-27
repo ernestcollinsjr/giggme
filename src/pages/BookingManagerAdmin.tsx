@@ -41,6 +41,7 @@ import { TopNav } from "@/components/TopNav";
 import BottomNav from "@/components/BottomNav";
 import { SentBookingRequests } from "@/components/SentBookingRequests";
 import { PaymentScheduler } from "@/components/PaymentScheduler";
+import { UpcomingGigLocationTracker } from "@/components/UpcomingGigLocationTracker";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
@@ -790,6 +791,8 @@ export default function BookingManagerAdmin() {
               </div>
             )}
           </aside>
+
+          {userId && <UpcomingGigLocationTracker userId={userId} userRole="booking_manager" />}
 
           {/* BELOW: Booked dates + pending invites */}
           <div className="space-y-4">

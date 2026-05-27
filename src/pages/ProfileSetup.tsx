@@ -99,6 +99,7 @@ const ProfileSetup = () => {
   const [isSubscribed, setIsSubscribed] = useState<boolean | null>(null);
   const [checkingSubscription, setCheckingSubscription] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
+  const [isInvitedPerformer, setIsInvitedPerformer] = useState(false);
   
   // Video player state
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);

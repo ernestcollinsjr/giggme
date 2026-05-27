@@ -510,10 +510,14 @@ export default function BookingManagerAdmin() {
     return map;
   }, [managedArtists, searchTerm, artistVenues]);
 
-  const broadcastRecipients = useMemo(
-    () => [...grouped.Soloist, ...grouped.Duo, ...grouped.Band],
-    [grouped]
-  );
+  const broadcastRecipients = useMemo(() => {
+    const all = [...grouped.Soloist, ...grouped.Duo, ...grouped.Band];
+    const vq = broadcastVenue.trim().toLowerCase();
+    if (!vq) return all;
+    return all.filter((a) =>
+      (artistVenues[a.artist_id] || []).some((v) => v.toLowerCase().includes(vq))
+    );
+  }, [grouped, broadcastVenue, artistVenues]);
 
   const sendBroadcastMessage = async () => {
     if (!userId) return;

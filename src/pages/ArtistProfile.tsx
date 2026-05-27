@@ -679,9 +679,16 @@ const ArtistProfile = () => {
                               const lat = place?.geometry?.location?.lat?.();
                               const lng = place?.geometry?.location?.lng?.();
                               const phone = (place as any)?.formatted_phone_number || (place as any)?.international_phone_number;
+                              const placeName = (place as any)?.name as string | undefined;
+                              const formatted = (place as any)?.formatted_address as string | undefined;
+                              // Combine "Name — Address" when the place has a distinct business name
+                              let combined = val;
+                              if (placeName && formatted && !formatted.toLowerCase().startsWith(placeName.toLowerCase())) {
+                                combined = `${placeName} — ${formatted}`;
+                              }
                               setBookingForm((prev) => ({
                                 ...prev,
-                                venue: val,
+                                venue: combined,
                                 venueLat: typeof lat === "number" ? lat : prev.venueLat,
                                 venueLng: typeof lng === "number" ? lng : prev.venueLng,
                                 venuePhone: phone || prev.venuePhone,

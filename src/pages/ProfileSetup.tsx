@@ -90,6 +90,8 @@ const ProfileSetup = () => {
   const undoIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [travelDistance, setTravelDistance] = useState<string>("");
   const [yearsExperience, setYearsExperience] = useState<string>("");
+  const [preferredPay, setPreferredPay] = useState<string>("");
+  const [preferredPayHours, setPreferredPayHours] = useState<string>("");
   const [unionMemberships, setUnionMemberships] = useState<string[]>([]);
   const [newUnion, setNewUnion] = useState("");
   

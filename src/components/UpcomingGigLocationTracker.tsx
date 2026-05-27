@@ -1,11 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Clock, Navigation, AlertCircle, ExternalLink } from "lucide-react";
+import { MapPin, Clock, Navigation, AlertCircle, ExternalLink, CheckCircle2, Car } from "lucide-react";
 import { format, parseISO, differenceInMinutes, isToday } from "date-fns";
 import { AutoLocationTracker } from "./AutoLocationTracker";
+
+type TravelStatus = "not_started" | "in_transit" | "arrived";
+interface TravelRow {
+  gig_id: string;
+  user_id: string;
+  status: TravelStatus;
+  started_at: string | null;
+  arrived_at: string | null;
+  profile?: { name?: string | null } | null;
+}
 
 interface UpcomingGig {
   id: string;

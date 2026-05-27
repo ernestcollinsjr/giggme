@@ -286,10 +286,11 @@ export function AvailabilityCalendar({ userId, readOnly = false, onTodayStatusCh
 
   const modifiersStyles = {
     available: {
-      backgroundColor: 'rgb(34 197 94)',
-      color: 'white',
+      backgroundColor: 'rgba(34, 197, 94, 0.18)', // soft / dissolved green
+      color: 'inherit',
       borderRadius: '50%',
     },
+
     unavailable: {
       backgroundColor: 'rgb(239 68 68)',
       color: 'white',

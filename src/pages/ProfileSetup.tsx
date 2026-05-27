@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { User } from "@supabase/supabase-js";
 import { LogOut, Crown, Music, Briefcase, Mail, Loader2, Youtube, Facebook, Instagram, Twitter, Globe, Plus, Trash2, Wrench, Tag, MapPin, Clock, Play, X, Check, HelpCircle, Volume2, VolumeX, Undo2, Bell, Shield, FileText, Ban, Flag, Users, AlertTriangle, CreditCard } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { detectFaceAndCrop, loadImage } from "@/utils/imageCropping";
+import { detectFaceAndCrop, resizeImagePreserveAspect, loadImage } from "@/utils/imageCropping";
 import { Browser } from '@capacitor/browser';
 import { Capacitor } from '@capacitor/core';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';

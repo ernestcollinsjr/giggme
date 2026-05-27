@@ -71,6 +71,15 @@ const PerformerProfileView = () => {
   const [profile, setProfile] = useState<PerformerProfile | null>(null);
   const [performerRole, setPerformerRole] = useState<string | null>(null);
   const [weekAvailability, setWeekAvailability] = useState<{ date: string; status: string | null }[]>([]);
+  const [upcomingAlerts, setUpcomingAlerts] = useState<Array<{
+    id: string;
+    venue: string;
+    event_date: string;
+    reminder_1d_sent_at: string | null;
+    reminder_2h_sent_at: string | null;
+    auto_reminders_disabled: boolean;
+  }>>([]);
+  const [nowTick, setNowTick] = useState(Date.now());
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [bookingSubmitting, setBookingSubmitting] = useState(false);
@@ -143,6 +152,20 @@ const PerformerProfileView = () => {
           .limit(1)
           .maybeSingle();
         if (roleData?.role) setPerformerRole(roleData.role as string);
+
+        // Load upcoming accepted booking requests this manager sent to this performer
+        if (session?.user?.id) {
+          const { data: brs } = await supabase
+            .from("booking_requests")
+            .select("id, venue, event_date, reminder_1d_sent_at, reminder_2h_sent_at, auto_reminders_disabled")
+            .eq("booker_id", session.user.id)
+            .eq("performer_id", userId)
+            .eq("status", "accepted")
+            .not("event_date", "is", null)
+            .gte("event_date", new Date().toISOString())
+            .order("event_date", { ascending: true });
+          setUpcomingAlerts((brs || []) as any);
+        }
       } catch (err: any) {
         toast({ title: "Error", description: err.message, variant: "destructive" });
       } finally {
@@ -151,6 +174,25 @@ const PerformerProfileView = () => {
     };
     load();
   }, [userId, navigate, toast]);
+
+  // Tick every 30s for countdown updates
+  useEffect(() => {
+    if (upcomingAlerts.length === 0) return;
+    const t = setInterval(() => setNowTick(Date.now()), 30000);
+    return () => clearInterval(t);
+  }, [upcomingAlerts.length]);
+
+  const formatCountdown = (target: string): string => {
+    const diff = new Date(target).getTime() - nowTick;
+    if (diff <= 0) return "Happening now";
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    if (d > 0) return `${d}d ${h}h ${m}m`;
+    if (h > 0) return `${h}h ${m}m`;
+    return `${m}m`;
+  };
+
 
   const handleSendBookingRequest = async () => {
     if (bookingForm.dates.length === 0 || !bookingForm.venue.trim()) {
@@ -543,6 +585,97 @@ const PerformerProfileView = () => {
                     <p className="text-sm text-muted-foreground">
                       This performer's notification preferences are private. They will receive your booking request via their preferred channel (in-app, email, or SMS).
                     </p>
+                  </div>
+
+                  {/* Upcoming alert status for bookings this manager created */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-semibold flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-primary" /> Your Upcoming Bookings
+                      </h4>
+                      <span className="text-xs text-muted-foreground">
+                        {upcomingAlerts.length} confirmed
+                      </span>
+                    </div>
+
+                    {upcomingAlerts.length === 0 ? (
+                      <p className="text-sm text-muted-foreground italic">
+                        No upcoming confirmed bookings with this performer.
+                      </p>
+                    ) : (
+                      <div className="space-y-3">
+                        {upcomingAlerts.map((b) => {
+                          const eventMs = new Date(b.event_date).getTime();
+                          const diffMs = eventMs - nowTick;
+                          const hoursUntil = diffMs / 3600000;
+                          const dayDue = hoursUntil <= 26 && hoursUntil > 1;
+                          const twoHrDue = hoursUntil <= 3 && hoursUntil > 0;
+                          const dayStatus = b.reminder_1d_sent_at
+                            ? "sent"
+                            : hoursUntil > 26
+                              ? "scheduled"
+                              : hoursUntil <= 0
+                                ? "skipped"
+                                : dayDue
+                                  ? "pending"
+                                  : "skipped";
+                          const twoHrStatus = b.reminder_2h_sent_at
+                            ? "sent"
+                            : hoursUntil > 3
+                              ? "scheduled"
+                              : hoursUntil <= 0
+                                ? "skipped"
+                                : twoHrDue
+                                  ? "pending"
+                                  : "scheduled";
+                          const statusBadge = (s: string, sentAt?: string | null) => {
+                            const map: Record<string, { label: string; cls: string }> = {
+                              sent: { label: sentAt ? `Sent ${format(new Date(sentAt), "MMM d, h:mm a")}` : "Sent", cls: "bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30" },
+                              pending: { label: "Sending soon", cls: "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30" },
+                              scheduled: { label: "Scheduled", cls: "bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30" },
+                              skipped: { label: "Not applicable", cls: "bg-muted text-muted-foreground border-border" },
+                            };
+                            const m = map[s];
+                            return <Badge variant="outline" className={cn("font-normal", m.cls)}>{m.label}</Badge>;
+                          };
+                          return (
+                            <div key={b.id} className="p-3 rounded-lg border bg-card space-y-3">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                  <p className="text-sm font-medium truncate">{b.venue}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {format(new Date(b.event_date), "EEE, MMM d, yyyy 'at' h:mm a")}
+                                  </p>
+                                </div>
+                                <div className="shrink-0 text-right">
+                                  <p className="text-xs text-muted-foreground">Countdown</p>
+                                  <p className="text-sm font-semibold text-primary tabular-nums">
+                                    {formatCountdown(b.event_date)}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {b.auto_reminders_disabled ? (
+                                <p className="text-xs text-muted-foreground italic">
+                                  Auto-reminders are disabled for this booking.
+                                </p>
+                              ) : (
+                                <div className="space-y-1.5">
+                                  <div className="flex items-center justify-between text-xs">
+                                    <span className="text-muted-foreground">1 day before email</span>
+                                    {statusBadge(dayStatus, b.reminder_1d_sent_at)}
+                                  </div>
+                                  <div className="flex items-center justify-between text-xs">
+                                    <span className="text-muted-foreground">2 hours before email</span>
+                                    {statusBadge(twoHrStatus, b.reminder_2h_sent_at)}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </TabsContent>
 

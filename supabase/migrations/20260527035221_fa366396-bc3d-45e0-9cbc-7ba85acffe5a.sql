@@ -1,0 +1,1 @@
+DELETE FROM public.gigs WHERE id = 'c3ab1ce4-6d44-4967-bf67-eb1733d3c756';

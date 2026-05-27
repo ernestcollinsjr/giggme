@@ -532,39 +532,26 @@ export default function BookingManagerAdmin() {
     }
     setBroadcastSending(true);
     try {
-      const rows = broadcastRecipients.map((a) => ({
-        sender_id: userId,
-        recipient_id: a.artist_id,
-        is_group_message: false,
-        content: text,
-      }));
-      const { data: inserted, error } = await supabase
-        .from("messages")
-        .insert(rows)
-        .select("id, recipient_id");
+      const { data, error } = await supabase.functions.invoke("send-replacement-request", {
+        body: {
+          performer_ids: broadcastRecipients.map((a) => a.artist_id),
+          message: text,
+          venue: broadcastVenue.trim() || null,
+        },
+      });
       if (error) throw error;
 
-      // Fire-and-forget push notifications
-      (inserted || []).forEach((m: any) => {
-        supabase.functions
-          .invoke("notify-new-message", {
-            body: {
-              message_id: m.id,
-              sender_id: userId,
-              recipient_id: m.recipient_id,
-              content: text,
-            },
-          })
-          .catch((e) => console.error("notify-new-message failed", e));
-      });
-
+      const deadline = data?.deadline_at ? new Date(data.deadline_at) : null;
       toast({
-        title: "Message sent",
-        description: `Delivered to ${broadcastRecipients.length} performer${
-          broadcastRecipients.length === 1 ? "" : "s"
-        }.`,
+        title: "Cover request sent",
+        description: `Emailed ${data?.recipients ?? broadcastRecipients.length} performer${
+          (data?.recipients ?? broadcastRecipients.length) === 1 ? "" : "s"
+        }. They have 30 min to respond${
+          deadline ? ` (by ${deadline.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })})` : ""
+        } or they're auto-ruled-out.`,
       });
       setBroadcastText("");
+      setBroadcastVenue("");
       setBroadcastOpen(false);
     } catch (e: any) {
       toast({ variant: "destructive", title: "Send failed", description: e.message });

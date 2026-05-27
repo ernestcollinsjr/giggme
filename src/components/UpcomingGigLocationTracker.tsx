@@ -114,8 +114,37 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
   const [loading, setLoading] = useState(true);
   const [travelByGig, setTravelByGig] = useState<Record<string, TravelRow[]>>({});
   const [locByUser, setLocByUser] = useState<Record<string, { lat: number; lng: number }>>({});
+  // Per-gig flag: user tapped Navigate but we don't have location permission yet
+  const [needsPermission, setNeedsPermission] = useState<Record<string, boolean>>({});
   // Persist the starting distance (per user+gig) so we can compute progress %
   const startDistRef = useRef<Record<string, number>>({});
+
+  // Ask the browser for a one-shot position to trigger the permission prompt.
+  // Returns true if we got a fix (permission granted), false otherwise.
+  const requestLocationPermission = useCallback(async (): Promise<boolean> => {
+    if (!navigator.geolocation) return false;
+    try {
+      const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+        });
+      });
+      // Seed profile location so the car appears on the road immediately
+      try {
+        await supabase
+          .from("profiles")
+          .update({
+            location_lat: pos.coords.latitude,
+            location_lng: pos.coords.longitude,
+          })
+          .eq("id", userId);
+      } catch {/* ignore */}
+      return true;
+    } catch {
+      return false;
+    }
+  }, [userId]);
 
   const fetchTravelStatus = useCallback(async (gigIds: string[]) => {
     if (gigIds.length === 0) return;

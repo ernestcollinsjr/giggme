@@ -1327,6 +1327,16 @@ const ProfileSetup = () => {
                         className="text-center"
                       />
                     )}
+                    <Select value={performerCategory} onValueChange={setPerformerCategory}>
+                      <SelectTrigger className="text-center">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Solo">Solo</SelectItem>
+                        <SelectItem value="Duo">Duo</SelectItem>
+                        <SelectItem value="Band">Band</SelectItem>
+                      </SelectContent>
+                    </Select>
                     {memberSince && (
                       <span className="text-xs text-muted-foreground">
                         Member since {memberSince}

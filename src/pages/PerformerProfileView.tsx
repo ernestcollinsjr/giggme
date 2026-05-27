@@ -625,15 +625,15 @@ const PerformerProfileView = () => {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="p-4 rounded-lg border bg-muted/30">
-                      <Label className="text-xs text-muted-foreground">Hourly Rate</Label>
+                      <Label className="text-xs text-muted-foreground">Preferred Pay</Label>
                       <p className="text-lg font-semibold mt-1">
-                        {profile.hourly_rate ? `$${profile.hourly_rate}/hr` : "Not specified"}
+                        {profile.preferred_pay ? `$${profile.preferred_pay}` : "Not specified"}
                       </p>
                     </div>
                     <div className="p-4 rounded-lg border bg-muted/30">
-                      <Label className="text-xs text-muted-foreground">Event Rate</Label>
+                      <Label className="text-xs text-muted-foreground">Per</Label>
                       <p className="text-lg font-semibold mt-1">
-                        {profile.event_rate ? `$${profile.event_rate}/event` : "Not specified"}
+                        {profile.preferred_pay_hours ? `${profile.preferred_pay_hours} hr(s)` : "Not specified"}
                       </p>
                     </div>
                   </div>

@@ -328,43 +328,25 @@ const PerformerProfileView = () => {
               })()}
 
               {/* Avatar + name block */}
-              <div className="flex flex-col items-center text-center space-y-3">
-                <Avatar className="h-24 w-24">
+              <div className="flex items-start gap-4">
+                <Avatar className="h-24 w-24 shrink-0">
                   <AvatarImage src={primaryPhoto} alt={profile.name} />
                   <AvatarFallback>{initials}</AvatarFallback>
                 </Avatar>
-                <div className="w-full max-w-xs space-y-2">
-                  <Input value={profile.name || ""} readOnly className="text-center font-medium" />
+                <div className="flex-1 min-w-0 space-y-2">
+                  <h2 className="text-xl font-semibold truncate">{profile.name}</h2>
+                  <p className="text-sm text-muted-foreground">
+                    {profile.performer_category || "Solo"}
+                  </p>
                   {profile.band_name && (
-                    <div className="space-y-1 text-left">
-                      <Label className="text-xs">Band Name</Label>
-                      <Input value={profile.band_name} readOnly />
-                    </div>
+                    <p className="text-sm"><span className="text-muted-foreground">Band:</span> {profile.band_name}</p>
                   )}
-                  {/* Solo / Duo / Band selector (read-only display) */}
-                  <div className="space-y-1 text-left">
-                    <Label className="text-xs">Category</Label>
-                    <div className="grid grid-cols-3 gap-1 rounded-md bg-muted p-1">
-                      {(["Solo", "Duo", "Band"] as const).map((c) => {
-                        const active = (profile.performer_category || "Solo") === c;
-                        return (
-                          <div
-                            key={c}
-                            className={`text-center text-sm py-1.5 rounded-sm font-medium ${
-                              active ? "bg-background shadow-sm text-foreground" : "text-muted-foreground"
-                            }`}
-                          >
-                            {c}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
+                  {memberSince && (
+                    <p className="text-xs text-muted-foreground">Member since {memberSince}</p>
+                  )}
                 </div>
-                {memberSince && (
-                  <p className="text-xs text-muted-foreground">Member since {memberSince}</p>
-                )}
               </div>
+
 
               {/* Additional photos */}
               {extraPhotos.length > 0 && (

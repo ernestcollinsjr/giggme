@@ -449,7 +449,10 @@ export type Database = {
           performer_id: string
           performer_name: string | null
           reminder_1d_sent_at: string | null
+          reminder_24h_sent_at: string | null
           reminder_2h_sent_at: string | null
+          reminder_30m_sent_at: string | null
+          reminder_3h_sent_at: string | null
           responded_at: string | null
           response_token: string
           status: Database["public"]["Enums"]["booking_request_status"]
@@ -477,7 +480,10 @@ export type Database = {
           performer_id: string
           performer_name?: string | null
           reminder_1d_sent_at?: string | null
+          reminder_24h_sent_at?: string | null
           reminder_2h_sent_at?: string | null
+          reminder_30m_sent_at?: string | null
+          reminder_3h_sent_at?: string | null
           responded_at?: string | null
           response_token?: string
           status?: Database["public"]["Enums"]["booking_request_status"]
@@ -505,7 +511,10 @@ export type Database = {
           performer_id?: string
           performer_name?: string | null
           reminder_1d_sent_at?: string | null
+          reminder_24h_sent_at?: string | null
           reminder_2h_sent_at?: string | null
+          reminder_30m_sent_at?: string | null
+          reminder_3h_sent_at?: string | null
           responded_at?: string | null
           response_token?: string
           status?: Database["public"]["Enums"]["booking_request_status"]
@@ -769,6 +778,42 @@ export type Database = {
         }
         Relationships: []
       }
+      gig_travel_status: {
+        Row: {
+          arrived_at: string | null
+          created_at: string
+          gig_id: string
+          id: string
+          source: string
+          started_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          arrived_at?: string | null
+          created_at?: string
+          gig_id: string
+          id?: string
+          source?: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          arrived_at?: string | null
+          created_at?: string
+          gig_id?: string
+          id?: string
+          source?: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       gigs: {
         Row: {
           attire: string | null
@@ -783,6 +828,9 @@ export type Database = {
           notes: string | null
           payment_amount: number | null
           payment_status: string | null
+          reminder_24h_sent_at: string | null
+          reminder_30m_sent_at: string | null
+          reminder_3h_sent_at: string | null
           response_deadline_hours: number | null
           sound_check_time: string | null
           sound_man_info: string | null
@@ -808,6 +856,9 @@ export type Database = {
           notes?: string | null
           payment_amount?: number | null
           payment_status?: string | null
+          reminder_24h_sent_at?: string | null
+          reminder_30m_sent_at?: string | null
+          reminder_3h_sent_at?: string | null
           response_deadline_hours?: number | null
           sound_check_time?: string | null
           sound_man_info?: string | null
@@ -833,6 +884,9 @@ export type Database = {
           notes?: string | null
           payment_amount?: number | null
           payment_status?: string | null
+          reminder_24h_sent_at?: string | null
+          reminder_30m_sent_at?: string | null
+          reminder_3h_sent_at?: string | null
           response_deadline_hours?: number | null
           sound_check_time?: string | null
           sound_man_info?: string | null

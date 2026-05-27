@@ -1,11 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Clock, Navigation, AlertCircle, ExternalLink } from "lucide-react";
+import { MapPin, Clock, Navigation, AlertCircle, ExternalLink, CheckCircle2, Car } from "lucide-react";
 import { format, parseISO, differenceInMinutes, isToday } from "date-fns";
 import { AutoLocationTracker } from "./AutoLocationTracker";
+
+type TravelStatus = "not_started" | "in_transit" | "arrived";
+interface TravelRow {
+  gig_id: string;
+  user_id: string;
+  status: TravelStatus;
+  started_at: string | null;
+  arrived_at: string | null;
+  profile?: { name?: string | null } | null;
+}
 
 interface UpcomingGig {
   id: string;
@@ -28,15 +38,70 @@ interface UpcomingGigLocationTrackerProps {
 export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLocationTrackerProps) => {
   const [upcomingGigs, setUpcomingGigs] = useState<UpcomingGig[]>([]);
   const [loading, setLoading] = useState(true);
+  const [travelByGig, setTravelByGig] = useState<Record<string, TravelRow[]>>({});
+
+  const fetchTravelStatus = useCallback(async (gigIds: string[]) => {
+    if (gigIds.length === 0) return;
+    const { data } = await supabase
+      .from("gig_travel_status")
+      .select("gig_id, user_id, status, started_at, arrived_at")
+      .in("gig_id", gigIds);
+
+    const userIds = Array.from(new Set((data || []).map((r) => r.user_id)));
+    const { data: profiles } = userIds.length
+      ? await supabase.from("profiles").select("id, name").in("id", userIds)
+      : { data: [] as any[] };
+    const profileMap = new Map((profiles || []).map((p: any) => [p.id, p]));
+
+    const grouped: Record<string, TravelRow[]> = {};
+    (data || []).forEach((row: any) => {
+      grouped[row.gig_id] ??= [];
+      grouped[row.gig_id].push({ ...row, profile: profileMap.get(row.user_id) || null });
+    });
+    setTravelByGig(grouped);
+  }, []);
 
   useEffect(() => {
     fetchUpcomingGigs();
-    
-    // Check every minute for updates
     const interval = setInterval(fetchUpcomingGigs, 60000);
-    
     return () => clearInterval(interval);
   }, [userId, userRole]);
+
+  useEffect(() => {
+    const ids = upcomingGigs.map((g) => g.id);
+    fetchTravelStatus(ids);
+    if (ids.length === 0) return;
+    const channel = supabase
+      .channel(`gig-travel-${userId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "gig_travel_status" },
+        () => fetchTravelStatus(ids),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [upcomingGigs, fetchTravelStatus, userId]);
+
+  const updateTravelStatus = async (gig: UpcomingGig, status: TravelStatus) => {
+    const source = gig.location_sharing_enabled !== undefined && "loading_time" in gig && gig.venue_lat === null && gig.venue_lng === null
+      ? "booking_request"
+      : "gig";
+    const payload: any = {
+      gig_id: gig.id,
+      user_id: userId,
+      source,
+      status,
+    };
+    if (status === "in_transit") payload.started_at = new Date().toISOString();
+    if (status === "arrived") payload.arrived_at = new Date().toISOString();
+
+    await supabase
+      .from("gig_travel_status")
+      .upsert(payload, { onConflict: "gig_id,user_id" });
+    fetchTravelStatus(upcomingGigs.map((g) => g.id));
+  };
 
   const fetchUpcomingGigs = async () => {
     try {
@@ -309,16 +374,64 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
                   </div>
                 </div>
                 
-                <Button
-                  size="sm"
-                  variant={timeInfo.urgent ? "destructive" : "default"}
-                  onClick={() => openVenueInMaps(gig)}
-                  className="gap-1.5 flex-shrink-0"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  <span className="hidden sm:inline">Navigate</span>
-                </Button>
+                {(() => {
+                  const myRow = (travelByGig[gig.id] || []).find((r) => r.user_id === userId);
+                  const myStatus: TravelStatus = myRow?.status || "not_started";
+                  return (
+                    <div className="flex flex-col gap-1.5 flex-shrink-0">
+                      <Button
+                        size="sm"
+                        variant={timeInfo.urgent ? "destructive" : "default"}
+                        onClick={() => {
+                          updateTravelStatus(gig, "in_transit");
+                          openVenueInMaps(gig);
+                        }}
+                        className="gap-1.5"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        <span className="hidden sm:inline">
+                          {myStatus === "in_transit" ? "Re-open Maps" : "Navigate"}
+                        </span>
+                      </Button>
+                      {myStatus === "in_transit" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => updateTravelStatus(gig, "arrived")}
+                          className="gap-1.5"
+                        >
+                          <CheckCircle2 className="h-4 w-4" />
+                          <span className="hidden sm:inline">I've arrived</span>
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
+
+              {/* Travel status of everyone on the gig */}
+              {(travelByGig[gig.id]?.length ?? 0) > 0 && (
+                <div className="mt-3 pt-3 border-t border-border/50 flex flex-wrap gap-2">
+                  {travelByGig[gig.id]!.map((row) => {
+                    const name = row.profile?.name || (row.user_id === userId ? "You" : "Someone");
+                    const isArrived = row.status === "arrived";
+                    return (
+                      <Badge
+                        key={row.user_id}
+                        variant={isArrived ? "default" : "secondary"}
+                        className="gap-1 text-[11px]"
+                      >
+                        {isArrived ? (
+                          <CheckCircle2 className="h-3 w-3" />
+                        ) : (
+                          <Car className="h-3 w-3" />
+                        )}
+                        {name} · {isArrived ? "Arrived" : "On the way"}
+                      </Badge>
+                    );
+                  })}
+                </div>
+              )}
 
               {/* Show member location map for band leaders */}
               {!isMember && timeInfo.started && (

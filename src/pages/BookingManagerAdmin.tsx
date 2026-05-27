@@ -488,15 +488,19 @@ export default function BookingManagerAdmin() {
   };
 
   const grouped = useMemo(() => {
-    const filtered = managedArtists.filter((a) =>
-      a.profile.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const q = searchTerm.trim().toLowerCase();
+    const filtered = managedArtists.filter((a) => {
+      if (!q) return true;
+      if (a.profile.name.toLowerCase().includes(q)) return true;
+      const venues = artistVenues[a.artist_id] || [];
+      return venues.some((v) => v.toLowerCase().includes(q));
+    });
     const map: Record<Category, ManagedArtist[]> = { Soloist: [], Duo: [], Band: [] };
     filtered.forEach((a) => {
       map[normalizeCategory(a.group_type)].push(a);
     });
     return map;
-  }, [managedArtists, searchTerm]);
+  }, [managedArtists, searchTerm, artistVenues]);
 
   const selectedArtist = useMemo(
     () => managedArtists.find((a) => a.artist_id === artistFilter) || null,

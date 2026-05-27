@@ -274,16 +274,45 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
     }
 
     try {
-      const rows = Array.from(recipientIds).map((rid) => ({
+      const ids = Array.from(recipientIds);
+
+      // 1) DM in the in-app chat so they have the link to tap
+      const messageRows = ids.map((rid) => ({
         sender_id: userId,
         recipient_id: rid,
         is_group_message: false,
         content: body,
       }));
-      const { error } = await supabase.from("messages").insert(rows);
-      if (error) throw error;
+      const { error: msgErr } = await supabase.from("messages").insert(messageRows);
+      if (msgErr) throw msgErr;
+
+      // 2) In-app notification (powers the bell icon)
+      const notifRows = ids.map((rid) => ({
+        user_id: rid,
+        title: "Time to head out",
+        message: `Tap Navigate on your ${venueLabel} gig card so we can track your route.`,
+        type: "gig_tracking_request",
+        related_id: gig.id,
+      }));
+      await supabase.from("notifications").insert(notifRows);
+
+      // 3) Actual web/native push to anyone with a registered device
+      await Promise.allSettled(
+        ids.map((rid) =>
+          supabase.functions.invoke("send-push-notification", {
+            body: {
+              user_id: rid,
+              title: "🚗 Time to head out",
+              body: `Tap Navigate for your ${venueLabel} gig so your team can track you.`,
+              url: link,
+              data: { type: "gig_tracking_request", gig_id: gig.id },
+            },
+          }),
+        ),
+      );
+
       toast.success("Sent to performer", {
-        description: `${recipientIds.size} recipient${recipientIds.size > 1 ? "s" : ""} notified.`,
+        description: `${ids.length} recipient${ids.length > 1 ? "s" : ""} notified.`,
       });
     } catch (e: any) {
       toast.error("Couldn't send message", { description: e.message });

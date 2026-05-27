@@ -138,7 +138,7 @@ export default function BookingRequestResponse() {
     );
   }
 
-  const isPerformer = userId === request.performer_id;
+  const isPerformer = userId === request.performer_id || (!!userEmail && !!request.performer_email && userEmail.toLowerCase() === request.performer_email.toLowerCase());
   const isBooker = userId === request.booker_id;
   const expiresAt = new Date(request.expires_at).getTime();
   const expired = request.status === "pending" && expiresAt < now;

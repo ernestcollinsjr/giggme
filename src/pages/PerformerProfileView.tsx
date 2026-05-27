@@ -525,63 +525,131 @@ const PerformerProfileView = () => {
                   </div>
                 </div>
               )}
+                </TabsContent>
 
-
-
-              {/* Availability — read-only 7-day preview */}
-              {weekAvailability.length > 0 && (
-                <div>
-                  <Label className="text-sm font-medium mb-2 flex items-center gap-1">
-                    <CalendarIcon className="h-4 w-4" /> Availability — Next 7 Days
-                  </Label>
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border">
-                    <div className="flex items-center gap-2">
-                      {profile.availability_status === "available" ? (
-                        <><span className="w-3 h-3 rounded-full bg-green-500 animate-pulse" /><span className="text-sm font-medium text-green-600">Available</span></>
-                      ) : profile.availability_status === "unavailable" ? (
-                        <><span className="w-3 h-3 rounded-full bg-red-500" /><span className="text-sm font-medium text-red-600">Unavailable</span></>
-                      ) : profile.availability_status === "tentative" ? (
-                        <><span className="w-3 h-3 rounded-full bg-yellow-500" /><span className="text-sm font-medium text-yellow-600">Tentative</span></>
-                      ) : (
-                        <><span className="w-3 h-3 rounded-full bg-muted-foreground/30" /><span className="text-sm text-muted-foreground">Not set</span></>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1 ml-auto">
-                      {weekAvailability.map((day, idx) => {
-                        const dt = new Date(day.date + "T00:00:00");
-                        const dayLabel = dt.toLocaleDateString("en-US", { weekday: "short" }).charAt(0);
-                        const dayNum = dt.getDate();
-                        return (
-                          <div key={day.date} className="flex flex-col items-center" title={`${dt.toLocaleDateString()} — ${day.status || "not set"}`}>
-                            <span className="text-[10px] text-muted-foreground">{dayLabel}</span>
-                            <div className={`w-6 h-6 sm:w-5 sm:h-5 rounded-sm flex items-center justify-center text-[10px] sm:text-[9px] font-medium text-white ${
-                              day.status === "available" ? "bg-green-500"
-                                : day.status === "unavailable" ? "bg-red-500"
-                                : day.status === "tentative" ? "bg-yellow-500"
-                                : "bg-muted-foreground/20 text-muted-foreground"
-                            } ${idx === 0 ? "ring-2 ring-primary ring-offset-1" : ""}`}>
-                              {dayNum}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
+                <TabsContent value="role" className="mt-0 space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <Crown className="h-5 w-5 text-primary" /> Performer Role
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      How this performer uses the platform.
+                    </p>
                   </div>
-                  <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
-                    <span className="flex items-center gap-1"><Check className="h-3 w-3 text-green-500" />Available</span>
-                    <span className="flex items-center gap-1"><HelpCircle className="h-3 w-3 text-yellow-500" />Tentative</span>
-                    <span className="flex items-center gap-1"><X className="h-3 w-3 text-red-500" />Unavailable</span>
+                  <div className="p-4 rounded-lg border bg-muted/30 capitalize">
+                    {performerRole ? performerRole.replace(/_/g, " ") : "Not specified"}
                   </div>
-                </div>
-              )}
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <h4 className="font-medium mb-2">About Roles:</h4>
+                    <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                      <li><strong>Band Leader:</strong> Creates and manages bands</li>
+                      <li><strong>Band Member:</strong> Part of one or more bands</li>
+                      <li><strong>Artist/Musician:</strong> Solo performer building portfolio</li>
+                      <li><strong>Tour Manager:</strong> Coordinates tours and crew</li>
+                      <li><strong>Booking Manager:</strong> Books and manages artists/bands</li>
+                    </ul>
+                  </div>
+                </TabsContent>
 
-              {/* Rider notes */}
-              {profile.rider_notes && (
-                <div>
-                  <Label className="text-sm font-medium">Rider Notes</Label>
-                  <Textarea value={profile.rider_notes} readOnly rows={3} className="mt-1 resize-none" />
-                </div>
-              )}
+                <TabsContent value="alerts" className="mt-0 space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <Bell className="h-5 w-5 text-primary" /> Notification Preferences
+                    </h3>
+                  </div>
+                  <div className="p-4 rounded-lg border bg-muted/30 flex items-start gap-3">
+                    <Lock className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <p className="text-sm text-muted-foreground">
+                      This performer's notification preferences are private. They will receive your booking request via their preferred channel (in-app, email, or SMS).
+                    </p>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="safety" className="mt-0 space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <Shield className="h-5 w-5 text-primary" /> Safety & Privacy
+                    </h3>
+                  </div>
+                  <div className="p-4 rounded-lg border bg-muted/30 flex items-start gap-3">
+                    <Lock className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <p className="text-sm text-muted-foreground">
+                      Safety settings (blocked users, location sharing, emergency contacts) are private to the performer.
+                    </p>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="availability" className="mt-0 space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <Clock className="h-5 w-5 text-primary" /> Availability
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Next 7 days. Send a booking request to confirm a specific date.
+                    </p>
+                  </div>
+                  {weekAvailability.length > 0 ? (
+                    <>
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border">
+                        <div className="flex items-center gap-2">
+                          {profile.availability_status === "available" ? (
+                            <><span className="w-3 h-3 rounded-full bg-green-500 animate-pulse" /><span className="text-sm font-medium text-green-600">Available</span></>
+                          ) : profile.availability_status === "unavailable" ? (
+                            <><span className="w-3 h-3 rounded-full bg-red-500" /><span className="text-sm font-medium text-red-600">Unavailable</span></>
+                          ) : profile.availability_status === "tentative" ? (
+                            <><span className="w-3 h-3 rounded-full bg-yellow-500" /><span className="text-sm font-medium text-yellow-600">Tentative</span></>
+                          ) : (
+                            <><span className="w-3 h-3 rounded-full bg-muted-foreground/30" /><span className="text-sm text-muted-foreground">Not set</span></>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1 ml-auto">
+                          {weekAvailability.map((day, idx) => {
+                            const dt = new Date(day.date + "T00:00:00");
+                            const dayLabel = dt.toLocaleDateString("en-US", { weekday: "short" }).charAt(0);
+                            const dayNum = dt.getDate();
+                            return (
+                              <div key={day.date} className="flex flex-col items-center" title={`${dt.toLocaleDateString()} — ${day.status || "not set"}`}>
+                                <span className="text-[10px] text-muted-foreground">{dayLabel}</span>
+                                <div className={`w-6 h-6 sm:w-5 sm:h-5 rounded-sm flex items-center justify-center text-[10px] sm:text-[9px] font-medium text-white ${
+                                  day.status === "available" ? "bg-green-500"
+                                    : day.status === "unavailable" ? "bg-red-500"
+                                    : day.status === "tentative" ? "bg-yellow-500"
+                                    : "bg-muted-foreground/20 text-muted-foreground"
+                                } ${idx === 0 ? "ring-2 ring-primary ring-offset-1" : ""}`}>
+                                  {dayNum}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                        <span className="flex items-center gap-1"><Check className="h-3 w-3 text-green-500" />Available</span>
+                        <span className="flex items-center gap-1"><HelpCircle className="h-3 w-3 text-yellow-500" />Tentative</span>
+                        <span className="flex items-center gap-1"><X className="h-3 w-3 text-red-500" />Unavailable</span>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No availability set for the next 7 days.</p>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="rider" className="mt-0 space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <FileText className="h-5 w-5 text-primary" /> Rider Notes
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Performer's technical and hospitality requirements.
+                    </p>
+                  </div>
+                  {profile.rider_notes ? (
+                    <Textarea value={profile.rider_notes} readOnly rows={6} className="resize-none" />
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No rider notes provided.</p>
+                  )}
+                </TabsContent>
+              </Tabs>
 
               {/* Ratings */}
               {userId && <PerformerRatingsDisplay artistId={userId} />}
@@ -598,6 +666,7 @@ const PerformerProfileView = () => {
                 </Button>
               </div>
             </CardContent>
+
           </Card>
         </div>
       </div>

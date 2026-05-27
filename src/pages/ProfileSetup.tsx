@@ -44,6 +44,7 @@ const ProfileSetup = () => {
   
   const [name, setName] = useState("");
   const [bandName, setBandName] = useState("");
+  const [performerCategory, setPerformerCategory] = useState<string>("Solo");
   const [bio, setBio] = useState("");
   const [instrument, setInstrument] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -155,6 +156,7 @@ const ProfileSetup = () => {
         if (profile) {
           setName(profile.name || "");
           setBandName((profile as any).band_name || "");
+          setPerformerCategory((profile as any).performer_category || "Solo");
           setBio(profile.bio || "");
           setInstrument(profile.instrument || "");
           setPhoneNumber(profile.phone_number || "");
@@ -389,8 +391,9 @@ const ProfileSetup = () => {
         travel_distance: travelDistance ? parseInt(travelDistance) : null,
         years_experience: yearsExperience ? parseInt(yearsExperience) : null,
         union_memberships: unionMemberships,
+        performer_category: performerCategory,
         updated_at: new Date().toISOString(),
-      };
+      } as any;
 
       const { error } = await supabase
         .from("profiles")
@@ -1324,6 +1327,16 @@ const ProfileSetup = () => {
                         className="text-center"
                       />
                     )}
+                    <Select value={performerCategory} onValueChange={setPerformerCategory}>
+                      <SelectTrigger className="text-center">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Solo">Solo</SelectItem>
+                        <SelectItem value="Duo">Duo</SelectItem>
+                        <SelectItem value="Band">Band</SelectItem>
+                      </SelectContent>
+                    </Select>
                     {memberSince && (
                       <span className="text-xs text-muted-foreground">
                         Member since {memberSince}

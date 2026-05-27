@@ -542,6 +542,34 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
                 })()}
               </div>
 
+              {/* Permission nudge — performer tapped Navigate but we don't have GPS yet */}
+              {isMember && needsPermission[gig.id] && (
+                <div className="mt-3 flex items-center gap-2 rounded-md border border-border/60 bg-muted/40 px-3 py-2 text-xs">
+                  <MapPin className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                  <span className="flex-1 text-muted-foreground">
+                    Share your location so your team can see your progress.
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 px-2 text-xs"
+                    onClick={async () => {
+                      const granted = await requestLocationPermission();
+                      setNeedsPermission((p) => ({ ...p, [gig.id]: !granted }));
+                    }}
+                  >
+                    Enable
+                  </Button>
+                  <button
+                    onClick={() => setNeedsPermission((p) => ({ ...p, [gig.id]: false }))}
+                    className="p-0.5 hover:bg-accent rounded transition-colors"
+                    aria-label="Dismiss"
+                  >
+                    <span className="text-muted-foreground text-base leading-none">×</span>
+                  </button>
+                </div>
+              )}
+
               {/* Travel progress for everyone on the gig */}
               {(travelByGig[gig.id]?.length ?? 0) > 0 && (
                 <div className="mt-3 pt-3 border-t border-border/50 space-y-2.5">

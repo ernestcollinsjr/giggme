@@ -42,7 +42,7 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
     try {
       const now = new Date();
       const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000);
-
+      if (userRole === "band_member" || userRole === "artist") {
         // Performer: tracking window starts 90 min (1.5 hr) before earliest time
         const { data: gigMembers, error } = await supabase
           .from("gig_members")

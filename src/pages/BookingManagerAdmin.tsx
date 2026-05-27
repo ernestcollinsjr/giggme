@@ -120,6 +120,7 @@ export default function BookingManagerAdmin() {
   const [artistVenues, setArtistVenues] = useState<Record<string, string[]>>({});
   const [broadcastOpen, setBroadcastOpen] = useState(false);
   const [broadcastText, setBroadcastText] = useState("");
+  const [broadcastVenue, setBroadcastVenue] = useState("");
   const [broadcastSending, setBroadcastSending] = useState(false);
 
   const paymentKey = (gig: { source: string; id: string; artist_id: string }) =>

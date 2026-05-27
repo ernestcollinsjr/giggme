@@ -150,10 +150,13 @@ Deno.serve(async (req) => {
     .lte('event_date', upper2h);
 
   for (const r of br2h ?? []) {
-    if (!r.performer_email || !r.event_date) continue;
+    if (!r.event_date) continue;
+    const bookerEmail = await getBookerEmail(supabase, r.booker_id);
+    const recipients = [r.performer_email, bookerEmail];
+    if (!recipients.some((e) => !!e)) continue;
     const when = fmtDate(new Date(r.event_date));
     const ok = await sendEmail(
-      r.performer_email,
+      recipients,
       `Reminder: performance in 2 hours at ${r.venue}`,
       buildHtml({
         recipientName: r.performer_name,

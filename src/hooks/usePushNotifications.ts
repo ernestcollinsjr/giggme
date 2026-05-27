@@ -62,7 +62,13 @@ export function usePushNotifications() {
 
   const checkSubscription = async () => {
     try {
-      const registration = await navigator.serviceWorker.ready as ServiceWorkerRegistration & { pushManager: PushManager };
+      const registration = await navigator.serviceWorker.getRegistration('/sw.js') as (ServiceWorkerRegistration & { pushManager?: PushManager }) | undefined;
+
+      if (!registration?.pushManager) {
+        setIsSubscribed(false);
+        return null;
+      }
+
       const subscription = await registration.pushManager.getSubscription();
       setIsSubscribed(!!subscription);
       return subscription;
@@ -105,12 +111,22 @@ export function usePushNotifications() {
       }
 
       // Register service worker after permission is granted
-      const registration = await navigator.serviceWorker.register('/sw.js');
+      await navigator.serviceWorker.register('/sw.js');
+      const registration = await navigator.serviceWorker.ready as ServiceWorkerRegistration & { pushManager?: PushManager };
       console.log('Service Worker registered:', registration);
 
+      if (!registration.pushManager) {
+        toast({
+          title: 'Open from Home Screen',
+          description: 'On iPhone or iPad, add GigGme to your Home Screen and open it from that icon before enabling push notifications.',
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return false;
+      }
+
       // Subscribe to push
-      const reg = registration as ServiceWorkerRegistration & { pushManager: PushManager };
-      const subscription = await reg.pushManager.subscribe({
+      const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       });
@@ -172,8 +188,8 @@ export function usePushNotifications() {
     setIsLoading(true);
 
     try {
-      const registration = await navigator.serviceWorker.ready as ServiceWorkerRegistration & { pushManager: PushManager };
-      const subscription = await registration.pushManager.getSubscription();
+      const registration = await navigator.serviceWorker.getRegistration('/sw.js') as (ServiceWorkerRegistration & { pushManager?: PushManager }) | undefined;
+      const subscription = await registration?.pushManager?.getSubscription();
       
       if (subscription) {
         await subscription.unsubscribe();

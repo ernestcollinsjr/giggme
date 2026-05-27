@@ -511,161 +511,7 @@ export default function BookingManager() {
 
         {/* My Bands and Available Bands sections removed */}
 
-        {/* Artists/Musicians Directory */}
-        <Card>
-          <CardHeader>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="min-w-0">
-                <CardTitle className="flex items-center gap-2">
-                  <UsersIcon className="h-5 w-5 flex-shrink-0" />
-                  Artists & Musicians Directory
-                </CardTitle>
-                <CardDescription>
-                  Browse and contact individual artists
-                </CardDescription>
-              </div>
-              <div className="flex gap-2 flex-shrink-0">
-                <Dialog open={gigRequestDialogOpen} onOpenChange={setGigRequestDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button size="sm" variant="outline" className="gap-2">
-                      <CalendarIcon className="h-4 w-4" />
-                      Gig Request
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Send Gig Request</DialogTitle>
-                      <DialogDescription>
-                        Send a gig request to all unbooked artists
-                      </DialogDescription>
-                    </DialogHeader>
-                    <Input
-                      placeholder="Enter your gig details..."
-                      value={gigRequestMessage}
-                      onChange={(e) => setGigRequestMessage(e.target.value)}
-                    />
-                    <Button onClick={() => {
-                      if (gigRequestMessage.trim()) {
-                        setGigRequestDialogOpen(false);
-                        navigate(`/bookings?newGig=true&details=${encodeURIComponent(gigRequestMessage)}`);
-                      } else {
-                        toast({
-                          title: "Error",
-                          description: "Please enter gig details",
-                          variant: "destructive",
-                        });
-                      }
-                    }}>
-                      Send Request
-                    </Button>
-                  </DialogContent>
-                </Dialog>
-
-                <Dialog open={smsDialogOpen} onOpenChange={setSmsDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button size="sm" variant="outline" className="gap-2">
-                      <MessageSquare className="h-4 w-4" />
-                      Group Text
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Send Group Message</DialogTitle>
-                      <DialogDescription>
-                        Send a message to all artists
-                      </DialogDescription>
-                    </DialogHeader>
-                    <Input
-                      placeholder="Type your message..."
-                      value={groupMessage}
-                      onChange={(e) => setGroupMessage(e.target.value)}
-                    />
-                    <Button onClick={sendGroupMessage}>
-                      Send Message
-                    </Button>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="mb-4">
-              <Input
-                placeholder="Search artists by name..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="max-w-sm"
-              />
-            </div>
-            {filteredProfiles.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">
-                No artists found
-              </p>
-            ) : (
-              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-1.5">
-                {filteredProfiles.map((profile) => {
-                  const isManaged = managedArtists.some(a => a.artist_id === profile.id);
-                  return (
-                    <div
-                      key={profile.id}
-                      className={`relative flex flex-col items-center p-1.5 border-[0.5px] border-border rounded-md hover:shadow-md hover:border-primary hover:bg-primary/5 transition-all bg-card group ${isManaged ? 'border-primary/40 bg-primary/5' : ''}`}
-                    >
-                      {/* Add to Roster button */}
-                      {!isManaged && (
-                        <button
-                          onClick={() => {
-                            setSelectedArtistToAdd(profile);
-                            setAddArtistDialogOpen(true);
-                          }}
-                          className="absolute top-0.5 left-0.5 opacity-0 group-hover:opacity-100 transition-opacity p-0.5 bg-green-600 text-white rounded-sm hover:bg-green-700 z-10"
-                          title="Add to Roster"
-                        >
-                          <Plus className="h-2.5 w-2.5" />
-                        </button>
-                      )}
-                      {isManaged && (
-                        <div className="absolute top-0.5 left-0.5 p-0.5 bg-primary text-primary-foreground rounded-sm z-10" title="In your roster">
-                          <UsersIcon className="h-2.5 w-2.5" />
-                        </div>
-                      )}
-                      <button
-                        onClick={() => {
-                          setSelectedProfile(profile);
-                          setIndividualSmsOpen(true);
-                        }}
-                        className="absolute top-0.5 right-0.5 opacity-0 group-hover:opacity-100 transition-opacity p-0.5 bg-primary text-primary-foreground rounded-sm hover:bg-primary/90 z-10"
-                        title="Text Artist"
-                      >
-                        <MessageSquare className="h-2.5 w-2.5" />
-                      </button>
-                      <div className="w-10 h-10 rounded-full overflow-hidden bg-muted mb-1">
-                        {profile.photo_urls && profile.photo_urls[0] ? (
-                          <img
-                            src={profile.photo_urls[0]}
-                            alt={profile.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <UsersIcon className="h-5 w-5 text-muted-foreground" />
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-[10px] text-center font-medium truncate w-full px-0.5">
-                        {profile.name}
-                      </p>
-                      {profile.instrument && (
-                        <p className="text-[9px] text-center text-muted-foreground truncate w-full px-0.5">
-                          {profile.instrument}
-                        </p>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {/* Artists/Musicians Directory removed — available on Dashboard */}
 
         {/* Availability Management */}
         {managedBands.length > 0 && (
@@ -726,16 +572,11 @@ export default function BookingManager() {
           </Card>
         )}
 
-        {/* Artist Availability Management */}
-        {viewingResponsesForRequest && !selectedBandForAvailability ? (
+        {/* Artist Availability Management removed — available on Dashboard */}
+        {viewingResponsesForRequest && !selectedBandForAvailability && (
           <AvailabilityRequestResults 
             requestId={viewingResponsesForRequest}
             onBack={() => setViewingResponsesForRequest(null)}
-          />
-        ) : (
-          <ArtistAvailabilityManager 
-            managedArtists={managedArtists}
-            onViewResponses={(requestId) => setViewingResponsesForRequest(requestId)}
           />
         )}
 

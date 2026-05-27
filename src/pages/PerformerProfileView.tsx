@@ -301,7 +301,17 @@ const PerformerProfileView = () => {
       <TopNav userRole="artist" />
       <div className="p-4 sm:p-6">
         <div className="max-w-2xl mx-auto">
-          <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
+          <Button
+            variant="ghost"
+            onClick={() => {
+              if (window.history.state && window.history.state.idx > 0) {
+                navigate(-1);
+              } else {
+                navigate("/dashboard");
+              }
+            }}
+            className="mb-4"
+          >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
           </Button>

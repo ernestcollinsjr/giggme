@@ -349,7 +349,7 @@ const Index = () => {
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center">
-              <img src={logo} alt="GiggMe" className="h-9 w-auto object-contain" />
+              <img src={logo} alt="GiggMe" className="h-16 w-auto object-contain" />
             </div>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <button onClick={() => navigate("/pricing")} className="hover:text-foreground transition-colors">

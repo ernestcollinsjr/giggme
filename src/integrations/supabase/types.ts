@@ -374,11 +374,16 @@ export type Database = {
           amount: number | null
           artist_id: string
           booking_manager_id: string
+          confirmation_sent_at: string | null
+          confirmation_token: string | null
+          confirmed_at: string | null
           created_at: string
           due_date: string | null
           id: string
+          manager_notified_at: string | null
           notes: string | null
           paid_at: string | null
+          recipient_email_at_send: string | null
           source: string
           source_id: string
           status: string
@@ -388,11 +393,16 @@ export type Database = {
           amount?: number | null
           artist_id: string
           booking_manager_id: string
+          confirmation_sent_at?: string | null
+          confirmation_token?: string | null
+          confirmed_at?: string | null
           created_at?: string
           due_date?: string | null
           id?: string
+          manager_notified_at?: string | null
           notes?: string | null
           paid_at?: string | null
+          recipient_email_at_send?: string | null
           source: string
           source_id: string
           status?: string
@@ -402,11 +412,16 @@ export type Database = {
           amount?: number | null
           artist_id?: string
           booking_manager_id?: string
+          confirmation_sent_at?: string | null
+          confirmation_token?: string | null
+          confirmed_at?: string | null
           created_at?: string
           due_date?: string | null
           id?: string
+          manager_notified_at?: string | null
           notes?: string | null
           paid_at?: string | null
+          recipient_email_at_send?: string | null
           source?: string
           source_id?: string
           status?: string

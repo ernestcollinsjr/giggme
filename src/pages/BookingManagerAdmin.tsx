@@ -889,6 +889,25 @@ export default function BookingManagerAdmin() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <Dialog open={!!deleteConfirmGig} onOpenChange={() => setDeleteConfirmGig(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete booking</DialogTitle>
+              <DialogDescription>
+                Delete this booking at {deleteConfirmGig?.venue_name || deleteConfirmGig?.venue} for {deleteConfirmGig?.artist_name}? This can't be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDeleteConfirmGig(null)}>
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={handleDeleteGig}>
+                Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </main>
       <BottomNav />
     </div>

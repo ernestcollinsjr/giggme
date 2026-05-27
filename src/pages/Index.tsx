@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import logo from "@/assets/logo.png";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "next-themes";
 import { supabase } from "@/integrations/supabase/client";
@@ -119,9 +120,8 @@ const Index = () => {
       <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-2.5">
-            <img src="/favicon.png" alt="GigMe" className="w-9 h-9 rounded-lg object-contain" />
-            <span className="text-xl font-bold text-primary">GigMe</span>
+          <div className="flex items-center">
+            <img src={logo} alt="GiggMe" className="h-10 w-auto object-contain" />
           </div>
 
           {/* Right Nav */}
@@ -348,9 +348,8 @@ const Index = () => {
       <footer className="border-t border-border/40 py-8">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <img src="/favicon.png" alt="GigMe" className="w-8 h-8 rounded-lg object-contain" />
-              <span className="font-bold text-primary">GigMe</span>
+            <div className="flex items-center">
+              <img src={logo} alt="GiggMe" className="h-9 w-auto object-contain" />
             </div>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <button onClick={() => navigate("/pricing")} className="hover:text-foreground transition-colors">

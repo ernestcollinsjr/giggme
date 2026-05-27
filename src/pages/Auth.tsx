@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Music, Briefcase, Users, Eye, EyeOff, Star, Check, Building2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import logo from "@/assets/logo.png";
 import { z } from "zod";
 
 const loginSchema = z.object({
@@ -289,16 +290,15 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-primary/10">
       <Link 
         to="/" 
-        className="absolute top-4 left-4 flex items-center gap-2 text-foreground hover:opacity-80 transition-opacity"
+        className="absolute top-4 left-4 flex items-center hover:opacity-80 transition-opacity"
       >
-        <img src="/favicon.png" alt="GigMe" className="w-10 h-10 rounded-full object-contain" />
-        <span className="font-bold text-lg bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">GigMe</span>
+        <img src={logo} alt="GiggMe" className="h-10 w-auto object-contain" />
       </Link>
       <Card className="w-full max-w-md border-border/50 shadow-xl">
         <CardHeader className="space-y-2 text-center">
-          <img src="/favicon.png" alt="GigMe" className="mx-auto w-16 h-16 rounded-full object-contain mb-2" />
+          <img src={logo} alt="GiggMe" className="mx-auto h-24 w-auto object-contain mb-2" />
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            GigMe
+            GiggMe
           </CardTitle>
           <CardDescription>Connect bands and managers for seamless gig management</CardDescription>
         </CardHeader>

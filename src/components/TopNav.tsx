@@ -1,4 +1,5 @@
 import { useNavigate, useLocation, Link } from "react-router-dom";
+import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -134,9 +135,8 @@ export const TopNav = ({ userRole }: TopNavProps) => {
     <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 max-w-screen-2xl items-center justify-between">
         {/* Left side - Logo only */}
-        <Link to="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <img src="/favicon.png" alt="GigMe" className="h-9 w-9 rounded-lg object-contain" />
-          <span className="font-bold text-lg hidden sm:inline">GigMe</span>
+        <Link to="/dashboard" className="flex items-center hover:opacity-80 transition-opacity">
+          <img src={logo} alt="GiggMe" className="h-10 w-auto object-contain" />
         </Link>
         
         {/* Desktop Nav */}

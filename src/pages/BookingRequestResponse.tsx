@@ -16,6 +16,7 @@ interface BookingRequest {
   booker_name: string | null;
   booker_email: string | null;
   performer_name: string | null;
+  performer_email: string | null;
   dates_text: string;
   time_text: string | null;
   venue: string;
@@ -38,6 +39,7 @@ export default function BookingRequestResponse() {
   const [request, setRequest] = useState<BookingRequest | null>(null);
   const [submitting, setSubmitting] = useState<"accept" | "decline" | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const autoRanRef = useRef(false);
   const [now, setNow] = useState(Date.now());
 
@@ -56,6 +58,7 @@ export default function BookingRequestResponse() {
         return;
       }
       setUserId(session.user.id);
+      setUserEmail(session.user.email ?? null);
       const { data, error } = await supabase
         .from("booking_requests")
         .select("*")
@@ -77,7 +80,8 @@ export default function BookingRequestResponse() {
     if (!request || !userId) return;
     const action = searchParams.get("action");
     if (action !== "accept" && action !== "decline") return;
-    if (userId !== request.performer_id) return;
+    const isPerf = userId === request.performer_id || (!!userEmail && !!request.performer_email && userEmail.toLowerCase() === request.performer_email.toLowerCase());
+    if (!isPerf) return;
     if (request.status !== "pending") return;
     if (new Date(request.expires_at).getTime() < Date.now()) return;
     autoRanRef.current = true;
@@ -134,7 +138,7 @@ export default function BookingRequestResponse() {
     );
   }
 
-  const isPerformer = userId === request.performer_id;
+  const isPerformer = userId === request.performer_id || (!!userEmail && !!request.performer_email && userEmail.toLowerCase() === request.performer_email.toLowerCase());
   const isBooker = userId === request.booker_id;
   const expiresAt = new Date(request.expires_at).getTime();
   const expired = request.status === "pending" && expiresAt < now;

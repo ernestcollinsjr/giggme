@@ -112,6 +112,24 @@ export default function BookingManagerAdmin() {
     checkRoleAndFetchData();
   }, []);
 
+  // Realtime: refresh when any booking_request changes (e.g., performer accepts/declines)
+  useEffect(() => {
+    if (!userId) return;
+    const channel = supabase
+      .channel(`booking-manager-${userId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "booking_requests", filter: `booker_id=eq.${userId}` },
+        () => {
+          fetchUpcomingGigs(userId);
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId]);
+
   const checkRoleAndFetchData = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();

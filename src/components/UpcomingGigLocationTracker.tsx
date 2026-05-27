@@ -171,6 +171,19 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
     };
   }, [upcomingGigs, fetchTravelStatus, userId]);
 
+  // Poll profile locations every 30s while anyone is in-transit, so the
+  // car marker on the road moves as their phone updates location.
+  useEffect(() => {
+    const ids = upcomingGigs.map((g) => g.id);
+    if (ids.length === 0) return;
+    const anyInTransit = Object.values(travelByGig)
+      .flat()
+      .some((r) => r.status === "in_transit");
+    if (!anyInTransit) return;
+    const t = setInterval(() => fetchTravelStatus(ids), 30000);
+    return () => clearInterval(t);
+  }, [upcomingGigs, travelByGig, fetchTravelStatus]);
+
   const updateTravelStatus = async (gig: UpcomingGig, status: TravelStatus) => {
     const source = gig.location_sharing_enabled !== undefined && "loading_time" in gig && gig.venue_lat === null && gig.venue_lng === null
       ? "booking_request"

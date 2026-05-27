@@ -250,6 +250,22 @@ export default function BookingManagerAdmin() {
     );
   };
 
+  const fetchArtistVenues = async (uid: string) => {
+    // Collect venues this manager has previously booked each artist at.
+    const { data: brs } = await supabase
+      .from("booking_requests")
+      .select("performer_id, venue")
+      .eq("booker_id", uid);
+    const map: Record<string, Set<string>> = {};
+    (brs || []).forEach((r: any) => {
+      if (!r.performer_id || !r.venue) return;
+      (map[r.performer_id] ||= new Set()).add(String(r.venue));
+    });
+    const out: Record<string, string[]> = {};
+    Object.entries(map).forEach(([k, v]) => (out[k] = Array.from(v)));
+    setArtistVenues(out);
+  };
+
   const fetchUpcomingGigs = async (uid: string) => {
     const { data: artistLinks } = await supabase
       .from("booking_manager_artists")

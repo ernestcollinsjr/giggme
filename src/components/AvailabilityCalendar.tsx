@@ -294,8 +294,40 @@ export function AvailabilityCalendar({ userId, readOnly = false, onTodayStatusCh
     if (matches.length > 0) {
       setSelectedBookingDate(date);
       setSelectedBookings(matches);
+      return;
+    }
+    // Fallback: if the viewer can't read the gig directly (RLS), show the
+    // availability entry. The DB triggers tag booked dates as 'unavailable'
+    // with notes like "Gig: <venue>" or "Booking: <venue>".
+    const dateStr = format(date, 'yyyy-MM-dd');
+    const avail = availability.find(a => a.date === dateStr);
+    if (avail && (avail.notes || avail.status === 'unavailable')) {
+      const lines = (avail.notes || '').split('\n').filter(Boolean);
+      const synthesized = lines.length > 0
+        ? lines.map((line, i) => {
+            const cleaned = line.replace(/^(Gig|Booking):\s*/i, '').trim();
+            return {
+              id: `avail-${avail.id}-${i}`,
+              date: date.toISOString(),
+              venue: cleaned || 'Booked',
+              venue_name: cleaned || 'Booked',
+              status: avail.status,
+              notes: null,
+            };
+          })
+        : [{
+            id: `avail-${avail.id}`,
+            date: date.toISOString(),
+            venue: 'Booked',
+            venue_name: 'Marked unavailable',
+            status: avail.status,
+            notes: null,
+          }];
+      setSelectedBookingDate(date);
+      setSelectedBookings(synthesized);
     }
   };
+
 
   return (
     <Card>

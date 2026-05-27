@@ -33,10 +33,12 @@ interface BookingRequest {
 export default function BookingRequestResponse() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [request, setRequest] = useState<BookingRequest | null>(null);
   const [submitting, setSubmitting] = useState<"accept" | "decline" | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const autoRanRef = useRef(false);
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {

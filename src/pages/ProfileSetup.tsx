@@ -1447,7 +1447,7 @@ const ProfileSetup = () => {
                           <img 
                             src={photoPreviews[index]} 
                             alt={`Additional photo ${index}`} 
-                            className="w-full h-32 rounded-lg object-contain bg-muted border-2 border-primary"
+                            className="w-full h-32 rounded-lg object-cover object-top border-2 border-primary"
                           />
                           <div className="absolute inset-0 bg-black/50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                             <span className="text-white text-xs font-medium">Change</span>

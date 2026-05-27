@@ -385,6 +385,41 @@ const ProfileSetup = () => {
 
       const uploadedPhotoUrls = await uploadPhotos();
 
+      // Flush any pending text in the "add" inputs so users don't lose typed values
+      // when they click Save without first clicking the + button.
+      const pendingYoutube = newYoutubeLink.trim();
+      const finalYoutubeLinks = pendingYoutube && !youtubeLinks.includes(pendingYoutube)
+        && (pendingYoutube.includes("youtube.com") || pendingYoutube.includes("youtu.be"))
+        ? [...youtubeLinks, pendingYoutube]
+        : youtubeLinks;
+
+      const pendingEquipment = newEquipment.trim();
+      const finalEquipment = pendingEquipment && !equipment.includes(pendingEquipment)
+        ? [...equipment, pendingEquipment]
+        : equipment;
+
+      const pendingSkill = newSkill.trim();
+      const finalSkills = pendingSkill && !skills.includes(pendingSkill)
+        ? [...skills, pendingSkill]
+        : skills;
+
+      const pendingGenre = newGenre.trim();
+      const finalGenres = pendingGenre && !genres.includes(pendingGenre)
+        ? [...genres, pendingGenre]
+        : genres;
+
+      const pendingUnion = newUnion.trim();
+      const finalUnions = pendingUnion && !unionMemberships.includes(pendingUnion)
+        ? [...unionMemberships, pendingUnion]
+        : unionMemberships;
+
+      // Sync local state so UI reflects the flushed values
+      if (finalYoutubeLinks !== youtubeLinks) { setYoutubeLinks(finalYoutubeLinks); setNewYoutubeLink(""); }
+      if (finalEquipment !== equipment) { setEquipment(finalEquipment); setNewEquipment(""); }
+      if (finalSkills !== skills) { setSkills(finalSkills); setNewSkill(""); }
+      if (finalGenres !== genres) { setGenres(finalGenres); setNewGenre(""); }
+      if (finalUnions !== unionMemberships) { setUnionMemberships(finalUnions); setNewUnion(""); }
+
       const updates = {
         id: user.id,
         name,
@@ -397,19 +432,20 @@ const ProfileSetup = () => {
         timezone,
         photo_urls: uploadedPhotoUrls,
         social_links: socialLinks as Json,
-        youtube_links: youtubeLinks,
-        equipment,
-        skills,
-        genres,
+        youtube_links: finalYoutubeLinks,
+        equipment: finalEquipment,
+        skills: finalSkills,
+        genres: finalGenres,
         availability_status: availabilityStatus,
         travel_distance: travelDistance ? parseInt(travelDistance) : null,
         years_experience: yearsExperience ? parseInt(yearsExperience) : null,
-        union_memberships: unionMemberships,
+        union_memberships: finalUnions,
         performer_category: performerCategory,
         preferred_pay: preferredPay ? parseFloat(preferredPay) : null,
         preferred_pay_hours: preferredPayHours ? parseFloat(preferredPayHours) : null,
         updated_at: new Date().toISOString(),
       } as any;
+
 
       const { error } = await supabase
         .from("profiles")

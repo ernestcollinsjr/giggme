@@ -30,9 +30,13 @@ export function AvailabilityCalendar({ userId, readOnly = false, onTodayStatusCh
   const [isRangeMode, setIsRangeMode] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [applyingRange, setApplyingRange] = useState(false);
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [selectedBookings, setSelectedBookings] = useState<any[] | null>(null);
+  const [selectedBookingDate, setSelectedBookingDate] = useState<Date | null>(null);
 
   useEffect(() => {
     fetchAvailability();
+    fetchBookings();
   }, [userId]);
 
   // Notify parent when today's status changes

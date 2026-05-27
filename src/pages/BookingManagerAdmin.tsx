@@ -1177,6 +1177,71 @@ export default function BookingManagerAdmin() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <Dialog open={broadcastOpen} onOpenChange={(o) => !broadcastSending && setBroadcastOpen(o)}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <MessageSquare className="h-5 w-5" />
+                Message {broadcastRecipients.length} performer{broadcastRecipients.length === 1 ? "" : "s"}
+              </DialogTitle>
+              <DialogDescription>
+                Send a direct message to everyone matching your current search. Useful when you need a quick replacement to cover a gig.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-3">
+              <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto p-2 rounded-md bg-muted/40">
+                {broadcastRecipients.map((a) => (
+                  <Badge key={a.artist_id} variant="secondary" className="text-xs">
+                    {a.profile.name}
+                  </Badge>
+                ))}
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="text-xs"
+                  onClick={() =>
+                    setBroadcastText(
+                      "Hey — I need a last-minute replacement to cover a gig. Are you available? Please reply ASAP with your availability. Thanks!"
+                    )
+                  }
+                >
+                  Use cover-request template
+                </Button>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="broadcast-text">Message</Label>
+                <Textarea
+                  id="broadcast-text"
+                  value={broadcastText}
+                  onChange={(e) => setBroadcastText(e.target.value)}
+                  placeholder="Type the message everyone will receive..."
+                  rows={5}
+                  maxLength={1000}
+                />
+                <p className="text-[11px] text-muted-foreground text-right">
+                  {broadcastText.length}/1000
+                </p>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setBroadcastOpen(false)} disabled={broadcastSending}>
+                Cancel
+              </Button>
+              <Button onClick={sendBroadcastMessage} disabled={broadcastSending || !broadcastText.trim()} className="gap-1.5">
+                <Send className="h-4 w-4" />
+                {broadcastSending ? "Sending..." : `Send to ${broadcastRecipients.length}`}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </main>
       <BottomNav />
     </div>

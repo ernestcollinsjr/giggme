@@ -89,6 +89,10 @@ Deno.serve(async (req) => {
     // Force production URL — preview/lovable URLs require a Lovable login and break email links
     const appUrl = /lovable\.(app|dev)/i.test(rawAppUrl) ? 'https://giggme.com' : rawAppUrl;
     const respondUrl = `${appUrl}/booking-request/${bookingRequest.id}`;
+    // Public one-click links (no login required) hit the edge function directly via token
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+    const acceptUrl = `${SUPABASE_URL}/functions/v1/public-respond-booking-request?token=${bookingRequest.response_token}&action=accept`;
+    const declineUrl = `${SUPABASE_URL}/functions/v1/public-respond-booking-request?token=${bookingRequest.response_token}&action=decline`;
     const expiresIn = '2 hours';
 
     const row = (label: string, value?: string) =>
@@ -106,10 +110,9 @@ Deno.serve(async (req) => {
           <p style="margin:0 0 12px;color:#111827;font-size:15px;">Hi${p.performerName ? ' ' + p.performerName : ''},</p>
           <p style="margin:0 0 16px;color:#374151;font-size:14px;line-height:1.5;">You have received a new booking request${p.bookerName ? ' from <strong>' + p.bookerName + '</strong>' : ''}. Please respond within <strong>${expiresIn}</strong> or it will be automatically declined.</p>
           <div style="margin:0 0 20px;text-align:center;">
-            <a href="${respondUrl}?action=accept" style="display:inline-block;background:#059669;color:#fff;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:600;font-size:16px;margin:0 6px 8px;">✓ Accept</a>
-            <a href="${respondUrl}?action=decline" style="display:inline-block;background:#dc2626;color:#fff;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:600;font-size:16px;margin:0 6px 8px;">✗ Decline</a>
+            <a href="${acceptUrl}" style="display:inline-block;background:#059669;color:#fff;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:600;font-size:16px;margin:0 6px 8px;">✓ Accept</a>
+            <a href="${declineUrl}" style="display:inline-block;background:#dc2626;color:#fff;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:600;font-size:16px;margin:0 6px 8px;">✗ Decline</a>
             <div style="margin-top:10px;"><a href="${respondUrl}" style="color:#6d28d9;font-size:13px;text-decoration:underline;">View details in GigGme</a></div>
-            <div style="margin-top:6px;color:#9ca3af;font-size:11px;">Or open: ${respondUrl}</div>
           </div>
           <table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
             ${row('Date(s)', p.dates + (p.time ? ' ' + p.time : ''))}

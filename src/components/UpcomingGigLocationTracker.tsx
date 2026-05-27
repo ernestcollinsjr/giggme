@@ -137,7 +137,8 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
             earliestTime.setHours(hours, minutes, 0, 0);
           }
           const minutesUntil = differenceInMinutes(earliestTime, now);
-          return minutesUntil > -120 && minutesUntil <= 150;
+          const isGigToday = isToday(gigDate) || isToday(earliestTime);
+          return isGigToday || (minutesUntil > -120 && minutesUntil <= 150);
         }).map((gig: any) => ({
           id: gig.id,
           date: gig.date,
@@ -162,6 +163,16 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
 
   const openInMaps = (lat: number, lng: number, name?: string) => {
     const query = name ? encodeURIComponent(name) : `${lat},${lng}`;
+    window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
+  };
+
+  const openVenueInMaps = (gig: UpcomingGig) => {
+    if (gig.venue_lat != null && gig.venue_lng != null) {
+      openInMaps(gig.venue_lat, gig.venue_lng, gig.venue_name || gig.venue);
+      return;
+    }
+
+    const query = encodeURIComponent(gig.venue_name || gig.venue);
     window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
   };
 
@@ -275,17 +286,15 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
                   </div>
                 </div>
                 
-                {gig.venue_lat && gig.venue_lng && (
-                  <Button
-                    size="sm"
-                    variant={timeInfo.urgent ? "destructive" : "default"}
-                    onClick={() => openInMaps(gig.venue_lat!, gig.venue_lng!, gig.venue_name || gig.venue)}
-                    className="gap-1.5 flex-shrink-0"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    <span className="hidden sm:inline">Navigate</span>
-                  </Button>
-                )}
+                <Button
+                  size="sm"
+                  variant={timeInfo.urgent ? "destructive" : "default"}
+                  onClick={() => openVenueInMaps(gig)}
+                  className="gap-1.5 flex-shrink-0"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  <span className="hidden sm:inline">Navigate</span>
+                </Button>
               </div>
 
               {/* Show member location map for band leaders */}

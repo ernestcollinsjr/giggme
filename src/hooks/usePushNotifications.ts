@@ -5,6 +5,12 @@ import { useToast } from '@/hooks/use-toast';
 // VAPID public key - this should match what's in your edge function
 const VAPID_PUBLIC_KEY = 'BHMCBdW_4eWP5wyKX4-bqYjd6eQuDc30vrLk5thUdzVUfa2nFdX2EMHua2wtPca9Gx6BpXxGGGikSUj7is0ADT8';
 
+const isIOSDevice = () => /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+const isStandaloneApp = () =>
+  window.matchMedia('(display-mode: standalone)').matches ||
+  (navigator as Navigator & { standalone?: boolean }).standalone === true;
+
 function urlBase64ToUint8Array(base64String: string): ArrayBuffer {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
   const base64 = (base64String + padding)
@@ -25,6 +31,7 @@ export function usePushNotifications() {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [permission, setPermission] = useState<NotificationPermission>('default');
+  const [supportMessage, setSupportMessage] = useState('Receive browser push notifications');
   const registrationRef = useRef<(ServiceWorkerRegistration & { pushManager?: PushManager }) | null>(null);
   const { toast } = useToast();
 
@@ -34,6 +41,8 @@ export function usePushNotifications() {
         const hasServiceWorker = 'serviceWorker' in navigator;
         const hasPushManager = 'PushManager' in window;
         const hasNotification = 'Notification' in window;
+        const isIOS = isIOSDevice();
+        const isStandalone = isStandaloneApp();
         
         console.log('[Push Debug] serviceWorker:', hasServiceWorker);
         console.log('[Push Debug] PushManager:', hasPushManager);
@@ -43,6 +52,13 @@ export function usePushNotifications() {
         console.log('[Push Debug] Overall supported:', supported);
         
         setIsSupported(supported);
+        setSupportMessage(
+          supported
+            ? 'Receive browser push notifications'
+            : isIOS && !isStandalone
+              ? 'Add to Home Screen, then open app to enable'
+              : 'Not supported in this browser'
+        );
         
         if (supported) {
           console.log('[Push Debug] Permission:', Notification.permission);
@@ -88,7 +104,7 @@ export function usePushNotifications() {
     if (!isSupported) {
       toast({
         title: 'Not Supported',
-        description: /iPhone|iPad|iPod/i.test(navigator.userAgent)
+        description: isIOSDevice()
           ? 'On iPhone, open GigGme from the Home Screen app icon before enabling push notifications.'
           : 'Push notifications are not supported in this browser.',
         variant: 'destructive',
@@ -242,6 +258,7 @@ export function usePushNotifications() {
     isSubscribed,
     isLoading,
     permission,
+    supportMessage,
     subscribe,
     unsubscribe,
   };

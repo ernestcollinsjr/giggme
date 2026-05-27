@@ -77,3 +77,9 @@ verify_jwt = false
 
 [functions.public-respond-booking-request]
 verify_jwt = false
+
+[functions.send-payment-confirmations]
+verify_jwt = false
+
+[functions.confirm-payment-received]
+verify_jwt = false

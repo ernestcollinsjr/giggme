@@ -18,7 +18,7 @@ export const YouTubePlayer = ({ videoId, title, isOpen = false, onClose, inline 
   
   const embedUrl = isNative
     ? `https://emuzsic.com/embed.html?v=${videoId}`
-    : `https://www.youtube.com/embed/${videoId}?rel=0&playsinline=1&autoplay=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`;
+    : `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&playsinline=1&autoplay=1&modestbranding=1`;
 
   const handleOpenYouTube = async () => {
     try {

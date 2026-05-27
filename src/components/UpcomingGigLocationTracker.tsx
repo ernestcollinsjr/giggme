@@ -374,16 +374,64 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
                   </div>
                 </div>
                 
-                <Button
-                  size="sm"
-                  variant={timeInfo.urgent ? "destructive" : "default"}
-                  onClick={() => openVenueInMaps(gig)}
-                  className="gap-1.5 flex-shrink-0"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  <span className="hidden sm:inline">Navigate</span>
-                </Button>
+                {(() => {
+                  const myRow = (travelByGig[gig.id] || []).find((r) => r.user_id === userId);
+                  const myStatus: TravelStatus = myRow?.status || "not_started";
+                  return (
+                    <div className="flex flex-col gap-1.5 flex-shrink-0">
+                      <Button
+                        size="sm"
+                        variant={timeInfo.urgent ? "destructive" : "default"}
+                        onClick={() => {
+                          updateTravelStatus(gig, "in_transit");
+                          openVenueInMaps(gig);
+                        }}
+                        className="gap-1.5"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        <span className="hidden sm:inline">
+                          {myStatus === "in_transit" ? "Re-open Maps" : "Navigate"}
+                        </span>
+                      </Button>
+                      {myStatus === "in_transit" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => updateTravelStatus(gig, "arrived")}
+                          className="gap-1.5"
+                        >
+                          <CheckCircle2 className="h-4 w-4" />
+                          <span className="hidden sm:inline">I've arrived</span>
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
+
+              {/* Travel status of everyone on the gig */}
+              {(travelByGig[gig.id]?.length ?? 0) > 0 && (
+                <div className="mt-3 pt-3 border-t border-border/50 flex flex-wrap gap-2">
+                  {travelByGig[gig.id]!.map((row) => {
+                    const name = row.profile?.name || (row.user_id === userId ? "You" : "Someone");
+                    const isArrived = row.status === "arrived";
+                    return (
+                      <Badge
+                        key={row.user_id}
+                        variant={isArrived ? "default" : "secondary"}
+                        className="gap-1 text-[11px]"
+                      >
+                        {isArrived ? (
+                          <CheckCircle2 className="h-3 w-3" />
+                        ) : (
+                          <Car className="h-3 w-3" />
+                        )}
+                        {name} · {isArrived ? "Arrived" : "On the way"}
+                      </Badge>
+                    );
+                  })}
+                </div>
+              )}
 
               {/* Show member location map for band leaders */}
               {!isMember && timeInfo.started && (

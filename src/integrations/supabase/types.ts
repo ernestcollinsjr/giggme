@@ -371,30 +371,42 @@ export type Database = {
       }
       booking_manager_payments: {
         Row: {
+          amount: number | null
           artist_id: string
           booking_manager_id: string
           created_at: string
+          due_date: string | null
           id: string
+          notes: string | null
+          paid_at: string | null
           source: string
           source_id: string
           status: string
           updated_at: string
         }
         Insert: {
+          amount?: number | null
           artist_id: string
           booking_manager_id: string
           created_at?: string
+          due_date?: string | null
           id?: string
+          notes?: string | null
+          paid_at?: string | null
           source: string
           source_id: string
           status?: string
           updated_at?: string
         }
         Update: {
+          amount?: number | null
           artist_id?: string
           booking_manager_id?: string
           created_at?: string
+          due_date?: string | null
           id?: string
+          notes?: string | null
+          paid_at?: string | null
           source?: string
           source_id?: string
           status?: string

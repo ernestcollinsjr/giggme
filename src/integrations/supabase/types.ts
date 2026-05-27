@@ -1447,6 +1447,101 @@ export type Database = {
           },
         ]
       }
+      replacement_request_recipients: {
+        Row: {
+          created_at: string
+          id: string
+          notified_at: string | null
+          performer_email: string | null
+          performer_id: string
+          performer_name: string | null
+          request_id: string
+          responded_at: string | null
+          response_token: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notified_at?: string | null
+          performer_email?: string | null
+          performer_id: string
+          performer_name?: string | null
+          request_id: string
+          responded_at?: string | null
+          response_token: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notified_at?: string | null
+          performer_email?: string | null
+          performer_id?: string
+          performer_name?: string | null
+          request_id?: string
+          responded_at?: string | null
+          response_token?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "replacement_request_recipients_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "replacement_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      replacement_requests: {
+        Row: {
+          created_at: string
+          deadline_at: string
+          event_date: string | null
+          event_time: string | null
+          filled_by: string | null
+          id: string
+          message: string
+          requester_email: string | null
+          requester_id: string
+          requester_name: string | null
+          status: string
+          updated_at: string
+          venue: string | null
+        }
+        Insert: {
+          created_at?: string
+          deadline_at: string
+          event_date?: string | null
+          event_time?: string | null
+          filled_by?: string | null
+          id?: string
+          message: string
+          requester_email?: string | null
+          requester_id: string
+          requester_name?: string | null
+          status?: string
+          updated_at?: string
+          venue?: string | null
+        }
+        Update: {
+          created_at?: string
+          deadline_at?: string
+          event_date?: string | null
+          event_time?: string | null
+          filled_by?: string | null
+          id?: string
+          message?: string
+          requester_email?: string | null
+          requester_id?: string
+          requester_name?: string | null
+          status?: string
+          updated_at?: string
+          venue?: string | null
+        }
+        Relationships: []
+      }
       scheduled_reminders: {
         Row: {
           created_at: string

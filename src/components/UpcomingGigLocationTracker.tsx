@@ -1,11 +1,85 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Clock, Navigation, AlertCircle, ExternalLink, CheckCircle2, Car } from "lucide-react";
+import { MapPin, Clock, Navigation, AlertCircle, ExternalLink, CheckCircle2, Car, Flag } from "lucide-react";
 import { format, parseISO, differenceInMinutes, isToday } from "date-fns";
 import { AutoLocationTracker } from "./AutoLocationTracker";
+
+// Haversine distance in meters
+function distanceMeters(lat1: number, lng1: number, lat2: number, lng2: number) {
+  const R = 6371000;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+interface TravelProgressProps {
+  name: string;
+  progress: number; // 0..1
+  distanceKm: number | null;
+  arrived: boolean;
+}
+
+const TravelProgress = ({ name, progress, distanceKm, arrived }: TravelProgressProps) => {
+  const pct = arrived ? 100 : Math.max(0, Math.min(100, Math.round(progress * 100)));
+  const dots = 12;
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+        <span className="font-medium text-foreground">{name}</span>
+        <span>
+          {arrived
+            ? "Arrived"
+            : distanceKm != null
+              ? `${distanceKm.toFixed(distanceKm < 10 ? 1 : 0)} km away`
+              : "On the way"}
+        </span>
+      </div>
+      <div className="relative h-6">
+        {/* dotted road */}
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-between">
+          {Array.from({ length: dots }).map((_, i) => {
+            const dotPct = (i / (dots - 1)) * 100;
+            const passed = dotPct <= pct;
+            return (
+              <div
+                key={i}
+                className={`h-1 w-1 rounded-full transition-colors ${
+                  passed ? "bg-primary" : "bg-muted-foreground/30"
+                }`}
+              />
+            );
+          })}
+        </div>
+        {/* car marker */}
+        <div
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 transition-all duration-700 ease-out"
+          style={{ left: `${pct}%` }}
+        >
+          <div
+            className={`p-1 rounded-full shadow-sm ${
+              arrived ? "bg-primary text-primary-foreground" : "bg-primary text-primary-foreground"
+            }`}
+          >
+            {arrived ? <CheckCircle2 className="h-3 w-3" /> : <Car className="h-3 w-3" />}
+          </div>
+        </div>
+        {/* venue flag */}
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2">
+          <div className="p-1 rounded-full bg-muted text-muted-foreground">
+            <Flag className="h-3 w-3" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 type TravelStatus = "not_started" | "in_transit" | "arrived";
 interface TravelRow {
@@ -39,6 +113,9 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
   const [upcomingGigs, setUpcomingGigs] = useState<UpcomingGig[]>([]);
   const [loading, setLoading] = useState(true);
   const [travelByGig, setTravelByGig] = useState<Record<string, TravelRow[]>>({});
+  const [locByUser, setLocByUser] = useState<Record<string, { lat: number; lng: number }>>({});
+  // Persist the starting distance (per user+gig) so we can compute progress %
+  const startDistRef = useRef<Record<string, number>>({});
 
   const fetchTravelStatus = useCallback(async (gigIds: string[]) => {
     if (gigIds.length === 0) return;
@@ -49,9 +126,19 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
 
     const userIds = Array.from(new Set((data || []).map((r) => r.user_id)));
     const { data: profiles } = userIds.length
-      ? await supabase.from("profiles").select("id, name").in("id", userIds)
+      ? await supabase
+          .from("profiles")
+          .select("id, name, location_lat, location_lng")
+          .in("id", userIds)
       : { data: [] as any[] };
     const profileMap = new Map((profiles || []).map((p: any) => [p.id, p]));
+    const locs: Record<string, { lat: number; lng: number }> = {};
+    (profiles || []).forEach((p: any) => {
+      if (p.location_lat != null && p.location_lng != null) {
+        locs[p.id] = { lat: p.location_lat, lng: p.location_lng };
+      }
+    });
+    setLocByUser(locs);
 
     const grouped: Record<string, TravelRow[]> = {};
     (data || []).forEach((row: any) => {
@@ -83,6 +170,19 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
       supabase.removeChannel(channel);
     };
   }, [upcomingGigs, fetchTravelStatus, userId]);
+
+  // Poll profile locations every 30s while anyone is in-transit, so the
+  // car marker on the road moves as their phone updates location.
+  useEffect(() => {
+    const ids = upcomingGigs.map((g) => g.id);
+    if (ids.length === 0) return;
+    const anyInTransit = Object.values(travelByGig)
+      .flat()
+      .some((r) => r.status === "in_transit");
+    if (!anyInTransit) return;
+    const t = setInterval(() => fetchTravelStatus(ids), 30000);
+    return () => clearInterval(t);
+  }, [upcomingGigs, travelByGig, fetchTravelStatus]);
 
   const updateTravelStatus = async (gig: UpcomingGig, status: TravelStatus) => {
     const source = gig.location_sharing_enabled !== undefined && "loading_time" in gig && gig.venue_lat === null && gig.venue_lng === null
@@ -409,25 +509,42 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
                 })()}
               </div>
 
-              {/* Travel status of everyone on the gig */}
+              {/* Travel progress for everyone on the gig */}
               {(travelByGig[gig.id]?.length ?? 0) > 0 && (
-                <div className="mt-3 pt-3 border-t border-border/50 flex flex-wrap gap-2">
+                <div className="mt-3 pt-3 border-t border-border/50 space-y-2.5">
                   {travelByGig[gig.id]!.map((row) => {
                     const name = row.profile?.name || (row.user_id === userId ? "You" : "Someone");
                     const isArrived = row.status === "arrived";
+                    const loc = locByUser[row.user_id];
+                    const hasVenue = gig.venue_lat != null && gig.venue_lng != null;
+                    const key = `${gig.id}:${row.user_id}`;
+
+                    let progress = 0;
+                    let distKm: number | null = null;
+                    if (isArrived) {
+                      progress = 1;
+                      distKm = 0;
+                    } else if (row.status === "in_transit" && hasVenue && loc) {
+                      const d = distanceMeters(loc.lat, loc.lng, gig.venue_lat!, gig.venue_lng!);
+                      distKm = d / 1000;
+                      // Capture starting distance the first time we see this user in transit
+                      if (startDistRef.current[key] == null || d > startDistRef.current[key]) {
+                        startDistRef.current[key] = d;
+                      }
+                      const start = startDistRef.current[key] || d;
+                      progress = start > 0 ? 1 - d / start : 0;
+                      // If within 150m, treat as essentially arrived visually
+                      if (d <= 150) progress = 0.98;
+                    }
+
                     return (
-                      <Badge
+                      <TravelProgress
                         key={row.user_id}
-                        variant={isArrived ? "default" : "secondary"}
-                        className="gap-1 text-[11px]"
-                      >
-                        {isArrived ? (
-                          <CheckCircle2 className="h-3 w-3" />
-                        ) : (
-                          <Car className="h-3 w-3" />
-                        )}
-                        {name} · {isArrived ? "Arrived" : "On the way"}
-                      </Badge>
+                        name={name}
+                        progress={progress}
+                        distanceKm={distKm}
+                        arrived={isArrived}
+                      />
                     );
                   })}
                 </div>

@@ -2099,6 +2099,10 @@ export type Database = {
         Args: { _tour_id: string; _user_id: string }
         Returns: boolean
       }
+      mark_calendar_unavailable: {
+        Args: { _date: string; _note: string; _user_id: string }
+        Returns: undefined
+      }
       mark_message_as_delivered: {
         Args: { message_id: string; user_id: string }
         Returns: undefined

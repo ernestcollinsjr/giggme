@@ -568,7 +568,7 @@ export default function BookingManagerAdmin() {
     }
   };
 
-
+  const selectedArtist = useMemo(
     () => managedArtists.find((a) => a.artist_id === artistFilter) || null,
     [managedArtists, artistFilter]
   );

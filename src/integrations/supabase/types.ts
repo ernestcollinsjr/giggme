@@ -1163,6 +1163,7 @@ export type Database = {
           location_lat: number | null
           location_lng: number | null
           name: string
+          performer_category: string | null
           phone_number: string | null
           photo_urls: string[] | null
           rider_notes: string | null
@@ -1188,6 +1189,7 @@ export type Database = {
           location_lat?: number | null
           location_lng?: number | null
           name: string
+          performer_category?: string | null
           phone_number?: string | null
           photo_urls?: string[] | null
           rider_notes?: string | null
@@ -1213,6 +1215,7 @@ export type Database = {
           location_lat?: number | null
           location_lng?: number | null
           name?: string
+          performer_category?: string | null
           phone_number?: string | null
           photo_urls?: string[] | null
           rider_notes?: string | null

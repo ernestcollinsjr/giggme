@@ -595,6 +595,17 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
                           <span className="hidden sm:inline">I've arrived</span>
                         </Button>
                       )}
+                      {!isMember && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => shareTrackingLink(gig)}
+                          className="gap-1.5"
+                        >
+                          <Send className="h-4 w-4" />
+                          <span className="hidden sm:inline">Share</span>
+                        </Button>
+                      )}
                     </div>
                   );
                 })()}

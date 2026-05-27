@@ -36,6 +36,7 @@ import {
 import { TopNav } from "@/components/TopNav";
 import BottomNav from "@/components/BottomNav";
 import { SentBookingRequests } from "@/components/SentBookingRequests";
+import { PaymentScheduler } from "@/components/PaymentScheduler";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
@@ -1024,8 +1025,11 @@ export default function BookingManagerAdmin() {
           </section>
           </div>
 
+          <PaymentScheduler mode="manager" />
+
           <SentBookingRequests />
         </div>
+
 
 
 

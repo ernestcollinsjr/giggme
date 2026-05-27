@@ -17,6 +17,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
 import { BandAssistant } from "@/components/BandAssistant";
+import { PaymentScheduler } from "@/components/PaymentScheduler";
 import { LivePresence } from "@/components/LivePresence";
 import { PlaceAutocomplete } from "@/components/PlaceAutocomplete";
 import { AutoLocationTracker } from "@/components/AutoLocationTracker";
@@ -1604,9 +1605,11 @@ const Dashboard = () => {
             
             <div className="space-y-6">
               <BandAssistant />
+              <PaymentScheduler mode="band_leader" />
             </div>
           </div>
         )}
+
 
         {userRole === "band_member" && (
           <Tabs defaultValue="overview" className="space-y-4">

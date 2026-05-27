@@ -105,7 +105,7 @@ export function AvailabilityCalendar({ userId, readOnly = false, onTodayStatusCh
   const handleDateClick = async (date: Date | undefined) => {
     if (!date || readOnly || isRangeMode) return;
 
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = format(date, 'yyyy-MM-dd');
     const existing = availability.find(a => a.date === dateStr);
 
     try {

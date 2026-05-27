@@ -133,6 +133,7 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
         }));
 
         setUpcomingGigs(gigsWithinWindow);
+      }
     } catch (error) {
       console.error("Error fetching upcoming gigs:", error);
     } finally {

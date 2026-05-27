@@ -67,6 +67,7 @@ const PerformerProfileView = () => {
   const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);
+  const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
   const [profile, setProfile] = useState<PerformerProfile | null>(null);
   const [performerRole, setPerformerRole] = useState<string | null>(null);
   const [weekAvailability, setWeekAvailability] = useState<{ date: string; status: string | null }[]>([]);

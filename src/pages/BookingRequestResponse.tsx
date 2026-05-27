@@ -49,8 +49,10 @@ export default function BookingRequestResponse() {
   useEffect(() => {
     (async () => {
       const { data: { session } } = await supabase.auth.getSession();
+      const actionParam = searchParams.get("action");
+      const redirectPath = `/booking-request/${id}${actionParam ? `?action=${actionParam}` : ""}`;
       if (!session?.user) {
-        navigate(`/auth?redirect=/booking-request/${id}`);
+        navigate(`/auth?redirect=${encodeURIComponent(redirectPath)}`);
         return;
       }
       setUserId(session.user.id);
@@ -67,7 +69,26 @@ export default function BookingRequestResponse() {
       setRequest(data as BookingRequest);
       setLoading(false);
     })();
-  }, [id, navigate]);
+  }, [id, navigate, searchParams]);
+
+  // Auto-execute accept/decline from email link query param
+  useEffect(() => {
+    if (autoRanRef.current) return;
+    if (!request || !userId) return;
+    const action = searchParams.get("action");
+    if (action !== "accept" && action !== "decline") return;
+    if (userId !== request.performer_id) return;
+    if (request.status !== "pending") return;
+    if (new Date(request.expires_at).getTime() < Date.now()) return;
+    autoRanRef.current = true;
+    handleRespond(action as "accept" | "decline").finally(() => {
+      // Clear the query param so refresh doesn't repeat
+      const next = new URLSearchParams(searchParams);
+      next.delete("action");
+      setSearchParams(next, { replace: true });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [request, userId]);
 
   const handleRespond = async (action: "accept" | "decline") => {
     if (!request) return;

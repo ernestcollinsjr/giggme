@@ -152,6 +152,20 @@ const PerformerProfileView = () => {
           .limit(1)
           .maybeSingle();
         if (roleData?.role) setPerformerRole(roleData.role as string);
+
+        // Load upcoming accepted booking requests this manager sent to this performer
+        if (session?.user?.id) {
+          const { data: brs } = await supabase
+            .from("booking_requests")
+            .select("id, venue, event_date, reminder_1d_sent_at, reminder_2h_sent_at, auto_reminders_disabled")
+            .eq("booker_id", session.user.id)
+            .eq("performer_id", userId)
+            .eq("status", "accepted")
+            .not("event_date", "is", null)
+            .gte("event_date", new Date().toISOString())
+            .order("event_date", { ascending: true });
+          setUpcomingAlerts((brs || []) as any);
+        }
       } catch (err: any) {
         toast({ title: "Error", description: err.message, variant: "destructive" });
       } finally {

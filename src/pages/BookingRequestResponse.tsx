@@ -79,7 +79,8 @@ export default function BookingRequestResponse() {
     if (!request || !userId) return;
     const action = searchParams.get("action");
     if (action !== "accept" && action !== "decline") return;
-    if (userId !== request.performer_id) return;
+    const isPerf = userId === request.performer_id || (!!userEmail && !!request.performer_email && userEmail.toLowerCase() === request.performer_email.toLowerCase());
+    if (!isPerf) return;
     if (request.status !== "pending") return;
     if (new Date(request.expires_at).getTime() < Date.now()) return;
     autoRanRef.current = true;

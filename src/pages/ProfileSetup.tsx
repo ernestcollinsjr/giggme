@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { User } from "@supabase/supabase-js";
 import { LogOut, Crown, Music, Briefcase, Mail, Loader2, Youtube, Facebook, Instagram, Twitter, Globe, Plus, Trash2, Wrench, Tag, MapPin, Clock, Play, X, Check, HelpCircle, Volume2, VolumeX, Undo2, Bell, Shield, FileText, Ban, Flag, Users, AlertTriangle, CreditCard } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { detectFaceAndCrop, loadImage } from "@/utils/imageCropping";
+import { detectFaceAndCrop, resizeImagePreserveAspect, loadImage } from "@/utils/imageCropping";
 import { Browser } from '@capacitor/browser';
 import { Capacitor } from '@capacitor/core';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
@@ -249,10 +249,15 @@ const ProfileSetup = () => {
       // Load the image
       const img = await loadImage(file);
       
-      // Detect face and crop
-      const targetSize = index === 0 ? 400 : 800;
-      const croppedBlob = await detectFaceAndCrop(img, targetSize);
-      
+      // Primary avatar (index 0) gets face-centered square crop.
+      // Additional photos preserve full aspect ratio so nothing is cut off.
+      let processedBlob: Blob;
+      if (index === 0) {
+        processedBlob = await detectFaceAndCrop(img, 400);
+      } else {
+        processedBlob = await resizeImagePreserveAspect(img, 1200);
+      }
+
       // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -260,16 +265,16 @@ const ProfileSetup = () => {
         newPreviews[index] = reader.result as string;
         setPhotoPreviews(newPreviews);
       };
-      reader.readAsDataURL(croppedBlob);
-      
-      // Store the cropped file
+      reader.readAsDataURL(processedBlob);
+
+      // Store the processed file
       const newFiles = [...photoFiles];
-      newFiles[index] = new File([croppedBlob], `photo-${index}.jpg`, { type: 'image/jpeg' });
+      newFiles[index] = new File([processedBlob], `photo-${index}.jpg`, { type: 'image/jpeg' });
       setPhotoFiles(newFiles);
-      
+
       toast({
-        title: "Photo processed!",
-        description: "Your photo has been automatically centered.",
+        title: "Photo uploaded!",
+        description: index === 0 ? "Your profile photo has been centered." : "Your full photo has been saved.",
       });
     } catch (error) {
       console.error('Error processing photo:', error);
@@ -1442,7 +1447,7 @@ const ProfileSetup = () => {
                           <img 
                             src={photoPreviews[index]} 
                             alt={`Additional photo ${index}`} 
-                            className="w-full h-32 rounded-lg object-cover border-2 border-primary"
+                            className="w-full h-32 rounded-lg object-contain bg-muted border-2 border-primary"
                           />
                           <div className="absolute inset-0 bg-black/50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                             <span className="text-white text-xs font-medium">Change</span>

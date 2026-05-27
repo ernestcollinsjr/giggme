@@ -71,6 +71,15 @@ const PerformerProfileView = () => {
   const [profile, setProfile] = useState<PerformerProfile | null>(null);
   const [performerRole, setPerformerRole] = useState<string | null>(null);
   const [weekAvailability, setWeekAvailability] = useState<{ date: string; status: string | null }[]>([]);
+  const [upcomingAlerts, setUpcomingAlerts] = useState<Array<{
+    id: string;
+    venue: string;
+    event_date: string;
+    reminder_1d_sent_at: string | null;
+    reminder_2h_sent_at: string | null;
+    auto_reminders_disabled: boolean;
+  }>>([]);
+  const [nowTick, setNowTick] = useState(Date.now());
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [bookingSubmitting, setBookingSubmitting] = useState(false);

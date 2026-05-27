@@ -113,6 +113,7 @@ export default function BookingManagerAdmin() {
   const [deleteConfirmGig, setDeleteConfirmGig] = useState<UpcomingGig | null>(null);
   const [artistAvailability, setArtistAvailability] = useState<Array<{ date: string; status: string; notes: string | null }>>([]);
   const [paymentStatuses, setPaymentStatuses] = useState<Record<string, "paid" | "pending">>({});
+  const [artistVenues, setArtistVenues] = useState<Record<string, string[]>>({});
 
   const paymentKey = (gig: { source: string; id: string; artist_id: string }) =>
     `${gig.source}:${gig.id}:${gig.artist_id}`;
@@ -202,7 +203,7 @@ export default function BookingManagerAdmin() {
         return;
       }
 
-      await Promise.all([fetchManagedArtists(user.id), fetchUpcomingGigs(user.id), fetchPaymentStatuses(user.id)]);
+      await Promise.all([fetchManagedArtists(user.id), fetchUpcomingGigs(user.id), fetchPaymentStatuses(user.id), fetchArtistVenues(user.id)]);
     } catch (error: any) {
       toast({ variant: "destructive", title: "Error", description: error.message });
     } finally {
@@ -247,6 +248,22 @@ export default function BookingManagerAdmin() {
           },
       }))
     );
+  };
+
+  const fetchArtistVenues = async (uid: string) => {
+    // Collect venues this manager has previously booked each artist at.
+    const { data: brs } = await supabase
+      .from("booking_requests")
+      .select("performer_id, venue")
+      .eq("booker_id", uid);
+    const map: Record<string, Set<string>> = {};
+    (brs || []).forEach((r: any) => {
+      if (!r.performer_id || !r.venue) return;
+      (map[r.performer_id] ||= new Set()).add(String(r.venue));
+    });
+    const out: Record<string, string[]> = {};
+    Object.entries(map).forEach(([k, v]) => (out[k] = Array.from(v)));
+    setArtistVenues(out);
   };
 
   const fetchUpcomingGigs = async (uid: string) => {
@@ -471,15 +488,19 @@ export default function BookingManagerAdmin() {
   };
 
   const grouped = useMemo(() => {
-    const filtered = managedArtists.filter((a) =>
-      a.profile.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const q = searchTerm.trim().toLowerCase();
+    const filtered = managedArtists.filter((a) => {
+      if (!q) return true;
+      if (a.profile.name.toLowerCase().includes(q)) return true;
+      const venues = artistVenues[a.artist_id] || [];
+      return venues.some((v) => v.toLowerCase().includes(q));
+    });
     const map: Record<Category, ManagedArtist[]> = { Soloist: [], Duo: [], Band: [] };
     filtered.forEach((a) => {
       map[normalizeCategory(a.group_type)].push(a);
     });
     return map;
-  }, [managedArtists, searchTerm]);
+  }, [managedArtists, searchTerm, artistVenues]);
 
   const selectedArtist = useMemo(
     () => managedArtists.find((a) => a.artist_id === artistFilter) || null,
@@ -581,11 +602,17 @@ export default function BookingManagerAdmin() {
             <div className="relative mb-3 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search roster..."
+                placeholder="Search roster or venue..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-9 h-9"
+                list="bm-venue-suggestions"
               />
+              <datalist id="bm-venue-suggestions">
+                {Array.from(new Set(Object.values(artistVenues).flat())).sort().map((v) => (
+                  <option key={v} value={v} />
+                ))}
+              </datalist>
             </div>
 
             {managedArtists.length === 0 ? (

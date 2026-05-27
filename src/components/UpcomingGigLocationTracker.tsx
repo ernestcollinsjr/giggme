@@ -114,8 +114,37 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
   const [loading, setLoading] = useState(true);
   const [travelByGig, setTravelByGig] = useState<Record<string, TravelRow[]>>({});
   const [locByUser, setLocByUser] = useState<Record<string, { lat: number; lng: number }>>({});
+  // Per-gig flag: user tapped Navigate but we don't have location permission yet
+  const [needsPermission, setNeedsPermission] = useState<Record<string, boolean>>({});
   // Persist the starting distance (per user+gig) so we can compute progress %
   const startDistRef = useRef<Record<string, number>>({});
+
+  // Ask the browser for a one-shot position to trigger the permission prompt.
+  // Returns true if we got a fix (permission granted), false otherwise.
+  const requestLocationPermission = useCallback(async (): Promise<boolean> => {
+    if (!navigator.geolocation) return false;
+    try {
+      const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+        });
+      });
+      // Seed profile location so the car appears on the road immediately
+      try {
+        await supabase
+          .from("profiles")
+          .update({
+            location_lat: pos.coords.latitude,
+            location_lng: pos.coords.longitude,
+          })
+          .eq("id", userId);
+      } catch {/* ignore */}
+      return true;
+    } catch {
+      return false;
+    }
+  }, [userId]);
 
   const fetchTravelStatus = useCallback(async (gigIds: string[]) => {
     if (gigIds.length === 0) return;
@@ -482,9 +511,13 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
                       <Button
                         size="sm"
                         variant={timeInfo.urgent ? "destructive" : "default"}
-                        onClick={() => {
+                        onClick={async () => {
                           updateTravelStatus(gig, "in_transit");
                           openVenueInMaps(gig);
+                          if (isMember) {
+                            const granted = await requestLocationPermission();
+                            setNeedsPermission((p) => ({ ...p, [gig.id]: !granted }));
+                          }
                         }}
                         className="gap-1.5"
                       >
@@ -508,6 +541,34 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
                   );
                 })()}
               </div>
+
+              {/* Permission nudge — performer tapped Navigate but we don't have GPS yet */}
+              {isMember && needsPermission[gig.id] && (
+                <div className="mt-3 flex items-center gap-2 rounded-md border border-border/60 bg-muted/40 px-3 py-2 text-xs">
+                  <MapPin className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                  <span className="flex-1 text-muted-foreground">
+                    Share your location so your team can see your progress.
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 px-2 text-xs"
+                    onClick={async () => {
+                      const granted = await requestLocationPermission();
+                      setNeedsPermission((p) => ({ ...p, [gig.id]: !granted }));
+                    }}
+                  >
+                    Enable
+                  </Button>
+                  <button
+                    onClick={() => setNeedsPermission((p) => ({ ...p, [gig.id]: false }))}
+                    className="p-0.5 hover:bg-accent rounded transition-colors"
+                    aria-label="Dismiss"
+                  >
+                    <span className="text-muted-foreground text-base leading-none">×</span>
+                  </button>
+                </div>
+              )}
 
               {/* Travel progress for everyone on the gig */}
               {(travelByGig[gig.id]?.length ?? 0) > 0 && (

@@ -98,12 +98,31 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
         setUpcomingGigs(gigsWithinWindow);
       } else if (userRole === "band_leader" || userRole === "booking_manager" || userRole === "tour_manager") {
         // Manager: visibility starts 1 hr before driver leaves = 150 min before event
+        // Collect owner IDs: the manager themselves + any managed artists/bands
+        const ownerIds = new Set<string>([userId]);
+
+        if (userRole === "booking_manager") {
+          const [{ data: mgrArtists }, { data: mgrBands }] = await Promise.all([
+            supabase
+              .from("booking_manager_artists")
+              .select("artist_id")
+              .eq("booking_manager_id", userId),
+            supabase
+              .from("booking_manager_bands")
+              .select("band_id")
+              .eq("booking_manager_id", userId),
+          ]);
+          (mgrArtists || []).forEach((r: any) => r.artist_id && ownerIds.add(r.artist_id));
+          (mgrBands || []).forEach((r: any) => r.band_id && ownerIds.add(r.band_id));
+        }
+
         const { data: gigs, error } = await supabase
           .from("gigs")
           .select("*")
-          .eq("user_id", userId);
+          .in("user_id", Array.from(ownerIds));
 
         if (error) throw error;
+
 
         const gigsWithinWindow = (gigs || []).filter((gig: any) => {
           const gigDate = parseISO(gig.date);

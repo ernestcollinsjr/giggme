@@ -701,18 +701,26 @@ export default function BookingManagerAdmin() {
                               </span>
                             </div>
                           </div>
-                          <Badge
-                            variant={
-                              gig.status === "confirmed"
-                                ? "default"
-                                : gig.status === "pending"
-                                ? "secondary"
-                                : "outline"
-                            }
-                            className="flex-shrink-0"
-                          >
-                            {gig.status}
-                          </Badge>
+                          {(() => {
+                            const isPast = d.getTime() < new Date(new Date().toDateString()).getTime();
+                            const isCompleted = gig.status === "completed" || (isPast && gig.status === "confirmed");
+                            return (
+                              <Badge
+                                variant={
+                                  isCompleted
+                                    ? "default"
+                                    : gig.status === "confirmed"
+                                    ? "default"
+                                    : gig.status === "pending"
+                                    ? "secondary"
+                                    : "outline"
+                                }
+                                className={`flex-shrink-0 ${isCompleted ? "bg-green-500/20 text-green-600 border-green-500/30 hover:bg-green-500/20" : ""}`}
+                              >
+                                {isCompleted ? "completed" : gig.status}
+                              </Badge>
+                            );
+                          })()}
                           <Button
                             variant="ghost"
                             size="icon"

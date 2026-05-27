@@ -241,6 +241,7 @@ export default function BookingManagerAdmin() {
         status: gm.gigs.status,
         artist_name: profileMap.get(gm.member_id) || "Unknown",
         artist_id: gm.member_id,
+        source: "gig" as const,
       }));
 
     // Also include accepted booking requests (direct bookings without a gig record)

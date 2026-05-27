@@ -203,7 +203,7 @@ export default function BookingManagerAdmin() {
         return;
       }
 
-      await Promise.all([fetchManagedArtists(user.id), fetchUpcomingGigs(user.id), fetchPaymentStatuses(user.id)]);
+      await Promise.all([fetchManagedArtists(user.id), fetchUpcomingGigs(user.id), fetchPaymentStatuses(user.id), fetchArtistVenues(user.id)]);
     } catch (error: any) {
       toast({ variant: "destructive", title: "Error", description: error.message });
     } finally {

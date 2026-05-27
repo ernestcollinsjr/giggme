@@ -2601,7 +2601,7 @@ const Dashboard = () => {
                 ) : (
                   <div className="space-y-2 max-h-96 overflow-y-auto">
                     {artistGigs.map((gig) => {
-                      const isPast = new Date(gig.date) < new Date();
+                      const isPast = isGigCompleted(gig);
                       return (
                         <Card key={gig.id} className={`p-4 border-border/50 ${isPast ? 'opacity-60' : ''}`}>
                           <div className="space-y-3">

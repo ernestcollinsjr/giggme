@@ -110,6 +110,46 @@ export default function BookingManagerAdmin() {
   const [deleteConfirmArtist, setDeleteConfirmArtist] = useState<ManagedArtist | null>(null);
   const [deleteConfirmGig, setDeleteConfirmGig] = useState<UpcomingGig | null>(null);
   const [artistAvailability, setArtistAvailability] = useState<Array<{ date: string; status: string; notes: string | null }>>([]);
+  const [paymentStatuses, setPaymentStatuses] = useState<Record<string, "paid" | "pending">>({});
+
+  const paymentKey = (gig: { source: string; id: string; artist_id: string }) =>
+    `${gig.source}:${gig.id}:${gig.artist_id}`;
+
+  const fetchPaymentStatuses = async (uid: string) => {
+    const { data } = await supabase
+      .from("booking_manager_payments")
+      .select("source, source_id, artist_id, status")
+      .eq("booking_manager_id", uid);
+    const map: Record<string, "paid" | "pending"> = {};
+    (data || []).forEach((r: any) => {
+      map[`${r.source}:${r.source_id}:${r.artist_id}`] = r.status === "paid" ? "paid" : "pending";
+    });
+    setPaymentStatuses(map);
+  };
+
+  const togglePaymentStatus = async (gig: UpcomingGig) => {
+    if (!userId) return;
+    const key = paymentKey(gig);
+    const current = paymentStatuses[key] || "pending";
+    const next = current === "paid" ? "pending" : "paid";
+    setPaymentStatuses((prev) => ({ ...prev, [key]: next }));
+    const { error } = await supabase
+      .from("booking_manager_payments")
+      .upsert(
+        {
+          booking_manager_id: userId,
+          source: gig.source,
+          source_id: gig.id,
+          artist_id: gig.artist_id,
+          status: next,
+        },
+        { onConflict: "booking_manager_id,source,source_id,artist_id" }
+      );
+    if (error) {
+      setPaymentStatuses((prev) => ({ ...prev, [key]: current }));
+      toast({ variant: "destructive", title: "Failed to update payment", description: error.message });
+    }
+  };
 
   useEffect(() => {
     checkRoleAndFetchData();

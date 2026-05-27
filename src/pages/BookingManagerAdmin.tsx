@@ -71,6 +71,7 @@ interface UpcomingGig {
   status: string;
   artist_name: string;
   artist_id: string;
+  source: "gig" | "booking_request";
 }
 
 interface PendingInvite {

@@ -185,9 +185,18 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
     <div className="space-y-3">
       {/* Auto Location Tracker for band members */}
       {isMember && upcomingGigs.some(g => g.location_sharing_enabled) && (
-        <AutoLocationTracker 
-          userId={userId} 
-          isEnabled={upcomingGigs.some(g => g.location_sharing_enabled)} 
+        <AutoLocationTracker
+          userId={userId}
+          isEnabled={upcomingGigs.some(g => g.location_sharing_enabled)}
+          venues={upcomingGigs
+            .filter(g => g.location_sharing_enabled && g.venue_lat != null && g.venue_lng != null)
+            .map(g => ({
+              gigId: g.id,
+              gigOwnerId: g.gig_owner_id ?? null,
+              venueLat: g.venue_lat as number,
+              venueLng: g.venue_lng as number,
+              venueName: g.venue_name ?? g.venue,
+            }))}
         />
       )}
 

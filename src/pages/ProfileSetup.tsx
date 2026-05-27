@@ -44,6 +44,7 @@ const ProfileSetup = () => {
   
   const [name, setName] = useState("");
   const [bandName, setBandName] = useState("");
+  const [performerCategory, setPerformerCategory] = useState<string>("Solo");
   const [bio, setBio] = useState("");
   const [instrument, setInstrument] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");

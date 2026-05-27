@@ -21,7 +21,6 @@ export type Database = {
           created_at: string | null
           genre: string | null
           id: string
-          payment_methods: Json | null
           rate_range: string | null
           social_links: Json | null
           stage_name: string | null
@@ -36,7 +35,6 @@ export type Database = {
           created_at?: string | null
           genre?: string | null
           id?: string
-          payment_methods?: Json | null
           rate_range?: string | null
           social_links?: Json | null
           stage_name?: string | null
@@ -51,7 +49,6 @@ export type Database = {
           created_at?: string | null
           genre?: string | null
           id?: string
-          payment_methods?: Json | null
           rate_range?: string | null
           social_links?: Json | null
           stage_name?: string | null
@@ -2067,6 +2064,7 @@ export type Database = {
       }
       send_gig_reminders: { Args: never; Returns: undefined }
       send_rehearsal_reminders: { Args: never; Returns: undefined }
+      users_share_band: { Args: { _a: string; _b: string }; Returns: boolean }
     }
     Enums: {
       app_role:

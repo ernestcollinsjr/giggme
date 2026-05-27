@@ -355,10 +355,10 @@ const PerformerProfileView = () => {
               {extraPhotos.length > 0 && (
                 <div>
                   <Label className="text-sm font-medium mb-2 block">Additional Photos</Label>
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                     {extraPhotos.map((url, i) => (
                       <div key={i}>
-                        <div className="h-72 rounded-lg overflow-hidden sm:h-80">
+                        <div className="h-36 rounded-lg overflow-hidden sm:h-40">
                           <img src={url} alt={`Photo ${i + 2}`} className="h-full w-full object-cover object-top" />
                         </div>
                         <p className="text-xs text-muted-foreground text-center mt-1">Photo {i + 2}</p>

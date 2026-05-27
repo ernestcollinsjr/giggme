@@ -76,7 +76,9 @@ export function usePushNotifications() {
     if (!isSupported) {
       toast({
         title: 'Not Supported',
-        description: 'Push notifications are not supported in this browser.',
+        description: /iPhone|iPad|iPod/i.test(navigator.userAgent)
+          ? 'On iPhone, open GigGme from the Home Screen app icon before enabling push notifications.'
+          : 'Push notifications are not supported in this browser.',
         variant: 'destructive',
       });
       return false;
@@ -85,12 +87,11 @@ export function usePushNotifications() {
     setIsLoading(true);
 
     try {
-      // Register service worker
-      const registration = await navigator.serviceWorker.register('/sw.js');
-      console.log('Service Worker registered:', registration);
-
-      // Request permission
-      const permissionResult = await Notification.requestPermission();
+      // Request permission first, directly from the user's toggle click.
+      // Some browsers block the prompt if any async work happens first.
+      const permissionResult = Notification.permission === 'granted'
+        ? 'granted'
+        : await Notification.requestPermission();
       setPermission(permissionResult);
 
       if (permissionResult !== 'granted') {
@@ -102,6 +103,10 @@ export function usePushNotifications() {
         setIsLoading(false);
         return false;
       }
+
+      // Register service worker after permission is granted
+      const registration = await navigator.serviceWorker.register('/sw.js');
+      console.log('Service Worker registered:', registration);
 
       // Subscribe to push
       const reg = registration as ServiceWorkerRegistration & { pushManager: PushManager };

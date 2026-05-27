@@ -233,6 +233,63 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
     fetchTravelStatus(upcomingGigs.map((g) => g.id));
   };
 
+  // Manager-side: ping the performer(s) on this gig with a message + deep link
+  // to their booking manager card. Tries native share too on mobile.
+  const shareTrackingLink = async (gig: UpcomingGig) => {
+    const venueLabel = gig.venue_name || gig.venue || "your gig";
+    const link = `${window.location.origin}/bookings?gig=${gig.id}`;
+    const body = `Heads up for ${venueLabel} — tap Navigate on your gig card so we can track your route: ${link}`;
+
+    // Figure out who to notify: gig owner + accepted gig members (not the manager)
+    const recipientIds = new Set<string>();
+    if (gig.gig_owner_id && gig.gig_owner_id !== userId) {
+      recipientIds.add(gig.gig_owner_id);
+    }
+    try {
+      const { data: members } = await supabase
+        .from("gig_members")
+        .select("member_id")
+        .eq("gig_id", gig.id)
+        .eq("status", "accepted");
+      (members || []).forEach((m: any) => {
+        if (m.member_id && m.member_id !== userId) recipientIds.add(m.member_id);
+      });
+    } catch {/* gig may be a booking_request — skip */}
+
+    if (recipientIds.size === 0) {
+      // Fall back to native share / clipboard so the manager can DIY
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: `Gig at ${venueLabel}`, text: body, url: link });
+          return;
+        } catch {/* user dismissed */}
+      }
+      try {
+        await navigator.clipboard.writeText(body);
+        toast.success("Link copied", { description: "Share it with the performer." });
+      } catch {
+        toast.error("No performer found to message");
+      }
+      return;
+    }
+
+    try {
+      const rows = Array.from(recipientIds).map((rid) => ({
+        sender_id: userId,
+        recipient_id: rid,
+        is_group_message: false,
+        content: body,
+      }));
+      const { error } = await supabase.from("messages").insert(rows);
+      if (error) throw error;
+      toast.success("Sent to performer", {
+        description: `${recipientIds.size} recipient${recipientIds.size > 1 ? "s" : ""} notified.`,
+      });
+    } catch (e: any) {
+      toast.error("Couldn't send message", { description: e.message });
+    }
+  };
+
   const fetchUpcomingGigs = async () => {
     try {
       const now = new Date();

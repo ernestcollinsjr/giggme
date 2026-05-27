@@ -509,25 +509,42 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
                 })()}
               </div>
 
-              {/* Travel status of everyone on the gig */}
+              {/* Travel progress for everyone on the gig */}
               {(travelByGig[gig.id]?.length ?? 0) > 0 && (
-                <div className="mt-3 pt-3 border-t border-border/50 flex flex-wrap gap-2">
+                <div className="mt-3 pt-3 border-t border-border/50 space-y-2.5">
                   {travelByGig[gig.id]!.map((row) => {
                     const name = row.profile?.name || (row.user_id === userId ? "You" : "Someone");
                     const isArrived = row.status === "arrived";
+                    const loc = locByUser[row.user_id];
+                    const hasVenue = gig.venue_lat != null && gig.venue_lng != null;
+                    const key = `${gig.id}:${row.user_id}`;
+
+                    let progress = 0;
+                    let distKm: number | null = null;
+                    if (isArrived) {
+                      progress = 1;
+                      distKm = 0;
+                    } else if (row.status === "in_transit" && hasVenue && loc) {
+                      const d = distanceMeters(loc.lat, loc.lng, gig.venue_lat!, gig.venue_lng!);
+                      distKm = d / 1000;
+                      // Capture starting distance the first time we see this user in transit
+                      if (startDistRef.current[key] == null || d > startDistRef.current[key]) {
+                        startDistRef.current[key] = d;
+                      }
+                      const start = startDistRef.current[key] || d;
+                      progress = start > 0 ? 1 - d / start : 0;
+                      // If within 150m, treat as essentially arrived visually
+                      if (d <= 150) progress = 0.98;
+                    }
+
                     return (
-                      <Badge
+                      <TravelProgress
                         key={row.user_id}
-                        variant={isArrived ? "default" : "secondary"}
-                        className="gap-1 text-[11px]"
-                      >
-                        {isArrived ? (
-                          <CheckCircle2 className="h-3 w-3" />
-                        ) : (
-                          <Car className="h-3 w-3" />
-                        )}
-                        {name} · {isArrived ? "Arrived" : "On the way"}
-                      </Badge>
+                        name={name}
+                        progress={progress}
+                        distanceKm={distKm}
+                        arrived={isArrived}
+                      />
                     );
                   })}
                 </div>

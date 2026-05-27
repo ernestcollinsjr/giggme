@@ -2139,25 +2139,27 @@ const Dashboard = () => {
           </div>
         )}
 
-        <Card className="border-border/50 shadow-lg bg-gradient-to-br from-primary/5 to-accent/5">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Crown className="h-5 w-5 text-yellow-500" />
-              Upgrade to Premium
-            </CardTitle>
-            <CardDescription>
-              Unlock advanced features for your band
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground mb-4">
-              Get access to priority support, advanced analytics, and more.
-            </p>
-            <Button className="w-full">
-              Coming Soon
-            </Button>
-          </CardContent>
-        </Card>
+        {userRole !== "band_member" && userRole !== "artist" && (
+          <Card className="border-border/50 shadow-lg bg-gradient-to-br from-primary/5 to-accent/5">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Crown className="h-5 w-5 text-yellow-500" />
+                Upgrade to Premium
+              </CardTitle>
+              <CardDescription>
+                Unlock advanced features for your band
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Get access to priority support, advanced analytics, and more.
+              </p>
+              <Button className="w-full">
+                Coming Soon
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         <Dialog 
           open={acceptInviteDialog.open} 

@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { BookingManagerClientLocations } from "@/components/BookingManagerClientLocations";
+import { UpcomingGigLocationTracker } from "@/components/UpcomingGigLocationTracker";
 
 import { AvailabilityRequestManager } from "@/components/AvailabilityRequestManager";
 import { AvailabilityRequestResults } from "@/components/AvailabilityRequestResults";

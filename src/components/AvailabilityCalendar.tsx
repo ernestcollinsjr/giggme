@@ -334,9 +334,10 @@ export function AvailabilityCalendar({ userId, readOnly = false, onTodayStatusCh
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <CalendarDays className="h-5 w-5" />
-          Availability Calendar
+          {readOnly ? 'Bookings Calendar' : 'Availability Calendar'}
         </CardTitle>
       </CardHeader>
+
       <CardContent className="space-y-4">
         {!readOnly && (
           <>

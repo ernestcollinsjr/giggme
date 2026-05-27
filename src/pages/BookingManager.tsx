@@ -572,16 +572,11 @@ export default function BookingManager() {
           </Card>
         )}
 
-        {/* Artist Availability Management */}
-        {viewingResponsesForRequest && !selectedBandForAvailability ? (
+        {/* Artist Availability Management removed — available on Dashboard */}
+        {viewingResponsesForRequest && !selectedBandForAvailability && (
           <AvailabilityRequestResults 
             requestId={viewingResponsesForRequest}
             onBack={() => setViewingResponsesForRequest(null)}
-          />
-        ) : (
-          <ArtistAvailabilityManager 
-            managedArtists={managedArtists}
-            onViewResponses={(requestId) => setViewingResponsesForRequest(requestId)}
           />
         )}
 

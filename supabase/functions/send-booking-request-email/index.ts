@@ -90,7 +90,6 @@ Deno.serve(async (req) => {
     const appUrl = /lovable\.(app|dev)/i.test(rawAppUrl) ? 'https://giggme.com' : rawAppUrl;
     const respondUrl = `${appUrl}/booking-request/${bookingRequest.id}`;
     // Public one-click links (no login required) hit the edge function directly via token
-    const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
     const acceptUrl = `${SUPABASE_URL}/functions/v1/public-respond-booking-request?token=${bookingRequest.response_token}&action=accept`;
     const declineUrl = `${SUPABASE_URL}/functions/v1/public-respond-booking-request?token=${bookingRequest.response_token}&action=decline`;
     const expiresIn = '2 hours';

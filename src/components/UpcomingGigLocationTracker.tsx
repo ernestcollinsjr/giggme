@@ -126,9 +126,19 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
 
     const userIds = Array.from(new Set((data || []).map((r) => r.user_id)));
     const { data: profiles } = userIds.length
-      ? await supabase.from("profiles").select("id, name").in("id", userIds)
+      ? await supabase
+          .from("profiles")
+          .select("id, name, location_lat, location_lng")
+          .in("id", userIds)
       : { data: [] as any[] };
     const profileMap = new Map((profiles || []).map((p: any) => [p.id, p]));
+    const locs: Record<string, { lat: number; lng: number }> = {};
+    (profiles || []).forEach((p: any) => {
+      if (p.location_lat != null && p.location_lng != null) {
+        locs[p.id] = { lat: p.location_lat, lng: p.location_lng };
+      }
+    });
+    setLocByUser(locs);
 
     const grouped: Record<string, TravelRow[]> = {};
     (data || []).forEach((row: any) => {

@@ -5,8 +5,9 @@ import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarDays, Check, X, HelpCircle, CalendarRange, Loader2 } from "lucide-react";
-import { format, eachDayOfInterval, isBefore, startOfDay } from "date-fns";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { CalendarDays, Check, X, HelpCircle, CalendarRange, Loader2, MapPin, Clock, DollarSign } from "lucide-react";
+import { format, eachDayOfInterval, isBefore, startOfDay, parseISO, isSameDay } from "date-fns";
 import { DateRange } from "react-day-picker";
 
 interface AvailabilityDate {
@@ -29,9 +30,13 @@ export function AvailabilityCalendar({ userId, readOnly = false, onTodayStatusCh
   const [isRangeMode, setIsRangeMode] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [applyingRange, setApplyingRange] = useState(false);
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [selectedBookings, setSelectedBookings] = useState<any[] | null>(null);
+  const [selectedBookingDate, setSelectedBookingDate] = useState<Date | null>(null);
 
   useEffect(() => {
     fetchAvailability();
+    fetchBookings();
   }, [userId]);
 
   // Notify parent when today's status changes
@@ -59,6 +64,41 @@ export function AvailabilityCalendar({ userId, readOnly = false, onTodayStatusCh
       console.error('Error fetching availability:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchBookings = async () => {
+    try {
+      const targetUserId = userId || (await supabase.auth.getUser()).data.user?.id;
+      if (!targetUserId) return;
+
+      // Gigs where this user is the owner (band leader)
+      const { data: ownGigs } = await supabase
+        .from('gigs')
+        .select('id, date, venue, venue_name, end_time, status, payment_amount, notes')
+        .eq('user_id', targetUserId);
+
+      // Gigs where this user is an invited/accepted member
+      const { data: memberRows } = await supabase
+        .from('gig_members')
+        .select('status, gigs(id, date, venue, venue_name, end_time, status, payment_amount, notes)')
+        .eq('member_id', targetUserId);
+
+      const memberGigs = (memberRows || [])
+        .map((r: any) => r.gigs ? { ...r.gigs, member_status: r.status } : null)
+        .filter(Boolean);
+
+      const all = [...(ownGigs || []), ...memberGigs];
+      // De-dupe by gig id
+      const seen = new Set<string>();
+      const unique = all.filter((g: any) => {
+        if (seen.has(g.id)) return false;
+        seen.add(g.id);
+        return true;
+      });
+      setBookings(unique);
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
     }
   };
 
@@ -215,28 +255,46 @@ export function AvailabilityCalendar({ userId, readOnly = false, onTodayStatusCh
     }
   };
 
+  const bookedDates = bookings.map((b: any) => new Date(b.date));
+
   const modifiers = {
     available: availability.filter(a => a.status === 'available').map(a => new Date(a.date + 'T00:00:00')),
     unavailable: availability.filter(a => a.status === 'unavailable').map(a => new Date(a.date + 'T00:00:00')),
     tentative: availability.filter(a => a.status === 'tentative').map(a => new Date(a.date + 'T00:00:00')),
+    booked: bookedDates,
   };
 
   const modifiersStyles = {
     available: {
-      backgroundColor: 'rgb(34 197 94)', // green-500
+      backgroundColor: 'rgb(34 197 94)',
       color: 'white',
       borderRadius: '50%',
     },
     unavailable: {
-      backgroundColor: 'rgb(239 68 68)', // red-500
+      backgroundColor: 'rgb(239 68 68)',
       color: 'white',
       borderRadius: '50%',
     },
     tentative: {
-      backgroundColor: 'rgb(234 179 8)', // yellow-500
+      backgroundColor: 'rgb(234 179 8)',
       color: 'white',
       borderRadius: '50%',
     },
+    booked: {
+      backgroundColor: 'rgb(59 130 246)', // blue-500
+      color: 'white',
+      borderRadius: '50%',
+      fontWeight: 700,
+    },
+  };
+
+  const handleReadOnlyDateClick = (date: Date | undefined) => {
+    if (!date) return;
+    const matches = bookings.filter((b: any) => isSameDay(new Date(b.date), date));
+    if (matches.length > 0) {
+      setSelectedBookingDate(date);
+      setSelectedBookings(matches);
+    }
   };
 
   return (
@@ -369,7 +427,7 @@ export function AvailabilityCalendar({ userId, readOnly = false, onTodayStatusCh
           ) : (
             <Calendar
               mode="single"
-              onSelect={handleDateClick}
+              onSelect={readOnly ? handleReadOnlyDateClick : handleDateClick}
               modifiers={modifiers}
               modifiersStyles={modifiersStyles}
               className="rounded-md border pointer-events-auto"
@@ -391,7 +449,17 @@ export function AvailabilityCalendar({ userId, readOnly = false, onTodayStatusCh
             <div className="h-3 w-3 rounded-full bg-yellow-500" />
             <span className="text-muted-foreground">Tentative</span>
           </div>
+          <div className="flex items-center gap-1.5">
+            <div className="h-3 w-3 rounded-full bg-blue-500" />
+            <span className="text-muted-foreground">Booked</span>
+          </div>
         </div>
+
+        {readOnly && bookings.length > 0 && (
+          <p className="text-xs text-muted-foreground text-center">
+            Click a blue date to see booking details.
+          </p>
+        )}
 
         {!readOnly && (
           <p className="text-xs text-muted-foreground text-center">
@@ -402,6 +470,70 @@ export function AvailabilityCalendar({ userId, readOnly = false, onTodayStatusCh
           </p>
         )}
       </CardContent>
+
+      <Dialog open={!!selectedBookings} onOpenChange={(open) => { if (!open) { setSelectedBookings(null); setSelectedBookingDate(null); } }}>
+        <DialogContent className="bg-black/60 backdrop-blur-sm sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CalendarDays className="h-5 w-5 text-blue-500" />
+              {selectedBookingDate && format(selectedBookingDate, 'EEEE, MMM d, yyyy')}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedBookings?.length === 1 ? '1 booking' : `${selectedBookings?.length || 0} bookings`} on this date
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+            {selectedBookings?.map((b: any) => {
+              const start = b.date ? new Date(b.date) : null;
+              return (
+                <div key={b.id} className="border border-border rounded-lg p-3 space-y-2 bg-background/50">
+                  <div className="flex items-start gap-2">
+                    <MapPin className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="font-medium truncate">{b.venue_name || b.venue}</p>
+                      {b.venue_name && b.venue && (
+                        <p className="text-xs text-muted-foreground truncate">{b.venue}</p>
+                      )}
+                    </div>
+                  </div>
+                  {start && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <span>
+                        {format(start, 'h:mm a')}
+                        {b.end_time ? ` – ${b.end_time}` : ''}
+                      </span>
+                    </div>
+                  )}
+                  {b.payment_amount != null && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <DollarSign className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <span>${Number(b.payment_amount).toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="flex flex-wrap gap-1.5 text-xs">
+                    {b.status && (
+                      <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary capitalize">
+                        {b.status}
+                      </span>
+                    )}
+                    {b.member_status && (
+                      <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground capitalize">
+                        Response: {b.member_status}
+                      </span>
+                    )}
+                  </div>
+                  {b.notes && (
+                    <p className="text-xs text-muted-foreground border-t border-border pt-2">
+                      {b.notes}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

@@ -175,6 +175,25 @@ const PerformerProfileView = () => {
     load();
   }, [userId, navigate, toast]);
 
+  // Tick every 30s for countdown updates
+  useEffect(() => {
+    if (upcomingAlerts.length === 0) return;
+    const t = setInterval(() => setNowTick(Date.now()), 30000);
+    return () => clearInterval(t);
+  }, [upcomingAlerts.length]);
+
+  const formatCountdown = (target: string): string => {
+    const diff = new Date(target).getTime() - nowTick;
+    if (diff <= 0) return "Happening now";
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    if (d > 0) return `${d}d ${h}h ${m}m`;
+    if (h > 0) return `${h}h ${m}m`;
+    return `${m}m`;
+  };
+
+
   const handleSendBookingRequest = async () => {
     if (bookingForm.dates.length === 0 || !bookingForm.venue.trim()) {
       toast({ variant: "destructive", title: "Missing information", description: "Please select at least one date and venue." });

@@ -759,6 +759,18 @@ const PerformerProfileView = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!lightboxPhoto} onOpenChange={(o) => !o && setLightboxPhoto(null)}>
+        <DialogContent className="max-w-3xl p-2 backdrop-blur-sm bg-black/60 border-0">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Photo</DialogTitle>
+            <DialogDescription>Full size photo preview</DialogDescription>
+          </DialogHeader>
+          {lightboxPhoto && (
+            <img src={lightboxPhoto} alt="Full size" className="w-full max-h-[85vh] object-contain rounded-md" />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

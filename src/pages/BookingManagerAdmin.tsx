@@ -377,6 +377,19 @@ export default function BookingManagerAdmin() {
     }
   };
 
+  const handleDeleteGig = async () => {
+    if (!deleteConfirmGig) return;
+    const table = deleteConfirmGig.source === "booking_request" ? "booking_requests" : "gigs";
+    const { error } = await supabase.from(table).delete().eq("id", deleteConfirmGig.id);
+    if (error) {
+      toast({ variant: "destructive", title: "Error", description: error.message });
+      return;
+    }
+    toast({ title: "Booking deleted", description: deleteConfirmGig.venue_name || deleteConfirmGig.venue });
+    setDeleteConfirmGig(null);
+    if (userId) await fetchUpcomingGigs(userId);
+  };
+
   const grouped = useMemo(() => {
     const filtered = managedArtists.filter((a) =>
       a.profile.name.toLowerCase().includes(searchTerm.toLowerCase())

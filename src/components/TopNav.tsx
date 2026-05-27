@@ -135,9 +135,7 @@ export const TopNav = ({ userRole }: TopNavProps) => {
       <div className="container flex h-14 max-w-screen-2xl items-center justify-between">
         {/* Left side - Logo only */}
         <Link to="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <div className="bg-primary rounded-lg p-1.5">
-            <Zap className="h-5 w-5 text-primary-foreground" />
-          </div>
+          <img src="/favicon.png" alt="GigMe" className="h-9 w-9 rounded-lg object-contain" />
           <span className="font-bold text-lg hidden sm:inline">GigMe</span>
         </Link>
         

@@ -54,7 +54,7 @@ export const AutoLocationTracker = ({ userId, isEnabled }: AutoLocationTrackerPr
               })
               .eq("id", userId);
             
-            console.log("Location auto-updated:", position.coords.latitude, position.coords.longitude);
+            if (import.meta.env.DEV) console.log("Location auto-updated");
           } catch (error) {
             console.error("Failed to update location:", error);
           }

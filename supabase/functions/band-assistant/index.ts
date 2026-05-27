@@ -188,7 +188,7 @@ TONE:
 
 You can help with: gig/rehearsal/setlist questions, conflict detection, rehearsal scheduling, setlist ordering by venue type and show length, gig summaries and reminders, and performance/band management advice.`;
 
-    console.log("System prompt:", systemPrompt);
+    // System prompt intentionally not logged (contains user PII)
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

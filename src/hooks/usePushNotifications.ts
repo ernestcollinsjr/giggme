@@ -183,11 +183,12 @@ export function usePushNotifications() {
 
       setIsLoading(false);
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error subscribing to push:', error);
+      const message = error instanceof Error ? error.message : 'Failed to enable notifications. Please try again.';
       toast({
         title: 'Error',
-        description: error?.message || 'Failed to enable notifications. Please try again.',
+        description: message,
         variant: 'destructive',
       });
       setIsLoading(false);

@@ -90,6 +90,8 @@ const ProfileSetup = () => {
   const undoIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [travelDistance, setTravelDistance] = useState<string>("");
   const [yearsExperience, setYearsExperience] = useState<string>("");
+  const [preferredPay, setPreferredPay] = useState<string>("");
+  const [preferredPayHours, setPreferredPayHours] = useState<string>("");
   const [unionMemberships, setUnionMemberships] = useState<string[]>([]);
   const [newUnion, setNewUnion] = useState("");
   
@@ -180,6 +182,8 @@ const ProfileSetup = () => {
           setAvailabilityStatus(profile.availability_status || "available");
           setTravelDistance(profile.travel_distance?.toString() || "");
           setYearsExperience(profile.years_experience?.toString() || "");
+          setPreferredPay((profile as any).preferred_pay?.toString() || "");
+          setPreferredPayHours((profile as any).preferred_pay_hours?.toString() || "");
           setUnionMemberships(profile.union_memberships || []);
           
           // Format member since date
@@ -392,6 +396,8 @@ const ProfileSetup = () => {
         years_experience: yearsExperience ? parseInt(yearsExperience) : null,
         union_memberships: unionMemberships,
         performer_category: performerCategory,
+        preferred_pay: preferredPay ? parseFloat(preferredPay) : null,
+        preferred_pay_hours: preferredPayHours ? parseFloat(preferredPayHours) : null,
         updated_at: new Date().toISOString(),
       } as any;
 
@@ -1838,6 +1844,33 @@ const ProfileSetup = () => {
                       placeholder="e.g., 100"
                       value={travelDistance}
                       onChange={(e) => setTravelDistance(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="preferredPay" className="text-xs">Preferred Pay ($)</Label>
+                    <Input
+                      id="preferredPay"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      placeholder="e.g., 400"
+                      value={preferredPay}
+                      onChange={(e) => setPreferredPay(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="preferredPayHours" className="text-xs">For How Many Hours</Label>
+                    <Input
+                      id="preferredPayHours"
+                      type="number"
+                      min="0"
+                      step="0.5"
+                      placeholder="e.g., 3"
+                      value={preferredPayHours}
+                      onChange={(e) => setPreferredPayHours(e.target.value)}
                     />
                   </div>
                 </div>

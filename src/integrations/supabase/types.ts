@@ -1166,6 +1166,8 @@ export type Database = {
           performer_category: string | null
           phone_number: string | null
           photo_urls: string[] | null
+          preferred_pay: number | null
+          preferred_pay_hours: number | null
           rider_notes: string | null
           skills: string[] | null
           social_links: Json | null
@@ -1192,6 +1194,8 @@ export type Database = {
           performer_category?: string | null
           phone_number?: string | null
           photo_urls?: string[] | null
+          preferred_pay?: number | null
+          preferred_pay_hours?: number | null
           rider_notes?: string | null
           skills?: string[] | null
           social_links?: Json | null
@@ -1218,6 +1222,8 @@ export type Database = {
           performer_category?: string | null
           phone_number?: string | null
           photo_urls?: string[] | null
+          preferred_pay?: number | null
+          preferred_pay_hours?: number | null
           rider_notes?: string | null
           skills?: string[] | null
           social_links?: Json | null

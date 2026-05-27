@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -33,10 +33,12 @@ interface BookingRequest {
 export default function BookingRequestResponse() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [request, setRequest] = useState<BookingRequest | null>(null);
   const [submitting, setSubmitting] = useState<"accept" | "decline" | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const autoRanRef = useRef(false);
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
@@ -47,8 +49,10 @@ export default function BookingRequestResponse() {
   useEffect(() => {
     (async () => {
       const { data: { session } } = await supabase.auth.getSession();
+      const actionParam = searchParams.get("action");
+      const redirectPath = `/booking-request/${id}${actionParam ? `?action=${actionParam}` : ""}`;
       if (!session?.user) {
-        navigate(`/auth?redirect=/booking-request/${id}`);
+        navigate(`/auth?redirect=${encodeURIComponent(redirectPath)}`);
         return;
       }
       setUserId(session.user.id);
@@ -65,7 +69,26 @@ export default function BookingRequestResponse() {
       setRequest(data as BookingRequest);
       setLoading(false);
     })();
-  }, [id, navigate]);
+  }, [id, navigate, searchParams]);
+
+  // Auto-execute accept/decline from email link query param
+  useEffect(() => {
+    if (autoRanRef.current) return;
+    if (!request || !userId) return;
+    const action = searchParams.get("action");
+    if (action !== "accept" && action !== "decline") return;
+    if (userId !== request.performer_id) return;
+    if (request.status !== "pending") return;
+    if (new Date(request.expires_at).getTime() < Date.now()) return;
+    autoRanRef.current = true;
+    handleRespond(action as "accept" | "decline").finally(() => {
+      // Clear the query param so refresh doesn't repeat
+      const next = new URLSearchParams(searchParams);
+      next.delete("action");
+      setSearchParams(next, { replace: true });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [request, userId]);
 
   const handleRespond = async (action: "accept" | "decline") => {
     if (!request) return;

@@ -38,6 +38,7 @@ export default function BookingRequestResponse() {
   const [request, setRequest] = useState<BookingRequest | null>(null);
   const [submitting, setSubmitting] = useState<"accept" | "decline" | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const autoRanRef = useRef(false);
   const [now, setNow] = useState(Date.now());
 

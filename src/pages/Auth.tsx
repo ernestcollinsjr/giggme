@@ -297,9 +297,6 @@ const Auth = () => {
       <Card className="w-full max-w-md border-border/50 shadow-xl">
         <CardHeader className="space-y-2 text-center">
           <img src={logo} alt="GiggMe" className="mx-auto h-24 w-auto object-contain mb-2" />
-          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            GiggMe
-          </CardTitle>
           <CardDescription>Connect bands and managers for seamless gig management</CardDescription>
         </CardHeader>
         

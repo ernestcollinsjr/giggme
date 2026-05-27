@@ -61,7 +61,10 @@ function buildHtml(opts: {
   </body></html>`;
 }
 
-async function sendEmail(to: string, subject: string, html: string): Promise<boolean> {
+async function sendEmail(to: string | (string | null | undefined)[], subject: string, html: string): Promise<boolean> {
+  const recipients = (Array.isArray(to) ? to : [to]).filter((e): e is string => !!e);
+  const unique = [...new Set(recipients.map((e) => e.toLowerCase()))];
+  if (unique.length === 0) return false;
   try {
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -69,7 +72,7 @@ async function sendEmail(to: string, subject: string, html: string): Promise<boo
         'Authorization': `Bearer ${RESEND_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ from: FROM, to: [to], subject, html }),
+      body: JSON.stringify({ from: FROM, to: unique, subject, html }),
     });
     if (!res.ok) {
       console.error('Resend error', res.status, await res.text());

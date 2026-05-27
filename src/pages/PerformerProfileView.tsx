@@ -429,22 +429,29 @@ const PerformerProfileView = () => {
                 </div>
               )}
 
-              {/* Other performer metrics */}
-              <div className="grid grid-cols-2 gap-4">
-                {profile.years_experience != null && (
-                  <DetailRow icon={<Briefcase className="h-4 w-4" />} label="Experience" value={`${profile.years_experience} years`} />
-                )}
-                {profile.travel_distance != null && (
-                  <DetailRow icon={<MapPin className="h-4 w-4" />} label="Travel Distance" value={`${profile.travel_distance} mi`} />
-                )}
-                {profile.preferred_pay != null && (
-                  <DetailRow
-                    icon={<DollarSign className="h-4 w-4" />}
-                    label="Preferred Pay"
-                    value={`$${Number(profile.preferred_pay).toFixed(2)}${profile.preferred_pay_hours != null ? ` / ${profile.preferred_pay_hours} hr${Number(profile.preferred_pay_hours) === 1 ? "" : "s"}` : ""}`}
-                  />
-                )}
-              </div>
+              {/* Professional Details */}
+              {(profile.years_experience != null || profile.travel_distance != null || profile.preferred_pay != null) && (
+                <div className="space-y-3 pt-4 border-t">
+                  <Label className="text-sm font-medium flex items-center gap-2">
+                    <Briefcase className="h-4 w-4" /> Professional Details
+                  </Label>
+                  <div className="grid grid-cols-2 gap-4">
+                    {profile.years_experience != null && (
+                      <DetailRow icon={<Briefcase className="h-4 w-4" />} label="Experience" value={`${profile.years_experience} years`} />
+                    )}
+                    {profile.travel_distance != null && (
+                      <DetailRow icon={<MapPin className="h-4 w-4" />} label="Max Travel" value={`${profile.travel_distance} mi`} />
+                    )}
+                    {profile.preferred_pay != null && (
+                      <DetailRow
+                        icon={<DollarSign className="h-4 w-4" />}
+                        label="Preferred Pay"
+                        value={`$${Number(profile.preferred_pay).toFixed(2)}${profile.preferred_pay_hours != null ? ` / ${profile.preferred_pay_hours} hr${Number(profile.preferred_pay_hours) === 1 ? "" : "s"}` : ""}`}
+                      />
+                    )}
+                  </div>
+                </div>
+              )}
 
               {profile.genres && profile.genres.length > 0 && (
                 <BadgeList icon={<Tag className="h-3 w-3" />} label="Genres" items={profile.genres} />

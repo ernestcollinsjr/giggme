@@ -329,10 +329,13 @@ const PerformerProfileView = () => {
 
               {/* Avatar + name block */}
               <div className="flex items-start gap-4">
-                <Avatar className="h-24 w-24 shrink-0">
-                  <AvatarImage src={primaryPhoto} alt={profile.name} />
-                  <AvatarFallback>{initials}</AvatarFallback>
-                </Avatar>
+                <div className="h-24 w-24 shrink-0 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+                  {primaryPhoto ? (
+                    <img src={primaryPhoto} alt={profile.name} className="max-h-full max-w-full object-contain" />
+                  ) : (
+                    <span className="text-lg font-semibold text-muted-foreground">{initials}</span>
+                  )}
+                </div>
                 <div className="flex-1 min-w-0 space-y-2">
                   <h2 className="text-xl font-semibold truncate">{profile.name}</h2>
                   <p className="text-sm text-muted-foreground">

@@ -53,6 +53,8 @@ interface PerformerProfile {
   rider_notes?: string | null;
   social_links?: Record<string, string> | null;
   youtube_links?: string[] | null;
+  timezone?: string | null;
+  availability_status?: string | null;
   created_at?: string | null;
 }
 

@@ -15,19 +15,19 @@ Deno.serve(async (req) => {
   const action = url.searchParams.get('action');
 
   if (!token || (action !== 'accept' && action !== 'decline')) {
-    return new Response(html('Invalid Link', 'This link is missing required information.', '#dc2626'), { status: 400, headers: { 'Content-Type': 'text/html' } });
+    return new Response(html('Invalid Link', 'This link is missing required information.', '#dc2626'), { status: 400, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
   }
 
   try {
     const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
     const { data: br } = await admin.from('booking_requests').select('*').eq('response_token', token).maybeSingle();
-    if (!br) return new Response(html('Not Found', 'This booking request could not be found.', '#dc2626'), { status: 404, headers: { 'Content-Type': 'text/html' } });
+    if (!br) return new Response(html('Not Found', 'This booking request could not be found.', '#dc2626'), { status: 404, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
 
     if (br.status !== 'pending') {
-      return new Response(html(`Already ${br.status}`, `This request was already <strong>${br.status}</strong>.`, '#6b7280'), { status: 200, headers: { 'Content-Type': 'text/html' } });
+      return new Response(html(`Already ${br.status}`, `This request was already <strong>${br.status}</strong>.`, '#6b7280'), { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
     }
     if (new Date(br.expires_at).getTime() < Date.now()) {
-      return new Response(html('Request Expired', 'This request has expired. Please ask the booker to resend it.', '#dc2626'), { status: 200, headers: { 'Content-Type': 'text/html' } });
+      return new Response(html('Request Expired', 'This request has expired. Please ask the booker to resend it.', '#dc2626'), { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
     }
 
     const newStatus = action === 'accept' ? 'accepted' : 'declined';
@@ -62,9 +62,9 @@ Deno.serve(async (req) => {
     const body = action === 'accept'
       ? `Thanks! You've accepted the booking at <strong>${br.venue}</strong> on <strong>${br.dates_text}</strong>. The booker has been notified.`
       : `You've declined the booking at <strong>${br.venue}</strong>. The booker has been notified.`;
-    return new Response(html(title, body, accent), { status: 200, headers: { 'Content-Type': 'text/html' } });
+    return new Response(html(title, body, accent), { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
   } catch (err) {
     console.error(err);
-    return new Response(html('Something went wrong', err instanceof Error ? err.message : 'Unknown error', '#dc2626'), { status: 500, headers: { 'Content-Type': 'text/html' } });
+    return new Response(html('Something went wrong', err instanceof Error ? err.message : 'Unknown error', '#dc2626'), { status: 500, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
   }
 });

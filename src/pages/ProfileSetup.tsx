@@ -202,6 +202,15 @@ const ProfileSetup = () => {
           setRole(roleData.role);
           setHasRole(true);
         }
+
+        // Detect invited performers (added to a band or booking manager roster)
+        const [{ data: bandMem }, { data: bmArtist }] = await Promise.all([
+          supabase.from("band_members").select("id").eq("member_id", user.id).limit(1),
+          supabase.from("booking_manager_artists").select("id").eq("artist_id", user.id).limit(1),
+        ]);
+        if ((bandMem && bandMem.length > 0) || (bmArtist && bmArtist.length > 0)) {
+          setIsInvitedPerformer(true);
+        }
       }
     };
     

@@ -1178,7 +1178,7 @@ export default function BookingManagerAdmin() {
                 Message {broadcastRecipients.length} performer{broadcastRecipients.length === 1 ? "" : "s"}
               </DialogTitle>
               <DialogDescription>
-                Send a direct message to everyone matching your current search. Useful when you need a quick replacement to cover a gig.
+                Emails everyone matching your current search with a 30-minute response window. Non-responders are automatically ruled out. You'll get an email update for each accept/decline.
               </DialogDescription>
             </DialogHeader>
 

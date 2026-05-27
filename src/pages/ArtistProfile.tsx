@@ -566,9 +566,9 @@ const ArtistProfile = () => {
       <TopNav userRole="artist" />
       <div className="p-6">
         <div className="max-w-4xl mx-auto">
-        <Button variant="ghost" onClick={() => navigate(isOwnProfile ? "/dashboard" : "/artists")} className="mb-6">
+        <Button variant="ghost" onClick={() => navigate("/dashboard")} className="mb-6">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          {isOwnProfile ? "Back to Dashboard" : "Back to Artists"}
+          Back to Dashboard
         </Button>
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">

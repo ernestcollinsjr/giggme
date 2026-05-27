@@ -34,6 +34,8 @@ import {
   X,
   Bell,
   CalendarPlus,
+  MessageSquare,
+  Send,
 } from "lucide-react";
 import { TopNav } from "@/components/TopNav";
 import BottomNav from "@/components/BottomNav";

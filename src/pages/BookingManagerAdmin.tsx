@@ -928,7 +928,11 @@ export default function BookingManagerAdmin() {
             )}
           </section>
           </div>
+
+          <SentBookingRequests />
         </div>
+
+
 
         <Dialog open={!!deleteConfirmArtist} onOpenChange={() => setDeleteConfirmArtist(null)}>
           <DialogContent>

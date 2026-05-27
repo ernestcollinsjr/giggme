@@ -511,9 +511,13 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
                       <Button
                         size="sm"
                         variant={timeInfo.urgent ? "destructive" : "default"}
-                        onClick={() => {
+                        onClick={async () => {
                           updateTravelStatus(gig, "in_transit");
                           openVenueInMaps(gig);
+                          if (isMember) {
+                            const granted = await requestLocationPermission();
+                            setNeedsPermission((p) => ({ ...p, [gig.id]: !granted }));
+                          }
                         }}
                         className="gap-1.5"
                       >

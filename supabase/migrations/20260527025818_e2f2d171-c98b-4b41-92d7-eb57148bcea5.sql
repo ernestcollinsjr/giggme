@@ -1,0 +1,2 @@
+ALTER TABLE public.booking_requests ADD COLUMN IF NOT EXISTS response_token uuid NOT NULL DEFAULT gen_random_uuid();
+CREATE INDEX IF NOT EXISTS idx_booking_requests_response_token ON public.booking_requests(response_token);

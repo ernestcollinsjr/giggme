@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import { TopNav } from "@/components/TopNav";
 import BottomNav from "@/components/BottomNav";
+import { SentBookingRequests } from "@/components/SentBookingRequests";
 import { cn } from "@/lib/utils";
 
 const CATEGORIES = ["Soloist", "Duo", "Band"] as const;

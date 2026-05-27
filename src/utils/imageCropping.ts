@@ -192,3 +192,38 @@ export const loadImage = (file: File): Promise<HTMLImageElement> => {
     img.src = URL.createObjectURL(file);
   });
 };
+
+// Resize while preserving aspect ratio (no cropping). Use for full-body / additional photos.
+export const resizeImagePreserveAspect = async (
+  imageElement: HTMLImageElement,
+  maxDimension: number = 1200
+): Promise<Blob> => {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Could not get canvas context');
+
+  let width = imageElement.naturalWidth;
+  let height = imageElement.naturalHeight;
+
+  if (width > maxDimension || height > maxDimension) {
+    if (width > height) {
+      height = Math.round((height * maxDimension) / width);
+      width = maxDimension;
+    } else {
+      width = Math.round((width * maxDimension) / height);
+      height = maxDimension;
+    }
+  }
+
+  canvas.width = width;
+  canvas.height = height;
+  ctx.drawImage(imageElement, 0, 0, width, height);
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => (blob ? resolve(blob) : reject(new Error('Failed to create blob'))),
+      'image/jpeg',
+      0.92
+    );
+  });
+};

@@ -372,12 +372,17 @@ export default function BookingManagerAdmin() {
     setPendingArtistIds(new Set((pendingReqs || []).map((r: any) => r.performer_id)));
   };
 
-  const isGigCompleted = (gig: UpcomingGig): boolean => {
+  const getGigCompletionTime = (gig: UpcomingGig): number => {
     const dateOnly = gig.date.split("T")[0];
     const endIso = gig.end_time
       ? `${dateOnly}T${gig.end_time}`
       : `${dateOnly}T23:59:59`;
-    return new Date(endIso).getTime() < Date.now();
+    const completionTime = new Date(endIso).getTime();
+    return Number.isNaN(completionTime) ? new Date(gig.date).getTime() : completionTime;
+  };
+
+  const isGigCompleted = (gig: UpcomingGig): boolean => {
+    return gig.status === "completed" || getGigCompletionTime(gig) < Date.now();
   };
 
   const getArtistStatus = (artistId: string): "booked" | "pending" | "none" => {
@@ -491,8 +496,9 @@ export default function BookingManagerAdmin() {
   }, [pendingInvites, artistFilter]);
 
   const upcomingVisible = useMemo(() => {
-    const upcoming = visibleGigs.filter((g) => !isGigCompleted(g));
-    const completed = visibleGigs.filter((g) => isGigCompleted(g));
+    const byDateAsc = (a: UpcomingGig, b: UpcomingGig) => new Date(a.date).getTime() - new Date(b.date).getTime();
+    const upcoming = visibleGigs.filter((g) => !isGigCompleted(g)).sort(byDateAsc);
+    const completed = visibleGigs.filter((g) => isGigCompleted(g)).sort(byDateAsc);
     return [...upcoming, ...completed];
   }, [visibleGigs]);
   const completedVisible: UpcomingGig[] = [];

@@ -1093,6 +1093,17 @@ const Dashboard = () => {
     }
   };
 
+  const getGigCompletionTime = (gig: Pick<Gig, "date" | "end_time">): number => {
+    const dateOnly = gig.date.split("T")[0];
+    const endIso = gig.end_time ? `${dateOnly}T${gig.end_time}` : `${dateOnly}T23:59:59`;
+    const completionTime = new Date(endIso).getTime();
+    return Number.isNaN(completionTime) ? new Date(gig.date).getTime() : completionTime;
+  };
+
+  const isGigCompleted = (gig: Gig): boolean => {
+    return gig.status === "completed" || getGigCompletionTime(gig) < Date.now();
+  };
+
   const openArtistProfile = async (artist: Profile) => {
     setSelectedArtist(artist);
     setArtistProfileDialogOpen(true);
@@ -1110,6 +1121,7 @@ const Dashboard = () => {
             date,
             venue,
             venue_name,
+            status,
             notes,
             loading_time,
             sound_check_time,
@@ -1129,7 +1141,13 @@ const Dashboard = () => {
       if (error) throw error;
 
       const gigs = gigMembersData?.map((gm: any) => gm.gigs) || [];
-      setArtistGigs(gigs);
+      const sortedGigs = [...gigs].sort((a, b) => {
+        const aCompleted = isGigCompleted(a);
+        const bCompleted = isGigCompleted(b);
+        if (aCompleted !== bCompleted) return aCompleted ? 1 : -1;
+        return new Date(a.date).getTime() - new Date(b.date).getTime();
+      });
+      setArtistGigs(sortedGigs);
     } catch (error: any) {
       console.error('Error fetching artist gigs:', error);
       toast({
@@ -2583,7 +2601,7 @@ const Dashboard = () => {
                 ) : (
                   <div className="space-y-2 max-h-96 overflow-y-auto">
                     {artistGigs.map((gig) => {
-                      const isPast = new Date(gig.date) < new Date();
+                      const isPast = isGigCompleted(gig);
                       return (
                         <Card key={gig.id} className={`p-4 border-border/50 ${isPast ? 'opacity-60' : ''}`}>
                           <div className="space-y-3">

@@ -17,6 +17,7 @@ interface UpcomingGig {
   loading_time: string | null;
   sound_check_time: string | null;
   location_sharing_enabled: boolean;
+  gig_owner_id?: string | null;
 }
 
 interface UpcomingGigLocationTrackerProps {

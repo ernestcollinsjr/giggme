@@ -61,7 +61,10 @@ function buildHtml(opts: {
   </body></html>`;
 }
 
-async function sendEmail(to: string, subject: string, html: string): Promise<boolean> {
+async function sendEmail(to: string | (string | null | undefined)[], subject: string, html: string): Promise<boolean> {
+  const recipients = (Array.isArray(to) ? to : [to]).filter((e): e is string => !!e);
+  const unique = [...new Set(recipients.map((e) => e.toLowerCase()))];
+  if (unique.length === 0) return false;
   try {
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -69,7 +72,7 @@ async function sendEmail(to: string, subject: string, html: string): Promise<boo
         'Authorization': `Bearer ${RESEND_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ from: FROM, to: [to], subject, html }),
+      body: JSON.stringify({ from: FROM, to: unique, subject, html }),
     });
     if (!res.ok) {
       console.error('Resend error', res.status, await res.text());
@@ -80,6 +83,13 @@ async function sendEmail(to: string, subject: string, html: string): Promise<boo
     console.error('Email send threw', e);
     return false;
   }
+}
+
+
+async function getBookerEmail(supabase: any, bookerId: string | null | undefined): Promise<string | null> {
+  if (!bookerId) return null;
+  const { data } = await supabase.from('profiles').select('email').eq('id', bookerId).maybeSingle();
+  return data?.email ?? null;
 }
 
 Deno.serve(async (req) => {
@@ -101,7 +111,7 @@ Deno.serve(async (req) => {
   // 1-day reminders for accepted booking_requests with event_date set
   const { data: br1d } = await supabase
     .from('booking_requests')
-    .select('id, performer_email, performer_name, venue, event_date, note')
+    .select('id, performer_email, performer_name, venue, event_date, note, booker_id')
     .eq('status', 'accepted')
     .eq('auto_reminders_disabled', false)
     .is('reminder_1d_sent_at', null)
@@ -110,10 +120,13 @@ Deno.serve(async (req) => {
     .lte('event_date', upper1d);
 
   for (const r of br1d ?? []) {
-    if (!r.performer_email || !r.event_date) continue;
+    if (!r.event_date) continue;
+    const bookerEmail = await getBookerEmail(supabase, r.booker_id);
+    const recipients = [r.performer_email, bookerEmail];
+    if (!recipients.some((e) => !!e)) continue;
     const when = fmtDate(new Date(r.event_date));
     const ok = await sendEmail(
-      r.performer_email,
+      recipients,
       `Reminder: performance tomorrow at ${r.venue}`,
       buildHtml({
         recipientName: r.performer_name,
@@ -135,7 +148,7 @@ Deno.serve(async (req) => {
   // 2-hour reminders for accepted booking_requests
   const { data: br2h } = await supabase
     .from('booking_requests')
-    .select('id, performer_email, performer_name, venue, event_date, note')
+    .select('id, performer_email, performer_name, venue, event_date, note, booker_id')
     .eq('status', 'accepted')
     .eq('auto_reminders_disabled', false)
     .is('reminder_2h_sent_at', null)
@@ -144,10 +157,13 @@ Deno.serve(async (req) => {
     .lte('event_date', upper2h);
 
   for (const r of br2h ?? []) {
-    if (!r.performer_email || !r.event_date) continue;
+    if (!r.event_date) continue;
+    const bookerEmail = await getBookerEmail(supabase, r.booker_id);
+    const recipients = [r.performer_email, bookerEmail];
+    if (!recipients.some((e) => !!e)) continue;
     const when = fmtDate(new Date(r.event_date));
     const ok = await sendEmail(
-      r.performer_email,
+      recipients,
       `Reminder: performance in 2 hours at ${r.venue}`,
       buildHtml({
         recipientName: r.performer_name,
@@ -171,7 +187,7 @@ Deno.serve(async (req) => {
   async function processGigWindow(field: 'reminder_1d_sent_at' | 'reminder_2h_sent_at', lo: string, hi: string, label: string, subjectPrefix: string) {
     const { data: gms } = await supabase
       .from('gig_members')
-      .select(`id, member_id, ${field}, gigs!inner(id, date, venue, venue_name, notes, auto_reminders_disabled)`)
+      .select(`id, member_id, ${field}, gigs!inner(id, user_id, date, venue, venue_name, notes, auto_reminders_disabled)`)
       .eq('status', 'accepted')
       .eq('gigs.auto_reminders_disabled', false)
       .is(field, null)
@@ -180,20 +196,23 @@ Deno.serve(async (req) => {
 
     if (!gms || gms.length === 0) return;
     const memberIds = [...new Set(gms.map((g: any) => g.member_id))];
+    const ownerIds = [...new Set(gms.map((g: any) => g.gigs?.user_id).filter(Boolean))];
     const { data: profiles } = await supabase
       .from('profiles')
       .select('id, email, name')
-      .in('id', memberIds);
+      .in('id', [...new Set([...memberIds, ...ownerIds])]);
     const profMap = new Map((profiles ?? []).map((p: any) => [p.id, p]));
 
     for (const gm of gms as any[]) {
       const prof = profMap.get(gm.member_id);
-      if (!prof?.email) continue;
       const gig = gm.gigs;
+      const owner = gig?.user_id ? profMap.get(gig.user_id) : null;
+      const recipients = [prof?.email, owner?.email];
+      if (!recipients.some((e) => !!e)) continue;
       const when = fmtDate(new Date(gig.date));
       const venue = gig.venue_name || gig.venue;
       const ok = await sendEmail(
-        prof.email,
+        recipients,
         `${subjectPrefix} ${venue}`,
         buildHtml({
           recipientName: prof.name,

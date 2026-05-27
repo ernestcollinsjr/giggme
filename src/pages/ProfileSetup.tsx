@@ -587,7 +587,16 @@ const ProfileSetup = () => {
 
   const addYoutubeLink = () => {
     if (!newYoutubeLink.trim()) return;
-    
+
+    if (youtubeLinks.length >= 6) {
+      toast({
+        variant: "destructive",
+        title: "Limit reached",
+        description: "You can add up to 6 YouTube videos.",
+      });
+      return;
+    }
+
     if (!newYoutubeLink.includes("youtube.com") && !newYoutubeLink.includes("youtu.be")) {
       toast({
         variant: "destructive",
@@ -1627,7 +1636,7 @@ const ProfileSetup = () => {
                     YouTube Videos
                   </Label>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Showcase your performances with YouTube links
+                    Showcase your performances with YouTube links (up to 6) — {youtubeLinks.length}/6 added
                   </p>
                 </div>
                 
@@ -1637,8 +1646,9 @@ const ProfileSetup = () => {
                     value={newYoutubeLink}
                     onChange={(e) => setNewYoutubeLink(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addYoutubeLink())}
+                    disabled={youtubeLinks.length >= 6}
                   />
-                  <Button type="button" onClick={addYoutubeLink} size="icon" variant="outline">
+                  <Button type="button" onClick={addYoutubeLink} size="icon" variant="outline" disabled={youtubeLinks.length >= 6}>
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>

@@ -332,7 +332,13 @@ const PerformerProfileView = () => {
               <div className="flex items-start gap-4">
                 <div className="h-24 w-24 shrink-0 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
                   {primaryPhoto ? (
-                    <img src={primaryPhoto} alt={profile.name} className="max-h-full max-w-full object-contain" />
+                    <button
+                      type="button"
+                      onClick={() => setLightboxPhoto(primaryPhoto)}
+                      className="h-full w-full flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <img src={primaryPhoto} alt={profile.name} className="max-h-full max-w-full object-contain" />
+                    </button>
                   ) : (
                     <span className="text-lg font-semibold text-muted-foreground">{initials}</span>
                   )}

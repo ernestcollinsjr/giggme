@@ -427,7 +427,7 @@ export function AvailabilityCalendar({ userId, readOnly = false, onTodayStatusCh
           ) : (
             <Calendar
               mode="single"
-              onSelect={handleDateClick}
+              onSelect={readOnly ? handleReadOnlyDateClick : handleDateClick}
               modifiers={modifiers}
               modifiersStyles={modifiersStyles}
               className="rounded-md border pointer-events-auto"
@@ -449,7 +449,17 @@ export function AvailabilityCalendar({ userId, readOnly = false, onTodayStatusCh
             <div className="h-3 w-3 rounded-full bg-yellow-500" />
             <span className="text-muted-foreground">Tentative</span>
           </div>
+          <div className="flex items-center gap-1.5">
+            <div className="h-3 w-3 rounded-full bg-blue-500" />
+            <span className="text-muted-foreground">Booked</span>
+          </div>
         </div>
+
+        {readOnly && bookings.length > 0 && (
+          <p className="text-xs text-muted-foreground text-center">
+            Click a blue date to see booking details.
+          </p>
+        )}
 
         {!readOnly && (
           <p className="text-xs text-muted-foreground text-center">
@@ -460,6 +470,70 @@ export function AvailabilityCalendar({ userId, readOnly = false, onTodayStatusCh
           </p>
         )}
       </CardContent>
+
+      <Dialog open={!!selectedBookings} onOpenChange={(open) => { if (!open) { setSelectedBookings(null); setSelectedBookingDate(null); } }}>
+        <DialogContent className="bg-black/60 backdrop-blur-sm sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CalendarDays className="h-5 w-5 text-blue-500" />
+              {selectedBookingDate && format(selectedBookingDate, 'EEEE, MMM d, yyyy')}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedBookings?.length === 1 ? '1 booking' : `${selectedBookings?.length || 0} bookings`} on this date
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+            {selectedBookings?.map((b: any) => {
+              const start = b.date ? new Date(b.date) : null;
+              return (
+                <div key={b.id} className="border border-border rounded-lg p-3 space-y-2 bg-background/50">
+                  <div className="flex items-start gap-2">
+                    <MapPin className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="font-medium truncate">{b.venue_name || b.venue}</p>
+                      {b.venue_name && b.venue && (
+                        <p className="text-xs text-muted-foreground truncate">{b.venue}</p>
+                      )}
+                    </div>
+                  </div>
+                  {start && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <span>
+                        {format(start, 'h:mm a')}
+                        {b.end_time ? ` – ${b.end_time}` : ''}
+                      </span>
+                    </div>
+                  )}
+                  {b.payment_amount != null && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <DollarSign className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <span>${Number(b.payment_amount).toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="flex flex-wrap gap-1.5 text-xs">
+                    {b.status && (
+                      <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary capitalize">
+                        {b.status}
+                      </span>
+                    )}
+                    {b.member_status && (
+                      <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground capitalize">
+                        Response: {b.member_status}
+                      </span>
+                    )}
+                  </div>
+                  {b.notes && (
+                    <p className="text-xs text-muted-foreground border-t border-border pt-2">
+                      {b.notes}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

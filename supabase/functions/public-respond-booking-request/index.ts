@@ -38,6 +38,40 @@ Deno.serve(async (req) => {
       .eq('id', br.id);
     if (updErr) throw updErr;
 
+    // On accept, create a confirmed gig on the performer's calendar so it shows on their dashboard
+    if (action === 'accept' && br.performer_id) {
+      const gigDate = br.event_date || br.dates_text;
+      if (gigDate) {
+        const d = new Date(gigDate);
+        if (!isNaN(d.getTime())) {
+          // Avoid duplicates: check for existing gig for this performer/venue/date
+          const dayStart = new Date(d); dayStart.setUTCHours(0, 0, 0, 0);
+          const dayEnd = new Date(d); dayEnd.setUTCHours(23, 59, 59, 999);
+          const { data: existing } = await admin
+            .from('gigs')
+            .select('id')
+            .eq('user_id', br.performer_id)
+            .eq('venue', br.venue || '')
+            .gte('date', dayStart.toISOString())
+            .lte('date', dayEnd.toISOString())
+            .maybeSingle();
+          if (!existing) {
+            const { error: gigErr } = await admin.from('gigs').insert({
+              user_id: br.performer_id,
+              venue: br.venue || 'Booking',
+              venue_name: br.venue || null,
+              date: d.toISOString(),
+              status: 'confirmed',
+              notes: br.note || null,
+              venue_contact_person: br.contact_person || null,
+              attire: br.dress_code || null,
+            });
+            if (gigErr) console.error('Gig create error', gigErr);
+          }
+        }
+      }
+    }
+
     // Notify booker via email
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
     if (RESEND_API_KEY && br.booker_email) {

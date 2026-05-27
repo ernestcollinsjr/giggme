@@ -67,6 +67,7 @@ const PerformerProfileView = () => {
 
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<PerformerProfile | null>(null);
+  const [performerRole, setPerformerRole] = useState<string | null>(null);
   const [weekAvailability, setWeekAvailability] = useState<{ date: string; status: string | null }[]>([]);
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
   const [bookingOpen, setBookingOpen] = useState(false);

@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { BookingManagerClientLocations } from "@/components/BookingManagerClientLocations";
-import { SentBookingRequests } from "@/components/SentBookingRequests";
+
 import { AvailabilityRequestManager } from "@/components/AvailabilityRequestManager";
 import { AvailabilityRequestResults } from "@/components/AvailabilityRequestResults";
 import { useToast } from "@/hooks/use-toast";
@@ -580,8 +580,6 @@ export default function BookingManager() {
           />
         )}
 
-        {/* Sent Booking Requests */}
-        <SentBookingRequests />
 
         {/* Scheduled Reminders */}
         <ScheduledRemindersManager />

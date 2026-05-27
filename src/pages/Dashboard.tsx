@@ -1106,6 +1106,9 @@ const Dashboard = () => {
 
   const openArtistProfile = async (artist: Profile) => {
     setSelectedArtist(artist);
+    navigate(`/artist-profile/${artist.id}`);
+    return;
+    // legacy dialog code below is unreachable; kept to preserve any data-fetch references
     setArtistProfileDialogOpen(true);
     setLoadingArtistGigs(true);
     

@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 // VAPID public key - this should match what's in your edge function
-const VAPID_PUBLIC_KEY = 'BP4oEUFagD8xlyYkPwGvMqIMBtAvQBIR0R1rO7QvDEBG6INVSJEbSVJN1y9E2aAY3IQm90vnRFYlLzzR3h2ZPc';
+const VAPID_PUBLIC_KEY = 'BHMCBdW_4eWP5wyKX4-bqYjd6eQuDc30vrLk5thUdzVUfa2nFdX2EMHua2wtPca9Gx6BpXxGGGikSUj7is0ADT8';
 
 function urlBase64ToUint8Array(base64String: string): ArrayBuffer {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);

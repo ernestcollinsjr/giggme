@@ -286,7 +286,7 @@ export function AvailabilityCalendar({ userId, readOnly = false, onTodayStatusCh
 
   const modifiersStyles = {
     available: {
-      backgroundColor: 'rgba(34, 197, 94, 0.18)', // soft / dissolved green
+      backgroundColor: 'rgba(34, 197, 94, 0.4)', // soft green, slightly stronger
       color: 'inherit',
       borderRadius: '50%',
     },

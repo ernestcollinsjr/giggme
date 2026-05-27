@@ -5,8 +5,9 @@ import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarDays, Check, X, HelpCircle, CalendarRange, Loader2 } from "lucide-react";
-import { format, eachDayOfInterval, isBefore, startOfDay } from "date-fns";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { CalendarDays, Check, X, HelpCircle, CalendarRange, Loader2, MapPin, Clock, DollarSign } from "lucide-react";
+import { format, eachDayOfInterval, isBefore, startOfDay, parseISO, isSameDay } from "date-fns";
 import { DateRange } from "react-day-picker";
 
 interface AvailabilityDate {

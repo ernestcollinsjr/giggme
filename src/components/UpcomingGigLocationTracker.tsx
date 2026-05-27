@@ -43,8 +43,7 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
       const now = new Date();
       const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000);
 
-      if (userRole === "band_member" || userRole === "artist") {
-        // Fetch gigs where user is a member and gig is within 1 hour
+        // Performer: tracking window starts 90 min (1.5 hr) before earliest time
         const { data: gigMembers, error } = await supabase
           .from("gig_members")
           .select(`
@@ -52,6 +51,7 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
             location_sharing_enabled,
             gigs!inner (
               id,
+              user_id,
               date,
               venue,
               venue_name,
@@ -66,12 +66,9 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
 
         if (error) throw error;
 
-        // Filter gigs within the next hour based on earliest time (loading, sound check, or start)
-        const gigsWithinHour = (gigMembers || []).filter((gm: any) => {
+        const gigsWithinWindow = (gigMembers || []).filter((gm: any) => {
           const gig = gm.gigs;
           const gigDate = parseISO(gig.date);
-          
-          // Get the earliest time for the gig
           let earliestTime = gigDate;
           if (gig.loading_time) {
             const [hours, minutes] = gig.loading_time.split(':').map(Number);
@@ -82,10 +79,9 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
             earliestTime = new Date(gigDate);
             earliestTime.setHours(hours, minutes, 0, 0);
           }
-          
-          // Check if gig is today and within the next hour
           const minutesUntil = differenceInMinutes(earliestTime, now);
-          return minutesUntil > -120 && minutesUntil <= 60; // Show from 1 hour before until 2 hours after start
+          // Show from 90 min before until 2 hours after start
+          return minutesUntil > -120 && minutesUntil <= 90;
         }).map((gm: any) => ({
           id: gm.gigs.id,
           date: gm.gigs.date,
@@ -96,11 +92,12 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
           loading_time: gm.gigs.loading_time,
           sound_check_time: gm.gigs.sound_check_time,
           location_sharing_enabled: gm.location_sharing_enabled || false,
+          gig_owner_id: gm.gigs.user_id,
         }));
 
-        setUpcomingGigs(gigsWithinHour);
+        setUpcomingGigs(gigsWithinWindow);
       } else if (userRole === "band_leader" || userRole === "booking_manager" || userRole === "tour_manager") {
-        // Fetch gigs created by band leader that are within 1 hour
+        // Manager: visibility starts 1 hr before driver leaves = 150 min before event
         const { data: gigs, error } = await supabase
           .from("gigs")
           .select("*")
@@ -108,11 +105,8 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
 
         if (error) throw error;
 
-        // Filter gigs within the next hour
-        const gigsWithinHour = (gigs || []).filter((gig: any) => {
+        const gigsWithinWindow = (gigs || []).filter((gig: any) => {
           const gigDate = parseISO(gig.date);
-          
-          // Get the earliest time for the gig
           let earliestTime = gigDate;
           if (gig.loading_time) {
             const [hours, minutes] = gig.loading_time.split(':').map(Number);
@@ -123,9 +117,8 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
             earliestTime = new Date(gigDate);
             earliestTime.setHours(hours, minutes, 0, 0);
           }
-          
           const minutesUntil = differenceInMinutes(earliestTime, now);
-          return minutesUntil > -120 && minutesUntil <= 60;
+          return minutesUntil > -120 && minutesUntil <= 150;
         }).map((gig: any) => ({
           id: gig.id,
           date: gig.date,
@@ -136,10 +129,10 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
           loading_time: gig.loading_time,
           sound_check_time: gig.sound_check_time,
           location_sharing_enabled: true,
+          gig_owner_id: gig.user_id,
         }));
 
-        setUpcomingGigs(gigsWithinHour);
-      }
+        setUpcomingGigs(gigsWithinWindow);
     } catch (error) {
       console.error("Error fetching upcoming gigs:", error);
     } finally {

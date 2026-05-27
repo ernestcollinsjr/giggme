@@ -107,6 +107,7 @@ export default function BookingManagerAdmin() {
   const [searchTerm, setSearchTerm] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
   const [deleteConfirmArtist, setDeleteConfirmArtist] = useState<ManagedArtist | null>(null);
+  const [deleteConfirmGig, setDeleteConfirmGig] = useState<UpcomingGig | null>(null);
   const [artistAvailability, setArtistAvailability] = useState<Array<{ date: string; status: string; notes: string | null }>>([]);
 
   useEffect(() => {

@@ -278,24 +278,21 @@ const PerformerProfileView = () => {
 
             <CardContent className="space-y-6">
               <Tabs defaultValue="profile" className="w-full">
-                <TabsList className="w-full grid grid-cols-6 h-auto p-1 mb-6">
+                <TabsList className="w-full grid grid-cols-5 h-auto p-1 mb-6">
                   <TabsTrigger value="profile" className="flex items-center gap-1.5 text-xs sm:text-sm py-2">
                     <Music className="h-3.5 w-3.5" /><span className="hidden sm:inline">Profile</span>
                   </TabsTrigger>
-                  <TabsTrigger value="role" className="flex items-center gap-1.5 text-xs sm:text-sm py-2">
-                    <Crown className="h-3.5 w-3.5" /><span className="hidden sm:inline">Role</span>
-                  </TabsTrigger>
                   <TabsTrigger value="alerts" className="flex items-center gap-1.5 text-xs sm:text-sm py-2">
                     <Bell className="h-3.5 w-3.5" /><span className="hidden sm:inline">Alerts</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="safety" className="flex items-center gap-1.5 text-xs sm:text-sm py-2">
-                    <Shield className="h-3.5 w-3.5" /><span className="hidden sm:inline">Safety</span>
                   </TabsTrigger>
                   <TabsTrigger value="availability" className="flex items-center gap-1.5 text-xs sm:text-sm py-2">
                     <Clock className="h-3.5 w-3.5" /><span className="hidden sm:inline">Availability</span>
                   </TabsTrigger>
                   <TabsTrigger value="rider" className="flex items-center gap-1.5 text-xs sm:text-sm py-2">
                     <FileText className="h-3.5 w-3.5" /><span className="hidden sm:inline">Rider</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="payment" className="flex items-center gap-1.5 text-xs sm:text-sm py-2">
+                    <DollarSign className="h-3.5 w-3.5" /><span className="hidden sm:inline">Payment</span>
                   </TabsTrigger>
                 </TabsList>
 
@@ -531,30 +528,6 @@ const PerformerProfileView = () => {
               </div>
                 </TabsContent>
 
-                <TabsContent value="role" className="mt-0 space-y-4">
-                  <div>
-                    <h3 className="text-lg font-semibold flex items-center gap-2">
-                      <Crown className="h-5 w-5 text-primary" /> Performer Role
-                    </h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      How this performer uses the platform.
-                    </p>
-                  </div>
-                  <div className="p-4 rounded-lg border bg-muted/30 capitalize">
-                    {performerRole ? performerRole.replace(/_/g, " ") : "Not specified"}
-                  </div>
-                  <div className="p-4 bg-muted/50 rounded-lg">
-                    <h4 className="font-medium mb-2">About Roles:</h4>
-                    <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                      <li><strong>Band Leader:</strong> Creates and manages bands</li>
-                      <li><strong>Band Member:</strong> Part of one or more bands</li>
-                      <li><strong>Artist/Musician:</strong> Solo performer building portfolio</li>
-                      <li><strong>Tour Manager:</strong> Coordinates tours and crew</li>
-                      <li><strong>Booking Manager:</strong> Books and manages artists/bands</li>
-                    </ul>
-                  </div>
-                </TabsContent>
-
                 <TabsContent value="alerts" className="mt-0 space-y-4">
                   <div>
                     <h3 className="text-lg font-semibold flex items-center gap-2">
@@ -569,19 +542,6 @@ const PerformerProfileView = () => {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="safety" className="mt-0 space-y-4">
-                  <div>
-                    <h3 className="text-lg font-semibold flex items-center gap-2">
-                      <Shield className="h-5 w-5 text-primary" /> Safety & Privacy
-                    </h3>
-                  </div>
-                  <div className="p-4 rounded-lg border bg-muted/30 flex items-start gap-3">
-                    <Lock className="h-4 w-4 text-muted-foreground mt-0.5" />
-                    <p className="text-sm text-muted-foreground">
-                      Safety settings (blocked users, location sharing, emergency contacts) are private to the performer.
-                    </p>
-                  </div>
-                </TabsContent>
 
                 <TabsContent value="availability" className="mt-0 space-y-4">
                   <div>
@@ -652,6 +612,37 @@ const PerformerProfileView = () => {
                   ) : (
                     <p className="text-sm text-muted-foreground">No rider notes provided.</p>
                   )}
+                </TabsContent>
+
+                <TabsContent value="payment" className="mt-0 space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <DollarSign className="h-5 w-5 text-primary" /> Payment
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Booking rates and payment details.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="p-4 rounded-lg border bg-muted/30">
+                      <Label className="text-xs text-muted-foreground">Preferred Pay</Label>
+                      <p className="text-lg font-semibold mt-1">
+                        {profile.preferred_pay ? `$${profile.preferred_pay}` : "Not specified"}
+                      </p>
+                    </div>
+                    <div className="p-4 rounded-lg border bg-muted/30">
+                      <Label className="text-xs text-muted-foreground">Per</Label>
+                      <p className="text-lg font-semibold mt-1">
+                        {profile.preferred_pay_hours ? `${profile.preferred_pay_hours} hr(s)` : "Not specified"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="p-4 rounded-lg border bg-muted/30 flex items-start gap-3">
+                    <Lock className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <p className="text-sm text-muted-foreground">
+                      Payment is processed securely after the booking is confirmed. Final amount may include travel, rider, and platform fees.
+                    </p>
+                  </div>
                 </TabsContent>
               </Tabs>
 

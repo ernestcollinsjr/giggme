@@ -324,7 +324,7 @@ const ArtistProfile = () => {
           ...artistData,
           youtube_videos: (artistData.youtube_videos as any) || [],
           social_links: (artistData.social_links as any) || {},
-          payment_methods: (artistData.payment_methods as PaymentMethods) || {},
+          payment_methods: {} as PaymentMethods,
         });
       } else if (viewingOwnProfile && user) {
         // Only create artist profile if viewing own profile
@@ -339,7 +339,7 @@ const ArtistProfile = () => {
           ...newArtistProfile,
           youtube_videos: (newArtistProfile.youtube_videos as any) || [],
           social_links: (newArtistProfile.social_links as any) || {},
-          payment_methods: (newArtistProfile.payment_methods as PaymentMethods) || {},
+          payment_methods: {} as PaymentMethods,
         });
       }
     } catch (error: any) {
@@ -482,7 +482,7 @@ const ArtistProfile = () => {
           rate_range: artistProfile?.rate_range,
           achievements: artistProfile?.achievements,
           social_links: artistProfile?.social_links,
-          payment_methods: artistProfile?.payment_methods as Record<string, string> | undefined,
+          
         })
         .eq("user_id", user.id);
 

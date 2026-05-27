@@ -83,3 +83,12 @@ verify_jwt = false
 
 [functions.confirm-payment-received]
 verify_jwt = false
+
+[functions.send-replacement-request]
+verify_jwt = true
+
+[functions.respond-replacement-request]
+verify_jwt = false
+
+[functions.expire-replacement-requests]
+verify_jwt = false

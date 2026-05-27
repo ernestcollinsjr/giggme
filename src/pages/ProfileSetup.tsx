@@ -99,6 +99,7 @@ const ProfileSetup = () => {
   const [isSubscribed, setIsSubscribed] = useState<boolean | null>(null);
   const [checkingSubscription, setCheckingSubscription] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
+  const [isInvitedPerformer, setIsInvitedPerformer] = useState(false);
   
   // Video player state
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
@@ -200,6 +201,15 @@ const ProfileSetup = () => {
         if (roleData) {
           setRole(roleData.role);
           setHasRole(true);
+        }
+
+        // Detect invited performers (added to a band or booking manager roster)
+        const [{ data: bandMem }, { data: bmArtist }] = await Promise.all([
+          supabase.from("band_members").select("id").eq("member_id", user.id).limit(1),
+          supabase.from("booking_manager_artists").select("id").eq("artist_id", user.id).limit(1),
+        ]);
+        if ((bandMem && bandMem.length > 0) || (bmArtist && bmArtist.length > 0)) {
+          setIsInvitedPerformer(true);
         }
       }
     };
@@ -1167,7 +1177,7 @@ const ProfileSetup = () => {
         
         <CardContent>
           {/* Subscription Prompt - Hide for super_admin */}
-          {isSubscribed === false && !checkingSubscription && role !== "super_admin" && (
+          {isSubscribed === false && !checkingSubscription && role !== "super_admin" && !isInvitedPerformer && (
             <div className="mb-6 p-4 bg-gradient-to-r from-primary/10 via-primary/5 to-secondary/10 border border-primary/20 rounded-xl">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">

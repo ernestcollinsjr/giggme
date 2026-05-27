@@ -1604,9 +1604,11 @@ const Dashboard = () => {
             
             <div className="space-y-6">
               <BandAssistant />
+              <PaymentScheduler mode="band_leader" />
             </div>
           </div>
         )}
+
 
         {userRole === "band_member" && (
           <Tabs defaultValue="overview" className="space-y-4">

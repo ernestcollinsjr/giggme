@@ -34,6 +34,7 @@ import SharedSetlist from "./pages/SharedSetlist";
 import RatePerformer from "./pages/RatePerformer";
 import Messages from "./pages/Messages";
 import BookingRequestResponse from "./pages/BookingRequestResponse";
+import BookingResponse from "./pages/BookingResponse";
 
 const queryClient = new QueryClient();
 

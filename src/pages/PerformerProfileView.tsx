@@ -515,7 +515,7 @@ const PerformerProfileView = () => {
                                   <Youtube className="h-6 w-6 text-red-500" />
                                 </button>
                               )}
-                              <a href={url} target="_blank" rel="noopener noreferrer" className="flex-1 text-sm truncate text-primary hover:underline">{url}</a>
+                              <button type="button" onClick={() => videoId && setPlayingVideoId(videoId)} className="flex-1 text-sm truncate text-primary hover:underline text-left">{url}</button>
                             </div>
                           )}
                         </div>

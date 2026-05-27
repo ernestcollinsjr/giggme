@@ -265,6 +265,7 @@ export default function BookingManagerAdmin() {
         status: "confirmed",
         artist_name: profileMap.get(br.performer_id) || "Unknown",
         artist_id: br.performer_id,
+        source: "booking_request" as const,
       });
     });
 

@@ -187,7 +187,7 @@ Deno.serve(async (req) => {
   async function processGigWindow(field: 'reminder_1d_sent_at' | 'reminder_2h_sent_at', lo: string, hi: string, label: string, subjectPrefix: string) {
     const { data: gms } = await supabase
       .from('gig_members')
-      .select(`id, member_id, ${field}, gigs!inner(id, date, venue, venue_name, notes, auto_reminders_disabled)`)
+      .select(`id, member_id, ${field}, gigs!inner(id, user_id, date, venue, venue_name, notes, auto_reminders_disabled)`)
       .eq('status', 'accepted')
       .eq('gigs.auto_reminders_disabled', false)
       .is(field, null)
@@ -196,20 +196,23 @@ Deno.serve(async (req) => {
 
     if (!gms || gms.length === 0) return;
     const memberIds = [...new Set(gms.map((g: any) => g.member_id))];
+    const ownerIds = [...new Set(gms.map((g: any) => g.gigs?.user_id).filter(Boolean))];
     const { data: profiles } = await supabase
       .from('profiles')
       .select('id, email, name')
-      .in('id', memberIds);
+      .in('id', [...new Set([...memberIds, ...ownerIds])]);
     const profMap = new Map((profiles ?? []).map((p: any) => [p.id, p]));
 
     for (const gm of gms as any[]) {
       const prof = profMap.get(gm.member_id);
-      if (!prof?.email) continue;
       const gig = gm.gigs;
+      const owner = gig?.user_id ? profMap.get(gig.user_id) : null;
+      const recipients = [prof?.email, owner?.email];
+      if (!recipients.some((e) => !!e)) continue;
       const when = fmtDate(new Date(gig.date));
       const venue = gig.venue_name || gig.venue;
       const ok = await sendEmail(
-        prof.email,
+        recipients,
         `${subjectPrefix} ${venue}`,
         buildHtml({
           recipientName: prof.name,

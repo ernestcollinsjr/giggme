@@ -51,6 +51,19 @@ interface Profile {
   photo_urls: string[];
   email?: string;
   phone_number?: string | null;
+  band_name?: string | null;
+  performer_category?: string | null;
+  instrument?: string | null;
+  years_experience?: number | null;
+  travel_distance?: number | null;
+  preferred_pay?: number | null;
+  preferred_pay_hours?: number | null;
+  equipment?: string[] | null;
+  skills?: string[] | null;
+  genres?: string[] | null;
+  union_memberships?: string[] | null;
+  social_links?: { [key: string]: string } | null;
+  youtube_links?: string[] | null;
 }
 
 interface Tip {

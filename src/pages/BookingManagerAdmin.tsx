@@ -815,9 +815,30 @@ export default function BookingManagerAdmin() {
                                 <span className="text-xs truncate">{gig.artist_name}</span>
                               </div>
                             </div>
-                            <Badge variant="outline" className="flex-shrink-0">
-                              Completed
-                            </Badge>
+                            <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                              <Badge variant="outline">Completed</Badge>
+                              {(() => {
+                                const isPaid = (paymentStatuses[paymentKey(gig)] || "pending") === "paid";
+                                return (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      togglePaymentStatus(gig);
+                                    }}
+                                    className={cn(
+                                      "text-[11px] font-semibold px-2 py-0.5 rounded-full border transition-colors",
+                                      isPaid
+                                        ? "bg-green-500/20 text-green-600 border-green-500/30 hover:bg-green-500/30"
+                                        : "bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20"
+                                    )}
+                                    title="Click to toggle payment status"
+                                  >
+                                    {isPaid ? "Paid" : "Pending Payment"}
+                                  </button>
+                                );
+                              })()}
+                            </div>
                           </li>
                         );
                       })}

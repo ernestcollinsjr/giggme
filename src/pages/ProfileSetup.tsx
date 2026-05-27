@@ -1845,7 +1845,34 @@ const ProfileSetup = () => {
                       value={travelDistance}
                       onChange={(e) => setTravelDistance(e.target.value)}
                     />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="preferredPay" className="text-xs">Preferred Pay ($)</Label>
+                    <Input
+                      id="preferredPay"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      placeholder="e.g., 400"
+                      value={preferredPay}
+                      onChange={(e) => setPreferredPay(e.target.value)}
+                    />
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="preferredPayHours" className="text-xs">For How Many Hours</Label>
+                    <Input
+                      id="preferredPayHours"
+                      type="number"
+                      min="0"
+                      step="0.5"
+                      placeholder="e.g., 3"
+                      value={preferredPayHours}
+                      onChange={(e) => setPreferredPayHours(e.target.value)}
+                    />
+                  </div>
+                </div>
                 </div>
 
                 <div className="space-y-3 relative">

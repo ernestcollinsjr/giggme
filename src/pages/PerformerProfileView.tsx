@@ -132,6 +132,15 @@ const PerformerProfileView = () => {
           .in("date", next7);
         const map = new Map((avail || []).map((a: any) => [a.date, a.status]));
         setWeekAvailability(next7.map((date) => ({ date, status: (map.get(date) as string) || null })));
+
+        // Fetch the performer's role
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId)
+          .limit(1)
+          .maybeSingle();
+        if (roleData?.role) setPerformerRole(roleData.role as string);
       } catch (err: any) {
         toast({ title: "Error", description: err.message, variant: "destructive" });
       } finally {

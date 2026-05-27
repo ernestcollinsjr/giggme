@@ -1104,64 +1104,11 @@ const Dashboard = () => {
     return gig.status === "completed" || getGigCompletionTime(gig) < Date.now();
   };
 
-  const openArtistProfile = async (artist: Profile) => {
+  const openArtistProfile = (artist: Profile) => {
     setSelectedArtist(artist);
     navigate(`/artist-profile/${artist.id}`);
-    return;
-    // legacy dialog code below is unreachable; kept to preserve any data-fetch references
-    setArtistProfileDialogOpen(true);
-    setLoadingArtistGigs(true);
-    
-    try {
-      // Fetch all artist's accepted gigs (past and future)
-      const { data: gigMembersData, error } = await supabase
-        .from('gig_members')
-        .select(`
-          gig_id,
-          status,
-          gigs!inner (
-            id,
-            date,
-            venue,
-            venue_name,
-            status,
-            notes,
-            loading_time,
-            sound_check_time,
-            end_time,
-            payment_amount,
-            payment_status,
-            attire,
-            food_provided,
-            venue_contact_person,
-            sound_man_info
-          )
-        `)
-        .eq('member_id', artist.id)
-        .eq('status', 'accepted')
-        .order('gigs(date)', { ascending: false });
-
-      if (error) throw error;
-
-      const gigs = gigMembersData?.map((gm: any) => gm.gigs) || [];
-      const sortedGigs = [...gigs].sort((a, b) => {
-        const aCompleted = isGigCompleted(a);
-        const bCompleted = isGigCompleted(b);
-        if (aCompleted !== bCompleted) return aCompleted ? 1 : -1;
-        return new Date(a.date).getTime() - new Date(b.date).getTime();
-      });
-      setArtistGigs(sortedGigs);
-    } catch (error: any) {
-      console.error('Error fetching artist gigs:', error);
-      toast({
-        variant: "destructive",
-        title: "Failed to load gigs",
-        description: error.message,
-      });
-    } finally {
-      setLoadingArtistGigs(false);
-    }
   };
+
 
   const handleBookArtist = async () => {
     if (!selectedArtist || !newBookingDate || !newBookingVenue || !newBookingLoadingTime || !newBookingEndTime) {

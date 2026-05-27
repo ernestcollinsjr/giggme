@@ -330,7 +330,8 @@ const PerformerProfileView = () => {
                     <Bell className="h-3.5 w-3.5" /><span className="hidden sm:inline">Alerts</span>
                   </TabsTrigger>
                   <TabsTrigger value="availability" className="flex items-center gap-1.5 text-xs sm:text-sm py-2">
-                    <Clock className="h-3.5 w-3.5" /><span className="hidden sm:inline">Availability</span>
+                    <Clock className="h-3.5 w-3.5" /><span className="hidden sm:inline">Bookings</span>
+
                   </TabsTrigger>
                   <TabsTrigger value="rider" className="flex items-center gap-1.5 text-xs sm:text-sm py-2">
                     <FileText className="h-3.5 w-3.5" /><span className="hidden sm:inline">Rider</span>
@@ -683,11 +684,12 @@ const PerformerProfileView = () => {
                 <TabsContent value="availability" className="mt-0 space-y-4">
                   <div>
                     <h3 className="text-lg font-semibold flex items-center gap-2">
-                      <Clock className="h-5 w-5 text-primary" /> Availability
+                      <Clock className="h-5 w-5 text-primary" /> Bookings
                     </h3>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Full schedule view. Send a booking request to confirm a specific date.
+                      Full schedule view. Click a booked date to see details. Send a booking request to confirm a specific date.
                     </p>
+
                   </div>
                   {userId && <AvailabilityCalendar userId={userId} readOnly />}
                 </TabsContent>

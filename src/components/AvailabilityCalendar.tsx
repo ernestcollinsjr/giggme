@@ -264,12 +264,24 @@ export function AvailabilityCalendar({ userId, readOnly = false, onTodayStatusCh
   const bookedDates = [...bookings.map((b: any) => new Date(b.date)), ...noteBookedDates];
   const bookedDateStrs = new Set(bookedDates.map(d => format(d, 'yyyy-MM-dd')));
 
+  const unavailableDateStrs = new Set(
+    availability.filter(a => a.status === 'unavailable' && !bookedDateStrs.has(a.date)).map(a => a.date)
+  );
+  const tentativeDateStrs = new Set(
+    availability.filter(a => a.status === 'tentative' && !bookedDateStrs.has(a.date)).map(a => a.date)
+  );
+
   const modifiers = {
-    available: availability.filter(a => a.status === 'available' && !bookedDateStrs.has(a.date)).map(a => new Date(a.date + 'T00:00:00')),
+    // Default-green: any date that isn't explicitly unavailable, tentative, or booked
+    available: (date: Date) => {
+      const ds = format(date, 'yyyy-MM-dd');
+      return !unavailableDateStrs.has(ds) && !tentativeDateStrs.has(ds) && !bookedDateStrs.has(ds);
+    },
     unavailable: availability.filter(a => a.status === 'unavailable' && !bookedDateStrs.has(a.date)).map(a => new Date(a.date + 'T00:00:00')),
     tentative: availability.filter(a => a.status === 'tentative' && !bookedDateStrs.has(a.date)).map(a => new Date(a.date + 'T00:00:00')),
     booked: bookedDates,
   };
+
 
 
   const modifiersStyles = {

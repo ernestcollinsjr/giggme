@@ -1196,12 +1196,39 @@ export default function BookingManagerAdmin() {
             </DialogHeader>
 
             <div className="space-y-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="broadcast-venue">Filter by venue</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="broadcast-venue"
+                    placeholder="Type a venue to narrow recipients..."
+                    value={broadcastVenue}
+                    onChange={(e) => setBroadcastVenue(e.target.value)}
+                    className="pl-9 h-9"
+                    list="broadcast-venue-suggestions"
+                  />
+                  <datalist id="broadcast-venue-suggestions">
+                    {Array.from(new Set(Object.values(artistVenues).flat())).sort().map((v) => (
+                      <option key={v} value={v} />
+                    ))}
+                  </datalist>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Only performers you've previously booked at this venue will be messaged.
+                </p>
+              </div>
+
               <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto p-2 rounded-md bg-muted/40">
-                {broadcastRecipients.map((a) => (
-                  <Badge key={a.artist_id} variant="secondary" className="text-xs">
-                    {a.profile.name}
-                  </Badge>
-                ))}
+                {broadcastRecipients.length === 0 ? (
+                  <p className="text-xs text-muted-foreground italic">No performers match this venue.</p>
+                ) : (
+                  broadcastRecipients.map((a) => (
+                    <Badge key={a.artist_id} variant="secondary" className="text-xs">
+                      {a.profile.name}
+                    </Badge>
+                  ))
+                )}
               </div>
 
               <div className="flex flex-wrap gap-2">

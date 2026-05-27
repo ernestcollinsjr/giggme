@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Plus, Trash2, Youtube, ArrowLeft, Loader2, Mail, Phone, MessageCircle, DollarSign, History, TrendingUp, CalendarCheck, Navigation, CalendarIcon, X } from "lucide-react";
+import { Upload, Plus, Trash2, Youtube, ArrowLeft, Loader2, Mail, Phone, MessageCircle, DollarSign, History, TrendingUp, CalendarCheck, Navigation, CalendarIcon, X, Facebook, Instagram, Twitter, Globe, Music, Briefcase, Wrench, Tag, MapPin, Users, Clock } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -51,6 +51,19 @@ interface Profile {
   photo_urls: string[];
   email?: string;
   phone_number?: string | null;
+  band_name?: string | null;
+  performer_category?: string | null;
+  instrument?: string | null;
+  years_experience?: number | null;
+  travel_distance?: number | null;
+  preferred_pay?: number | null;
+  preferred_pay_hours?: number | null;
+  equipment?: string[] | null;
+  skills?: string[] | null;
+  genres?: string[] | null;
+  union_memberships?: string[] | null;
+  social_links?: { [key: string]: string } | null;
+  youtube_links?: string[] | null;
 }
 
 interface Tip {
@@ -308,7 +321,7 @@ const ArtistProfile = () => {
         return;
       }
       
-      setProfile(profileData);
+      setProfile(profileData as any);
 
       // Fetch artist profile
       const { data: artistData, error: artistError } = await supabase
@@ -997,6 +1010,163 @@ const ArtistProfile = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Performer Details */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Performer Details</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                {profile?.performer_category && (
+                  <div className="flex items-start gap-2">
+                    <Users className="h-4 w-4 mt-1 text-muted-foreground" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Category</p>
+                      <p className="font-medium">{profile.performer_category}</p>
+                    </div>
+                  </div>
+                )}
+                {profile?.band_name && (
+                  <div className="flex items-start gap-2">
+                    <Music className="h-4 w-4 mt-1 text-muted-foreground" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Band Name</p>
+                      <p className="font-medium">{profile.band_name}</p>
+                    </div>
+                  </div>
+                )}
+                {profile?.instrument && (
+                  <div className="flex items-start gap-2">
+                    <Music className="h-4 w-4 mt-1 text-muted-foreground" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Instrument</p>
+                      <p className="font-medium capitalize">{profile.instrument}</p>
+                    </div>
+                  </div>
+                )}
+                {profile?.years_experience != null && (
+                  <div className="flex items-start gap-2">
+                    <Briefcase className="h-4 w-4 mt-1 text-muted-foreground" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Years of Experience</p>
+                      <p className="font-medium">{profile.years_experience}</p>
+                    </div>
+                  </div>
+                )}
+                {profile?.travel_distance != null && (
+                  <div className="flex items-start gap-2">
+                    <MapPin className="h-4 w-4 mt-1 text-muted-foreground" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Travel Distance</p>
+                      <p className="font-medium">{profile.travel_distance} mi</p>
+                    </div>
+                  </div>
+                )}
+                {profile?.preferred_pay != null && (
+                  <div className="flex items-start gap-2">
+                    <DollarSign className="h-4 w-4 mt-1 text-muted-foreground" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Preferred Pay</p>
+                      <p className="font-medium">
+                        ${Number(profile.preferred_pay).toFixed(2)}
+                        {profile.preferred_pay_hours != null && (
+                          <span className="text-sm text-muted-foreground"> / {profile.preferred_pay_hours} hr{Number(profile.preferred_pay_hours) === 1 ? "" : "s"}</span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {profile?.genres && profile.genres.length > 0 && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1"><Tag className="h-3 w-3" />Genres</p>
+                  <div className="flex flex-wrap gap-2">
+                    {profile.genres.map((g, i) => <Badge key={i} variant="secondary">{g}</Badge>)}
+                  </div>
+                </div>
+              )}
+
+              {profile?.skills && profile.skills.length > 0 && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1"><Briefcase className="h-3 w-3" />Skills</p>
+                  <div className="flex flex-wrap gap-2">
+                    {profile.skills.map((s, i) => <Badge key={i} variant="secondary">{s}</Badge>)}
+                  </div>
+                </div>
+              )}
+
+              {profile?.equipment && profile.equipment.length > 0 && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1"><Wrench className="h-3 w-3" />Equipment</p>
+                  <div className="flex flex-wrap gap-2">
+                    {profile.equipment.map((e, i) => <Badge key={i} variant="secondary">{e}</Badge>)}
+                  </div>
+                </div>
+              )}
+
+              {profile?.union_memberships && profile.union_memberships.length > 0 && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1"><Users className="h-3 w-3" />Union Memberships</p>
+                  <div className="flex flex-wrap gap-2">
+                    {profile.union_memberships.map((u, i) => <Badge key={i} variant="outline">{u}</Badge>)}
+                  </div>
+                </div>
+              )}
+
+              {profile?.social_links && Object.values(profile.social_links).some(Boolean) && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2">Social Links</p>
+                  <div className="flex flex-wrap gap-2">
+                    {profile.social_links.facebook && (
+                      <Button variant="outline" size="sm" asChild>
+                        <a href={profile.social_links.facebook} target="_blank" rel="noopener noreferrer"><Facebook className="h-4 w-4 mr-1" />Facebook</a>
+                      </Button>
+                    )}
+                    {profile.social_links.instagram && (
+                      <Button variant="outline" size="sm" asChild>
+                        <a href={profile.social_links.instagram} target="_blank" rel="noopener noreferrer"><Instagram className="h-4 w-4 mr-1" />Instagram</a>
+                      </Button>
+                    )}
+                    {profile.social_links.twitter && (
+                      <Button variant="outline" size="sm" asChild>
+                        <a href={profile.social_links.twitter} target="_blank" rel="noopener noreferrer"><Twitter className="h-4 w-4 mr-1" />Twitter</a>
+                      </Button>
+                    )}
+                    {profile.social_links.website && (
+                      <Button variant="outline" size="sm" asChild>
+                        <a href={profile.social_links.website} target="_blank" rel="noopener noreferrer"><Globe className="h-4 w-4 mr-1" />Website</a>
+                      </Button>
+                    )}
+                    {profile.social_links.tiktok && (
+                      <Button variant="outline" size="sm" asChild>
+                        <a href={profile.social_links.tiktok} target="_blank" rel="noopener noreferrer"><Globe className="h-4 w-4 mr-1" />TikTok</a>
+                      </Button>
+                    )}
+                    {profile.social_links.spotify && (
+                      <Button variant="outline" size="sm" asChild>
+                        <a href={profile.social_links.spotify} target="_blank" rel="noopener noreferrer"><Music className="h-4 w-4 mr-1" />Spotify</a>
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {profile?.youtube_links && profile.youtube_links.length > 0 && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1"><Youtube className="h-3 w-3" />YouTube</p>
+                  <div className="space-y-1">
+                    {profile.youtube_links.map((url, i) => (
+                      <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="block text-sm text-primary hover:underline truncate">{url}</a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+
 
           {/* Payment Methods */}
           <Card>

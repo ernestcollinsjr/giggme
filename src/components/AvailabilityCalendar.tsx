@@ -255,14 +255,22 @@ export function AvailabilityCalendar({ userId, readOnly = false, onTodayStatusCh
     }
   };
 
-  const bookedDates = bookings.map((b: any) => new Date(b.date));
+  // Treat availability rows whose notes start with "Gig:" or "Booking:" as
+  // confirmed bookings (the DB triggers tag them this way). This way viewers
+  // who can't read the gigs table directly still see blue "Booked" dots.
+  const noteBookedDates = availability
+    .filter(a => /^\s*(Gig|Booking)\s*:/i.test(a.notes || ''))
+    .map(a => new Date(a.date + 'T00:00:00'));
+  const bookedDates = [...bookings.map((b: any) => new Date(b.date)), ...noteBookedDates];
+  const bookedDateStrs = new Set(bookedDates.map(d => format(d, 'yyyy-MM-dd')));
 
   const modifiers = {
-    available: availability.filter(a => a.status === 'available').map(a => new Date(a.date + 'T00:00:00')),
-    unavailable: availability.filter(a => a.status === 'unavailable').map(a => new Date(a.date + 'T00:00:00')),
-    tentative: availability.filter(a => a.status === 'tentative').map(a => new Date(a.date + 'T00:00:00')),
+    available: availability.filter(a => a.status === 'available' && !bookedDateStrs.has(a.date)).map(a => new Date(a.date + 'T00:00:00')),
+    unavailable: availability.filter(a => a.status === 'unavailable' && !bookedDateStrs.has(a.date)).map(a => new Date(a.date + 'T00:00:00')),
+    tentative: availability.filter(a => a.status === 'tentative' && !bookedDateStrs.has(a.date)).map(a => new Date(a.date + 'T00:00:00')),
     booked: bookedDates,
   };
+
 
   const modifiersStyles = {
     available: {

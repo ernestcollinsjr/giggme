@@ -690,7 +690,7 @@ export default function BookingManagerAdmin() {
                 title="Message everyone in the current search results — useful for last-minute cover requests"
               >
                 <MessageSquare className="h-4 w-4" />
-                Message all
+                Find Replacement
                 <Badge variant="secondary" className="ml-1">{broadcastRecipients.length}</Badge>
               </Button>
             </div>

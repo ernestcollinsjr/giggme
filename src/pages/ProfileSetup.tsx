@@ -156,6 +156,7 @@ const ProfileSetup = () => {
         if (profile) {
           setName(profile.name || "");
           setBandName((profile as any).band_name || "");
+          setPerformerCategory((profile as any).performer_category || "Solo");
           setBio(profile.bio || "");
           setInstrument(profile.instrument || "");
           setPhoneNumber(profile.phone_number || "");

@@ -491,10 +491,7 @@ const PerformerProfileView = () => {
                 </div>
               )}
 
-              {/* Timezone */}
-              {profile.timezone && (
-                <DetailRow icon={<Clock className="h-4 w-4" />} label="Timezone" value={profile.timezone} />
-              )}
+
 
               {/* Availability — read-only 7-day preview */}
               {weekAvailability.length > 0 && (

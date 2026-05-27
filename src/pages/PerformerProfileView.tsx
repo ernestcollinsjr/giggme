@@ -115,6 +115,21 @@ const PerformerProfileView = () => {
           return;
         }
         setProfile(data as any);
+
+        // Load next 7 days of availability (read-only)
+        const today = new Date();
+        const next7 = Array.from({ length: 7 }, (_, i) => {
+          const d = new Date(today);
+          d.setDate(today.getDate() + i);
+          return d.toISOString().split("T")[0];
+        });
+        const { data: avail } = await supabase
+          .from("member_availability")
+          .select("date, status")
+          .eq("user_id", userId)
+          .in("date", next7);
+        const map = new Map((avail || []).map((a: any) => [a.date, a.status]));
+        setWeekAvailability(next7.map((date) => ({ date, status: (map.get(date) as string) || null })));
       } catch (err: any) {
         toast({ title: "Error", description: err.message, variant: "destructive" });
       } finally {

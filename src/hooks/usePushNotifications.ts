@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -25,6 +25,7 @@ export function usePushNotifications() {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [permission, setPermission] = useState<NotificationPermission>('default');
+  const registrationRef = useRef<(ServiceWorkerRegistration & { pushManager?: PushManager }) | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -46,7 +47,10 @@ export function usePushNotifications() {
         if (supported) {
           console.log('[Push Debug] Permission:', Notification.permission);
           setPermission(Notification.permission);
-          await checkSubscription();
+
+          const registration = await navigator.serviceWorker.register('/sw.js') as ServiceWorkerRegistration & { pushManager?: PushManager };
+          registrationRef.current = registration;
+          await checkSubscription(registration);
         }
       } catch (error) {
         console.error('[Push Debug] Error checking push support:', error);
@@ -60,9 +64,11 @@ export function usePushNotifications() {
     checkSupport();
   }, []);
 
-  const checkSubscription = async () => {
+  const checkSubscription = async (existingRegistration?: ServiceWorkerRegistration & { pushManager?: PushManager }) => {
     try {
-      const registration = await navigator.serviceWorker.getRegistration('/sw.js') as (ServiceWorkerRegistration & { pushManager?: PushManager }) | undefined;
+      const registration = existingRegistration
+        ?? registrationRef.current
+        ?? await navigator.serviceWorker.getRegistration('/sw.js') as (ServiceWorkerRegistration & { pushManager?: PushManager }) | undefined;
 
       if (!registration?.pushManager) {
         setIsSubscribed(false);
@@ -110,9 +116,9 @@ export function usePushNotifications() {
         return false;
       }
 
-      // Register service worker after permission is granted
-      await navigator.serviceWorker.register('/sw.js');
-      const registration = await navigator.serviceWorker.ready as ServiceWorkerRegistration & { pushManager?: PushManager };
+      const registration = registrationRef.current
+        ?? await navigator.serviceWorker.register('/sw.js') as ServiceWorkerRegistration & { pushManager?: PushManager };
+      registrationRef.current = registration;
       console.log('Service Worker registered:', registration);
 
       if (!registration.pushManager) {
@@ -126,6 +132,11 @@ export function usePushNotifications() {
       }
 
       // Subscribe to push
+      const existingSubscription = await registration.pushManager.getSubscription();
+      if (existingSubscription) {
+        await existingSubscription.unsubscribe();
+      }
+
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
@@ -172,11 +183,12 @@ export function usePushNotifications() {
 
       setIsLoading(false);
       return true;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error subscribing to push:', error);
+      const message = error instanceof Error ? error.message : 'Failed to enable notifications. Please try again.';
       toast({
         title: 'Error',
-        description: 'Failed to enable notifications. Please try again.',
+        description: message,
         variant: 'destructive',
       });
       setIsLoading(false);

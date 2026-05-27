@@ -465,10 +465,10 @@ const PerformerProfileView = () => {
                 <BadgeList icon={<Users className="h-3 w-3" />} label="Union Memberships" items={profile.union_memberships} variant="outline" />
               )}
 
-              {/* Social links */}
-              {profile.social_links && Object.values(profile.social_links).some(Boolean) && (
-                <div>
-                  <Label className="text-sm font-medium mb-2 block">Social</Label>
+              {/* Social links — always visible */}
+              <div>
+                <Label className="text-sm font-medium mb-2 block">Social Media</Label>
+                {profile.social_links && Object.values(profile.social_links).some(Boolean) ? (
                   <div className="flex flex-wrap gap-2">
                     {profile.social_links.facebook && <SocialBtn href={profile.social_links.facebook} icon={<Facebook className="h-4 w-4 mr-1" />} label="Facebook" />}
                     {profile.social_links.instagram && <SocialBtn href={profile.social_links.instagram} icon={<Instagram className="h-4 w-4 mr-1" />} label="Instagram" />}
@@ -477,15 +477,17 @@ const PerformerProfileView = () => {
                     {profile.social_links.tiktok && <SocialBtn href={profile.social_links.tiktok} icon={<Globe className="h-4 w-4 mr-1" />} label="TikTok" />}
                     {profile.social_links.spotify && <SocialBtn href={profile.social_links.spotify} icon={<Music className="h-4 w-4 mr-1" />} label="Spotify" />}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <p className="text-sm text-muted-foreground italic">No social media links added yet.</p>
+                )}
+              </div>
 
-              {/* YouTube — embedded player with thumbnails */}
-              {profile.youtube_links && profile.youtube_links.length > 0 && (
-                <div>
-                  <Label className="text-sm font-medium mb-2 flex items-center gap-1">
-                    <Youtube className="h-4 w-4 text-red-500" /> Performance Videos
-                  </Label>
+              {/* YouTube — always visible */}
+              <div>
+                <Label className="text-sm font-medium mb-2 flex items-center gap-1">
+                  <Youtube className="h-4 w-4 text-red-500" /> Performance Videos
+                </Label>
+                {profile.youtube_links && profile.youtube_links.length > 0 ? (
                   <div className="space-y-3">
                     {profile.youtube_links.map((url, i) => {
                       const thumbnail = getYoutubeThumbnail(url);

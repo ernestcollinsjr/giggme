@@ -38,15 +38,70 @@ interface UpcomingGigLocationTrackerProps {
 export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLocationTrackerProps) => {
   const [upcomingGigs, setUpcomingGigs] = useState<UpcomingGig[]>([]);
   const [loading, setLoading] = useState(true);
+  const [travelByGig, setTravelByGig] = useState<Record<string, TravelRow[]>>({});
+
+  const fetchTravelStatus = useCallback(async (gigIds: string[]) => {
+    if (gigIds.length === 0) return;
+    const { data } = await supabase
+      .from("gig_travel_status")
+      .select("gig_id, user_id, status, started_at, arrived_at")
+      .in("gig_id", gigIds);
+
+    const userIds = Array.from(new Set((data || []).map((r) => r.user_id)));
+    const { data: profiles } = userIds.length
+      ? await supabase.from("profiles").select("id, name").in("id", userIds)
+      : { data: [] as any[] };
+    const profileMap = new Map((profiles || []).map((p: any) => [p.id, p]));
+
+    const grouped: Record<string, TravelRow[]> = {};
+    (data || []).forEach((row: any) => {
+      grouped[row.gig_id] ??= [];
+      grouped[row.gig_id].push({ ...row, profile: profileMap.get(row.user_id) || null });
+    });
+    setTravelByGig(grouped);
+  }, []);
 
   useEffect(() => {
     fetchUpcomingGigs();
-    
-    // Check every minute for updates
     const interval = setInterval(fetchUpcomingGigs, 60000);
-    
     return () => clearInterval(interval);
   }, [userId, userRole]);
+
+  useEffect(() => {
+    const ids = upcomingGigs.map((g) => g.id);
+    fetchTravelStatus(ids);
+    if (ids.length === 0) return;
+    const channel = supabase
+      .channel(`gig-travel-${userId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "gig_travel_status" },
+        () => fetchTravelStatus(ids),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [upcomingGigs, fetchTravelStatus, userId]);
+
+  const updateTravelStatus = async (gig: UpcomingGig, status: TravelStatus) => {
+    const source = gig.location_sharing_enabled !== undefined && "loading_time" in gig && gig.venue_lat === null && gig.venue_lng === null
+      ? "booking_request"
+      : "gig";
+    const payload: any = {
+      gig_id: gig.id,
+      user_id: userId,
+      source,
+      status,
+    };
+    if (status === "in_transit") payload.started_at = new Date().toISOString();
+    if (status === "arrived") payload.arrived_at = new Date().toISOString();
+
+    await supabase
+      .from("gig_travel_status")
+      .upsert(payload, { onConflict: "gig_id,user_id" });
+    fetchTravelStatus(upcomingGigs.map((g) => g.id));
+  };
 
   const fetchUpcomingGigs = async () => {
     try {

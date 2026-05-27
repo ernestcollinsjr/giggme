@@ -85,6 +85,13 @@ async function sendEmail(to: string | (string | null | undefined)[], subject: st
   }
 }
 
+
+async function getBookerEmail(supabase: any, bookerId: string | null | undefined): Promise<string | null> {
+  if (!bookerId) return null;
+  const { data } = await supabase.from('profiles').select('email').eq('id', bookerId).maybeSingle();
+  return data?.email ?? null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 

@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -32,6 +34,8 @@ import {
   X,
   Bell,
   CalendarPlus,
+  MessageSquare,
+  Send,
 } from "lucide-react";
 import { TopNav } from "@/components/TopNav";
 import BottomNav from "@/components/BottomNav";
@@ -114,6 +118,9 @@ export default function BookingManagerAdmin() {
   const [artistAvailability, setArtistAvailability] = useState<Array<{ date: string; status: string; notes: string | null }>>([]);
   const [paymentStatuses, setPaymentStatuses] = useState<Record<string, "paid" | "pending">>({});
   const [artistVenues, setArtistVenues] = useState<Record<string, string[]>>({});
+  const [broadcastOpen, setBroadcastOpen] = useState(false);
+  const [broadcastText, setBroadcastText] = useState("");
+  const [broadcastSending, setBroadcastSending] = useState(false);
 
   const paymentKey = (gig: { source: string; id: string; artist_id: string }) =>
     `${gig.source}:${gig.id}:${gig.artist_id}`;
@@ -502,6 +509,65 @@ export default function BookingManagerAdmin() {
     return map;
   }, [managedArtists, searchTerm, artistVenues]);
 
+  const broadcastRecipients = useMemo(
+    () => [...grouped.Soloist, ...grouped.Duo, ...grouped.Band],
+    [grouped]
+  );
+
+  const sendBroadcastMessage = async () => {
+    if (!userId) return;
+    const text = broadcastText.trim();
+    if (!text) {
+      toast({ variant: "destructive", title: "Message is empty" });
+      return;
+    }
+    if (broadcastRecipients.length === 0) {
+      toast({ variant: "destructive", title: "No recipients" });
+      return;
+    }
+    setBroadcastSending(true);
+    try {
+      const rows = broadcastRecipients.map((a) => ({
+        sender_id: userId,
+        recipient_id: a.artist_id,
+        is_group_message: false,
+        content: text,
+      }));
+      const { data: inserted, error } = await supabase
+        .from("messages")
+        .insert(rows)
+        .select("id, recipient_id");
+      if (error) throw error;
+
+      // Fire-and-forget push notifications
+      (inserted || []).forEach((m: any) => {
+        supabase.functions
+          .invoke("notify-new-message", {
+            body: {
+              message_id: m.id,
+              sender_id: userId,
+              recipient_id: m.recipient_id,
+              content: text,
+            },
+          })
+          .catch((e) => console.error("notify-new-message failed", e));
+      });
+
+      toast({
+        title: "Message sent",
+        description: `Delivered to ${broadcastRecipients.length} performer${
+          broadcastRecipients.length === 1 ? "" : "s"
+        }.`,
+      });
+      setBroadcastText("");
+      setBroadcastOpen(false);
+    } catch (e: any) {
+      toast({ variant: "destructive", title: "Send failed", description: e.message });
+    } finally {
+      setBroadcastSending(false);
+    }
+  };
+
   const selectedArtist = useMemo(
     () => managedArtists.find((a) => a.artist_id === artistFilter) || null,
     [managedArtists, artistFilter]
@@ -599,20 +665,34 @@ export default function BookingManagerAdmin() {
         <div className="space-y-4">
           {/* TOP: Categorized roster (3 columns) */}
           <aside className="bg-card border rounded-lg p-3">
-            <div className="relative mb-3 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search roster or venue..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 h-9"
-                list="bm-venue-suggestions"
-              />
-              <datalist id="bm-venue-suggestions">
-                {Array.from(new Set(Object.values(artistVenues).flat())).sort().map((v) => (
-                  <option key={v} value={v} />
-                ))}
-              </datalist>
+            <div className="mb-3 flex flex-col sm:flex-row sm:items-center gap-2">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search roster or venue..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9 h-9"
+                  list="bm-venue-suggestions"
+                />
+                <datalist id="bm-venue-suggestions">
+                  {Array.from(new Set(Object.values(artistVenues).flat())).sort().map((v) => (
+                    <option key={v} value={v} />
+                  ))}
+                </datalist>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5 self-start sm:self-auto"
+                onClick={() => setBroadcastOpen(true)}
+                disabled={broadcastRecipients.length === 0}
+                title="Message everyone in the current search results — useful for last-minute cover requests"
+              >
+                <MessageSquare className="h-4 w-4" />
+                Message all
+                <Badge variant="secondary" className="ml-1">{broadcastRecipients.length}</Badge>
+              </Button>
             </div>
 
             {managedArtists.length === 0 ? (
@@ -1093,6 +1173,71 @@ export default function BookingManagerAdmin() {
               </Button>
               <Button variant="destructive" onClick={handleDeleteGig}>
                 Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={broadcastOpen} onOpenChange={(o) => !broadcastSending && setBroadcastOpen(o)}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <MessageSquare className="h-5 w-5" />
+                Message {broadcastRecipients.length} performer{broadcastRecipients.length === 1 ? "" : "s"}
+              </DialogTitle>
+              <DialogDescription>
+                Send a direct message to everyone matching your current search. Useful when you need a quick replacement to cover a gig.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-3">
+              <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto p-2 rounded-md bg-muted/40">
+                {broadcastRecipients.map((a) => (
+                  <Badge key={a.artist_id} variant="secondary" className="text-xs">
+                    {a.profile.name}
+                  </Badge>
+                ))}
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="text-xs"
+                  onClick={() =>
+                    setBroadcastText(
+                      "Hey — I need a last-minute replacement to cover a gig. Are you available? Please reply ASAP with your availability. Thanks!"
+                    )
+                  }
+                >
+                  Use cover-request template
+                </Button>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="broadcast-text">Message</Label>
+                <Textarea
+                  id="broadcast-text"
+                  value={broadcastText}
+                  onChange={(e) => setBroadcastText(e.target.value)}
+                  placeholder="Type the message everyone will receive..."
+                  rows={5}
+                  maxLength={1000}
+                />
+                <p className="text-[11px] text-muted-foreground text-right">
+                  {broadcastText.length}/1000
+                </p>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setBroadcastOpen(false)} disabled={broadcastSending}>
+                Cancel
+              </Button>
+              <Button onClick={sendBroadcastMessage} disabled={broadcastSending || !broadcastText.trim()} className="gap-1.5">
+                <Send className="h-4 w-4" />
+                {broadcastSending ? "Sending..." : `Send to ${broadcastRecipients.length}`}
               </Button>
             </DialogFooter>
           </DialogContent>

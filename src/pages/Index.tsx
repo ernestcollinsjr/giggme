@@ -120,9 +120,7 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-              <Music className="h-5 w-5 text-primary-foreground" />
-            </div>
+            <img src="/favicon.png" alt="GigMe" className="w-9 h-9 rounded-lg object-contain" />
             <span className="text-xl font-bold text-primary">GigMe</span>
           </div>
 
@@ -351,9 +349,7 @@ const Index = () => {
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                <Music className="h-4 w-4 text-primary-foreground" />
-              </div>
+              <img src="/favicon.png" alt="GigMe" className="w-8 h-8 rounded-lg object-contain" />
               <span className="font-bold text-primary">GigMe</span>
             </div>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">

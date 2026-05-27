@@ -291,16 +291,12 @@ const Auth = () => {
         to="/" 
         className="absolute top-4 left-4 flex items-center gap-2 text-foreground hover:opacity-80 transition-opacity"
       >
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-          <Music className="h-5 w-5 text-white" />
-        </div>
+        <img src="/favicon.png" alt="GigMe" className="w-10 h-10 rounded-full object-contain" />
         <span className="font-bold text-lg bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">GigMe</span>
       </Link>
       <Card className="w-full max-w-md border-border/50 shadow-xl">
         <CardHeader className="space-y-2 text-center">
-          <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center mb-2">
-            <Music className="h-8 w-8 text-white" />
-          </div>
+          <img src="/favicon.png" alt="GigMe" className="mx-auto w-16 h-16 rounded-full object-contain mb-2" />
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
             GigMe
           </CardTitle>

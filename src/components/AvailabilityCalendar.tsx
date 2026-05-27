@@ -67,6 +67,41 @@ export function AvailabilityCalendar({ userId, readOnly = false, onTodayStatusCh
     }
   };
 
+  const fetchBookings = async () => {
+    try {
+      const targetUserId = userId || (await supabase.auth.getUser()).data.user?.id;
+      if (!targetUserId) return;
+
+      // Gigs where this user is the owner (band leader)
+      const { data: ownGigs } = await supabase
+        .from('gigs')
+        .select('id, date, venue, venue_name, end_time, status, payment_amount, notes')
+        .eq('user_id', targetUserId);
+
+      // Gigs where this user is an invited/accepted member
+      const { data: memberRows } = await supabase
+        .from('gig_members')
+        .select('status, gigs(id, date, venue, venue_name, end_time, status, payment_amount, notes)')
+        .eq('member_id', targetUserId);
+
+      const memberGigs = (memberRows || [])
+        .map((r: any) => r.gigs ? { ...r.gigs, member_status: r.status } : null)
+        .filter(Boolean);
+
+      const all = [...(ownGigs || []), ...memberGigs];
+      // De-dupe by gig id
+      const seen = new Set<string>();
+      const unique = all.filter((g: any) => {
+        if (seen.has(g.id)) return false;
+        seen.add(g.id);
+        return true;
+      });
+      setBookings(unique);
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+    }
+  };
+
   const handleDateClick = async (date: Date | undefined) => {
     if (!date || readOnly || isRangeMode) return;
 

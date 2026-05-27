@@ -121,7 +121,7 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
-            <img src={logo} alt="GiggMe" className="h-10 w-auto object-contain" />
+            <img src={logo} alt="GiggMe" className="h-16 sm:h-20 w-auto object-contain" />
           </div>
 
           {/* Right Nav */}

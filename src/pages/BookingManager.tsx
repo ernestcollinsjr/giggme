@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { BookingManagerClientLocations } from "@/components/BookingManagerClientLocations";
+import { UpcomingGigLocationTracker } from "@/components/UpcomingGigLocationTracker";
 
 import { AvailabilityRequestManager } from "@/components/AvailabilityRequestManager";
 import { AvailabilityRequestResults } from "@/components/AvailabilityRequestResults";
@@ -86,6 +87,8 @@ export default function BookingManager() {
   const [bookTalentOpen, setBookTalentOpen] = useState(false);
   const [bookTalentSearch, setBookTalentSearch] = useState("");
 
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
   useEffect(() => {
     checkRole();
     fetchManagedBands();
@@ -101,6 +104,7 @@ export default function BookingManager() {
       navigate("/auth");
       return;
     }
+    setCurrentUserId(user.id);
 
     const { data: roleData } = await supabase
       .from("user_roles")
@@ -584,8 +588,14 @@ export default function BookingManager() {
         {/* Scheduled Reminders */}
         <ScheduledRemindersManager />
 
+        {/* Uber-style upcoming gig card (2.5 hr before each gig) */}
+        {currentUserId && (
+          <UpcomingGigLocationTracker userId={currentUserId} userRole="booking_manager" />
+        )}
+
         {/* Location Tracking */}
         <BookingManagerClientLocations />
+
 
         {/* Individual SMS Dialog */}
         <Dialog open={individualSmsOpen} onOpenChange={setIndividualSmsOpen}>

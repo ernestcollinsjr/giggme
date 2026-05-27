@@ -613,6 +613,37 @@ const PerformerProfileView = () => {
                     <p className="text-sm text-muted-foreground">No rider notes provided.</p>
                   )}
                 </TabsContent>
+
+                <TabsContent value="payment" className="mt-0 space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <DollarSign className="h-5 w-5 text-primary" /> Payment
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Booking rates and payment details.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="p-4 rounded-lg border bg-muted/30">
+                      <Label className="text-xs text-muted-foreground">Hourly Rate</Label>
+                      <p className="text-lg font-semibold mt-1">
+                        {profile.hourly_rate ? `$${profile.hourly_rate}/hr` : "Not specified"}
+                      </p>
+                    </div>
+                    <div className="p-4 rounded-lg border bg-muted/30">
+                      <Label className="text-xs text-muted-foreground">Event Rate</Label>
+                      <p className="text-lg font-semibold mt-1">
+                        {profile.event_rate ? `$${profile.event_rate}/event` : "Not specified"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="p-4 rounded-lg border bg-muted/30 flex items-start gap-3">
+                    <Lock className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <p className="text-sm text-muted-foreground">
+                      Payment is processed securely after the booking is confirmed. Final amount may include travel, rider, and platform fees.
+                    </p>
+                  </div>
+                </TabsContent>
               </Tabs>
 
               {/* Ratings */}

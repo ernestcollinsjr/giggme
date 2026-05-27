@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import webpush from "https://esm.sh/web-push@3.6.7";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -10,44 +11,10 @@ const corsHeaders = {
 const VAPID_PUBLIC_KEY = Deno.env.get('VAPID_PUBLIC_KEY')!;
 const VAPID_PRIVATE_KEY = Deno.env.get('VAPID_PRIVATE_KEY')!;
 
-// Helper to convert base64url to Uint8Array
-function base64UrlToUint8Array(base64Url: string): Uint8Array {
-  const padding = '='.repeat((4 - base64Url.length % 4) % 4);
-  const base64 = (base64Url + padding).replace(/-/g, '+').replace(/_/g, '/');
-  const rawData = atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-}
-
 // Send push notification using Web Push protocol
 async function sendWebPush(subscription: any, payload: string) {
-  const endpoint = subscription.endpoint;
-  const p256dh = subscription.keys.p256dh;
-  const auth = subscription.keys.auth;
-
-  console.log('Sending push to endpoint:', endpoint);
-
-  // For now, use a simple fetch to the push service
-  // In production, you'd want to use proper VAPID signing
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'TTL': '86400',
-    },
-    body: payload,
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    console.error('Push failed:', response.status, text);
-    throw new Error(`Push failed: ${response.status} ${text}`);
-  }
-
-  return response;
+  console.log('Sending push to endpoint:', subscription.endpoint);
+  return webpush.sendNotification(subscription, payload, { TTL: 86400 });
 }
 
 serve(async (req) => {
@@ -60,6 +27,7 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    webpush.setVapidDetails('mailto:notify@giggme.com', VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 
     const { user_id, title, body, url, data } = await req.json();
 

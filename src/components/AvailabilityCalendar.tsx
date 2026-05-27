@@ -25,7 +25,7 @@ interface AvailabilityCalendarProps {
 
 export function AvailabilityCalendar({ userId, readOnly = false, onTodayStatusChange }: AvailabilityCalendarProps) {
   const [availability, setAvailability] = useState<AvailabilityDate[]>([]);
-  const [selectedStatus, setSelectedStatus] = useState<'available' | 'unavailable' | 'tentative'>('available');
+  const [selectedStatus, setSelectedStatus] = useState<'available' | 'unavailable' | 'tentative'>('unavailable');
   const [loading, setLoading] = useState(true);
   const [isRangeMode, setIsRangeMode] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();

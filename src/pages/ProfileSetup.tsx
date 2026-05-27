@@ -391,8 +391,9 @@ const ProfileSetup = () => {
         travel_distance: travelDistance ? parseInt(travelDistance) : null,
         years_experience: yearsExperience ? parseInt(yearsExperience) : null,
         union_memberships: unionMemberships,
+        performer_category: performerCategory,
         updated_at: new Date().toISOString(),
-      };
+      } as any;
 
       const { error } = await supabase
         .from("profiles")

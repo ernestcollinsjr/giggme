@@ -330,7 +330,8 @@ const PerformerProfileView = () => {
                     <Bell className="h-3.5 w-3.5" /><span className="hidden sm:inline">Alerts</span>
                   </TabsTrigger>
                   <TabsTrigger value="availability" className="flex items-center gap-1.5 text-xs sm:text-sm py-2">
-                    <Clock className="h-3.5 w-3.5" /><span className="hidden sm:inline">Availability</span>
+                    <Clock className="h-3.5 w-3.5" /><span className="hidden sm:inline">Bookings</span>
+
                   </TabsTrigger>
                   <TabsTrigger value="rider" className="flex items-center gap-1.5 text-xs sm:text-sm py-2">
                     <FileText className="h-3.5 w-3.5" /><span className="hidden sm:inline">Rider</span>

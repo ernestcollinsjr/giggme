@@ -38,17 +38,19 @@ export const NotificationPreferences = () => {
     isSupported: nativePush.isSupported,
     isSubscribed: nativePush.isRegistered,
     isLoading: nativePush.isLoading,
+    supportMessage: "Receive native push notifications",
     subscribe: nativePush.register,
     unsubscribe: nativePush.unregister
   } : {
     isSupported: webPush.isSupported,
     isSubscribed: webPush.isSubscribed,
     isLoading: webPush.isLoading,
+    supportMessage: webPush.supportMessage,
     subscribe: webPush.subscribe,
     unsubscribe: webPush.unsubscribe
   };
   
-  const { isSupported, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = pushNotifications;
+  const { isSupported, isSubscribed, isLoading: pushLoading, supportMessage, subscribe, unsubscribe } = pushNotifications;
   const { playTestSound } = useSoundPreference();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -331,11 +333,7 @@ export const NotificationPreferences = () => {
                     Push Notifications
                   </Label>
                   <p className="text-xs text-muted-foreground">
-                    {isNative 
-                      ? "Receive native push notifications"
-                      : isSupported 
-                        ? "Receive browser push notifications"
-                        : "Not supported in this browser"}
+                    {supportMessage}
                   </p>
                 </div>
               </div>

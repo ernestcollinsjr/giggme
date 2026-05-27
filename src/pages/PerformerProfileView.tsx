@@ -528,30 +528,6 @@ const PerformerProfileView = () => {
               </div>
                 </TabsContent>
 
-                <TabsContent value="role" className="mt-0 space-y-4">
-                  <div>
-                    <h3 className="text-lg font-semibold flex items-center gap-2">
-                      <Crown className="h-5 w-5 text-primary" /> Performer Role
-                    </h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      How this performer uses the platform.
-                    </p>
-                  </div>
-                  <div className="p-4 rounded-lg border bg-muted/30 capitalize">
-                    {performerRole ? performerRole.replace(/_/g, " ") : "Not specified"}
-                  </div>
-                  <div className="p-4 bg-muted/50 rounded-lg">
-                    <h4 className="font-medium mb-2">About Roles:</h4>
-                    <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                      <li><strong>Band Leader:</strong> Creates and manages bands</li>
-                      <li><strong>Band Member:</strong> Part of one or more bands</li>
-                      <li><strong>Artist/Musician:</strong> Solo performer building portfolio</li>
-                      <li><strong>Tour Manager:</strong> Coordinates tours and crew</li>
-                      <li><strong>Booking Manager:</strong> Books and manages artists/bands</li>
-                    </ul>
-                  </div>
-                </TabsContent>
-
                 <TabsContent value="alerts" className="mt-0 space-y-4">
                   <div>
                     <h3 className="text-lg font-semibold flex items-center gap-2">
@@ -566,19 +542,6 @@ const PerformerProfileView = () => {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="safety" className="mt-0 space-y-4">
-                  <div>
-                    <h3 className="text-lg font-semibold flex items-center gap-2">
-                      <Shield className="h-5 w-5 text-primary" /> Safety & Privacy
-                    </h3>
-                  </div>
-                  <div className="p-4 rounded-lg border bg-muted/30 flex items-start gap-3">
-                    <Lock className="h-4 w-4 text-muted-foreground mt-0.5" />
-                    <p className="text-sm text-muted-foreground">
-                      Safety settings (blocked users, location sharing, emergency contacts) are private to the performer.
-                    </p>
-                  </div>
-                </TabsContent>
 
                 <TabsContent value="availability" className="mt-0 space-y-4">
                   <div>

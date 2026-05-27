@@ -12,12 +12,25 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, CalendarCheck, CalendarIcon, X, Loader2, Navigation, MessageCircle, Mail, Phone, Music, Briefcase, Wrench, Tag, MapPin, Users, DollarSign, Youtube, Facebook, Instagram, Twitter, Globe } from "lucide-react";
+import { ArrowLeft, CalendarCheck, CalendarIcon, X, Loader2, Navigation, MessageCircle, Mail, Phone, Music, Briefcase, Wrench, Tag, MapPin, Users, DollarSign, Youtube, Facebook, Instagram, Twitter, Globe, Clock, Play, Check, HelpCircle } from "lucide-react";
 import { TopNav } from "@/components/TopNav";
 import { PlaceAutocomplete } from "@/components/PlaceAutocomplete";
 import { PerformerRatingsDisplay } from "@/components/PerformerRatingsDisplay";
+import { YouTubePlayer, getYoutubeVideoId } from "@/components/YouTubePlayer";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+
+const getYoutubeThumbnail = (url: string): string | null => {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+    /youtube\.com\/shorts\/([^&\n?#]+)/,
+  ];
+  for (const p of patterns) {
+    const m = url.match(p);
+    if (m && m[1]) return `https://img.youtube.com/vi/${m[1]}/mqdefault.jpg`;
+  }
+  return null;
+};
 
 interface PerformerProfile {
   id: string;
@@ -40,6 +53,8 @@ interface PerformerProfile {
   rider_notes?: string | null;
   social_links?: Record<string, string> | null;
   youtube_links?: string[] | null;
+  timezone?: string | null;
+  availability_status?: string | null;
   created_at?: string | null;
 }
 
@@ -51,6 +66,8 @@ const PerformerProfileView = () => {
 
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<PerformerProfile | null>(null);
+  const [weekAvailability, setWeekAvailability] = useState<{ date: string; status: string | null }[]>([]);
+  const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [bookingSubmitting, setBookingSubmitting] = useState(false);
   const [bookingForm, setBookingForm] = useState({
@@ -98,6 +115,21 @@ const PerformerProfileView = () => {
           return;
         }
         setProfile(data as any);
+
+        // Load next 7 days of availability (read-only)
+        const today = new Date();
+        const next7 = Array.from({ length: 7 }, (_, i) => {
+          const d = new Date(today);
+          d.setDate(today.getDate() + i);
+          return d.toISOString().split("T")[0];
+        });
+        const { data: avail } = await supabase
+          .from("member_availability")
+          .select("date, status")
+          .eq("user_id", userId)
+          .in("date", next7);
+        const map = new Map((avail || []).map((a: any) => [a.date, a.status]));
+        setWeekAvailability(next7.map((date) => ({ date, status: (map.get(date) as string) || null })));
       } catch (err: any) {
         toast({ title: "Error", description: err.message, variant: "destructive" });
       } finally {
@@ -342,18 +374,100 @@ const PerformerProfileView = () => {
                 </div>
               )}
 
-              {/* YouTube */}
+              {/* YouTube — embedded player with thumbnails */}
               {profile.youtube_links && profile.youtube_links.length > 0 && (
                 <div>
-                  <Label className="text-sm font-medium mb-2 block flex items-center gap-1">
+                  <Label className="text-sm font-medium mb-2 flex items-center gap-1">
                     <Youtube className="h-4 w-4 text-red-500" /> Performance Videos
                   </Label>
-                  <div className="space-y-1">
-                    {profile.youtube_links.map((url, i) => (
-                      <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="block text-sm text-primary hover:underline truncate">
-                        {url}
-                      </a>
-                    ))}
+                  <div className="space-y-3">
+                    {profile.youtube_links.map((url, i) => {
+                      const thumbnail = getYoutubeThumbnail(url);
+                      const videoId = getYoutubeVideoId(url);
+                      const isPlaying = playingVideoId === videoId;
+                      return (
+                        <div key={i} className="border rounded-lg bg-muted/50 overflow-hidden">
+                          {isPlaying && videoId ? (
+                            <div className="p-2">
+                              <div className="flex justify-end mb-2">
+                                <Button type="button" variant="ghost" size="sm" onClick={() => setPlayingVideoId(null)}>
+                                  <X className="h-4 w-4 mr-1" />Close
+                                </Button>
+                              </div>
+                              <YouTubePlayer videoId={videoId} title="Video" inline />
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-3 p-2">
+                              {thumbnail ? (
+                                <button type="button" onClick={() => videoId && setPlayingVideoId(videoId)} className="shrink-0 relative group cursor-pointer">
+                                  <img src={thumbnail} alt="Video thumbnail" className="w-24 h-14 object-cover rounded-md" />
+                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center">
+                                    <Play className="h-6 w-6 text-white" />
+                                  </div>
+                                </button>
+                              ) : (
+                                <button type="button" onClick={() => videoId && setPlayingVideoId(videoId)} className="w-24 h-14 bg-muted rounded-md flex items-center justify-center shrink-0 cursor-pointer">
+                                  <Youtube className="h-6 w-6 text-red-500" />
+                                </button>
+                              )}
+                              <a href={url} target="_blank" rel="noopener noreferrer" className="flex-1 text-sm truncate text-primary hover:underline">{url}</a>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Timezone */}
+              {profile.timezone && (
+                <DetailRow icon={<Clock className="h-4 w-4" />} label="Timezone" value={profile.timezone} />
+              )}
+
+              {/* Availability — read-only 7-day preview */}
+              {weekAvailability.length > 0 && (
+                <div>
+                  <Label className="text-sm font-medium mb-2 flex items-center gap-1">
+                    <CalendarIcon className="h-4 w-4" /> Availability — Next 7 Days
+                  </Label>
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border">
+                    <div className="flex items-center gap-2">
+                      {profile.availability_status === "available" ? (
+                        <><span className="w-3 h-3 rounded-full bg-green-500 animate-pulse" /><span className="text-sm font-medium text-green-600">Available</span></>
+                      ) : profile.availability_status === "unavailable" ? (
+                        <><span className="w-3 h-3 rounded-full bg-red-500" /><span className="text-sm font-medium text-red-600">Unavailable</span></>
+                      ) : profile.availability_status === "tentative" ? (
+                        <><span className="w-3 h-3 rounded-full bg-yellow-500" /><span className="text-sm font-medium text-yellow-600">Tentative</span></>
+                      ) : (
+                        <><span className="w-3 h-3 rounded-full bg-muted-foreground/30" /><span className="text-sm text-muted-foreground">Not set</span></>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 ml-auto">
+                      {weekAvailability.map((day, idx) => {
+                        const dt = new Date(day.date + "T00:00:00");
+                        const dayLabel = dt.toLocaleDateString("en-US", { weekday: "short" }).charAt(0);
+                        const dayNum = dt.getDate();
+                        return (
+                          <div key={day.date} className="flex flex-col items-center" title={`${dt.toLocaleDateString()} — ${day.status || "not set"}`}>
+                            <span className="text-[10px] text-muted-foreground">{dayLabel}</span>
+                            <div className={`w-6 h-6 sm:w-5 sm:h-5 rounded-sm flex items-center justify-center text-[10px] sm:text-[9px] font-medium text-white ${
+                              day.status === "available" ? "bg-green-500"
+                                : day.status === "unavailable" ? "bg-red-500"
+                                : day.status === "tentative" ? "bg-yellow-500"
+                                : "bg-muted-foreground/20 text-muted-foreground"
+                            } ${idx === 0 ? "ring-2 ring-primary ring-offset-1" : ""}`}>
+                              {dayNum}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
+                    <span className="flex items-center gap-1"><Check className="h-3 w-3 text-green-500" />Available</span>
+                    <span className="flex items-center gap-1"><HelpCircle className="h-3 w-3 text-yellow-500" />Tentative</span>
+                    <span className="flex items-center gap-1"><X className="h-3 w-3 text-red-500" />Unavailable</span>
                   </div>
                 </div>
               )}

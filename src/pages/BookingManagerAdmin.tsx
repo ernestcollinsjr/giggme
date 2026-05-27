@@ -602,11 +602,17 @@ export default function BookingManagerAdmin() {
             <div className="relative mb-3 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search roster..."
+                placeholder="Search roster or venue..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-9 h-9"
+                list="bm-venue-suggestions"
               />
+              <datalist id="bm-venue-suggestions">
+                {Array.from(new Set(Object.values(artistVenues).flat())).sort().map((v) => (
+                  <option key={v} value={v} />
+                ))}
+              </datalist>
             </div>
 
             {managedArtists.length === 0 ? (

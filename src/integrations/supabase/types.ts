@@ -369,6 +369,39 @@ export type Database = {
           },
         ]
       }
+      booking_manager_payments: {
+        Row: {
+          artist_id: string
+          booking_manager_id: string
+          created_at: string
+          id: string
+          source: string
+          source_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          booking_manager_id: string
+          created_at?: string
+          id?: string
+          source: string
+          source_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          booking_manager_id?: string
+          created_at?: string
+          id?: string
+          source?: string
+          source_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       booking_requests: {
         Row: {
           auto_reminders_disabled: boolean

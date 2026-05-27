@@ -76,6 +76,7 @@ const App = () => (
             <Route path="/rate/:artistId" element={<RatePerformer />} />
             <Route path="/open" element={<OpenExternal />} />
             <Route path="/booking-request/:id" element={<BookingRequestResponse />} />
+            <Route path="/booking-response" element={<BookingResponse />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

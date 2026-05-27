@@ -266,6 +266,34 @@ const PerformerProfileView = () => {
             </CardHeader>
 
             <CardContent className="space-y-6">
+              {/* Profile Completeness */}
+              {(() => {
+                const checks = [
+                  !!profile.name,
+                  !!profile.bio,
+                  !!profile.email,
+                  !!profile.phone_number,
+                  !!profile.instrument,
+                  (profile.photo_urls?.length || 0) > 0,
+                  (profile.genres?.length || 0) > 0,
+                  (profile.skills?.length || 0) > 0,
+                  (profile.equipment?.length || 0) > 0,
+                  !!profile.timezone,
+                ];
+                const pct = Math.round((checks.filter(Boolean).length / checks.length) * 100);
+                return (
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <Label className="text-sm font-medium">Profile Completeness</Label>
+                      <span className="text-sm font-semibold text-primary">{pct}%</span>
+                    </div>
+                    <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                      <div className="h-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* Avatar + name block */}
               <div className="flex flex-col items-center text-center space-y-3">
                 <Avatar className="h-24 w-24">
@@ -275,11 +303,30 @@ const PerformerProfileView = () => {
                 <div className="w-full max-w-xs space-y-2">
                   <Input value={profile.name || ""} readOnly className="text-center font-medium" />
                   {profile.band_name && (
-                    <Input value={profile.band_name} readOnly className="text-center" />
+                    <div className="space-y-1 text-left">
+                      <Label className="text-xs">Band Name</Label>
+                      <Input value={profile.band_name} readOnly />
+                    </div>
                   )}
-                  {profile.performer_category && (
-                    <Input value={profile.performer_category} readOnly className="text-center" />
-                  )}
+                  {/* Solo / Duo / Band selector (read-only display) */}
+                  <div className="space-y-1 text-left">
+                    <Label className="text-xs">Category</Label>
+                    <div className="grid grid-cols-3 gap-1 rounded-md bg-muted p-1">
+                      {(["Solo", "Duo", "Band"] as const).map((c) => {
+                        const active = (profile.performer_category || "Solo") === c;
+                        return (
+                          <div
+                            key={c}
+                            className={`text-center text-sm py-1.5 rounded-sm font-medium ${
+                              active ? "bg-background shadow-sm text-foreground" : "text-muted-foreground"
+                            }`}
+                          >
+                            {c}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
                 {memberSince && (
                   <p className="text-xs text-muted-foreground">Member since {memberSince}</p>
@@ -292,45 +339,69 @@ const PerformerProfileView = () => {
                   <Label className="text-sm font-medium mb-2 block">Additional Photos</Label>
                   <div className="grid grid-cols-3 gap-2">
                     {extraPhotos.map((url, i) => (
-                      <div key={i} className="aspect-square rounded-lg overflow-hidden bg-muted">
-                        <img src={url} alt={`Photo ${i + 2}`} className="h-full w-full object-cover" />
+                      <div key={i}>
+                        <div className="aspect-square rounded-lg overflow-hidden bg-muted">
+                          <img src={url} alt={`Photo ${i + 2}`} className="h-full w-full object-cover" />
+                        </div>
+                        <p className="text-xs text-muted-foreground text-center mt-1">Photo {i + 2}</p>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Bio */}
+              {/* Bio with char counter */}
               {profile.bio && (
                 <div>
-                  <Label className="text-sm font-medium">Bio</Label>
-                  <Textarea value={profile.bio} readOnly rows={4} className="mt-1 resize-none" />
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="bio" className="text-sm font-medium">Bio</Label>
+                    <span className="text-xs text-muted-foreground">{profile.bio.length}/350</span>
+                  </div>
+                  <Textarea id="bio" value={profile.bio} readOnly rows={4} className="mt-1 resize-none" />
                 </div>
               )}
 
-              {/* Contact */}
-              {(profile.email || profile.phone_number) && (
-                <div className="grid sm:grid-cols-2 gap-3">
-                  {profile.email && (
-                    <a href={`mailto:${profile.email}`} className="flex items-center gap-2 p-3 border rounded-lg hover:bg-accent transition">
-                      <Mail className="h-4 w-4 text-primary" />
-                      <span className="text-sm truncate">{profile.email}</span>
-                    </a>
-                  )}
-                  {profile.phone_number && (
-                    <a href={`tel:${profile.phone_number}`} className="flex items-center gap-2 p-3 border rounded-lg hover:bg-accent transition">
-                      <Phone className="h-4 w-4 text-primary" />
-                      <span className="text-sm">{profile.phone_number}</span>
-                    </a>
-                  )}
+              {/* Email */}
+              {profile.email && (
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium flex items-center gap-2"><Mail className="h-4 w-4" /> Email Address</Label>
+                  <a href={`mailto:${profile.email}`} className="block">
+                    <Input value={profile.email} readOnly className="cursor-pointer" />
+                  </a>
                 </div>
               )}
 
-              {/* Performer details */}
+              {/* Phone */}
+              {profile.phone_number && (
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium flex items-center gap-2"><Phone className="h-4 w-4" /> Phone Number</Label>
+                  <a href={`tel:${profile.phone_number}`} className="block">
+                    <Input value={profile.phone_number} readOnly className="cursor-pointer" />
+                  </a>
+                  <p className="text-xs text-muted-foreground">
+                    Include country code (e.g., +1 for US).
+                  </p>
+                </div>
+              )}
+
+              {/* Timezone */}
+              {profile.timezone && (
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium flex items-center gap-2"><Clock className="h-4 w-4" /> Timezone</Label>
+                  <Input value={profile.timezone} readOnly />
+                </div>
+              )}
+
+              {/* Primary Instrument */}
+              {profile.instrument && (
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium flex items-center gap-2"><Music className="h-4 w-4" /> Primary Instrument</Label>
+                  <Input value={profile.instrument} readOnly className="capitalize" />
+                </div>
+              )}
+
+              {/* Other performer metrics */}
               <div className="grid grid-cols-2 gap-4">
-                {profile.instrument && (
-                  <DetailRow icon={<Music className="h-4 w-4" />} label="Instrument" value={profile.instrument} />
-                )}
                 {profile.years_experience != null && (
                   <DetailRow icon={<Briefcase className="h-4 w-4" />} label="Experience" value={`${profile.years_experience} years`} />
                 )}

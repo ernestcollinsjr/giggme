@@ -18,6 +18,7 @@ import { TopNav } from "@/components/TopNav";
 import { PlaceAutocomplete } from "@/components/PlaceAutocomplete";
 import { PerformerRatingsDisplay } from "@/components/PerformerRatingsDisplay";
 import { YouTubePlayer, getYoutubeVideoId } from "@/components/YouTubePlayer";
+import { AvailabilityCalendar } from "@/components/AvailabilityCalendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 

@@ -255,28 +255,46 @@ export function AvailabilityCalendar({ userId, readOnly = false, onTodayStatusCh
     }
   };
 
+  const bookedDates = bookings.map((b: any) => new Date(b.date));
+
   const modifiers = {
     available: availability.filter(a => a.status === 'available').map(a => new Date(a.date + 'T00:00:00')),
     unavailable: availability.filter(a => a.status === 'unavailable').map(a => new Date(a.date + 'T00:00:00')),
     tentative: availability.filter(a => a.status === 'tentative').map(a => new Date(a.date + 'T00:00:00')),
+    booked: bookedDates,
   };
 
   const modifiersStyles = {
     available: {
-      backgroundColor: 'rgb(34 197 94)', // green-500
+      backgroundColor: 'rgb(34 197 94)',
       color: 'white',
       borderRadius: '50%',
     },
     unavailable: {
-      backgroundColor: 'rgb(239 68 68)', // red-500
+      backgroundColor: 'rgb(239 68 68)',
       color: 'white',
       borderRadius: '50%',
     },
     tentative: {
-      backgroundColor: 'rgb(234 179 8)', // yellow-500
+      backgroundColor: 'rgb(234 179 8)',
       color: 'white',
       borderRadius: '50%',
     },
+    booked: {
+      backgroundColor: 'rgb(59 130 246)', // blue-500
+      color: 'white',
+      borderRadius: '50%',
+      fontWeight: 700,
+    },
+  };
+
+  const handleReadOnlyDateClick = (date: Date | undefined) => {
+    if (!date) return;
+    const matches = bookings.filter((b: any) => isSameDay(new Date(b.date), date));
+    if (matches.length > 0) {
+      setSelectedBookingDate(date);
+      setSelectedBookings(matches);
+    }
   };
 
   return (

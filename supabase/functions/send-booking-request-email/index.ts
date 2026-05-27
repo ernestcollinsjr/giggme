@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
     // Force production URL — preview/lovable URLs require a Lovable login and break email links
     const appUrl = /lovable\.(app|dev)/i.test(rawAppUrl) ? 'https://giggme.com' : rawAppUrl;
     const respondUrl = `${appUrl}/booking-request/${bookingRequest.id}`;
-    const expiresIn = '2 minutes';
+    const expiresIn = '48 hours';
 
     const row = (label: string, value?: string) =>
       value

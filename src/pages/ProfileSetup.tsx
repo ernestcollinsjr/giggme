@@ -182,6 +182,8 @@ const ProfileSetup = () => {
           setAvailabilityStatus(profile.availability_status || "available");
           setTravelDistance(profile.travel_distance?.toString() || "");
           setYearsExperience(profile.years_experience?.toString() || "");
+          setPreferredPay((profile as any).preferred_pay?.toString() || "");
+          setPreferredPayHours((profile as any).preferred_pay_hours?.toString() || "");
           setUnionMemberships(profile.union_memberships || []);
           
           // Format member since date

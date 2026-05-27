@@ -584,7 +584,7 @@ const ArtistProfile = () => {
                 onClick={() => setBookingOpen(true)}
               >
                 <CalendarCheck className="h-4 w-4" />
-                Book This Performer
+                Book Talent
               </Button>
               <Dialog open={bookingOpen} onOpenChange={setBookingOpen}>
                 <DialogContent className="max-h-[90vh] overflow-y-auto">

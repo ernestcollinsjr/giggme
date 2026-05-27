@@ -509,7 +509,66 @@ export default function BookingManagerAdmin() {
     return map;
   }, [managedArtists, searchTerm, artistVenues]);
 
-  const selectedArtist = useMemo(
+  const broadcastRecipients = useMemo(
+    () => [...grouped.Soloist, ...grouped.Duo, ...grouped.Band],
+    [grouped]
+  );
+
+  const sendBroadcastMessage = async () => {
+    if (!userId) return;
+    const text = broadcastText.trim();
+    if (!text) {
+      toast({ variant: "destructive", title: "Message is empty" });
+      return;
+    }
+    if (broadcastRecipients.length === 0) {
+      toast({ variant: "destructive", title: "No recipients" });
+      return;
+    }
+    setBroadcastSending(true);
+    try {
+      const rows = broadcastRecipients.map((a) => ({
+        sender_id: userId,
+        recipient_id: a.artist_id,
+        is_group_message: false,
+        content: text,
+      }));
+      const { data: inserted, error } = await supabase
+        .from("messages")
+        .insert(rows)
+        .select("id, recipient_id");
+      if (error) throw error;
+
+      // Fire-and-forget push notifications
+      (inserted || []).forEach((m: any) => {
+        supabase.functions
+          .invoke("notify-new-message", {
+            body: {
+              message_id: m.id,
+              sender_id: userId,
+              recipient_id: m.recipient_id,
+              content: text,
+            },
+          })
+          .catch((e) => console.error("notify-new-message failed", e));
+      });
+
+      toast({
+        title: "Message sent",
+        description: `Delivered to ${broadcastRecipients.length} performer${
+          broadcastRecipients.length === 1 ? "" : "s"
+        }.`,
+      });
+      setBroadcastText("");
+      setBroadcastOpen(false);
+    } catch (e: any) {
+      toast({ variant: "destructive", title: "Send failed", description: e.message });
+    } finally {
+      setBroadcastSending(false);
+    }
+  };
+
+
     () => managedArtists.find((a) => a.artist_id === artistFilter) || null,
     [managedArtists, artistFilter]
   );

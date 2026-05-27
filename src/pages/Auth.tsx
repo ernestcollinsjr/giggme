@@ -292,11 +292,11 @@ const Auth = () => {
         to="/" 
         className="absolute top-4 left-4 flex items-center hover:opacity-80 transition-opacity"
       >
-        <img src={logo} alt="GiggMe" className="h-10 w-auto object-contain" />
+        <img src={logo} alt="GiggMe" className="h-24 w-auto object-contain" />
       </Link>
       <Card className="w-full max-w-md border-border/50 shadow-xl">
         <CardHeader className="space-y-2 text-center">
-          <img src={logo} alt="GiggMe" className="mx-auto h-24 w-auto object-contain mb-2" />
+          <img src={logo} alt="GiggMe" className="mx-auto h-40 w-auto object-contain mb-2" />
           <CardDescription>Connect bands and managers for seamless gig management</CardDescription>
         </CardHeader>
         

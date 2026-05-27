@@ -396,6 +396,8 @@ const ProfileSetup = () => {
         years_experience: yearsExperience ? parseInt(yearsExperience) : null,
         union_memberships: unionMemberships,
         performer_category: performerCategory,
+        preferred_pay: preferredPay ? parseFloat(preferredPay) : null,
+        preferred_pay_hours: preferredPayHours ? parseFloat(preferredPayHours) : null,
         updated_at: new Date().toISOString(),
       } as any;
 

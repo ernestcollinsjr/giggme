@@ -1845,6 +1845,7 @@ const ProfileSetup = () => {
                       value={travelDistance}
                       onChange={(e) => setTravelDistance(e.target.value)}
                     />
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">

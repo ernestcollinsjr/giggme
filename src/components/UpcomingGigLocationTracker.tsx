@@ -296,8 +296,8 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
       }));
       await supabase.from("notifications").insert(notifRows);
 
-      // 3) Actual web/native push to anyone with a registered device
-      await Promise.allSettled(
+      // 3) Actual push to anyone with a registered device
+      const pushResults = await Promise.allSettled(
         ids.map((rid) =>
           supabase.functions.invoke("send-push-notification", {
             body: {
@@ -311,9 +311,21 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
         ),
       );
 
-      toast.success("Sent to performer", {
-        description: `${ids.length} recipient${ids.length > 1 ? "s" : ""} notified.`,
-      });
+      const successfulPushes = pushResults.filter((result) => {
+        if (result.status !== "fulfilled") return false;
+        const response = result.value.data as any;
+        return response?.success === true && (!Array.isArray(response.results) || response.results.some((r: any) => r.success));
+      }).length;
+
+      if (successfulPushes > 0) {
+        toast.success("Push sent to performer", {
+          description: `${successfulPushes} device${successfulPushes > 1 ? "s" : ""} notified.`,
+        });
+      } else {
+        toast.warning("Message sent, push not enabled", {
+          description: "The performer needs to enable push notifications on their device.",
+        });
+      }
     } catch (e: any) {
       toast.error("Couldn't send message", { description: e.message });
     }

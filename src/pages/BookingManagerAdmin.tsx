@@ -665,20 +665,34 @@ export default function BookingManagerAdmin() {
         <div className="space-y-4">
           {/* TOP: Categorized roster (3 columns) */}
           <aside className="bg-card border rounded-lg p-3">
-            <div className="relative mb-3 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search roster or venue..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 h-9"
-                list="bm-venue-suggestions"
-              />
-              <datalist id="bm-venue-suggestions">
-                {Array.from(new Set(Object.values(artistVenues).flat())).sort().map((v) => (
-                  <option key={v} value={v} />
-                ))}
-              </datalist>
+            <div className="mb-3 flex flex-col sm:flex-row sm:items-center gap-2">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search roster or venue..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9 h-9"
+                  list="bm-venue-suggestions"
+                />
+                <datalist id="bm-venue-suggestions">
+                  {Array.from(new Set(Object.values(artistVenues).flat())).sort().map((v) => (
+                    <option key={v} value={v} />
+                  ))}
+                </datalist>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5 self-start sm:self-auto"
+                onClick={() => setBroadcastOpen(true)}
+                disabled={broadcastRecipients.length === 0}
+                title="Message everyone in the current search results — useful for last-minute cover requests"
+              >
+                <MessageSquare className="h-4 w-4" />
+                Message all
+                <Badge variant="secondary" className="ml-1">{broadcastRecipients.length}</Badge>
+              </Button>
             </div>
 
             {managedArtists.length === 0 ? (

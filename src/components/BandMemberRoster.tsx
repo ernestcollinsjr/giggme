@@ -58,19 +58,46 @@ export const BandMemberRoster = ({ bandId }: BandMemberRosterProps) => {
 
         if (profilesError) throw profilesError;
 
-        // Check which members have accepted gigs for this band (for status indicator)
+        // Show green indicator ONLY on the day of a performer's accepted gig,
+        // from 12:00 AM until the gig's end_time has passed.
+        const now = new Date();
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+        const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+
         const { data: acceptedMembers } = await supabase
           .from("gig_members")
           .select(`
             member_id,
             gigs!inner (
-              band_id
+              band_id,
+              date,
+              end_time
             )
           `)
           .eq("gigs.band_id", bandId)
-          .eq("status", "accepted");
+          .eq("status", "accepted")
+          .gte("gigs.date", startOfToday.toISOString())
+          .lte("gigs.date", endOfToday.toISOString());
 
-        const acceptedMemberIds = new Set(acceptedMembers?.map((am: any) => am.member_id) || []);
+        const activeMemberIds = new Set<string>();
+        (acceptedMembers || []).forEach((am: any) => {
+          const gig = am.gigs;
+          if (!gig) return;
+          const gigDate = new Date(gig.date);
+          // Determine the gig's end moment
+          let endMoment = new Date(gigDate.getFullYear(), gigDate.getMonth(), gigDate.getDate(), 23, 59, 59);
+          if (gig.end_time) {
+            const match = String(gig.end_time).match(/^(\d{1,2}):(\d{2})/);
+            if (match) {
+              const h = parseInt(match[1], 10);
+              const m = parseInt(match[2], 10);
+              endMoment = new Date(gigDate.getFullYear(), gigDate.getMonth(), gigDate.getDate(), h, m, 0);
+            }
+          }
+          if (now >= startOfToday && now <= endMoment) {
+            activeMemberIds.add(am.member_id);
+          }
+        });
 
         // Create a map of member_id to joined_at
         const joinedAtMap = new Map(bandMembers.map(bm => [bm.member_id, bm.joined_at]));
@@ -78,9 +105,10 @@ export const BandMemberRoster = ({ bandId }: BandMemberRosterProps) => {
         // Add acceptance status and joined date to profiles
         const membersWithStatus = profiles?.map(profile => ({
           ...profile,
-          hasAcceptedGigs: acceptedMemberIds.has(profile.id),
+          hasAcceptedGigs: activeMemberIds.has(profile.id),
           joinedAt: joinedAtMap.get(profile.id)
         })) || [];
+
 
         setMembers(membersWithStatus);
       } catch (error: any) {

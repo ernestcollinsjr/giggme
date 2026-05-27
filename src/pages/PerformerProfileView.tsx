@@ -359,9 +359,13 @@ const PerformerProfileView = () => {
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                     {extraPhotos.map((url, i) => (
                       <div key={i}>
-                        <div className="h-36 rounded-lg overflow-hidden sm:h-40">
+                        <button
+                          type="button"
+                          onClick={() => setLightboxPhoto(url)}
+                          className="h-36 w-full rounded-lg overflow-hidden sm:h-40 block focus:outline-none focus:ring-2 focus:ring-primary transition-transform hover:scale-[1.02]"
+                        >
                           <img src={url} alt={`Photo ${i + 2}`} className="h-full w-full object-cover object-top" />
-                        </div>
+                        </button>
                         <p className="text-xs text-muted-foreground text-center mt-1">Photo {i + 2}</p>
                       </div>
                     ))}

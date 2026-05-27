@@ -257,12 +257,15 @@ export default function BookingManagerAdmin() {
       if (!dateStr) return;
       const t = new Date(dateStr).getTime();
       if (isNaN(t)) return;
+      const rawVenue = br.venue || "";
+      const sep = rawVenue.includes(" — ") ? " — " : rawVenue.includes(" - ") ? " - " : null;
+      const [vName, vAddr] = sep ? rawVenue.split(sep, 2) : [null, rawVenue];
       gigs.push({
         id: br.id,
         date: br.event_date || br.dates_text,
         end_time: null,
-        venue: br.venue,
-        venue_name: null,
+        venue: vAddr || rawVenue,
+        venue_name: vName,
         status: "confirmed",
         artist_name: profileMap.get(br.performer_id) || "Unknown",
         artist_id: br.performer_id,
@@ -293,11 +296,14 @@ export default function BookingManagerAdmin() {
       const dateStr = br.event_date || br.dates_text;
       if (!dateStr) return;
       const expired = br.expires_at && new Date(br.expires_at).getTime() < Date.now();
+      const rawVenue = br.venue || "";
+      const sep = rawVenue.includes(" — ") ? " — " : rawVenue.includes(" - ") ? " - " : null;
+      const [vName, vAddr] = sep ? rawVenue.split(sep, 2) : [null, rawVenue];
       invites.push({
         id: br.id,
         date: dateStr,
-        venue: br.venue,
-        venue_name: null,
+        venue: vAddr || rawVenue,
+        venue_name: vName,
         status: expired ? "expired" : "pending",
         artist_name: profileMap.get(br.performer_id) || "Unknown",
         artist_id: br.performer_id,

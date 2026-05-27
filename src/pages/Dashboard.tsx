@@ -17,6 +17,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
 import { BandAssistant } from "@/components/BandAssistant";
+import { PaymentScheduler } from "@/components/PaymentScheduler";
 import { LivePresence } from "@/components/LivePresence";
 import { PlaceAutocomplete } from "@/components/PlaceAutocomplete";
 import { AutoLocationTracker } from "@/components/AutoLocationTracker";

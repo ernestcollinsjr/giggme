@@ -14,7 +14,7 @@ import Rehearsals from "./pages/Rehearsals";
 import Setlist from "./pages/Setlist";
 import SongLyrics from "./pages/SongLyrics";
 import Pricing from "./pages/Pricing";
-import ArtistProfile from "./pages/ArtistProfile";
+import PerformerProfileView from "./pages/PerformerProfileView";
 import ArtistsDiscovery from "./pages/ArtistsDiscovery";
 import BookingManager from "./pages/BookingManager";
 import NotFound from "./pages/NotFound";
@@ -57,8 +57,8 @@ const App = () => (
             <Route path="/setlist" element={<Setlist />} />
             <Route path="/setlist/lyrics/:songId" element={<SongLyrics />} />
             <Route path="/pricing" element={<Pricing />} />
-            <Route path="/artist-profile" element={<ArtistProfile />} />
-            <Route path="/artist-profile/:userId" element={<ArtistProfile />} />
+            <Route path="/artist-profile" element={<ProfileSetup />} />
+            <Route path="/artist-profile/:userId" element={<PerformerProfileView />} />
             <Route path="/artists" element={<ArtistsDiscovery />} />
             <Route path="/tours" element={<Tours />} />
             <Route path="/tours/:tourId" element={<TourDetail />} />

@@ -880,6 +880,24 @@ export default function BookingManagerAdmin() {
                       >
                         {inv.status}
                       </Badge>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive flex-shrink-0"
+                        onClick={async () => {
+                          const table = inv.source === "booking_request" ? "booking_requests" : "gig_members";
+                          const { error } = await supabase.from(table).delete().eq("id", inv.id);
+                          if (error) {
+                            toast({ variant: "destructive", title: "Error", description: error.message });
+                            return;
+                          }
+                          toast({ title: "Invite removed" });
+                          if (userId) await fetchUpcomingGigs(userId);
+                        }}
+                        aria-label="Delete invite"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </li>
                   );
                 })}

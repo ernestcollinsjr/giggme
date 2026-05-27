@@ -853,7 +853,7 @@ export default function BookingManagerAdmin() {
                                         ? "bg-green-500/20 text-green-600 border-green-500/30 hover:bg-green-500/30"
                                         : "bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20"
                                     )}
-                                    title="Click to toggle payment status"
+                                    title={isPaid ? "Click to mark as pending payment" : "Click to confirm payment was sent"}
                                   >
                                     {isPaid ? "Paid" : "Pending Payment"}
                                   </button>

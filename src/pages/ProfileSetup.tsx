@@ -249,10 +249,15 @@ const ProfileSetup = () => {
       // Load the image
       const img = await loadImage(file);
       
-      // Detect face and crop
-      const targetSize = index === 0 ? 400 : 800;
-      const croppedBlob = await detectFaceAndCrop(img, targetSize);
-      
+      // Primary avatar (index 0) gets face-centered square crop.
+      // Additional photos preserve full aspect ratio so nothing is cut off.
+      let processedBlob: Blob;
+      if (index === 0) {
+        processedBlob = await detectFaceAndCrop(img, 400);
+      } else {
+        processedBlob = await resizeImagePreserveAspect(img, 1200);
+      }
+
       // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -260,16 +265,16 @@ const ProfileSetup = () => {
         newPreviews[index] = reader.result as string;
         setPhotoPreviews(newPreviews);
       };
-      reader.readAsDataURL(croppedBlob);
-      
-      // Store the cropped file
+      reader.readAsDataURL(processedBlob);
+
+      // Store the processed file
       const newFiles = [...photoFiles];
-      newFiles[index] = new File([croppedBlob], `photo-${index}.jpg`, { type: 'image/jpeg' });
+      newFiles[index] = new File([processedBlob], `photo-${index}.jpg`, { type: 'image/jpeg' });
       setPhotoFiles(newFiles);
-      
+
       toast({
-        title: "Photo processed!",
-        description: "Your photo has been automatically centered.",
+        title: "Photo uploaded!",
+        description: index === 0 ? "Your profile photo has been centered." : "Your full photo has been saved.",
       });
     } catch (error) {
       console.error('Error processing photo:', error);

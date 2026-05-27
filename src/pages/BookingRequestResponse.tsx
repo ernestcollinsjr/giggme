@@ -16,6 +16,7 @@ interface BookingRequest {
   booker_name: string | null;
   booker_email: string | null;
   performer_name: string | null;
+  performer_email: string | null;
   dates_text: string;
   time_text: string | null;
   venue: string;

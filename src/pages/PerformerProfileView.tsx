@@ -525,8 +525,10 @@ const PerformerProfileView = () => {
                       );
                     })}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <p className="text-sm text-muted-foreground italic">No performance videos added yet.</p>
+                )}
+              </div>
                 </TabsContent>
 
                 <TabsContent value="role" className="mt-0 space-y-4">

@@ -1874,7 +1874,6 @@ const ProfileSetup = () => {
                     />
                   </div>
                 </div>
-                </div>
 
                 <div className="space-y-3 relative">
                   <div className="flex items-center justify-between">

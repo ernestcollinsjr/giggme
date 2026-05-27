@@ -251,7 +251,7 @@ const PerformerProfileView = () => {
 
   const initials = (profile.name || "?").split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
   const primaryPhoto = profile.photo_urls?.[0];
-  const extraPhotos = (profile.photo_urls || []).slice(1, 4);
+  const extraPhotos = (profile.photo_urls || []).slice(1);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/10">

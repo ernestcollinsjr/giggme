@@ -1,11 +1,85 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Clock, Navigation, AlertCircle, ExternalLink, CheckCircle2, Car } from "lucide-react";
+import { MapPin, Clock, Navigation, AlertCircle, ExternalLink, CheckCircle2, Car, Flag } from "lucide-react";
 import { format, parseISO, differenceInMinutes, isToday } from "date-fns";
 import { AutoLocationTracker } from "./AutoLocationTracker";
+
+// Haversine distance in meters
+function distanceMeters(lat1: number, lng1: number, lat2: number, lng2: number) {
+  const R = 6371000;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+interface TravelProgressProps {
+  name: string;
+  progress: number; // 0..1
+  distanceKm: number | null;
+  arrived: boolean;
+}
+
+const TravelProgress = ({ name, progress, distanceKm, arrived }: TravelProgressProps) => {
+  const pct = arrived ? 100 : Math.max(0, Math.min(100, Math.round(progress * 100)));
+  const dots = 12;
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+        <span className="font-medium text-foreground">{name}</span>
+        <span>
+          {arrived
+            ? "Arrived"
+            : distanceKm != null
+              ? `${distanceKm.toFixed(distanceKm < 10 ? 1 : 0)} km away`
+              : "On the way"}
+        </span>
+      </div>
+      <div className="relative h-6">
+        {/* dotted road */}
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-between">
+          {Array.from({ length: dots }).map((_, i) => {
+            const dotPct = (i / (dots - 1)) * 100;
+            const passed = dotPct <= pct;
+            return (
+              <div
+                key={i}
+                className={`h-1 w-1 rounded-full transition-colors ${
+                  passed ? "bg-primary" : "bg-muted-foreground/30"
+                }`}
+              />
+            );
+          })}
+        </div>
+        {/* car marker */}
+        <div
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 transition-all duration-700 ease-out"
+          style={{ left: `${pct}%` }}
+        >
+          <div
+            className={`p-1 rounded-full shadow-sm ${
+              arrived ? "bg-primary text-primary-foreground" : "bg-primary text-primary-foreground"
+            }`}
+          >
+            {arrived ? <CheckCircle2 className="h-3 w-3" /> : <Car className="h-3 w-3" />}
+          </div>
+        </div>
+        {/* venue flag */}
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2">
+          <div className="p-1 rounded-full bg-muted text-muted-foreground">
+            <Flag className="h-3 w-3" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 type TravelStatus = "not_started" | "in_transit" | "arrived";
 interface TravelRow {

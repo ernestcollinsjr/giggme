@@ -63,13 +63,23 @@ interface BandWithMembers {
 }
 
 const roleLabels: Record<AppRole, string> = {
-  super_admin: "admin",
-  band_leader: "leader",
-  band_member: "member",
-  booking_manager: "manager",
-  artist: "artist",
-  tour_manager: "tour mgr",
-  venue_owner: "venue",
+  super_admin: "Super Admin",
+  band_leader: "Manager",
+  band_member: "Member",
+  booking_manager: "Agent",
+  artist: "Entertainer",
+  tour_manager: "Tour Manager",
+  venue_owner: "Venue",
+};
+
+const roleDescriptions: Record<AppRole, string> = {
+  super_admin: "Full control over the entire site and all users",
+  band_leader: "Paid subscriber — can invite members to their group and edit their admin members",
+  band_member: "Belongs to a group; managed by their Manager",
+  booking_manager: "Paid subscriber — can invite members to their group and edit their admin members",
+  artist: "Paid subscriber — creative profile privileges only",
+  tour_manager: "Paid subscriber — can invite members to their group and edit their admin members",
+  venue_owner: "Venue owner account",
 };
 
 const AdminDashboard = () => {

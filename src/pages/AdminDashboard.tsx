@@ -463,6 +463,16 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-background">
       <TopNav userRole="super_admin" />
       <main className="container mx-auto px-4 py-6 pb-24">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="mb-4 -ml-2"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
+        </Button>
+
         <div className="mb-6">
           <h2 className="text-2xl font-bold">All Entertainers</h2>
           <p className="text-muted-foreground">{entertainers.length} entertainers total</p>

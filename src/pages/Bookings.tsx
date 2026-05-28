@@ -1470,14 +1470,12 @@ const Bookings = () => {
           const requestDatesRaw: Date[] = [];
           const invitationDatesRaw: Date[] = [];
           const confirmedDates: Date[] = [];
-          // Booking requests: accepted -> booked (blue), others (pending/sent) -> unavailable (red)
+          // Booking requests created from the calendar should reserve the date immediately.
           bookingRequests.forEach((br: any) => {
             const dates = getBookingRequestCalendarDates(br);
             const status = (br.status || "").toLowerCase();
-            if (status === "accepted" || status === "confirmed") {
+            if (status !== "declined" && status !== "rejected" && status !== "cancelled" && status !== "expired") {
               confirmedDates.push(...dates);
-            } else if (status !== "declined" && status !== "rejected" && status !== "cancelled") {
-              requestDatesRaw.push(...dates);
             }
           });
           // Gig invitations: accepted -> booked (blue), pending -> tentative (yellow)
@@ -1622,7 +1620,7 @@ const Bookings = () => {
                           <div className="flex items-center gap-2">
                             <span className={cn(
                               "h-2.5 w-2.5 rounded-full",
-                              br.status === "accepted" || br.status === "confirmed" ? "bg-blue-500" : "bg-red-500"
+                              br.status === "declined" || br.status === "rejected" || br.status === "cancelled" || br.status === "expired" ? "bg-red-500" : "bg-blue-500"
                             )} />
                             <Badge variant="secondary">Booking request</Badge>
                           </div>

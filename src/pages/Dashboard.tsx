@@ -40,6 +40,7 @@ import { MessageSquare, Send, Users as UsersIcon } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { formatInTimeZone } from "date-fns-tz";
 import { TopNav } from "@/components/TopNav";
+import { AppShell } from "@/components/AppShell";
 
 interface Profile {
   id: string;

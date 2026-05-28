@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 
 import heroVirtualAssistant from "@/assets/hero-virtual-assistant.jpg";
+import { TutorialSimulators } from "@/components/TutorialSimulators";
 
 const Index = () => {
   const navigate = useNavigate();

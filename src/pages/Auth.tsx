@@ -175,6 +175,16 @@ const Auth = () => {
 
       if (error) throw error;
 
+      // Supabase returns a user with empty identities when the email is already registered
+      if (signUpData.user && Array.isArray(signUpData.user.identities) && signUpData.user.identities.length === 0) {
+        toast({
+          variant: "destructive",
+          title: "Email already in use",
+          description: "An account with this email already exists. Please log in instead.",
+        });
+        return;
+      }
+
       // For entertainer plans coming from /find-entertainers, redirect to checkout
       if (entertainerPlan) {
         let session = signUpData.session;

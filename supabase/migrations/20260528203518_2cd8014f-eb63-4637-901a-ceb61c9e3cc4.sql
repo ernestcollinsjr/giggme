@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS entertainer_categories text[] NOT NULL DEFAULT ARRAY[]::text[];

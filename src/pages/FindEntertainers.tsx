@@ -68,7 +68,16 @@ interface FeaturedEntertainer {
   stage_name: string | null;
   genre: string | null;
   instrument: string | null;
+  entertainer_categories?: string[] | null;
 }
+
+const ALL_CATEGORIES = [
+  "Musician/Church", "RnB Musician", "Musician/Church + RnB", "RnB Singer",
+  "Church Singer", "Minister of Music", "Choir Director", "Rap", "RnB",
+  "Hip Hop", "Country", "Pop", "Folk", "Jazz", "Opera", "Rock", "Band",
+  "Solo", "Duo", "Trio", "Drummer", "Sax", "Keyboardist", "Trombone",
+  "Horn", "Guitar", "Bass", "Cello", "Flute", "String",
+];
 
 const FindEntertainers = () => {
   const navigate = useNavigate();
@@ -77,6 +86,7 @@ const FindEntertainers = () => {
   const [user, setUser] = useState<any>(null);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
   useEffect(() => {
     loadEntertainers();
@@ -297,7 +307,22 @@ const FindEntertainers = () => {
 
       {/* Entertainer grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        <h3 className="text-2xl font-bold text-white mb-6">Get Featured Here</h3>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+          <h3 className="text-2xl font-bold text-white">Get Featured Here</h3>
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-white/60">Category</label>
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/30"
+            >
+              <option value="all">All categories</option>
+              {ALL_CATEGORIES.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+        </div>
 
         {loading ? (
           <div className="flex justify-center py-16">
@@ -305,7 +330,13 @@ const FindEntertainers = () => {
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-5">
-            {entertainers.map((e) => {
+            {entertainers
+              .filter((e) =>
+                categoryFilter === "all"
+                  ? true
+                  : (e.entertainer_categories || []).includes(categoryFilter)
+              )
+              .map((e) => {
               const photo = e.photo_urls?.[0];
               const displayName = e.stage_name || e.name || "Entertainer";
               return (

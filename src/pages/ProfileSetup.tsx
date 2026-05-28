@@ -69,6 +69,7 @@ const ProfileSetup = () => {
   const [newSkill, setNewSkill] = useState("");
   const [genres, setGenres] = useState<string[]>([]);
   const [newGenre, setNewGenre] = useState("");
+  const [entertainerCategories, setEntertainerCategories] = useState<string[]>([]);
   const [availabilityStatus, setAvailabilityStatus] = useState("available");
   const [todayCalendarStatus, setTodayCalendarStatus] = useState<string | null>(null);
   const [weekAvailability, setWeekAvailability] = useState<{date: string; status: string | null}[]>([]);
@@ -180,6 +181,7 @@ const ProfileSetup = () => {
           setEquipment(profile.equipment || []);
           setSkills(profile.skills || []);
           setGenres(profile.genres || []);
+          setEntertainerCategories(((profile as any).entertainer_categories as string[]) || []);
           setAvailabilityStatus(profile.availability_status || "available");
           setTravelDistance(profile.travel_distance?.toString() || "");
           setYearsExperience(profile.years_experience?.toString() || "");
@@ -446,6 +448,7 @@ const ProfileSetup = () => {
         years_experience: yearsExperience ? parseInt(yearsExperience) : null,
         union_memberships: finalUnions,
         performer_category: performerCategory,
+        entertainer_categories: entertainerCategories,
         preferred_pay: preferredPay ? parseFloat(preferredPay) : null,
         preferred_pay_hours: preferredPayHours ? parseFloat(preferredPayHours) : null,
         updated_at: new Date().toISOString(),
@@ -1861,7 +1864,82 @@ const ProfileSetup = () => {
                   )}
                 </div>
               )}
+
+              {/* Entertainer Categories (multi-select) */}
+              {(role === "band_leader" || role === "band_member" || role === "artist") && (
+                <div className="space-y-3 pt-4 border-t">
+                  <div>
+                    <Label className="flex items-center gap-2">
+                      <Music className="h-4 w-4" />
+                      Entertainer Categories
+                    </Label>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Select all that apply — helps people searching for entertainers find you.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      "Musician/Church",
+                      "RnB Musician",
+                      "Musician/Church + RnB",
+                      "RnB Singer",
+                      "Church Singer",
+                      "Minister of Music",
+                      "Choir Director",
+                      "Rap",
+                      "RnB",
+                      "Hip Hop",
+                      "Country",
+                      "Pop",
+                      "Folk",
+                      "Jazz",
+                      "Opera",
+                      "Rock",
+                      "Band",
+                      "Solo",
+                      "Duo",
+                      "Trio",
+                      "Drummer",
+                      "Sax",
+                      "Keyboardist",
+                      "Trombone",
+                      "Horn",
+                      "Guitar",
+                      "Bass",
+                      "Cello",
+                      "Flute",
+                      "String",
+                    ].map((cat) => {
+                      const selected = entertainerCategories.includes(cat);
+                      return (
+                        <button
+                          key={cat}
+                          type="button"
+                          onClick={() =>
+                            setEntertainerCategories((prev) =>
+                              prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
+                            )
+                          }
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                            selected
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "bg-background text-foreground border-border hover:bg-muted"
+                          }`}
+                        >
+                          {cat}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {entertainerCategories.length > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      {entertainerCategories.length} selected
+                    </p>
+                  )}
+                </div>
+              )}
               </TabsContent>
+
 
               {/* Alerts Tab */}
               <TabsContent value="alerts" className="mt-0 space-y-6">

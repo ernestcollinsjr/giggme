@@ -426,6 +426,17 @@ const AdminDashboard = () => {
       user.bandNames.some((bn) => bn.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  const entertainers = users.filter(
+    (u) => u.role === "artist" || (u.entertainer_categories && u.entertainer_categories.length > 0) || u.subscription_status
+  );
+
+  const filteredEntertainers = entertainers.filter(
+    (user) =>
+      user.name.toLowerCase().includes(entertainerSearchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(entertainerSearchTerm.toLowerCase()) ||
+      (user.entertainer_categories || []).some((c) => c.toLowerCase().includes(entertainerSearchTerm.toLowerCase()))
+  );
+
   const filteredBands = bands.filter(
     (band) =>
       band.name.toLowerCase().includes(groupSearchTerm.toLowerCase())

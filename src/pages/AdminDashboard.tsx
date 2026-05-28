@@ -558,6 +558,92 @@ const AdminDashboard = () => {
             </div>
           </TabsContent>
 
+          {/* Entertainers Tab */}
+          <TabsContent value="entertainers">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold">All Entertainers</h2>
+              <p className="text-muted-foreground">{entertainers.length} entertainers total</p>
+            </div>
+
+            <div className="flex justify-end mb-4">
+              <div className="relative w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search entertainers..."
+                  value={entertainerSearchTerm}
+                  onChange={(e) => setEntertainerSearchTerm(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+            </div>
+
+            <div className="bg-card rounded-lg border overflow-hidden">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/50">
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Phone</TableHead>
+                      <TableHead>Categories</TableHead>
+                      <TableHead>Subscription</TableHead>
+                      <TableHead>Joined</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredEntertainers.map((user) => (
+                      <TableRow key={user.id}>
+                        <TableCell className="font-medium">{user.name}</TableCell>
+                        <TableCell className="text-muted-foreground">{user.email}</TableCell>
+                        <TableCell className="text-muted-foreground">{user.phone_number || "—"}</TableCell>
+                        <TableCell>
+                          {user.entertainer_categories && user.entertainer_categories.length > 0
+                            ? user.entertainer_categories.join(", ")
+                            : <span className="text-muted-foreground">—</span>}
+                        </TableCell>
+                        <TableCell>
+                          {user.subscription_status ? (
+                            <Badge variant={user.subscription_status === "active" ? "default" : "outline"}>
+                              {user.subscription_status}
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-muted-foreground">none</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {user.created_at ? new Date(user.created_at).toLocaleDateString() : "—"}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-1">
+                            <Button variant="ghost" size="icon" onClick={() => handleEditUser(user)}>
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-destructive hover:text-destructive"
+                              onClick={() => setDeleteConfirmUser(user)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {filteredEntertainers.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                          No entertainers found
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          </TabsContent>
+
           {/* Groups Tab */}
           <TabsContent value="groups">
             <div className="mb-6">

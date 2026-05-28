@@ -148,7 +148,15 @@ const Index = () => {
             {["Features", "How It Works", "For Entertainers", "Pricing"].map((item) => (
               <button
                 key={item}
-                onClick={() => navigate(item === "Pricing" ? "/pricing" : "/auth")}
+                onClick={() => {
+                  if (item === "Pricing") {
+                    navigate("/pricing");
+                  } else if (item === "How It Works") {
+                    document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  } else {
+                    navigate("/auth");
+                  }
+                }}
                 className="text-sm font-medium text-white/70 hover:text-white transition-colors"
               >
                 {item}
@@ -369,7 +377,7 @@ const Index = () => {
       </section>
 
       {/* How it works */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <section id="how-it-works" className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 scroll-mt-20">
         <div className="text-center mb-14">
           <h2 className="text-3xl sm:text-4xl font-bold text-white">How it works</h2>
           <p className="mt-3 text-white/60">Book the best. Exceptional talent is just a few clicks away.</p>

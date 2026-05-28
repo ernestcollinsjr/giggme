@@ -374,11 +374,12 @@ const Index = () => {
           <h2 className="text-3xl sm:text-4xl font-bold text-white">How it works</h2>
           <p className="mt-3 text-white/60">Book the best. Exceptional talent is just a few clicks away.</p>
         </div>
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
             { n: "01", t: "Search Roster", d: "Type in the search bar for your performers and see who's booked or available." },
             { n: "02", t: "Book securely", d: "GiggMe ensures secure connections, fast service, and smooth and efficient coordination." },
             { n: "03", t: "Accountability", d: "Track your performers to ensure safe and on-time arrivals." },
+            { n: "04", t: "Push Notifications", d: "Never send another text message — let the system automatically send communications for gig reminders." },
           ].map((s) => (
             <div key={s.n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-7">
               <div className="text-sm font-mono text-violet-400">{s.n}</div>

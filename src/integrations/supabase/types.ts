@@ -1264,6 +1264,7 @@ export type Database = {
           bio: string | null
           created_at: string | null
           email: string
+          entertainer_categories: string[]
           equipment: string[] | null
           genres: string[] | null
           id: string
@@ -1292,6 +1293,7 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           email: string
+          entertainer_categories?: string[]
           equipment?: string[] | null
           genres?: string[] | null
           id: string
@@ -1320,6 +1322,7 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           email?: string
+          entertainer_categories?: string[]
           equipment?: string[] | null
           genres?: string[] | null
           id?: string

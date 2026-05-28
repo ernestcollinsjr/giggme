@@ -156,7 +156,7 @@ const Index = () => {
                     navigate("/pricing");
                   } else if (item === "How It Works") {
                     document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth", block: "start" });
-                  } else if (item === "Find Entertainers") {
+                  } else if (item === "Entertainers") {
                     navigate("/find-entertainers");
                   } else {
                     navigate("/auth");

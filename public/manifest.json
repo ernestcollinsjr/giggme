@@ -9,19 +9,19 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/gigme-icon-192-v4.png?v=4",
+      "src": "/gigme-icon-192-v5.png?v=5",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/gigme-icon-512-v4.png?v=4",
+      "src": "/gigme-icon-512-v5.png?v=5",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/gigme-maskable-icon-512-v4.png?v=4",
+      "src": "/gigme-maskable-icon-512-v5.png?v=5",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

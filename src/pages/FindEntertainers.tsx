@@ -68,7 +68,16 @@ interface FeaturedEntertainer {
   stage_name: string | null;
   genre: string | null;
   instrument: string | null;
+  entertainer_categories?: string[] | null;
 }
+
+const ALL_CATEGORIES = [
+  "Musician/Church", "RnB Musician", "Musician/Church + RnB", "RnB Singer",
+  "Church Singer", "Minister of Music", "Choir Director", "Rap", "RnB",
+  "Hip Hop", "Country", "Pop", "Folk", "Jazz", "Opera", "Rock", "Band",
+  "Solo", "Duo", "Trio", "Drummer", "Sax", "Keyboardist", "Trombone",
+  "Horn", "Guitar", "Bass", "Cello", "Flute", "String",
+];
 
 const FindEntertainers = () => {
   const navigate = useNavigate();
@@ -77,6 +86,7 @@ const FindEntertainers = () => {
   const [user, setUser] = useState<any>(null);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
   useEffect(() => {
     loadEntertainers();

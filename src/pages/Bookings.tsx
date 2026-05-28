@@ -1373,7 +1373,47 @@ const Bookings = () => {
           </Card>
         )}
 
+        {/* Calendar overview — highlights all booking dates */}
+        {(() => {
+          const bookedDates: Date[] = [];
+          bookingRequests.forEach((br: any) => {
+            if (br.event_date) bookedDates.push(new Date(br.event_date));
+          });
+          gigInvitations.forEach((gi: any) => {
+            if (gi.gigs?.date) bookedDates.push(new Date(gi.gigs.date));
+          });
+          gigs.forEach((g) => {
+            if (g.date) bookedDates.push(new Date(g.date));
+          });
+          return (
+            <Card className="border-border/50 shadow-lg mb-4">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CalendarIcon className="h-5 w-5 text-primary" />
+                  Booking Calendar
+                </CardTitle>
+                <CardDescription>
+                  Highlighted dates show all scheduled bookings across your performers
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex justify-center">
+                <Calendar
+                  mode="multiple"
+                  selected={bookedDates}
+                  onSelect={() => {}}
+                  modifiers={{ booked: bookedDates }}
+                  modifiersClassNames={{
+                    booked: "bg-primary text-primary-foreground hover:bg-primary/90 rounded-md font-semibold",
+                  }}
+                  className="rounded-md border border-border/50"
+                />
+              </CardContent>
+            </Card>
+          );
+        })()}
+
         {/* Current bookings (booking requests + gig invitations) */}
+
         {(bookingRequests.length > 0 || gigInvitations.length > 0) && (
           <Card className="border-border/50 shadow-lg mb-4">
             <CardHeader>

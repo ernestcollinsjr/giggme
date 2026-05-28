@@ -48,7 +48,33 @@ export function AppShell({ userRole, children }: AppShellProps) {
       ? "Artist"
       : "Member";
 
-  return (
+  const [profile, setProfile] = useState<{ name: string | null; photo_urls: string[] | null }>({ name: null, photo_urls: null });
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from("profiles")
+        .select("name, photo_urls")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (active && data) setProfile(data as any);
+    })();
+    return () => { active = false; };
+  }, []);
+
+  const displayName = profile.name || roleLabel;
+  const avatarSrc = profile.photo_urls?.[0];
+  const initials = (profile.name || roleLabel)
+    .split(" ")
+    .map((s) => s[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
     <>
       {/* Mobile: pass-through, BottomNav and TopNav inside children handle nav */}
       <div className="lg:hidden">{children}</div>

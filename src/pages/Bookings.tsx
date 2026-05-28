@@ -1379,11 +1379,27 @@ const Bookings = () => {
           const requestDatesRaw: Date[] = [];
           const invitationDatesRaw: Date[] = [];
           const confirmedDates: Date[] = [];
+          // Booking requests: accepted -> booked (blue), others (pending/sent) -> unavailable (red)
           bookingRequests.forEach((br: any) => {
-            if (br.event_date) requestDatesRaw.push(new Date(br.event_date));
+            if (!br.event_date) return;
+            const d = new Date(br.event_date);
+            const status = (br.status || "").toLowerCase();
+            if (status === "accepted" || status === "confirmed") {
+              confirmedDates.push(d);
+            } else if (status !== "declined" && status !== "rejected" && status !== "cancelled") {
+              requestDatesRaw.push(d);
+            }
           });
+          // Gig invitations: accepted -> booked (blue), pending -> tentative (yellow)
           gigInvitations.forEach((gi: any) => {
-            if (gi.gigs?.date) invitationDatesRaw.push(new Date(gi.gigs.date));
+            if (!gi.gigs?.date) return;
+            const d = new Date(gi.gigs.date);
+            const status = (gi.status || "").toLowerCase();
+            if (status === "accepted" || status === "confirmed") {
+              confirmedDates.push(d);
+            } else if (status !== "declined" && status !== "rejected") {
+              invitationDatesRaw.push(d);
+            }
           });
           gigs.forEach((g) => {
             if (g.date) confirmedDates.push(new Date(g.date));

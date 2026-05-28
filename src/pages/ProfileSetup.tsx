@@ -1349,67 +1349,66 @@ const ProfileSetup = () => {
             <form onSubmit={handleSubmit}>
               <TabsContent value="profile" className="mt-0 space-y-6">
             <div className="space-y-2">
-              <div className="flex items-start gap-6">
-                <div className="flex flex-col items-center gap-3">
-                  <div className="relative group cursor-pointer" onClick={() => !processingPhoto && document.getElementById('main-photo')?.click()}>
-                    {processingPhoto === 0 ? (
-                      <div className="w-20 h-20 rounded-full border-2 border-primary flex items-center justify-center bg-muted/10">
-                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                      </div>
-                    ) : photoPreviews[0] ? (
-                      <>
-                        <img 
-                          src={photoPreviews[0]} 
-                          alt="Main profile" 
-                          className="w-20 h-20 rounded-full object-cover border-2 border-primary"
-                        />
-                        <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <span className="text-white text-xs font-medium">Change</span>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="w-20 h-20 rounded-full border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-muted/10">
-                        <span className="text-muted-foreground text-xs">Upload</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="text-center space-y-1 w-full">
-                    <Input
-                      id="name"
-                      type="text"
-                      placeholder="Your name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      required
-                      className="text-center"
-                    />
-                    {(role === "band_member" || role === "band_leader") && (
-                      <Input
-                        id="band_name"
-                        type="text"
-                        placeholder="Band name (e.g. The Headliners)"
-                        value={bandName}
-                        onChange={(e) => setBandName(e.target.value)}
-                        className="text-center"
+              <div className="flex items-start gap-4">
+                <div className="relative group cursor-pointer shrink-0" onClick={() => !processingPhoto && document.getElementById('main-photo')?.click()}>
+                  {processingPhoto === 0 ? (
+                    <div className="h-24 w-24 rounded-lg border-2 border-primary flex items-center justify-center bg-muted/10">
+                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    </div>
+                  ) : photoPreviews[0] ? (
+                    <>
+                      <img
+                        src={photoPreviews[0]}
+                        alt="Main profile"
+                        className="h-24 w-24 rounded-lg object-cover border-2 border-primary"
                       />
-                    )}
-                    <Select value={performerCategory} onValueChange={setPerformerCategory}>
-                      <SelectTrigger className="text-center">
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Solo">Solo</SelectItem>
-                        <SelectItem value="Duo">Duo</SelectItem>
-                        <SelectItem value="Band">Band</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {memberSince && (
-                      <span className="text-xs text-muted-foreground">
-                        Member since {memberSince}
-                      </span>
-                    )}
-                  </div>
+                      <div className="absolute inset-0 bg-black/50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <span className="text-white text-xs font-medium">Change</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="h-24 w-24 rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-muted/10">
+                      <span className="text-muted-foreground text-xs">Upload</span>
+                    </div>
+                  )}
                 </div>
+                <div className="flex-1 min-w-0 space-y-2">
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="Your name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    className="text-xl font-semibold h-auto py-1 px-2"
+                  />
+                  {(role === "band_member" || role === "band_leader") && (
+                    <Input
+                      id="band_name"
+                      type="text"
+                      placeholder="Band name (e.g. The Headliners)"
+                      value={bandName}
+                      onChange={(e) => setBandName(e.target.value)}
+                      className="text-sm"
+                    />
+                  )}
+                  <Select value={performerCategory} onValueChange={setPerformerCategory}>
+                    <SelectTrigger className="text-sm text-muted-foreground h-auto py-1">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Solo">Solo</SelectItem>
+                      <SelectItem value="Duo">Duo</SelectItem>
+                      <SelectItem value="Band">Band</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {memberSince && (
+                    <p className="text-xs text-muted-foreground">
+                      Member since {memberSince}
+                    </p>
+                  )}
+                </div>
+
                 <div className="flex-1">
                   <Input
                     id="main-photo"

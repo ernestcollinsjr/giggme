@@ -1390,54 +1390,55 @@ const Bookings = () => {
           });
           const allDates = [...requestDates, ...invitationDates, ...confirmedDates];
           return (
-            <div className="flex flex-col md:flex-row items-start gap-6 mb-4">
-              <Card className="border-border/50 shadow-lg flex-1 w-full">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CalendarIcon className="h-5 w-5 text-primary" />
-                    Booking Calendar
-                  </CardTitle>
-                  <CardDescription>
-                    Highlighted dates show all scheduled bookings across your performers
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="flex justify-center overflow-hidden">
-                  <div className="scale-[1.6] origin-top transform-gpu" style={{ marginBottom: 'calc(1.6 * 350px - 350px)' }}>
-                    <Calendar
-                      mode="single"
-                      selected={selectedCalendarDate ?? undefined}
-                      onSelect={(d) => d && setSelectedCalendarDate(d)}
-                      modifiers={{
-                        confirmed: confirmedDates,
-                        invitation: invitationDates,
-                        request: requestDates,
-                      }}
-                      modifiersClassNames={{
-                        confirmed: "!bg-blue-500 !text-white hover:!bg-blue-500/90 rounded-md font-semibold cursor-pointer",
-                        invitation: "!bg-yellow-400 !text-black hover:!bg-yellow-400/90 rounded-md font-semibold cursor-pointer",
-                        request: "!bg-red-500 !text-white hover:!bg-red-500/90 rounded-md font-semibold cursor-pointer",
-                      }}
-                      className="rounded-md border border-border/50"
-                    />
+            <Card className="border-border/50 shadow-lg mb-4">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CalendarIcon className="h-5 w-5 text-primary" />
+                  Booking Calendar
+                </CardTitle>
+                <CardDescription>
+                  Highlighted dates show all scheduled bookings across your performers
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col items-center overflow-hidden">
+                <div className="scale-[1.6] origin-top transform-gpu" style={{ marginBottom: 'calc(1.6 * 350px - 350px)' }}>
+                  <Calendar
+                    mode="single"
+                    selected={selectedCalendarDate ?? undefined}
+                    onSelect={(d) => d && setSelectedCalendarDate(d)}
+                    modifiers={{
+                      confirmed: confirmedDates,
+                      invitation: invitationDates,
+                      request: requestDates,
+                    }}
+                    modifiersClassNames={{
+                      confirmed: "!bg-blue-500 !text-white hover:!bg-blue-500/90 rounded-full font-semibold cursor-pointer",
+                      invitation: "!bg-yellow-400 !text-black hover:!bg-yellow-400/90 rounded-full font-semibold cursor-pointer",
+                      request: "!bg-red-500 !text-white hover:!bg-red-500/90 rounded-full font-semibold cursor-pointer",
+                    }}
+                    className="rounded-md border border-border/50"
+                  />
+                </div>
+                <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm mt-2">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-block h-3 w-3 rounded-full bg-green-500" />
+                    <span className="text-muted-foreground">Available</span>
                   </div>
-                </CardContent>
-              </Card>
-              <div className="flex md:flex-col flex-wrap gap-3 text-sm md:w-48 md:pt-4">
-                <div className="font-semibold text-foreground w-full">Legend</div>
-                <div className="flex items-center gap-2">
-                  <span className="inline-block h-4 w-4 rounded-full bg-blue-500" />
-                  <span className="text-muted-foreground">Booked / Confirmed</span>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-block h-3 w-3 rounded-full bg-red-500" />
+                    <span className="text-muted-foreground">Unavailable</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-block h-3 w-3 rounded-full bg-yellow-400" />
+                    <span className="text-muted-foreground">Tentative</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-block h-3 w-3 rounded-full bg-blue-500" />
+                    <span className="text-muted-foreground">Booked</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="inline-block h-4 w-4 rounded-full bg-yellow-400" />
-                  <span className="text-muted-foreground">Tentative (invitations)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="inline-block h-4 w-4 rounded-full bg-red-500" />
-                  <span className="text-muted-foreground">Pending requests</span>
-                </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           );
         })()}
 

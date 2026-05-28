@@ -119,38 +119,24 @@ serve(async (req) => {
     for (const tokenRecord of tokens) {
       try {
         const subscription = JSON.parse(tokenRecord.token);
-        
-        // Send push notification
-        const response = await fetch(subscription.endpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'TTL': '86400',
-          },
-          body: payload,
-        });
-
-        if (!response.ok) {
-          const text = await response.text();
-          console.error('Push failed:', response.status, text);
-          
-          // Remove stale tokens
-          if (response.status === 404 || response.status === 410) {
-            await supabase.from('push_tokens').delete().eq('id', tokenRecord.id);
-            console.log('Removed stale token:', tokenRecord.id);
-          }
-          
-          results.push({ success: false, tokenId: tokenRecord.id, error: text });
-        } else {
-          results.push({ success: true, tokenId: tokenRecord.id });
-          console.log('Push sent successfully to token:', tokenRecord.id);
-        }
+        await webpush.sendNotification(subscription, payload, { TTL: 86400 });
+        results.push({ success: true, tokenId: tokenRecord.id });
+        console.log('Push sent successfully to token:', tokenRecord.id);
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        console.error('Error sending to token:', tokenRecord.id, error);
+        const statusCode = (error as any)?.statusCode;
+        console.error('Error sending to token:', tokenRecord.id, statusCode, errorMessage);
+
+        // Remove stale tokens
+        if (statusCode === 404 || statusCode === 410) {
+          await supabase.from('push_tokens').delete().eq('id', tokenRecord.id);
+          console.log('Removed stale token:', tokenRecord.id);
+        }
+
         results.push({ success: false, tokenId: tokenRecord.id, error: errorMessage });
       }
     }
+
 
     // Also create an in-app notification
     const { error: notifError } = await supabase

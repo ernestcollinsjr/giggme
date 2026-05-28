@@ -50,6 +50,7 @@ interface UserWithRole {
   bandNames: string[];
   entertainer_categories?: string[] | null;
   subscription_status?: string | null;
+  performer_category?: string | null;
 }
 
 interface BandWithMembers {

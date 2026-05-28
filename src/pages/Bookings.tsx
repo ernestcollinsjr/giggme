@@ -226,6 +226,30 @@ const Bookings = () => {
 
     setUserRole(roleData?.role || null);
 
+    // Fetch managed artists (for quick-book from calendar) — booking managers & band leaders
+    if (
+      roleData?.role === "booking_manager" ||
+      roleData?.role === "band_leader" ||
+      roleData?.role === "super_admin"
+    ) {
+      const { data: links } = await supabase
+        .from("booking_manager_artists")
+        .select("artist_id")
+        .eq("booking_manager_id", user.id);
+      const ids = (links || []).map((l: any) => l.artist_id);
+      if (ids.length > 0) {
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("id, name, email")
+          .in("id", ids);
+        setManagedArtists(
+          (profs || []).map((p: any) => ({ artist_id: p.id, name: p.name, email: p.email }))
+        );
+      } else {
+        setManagedArtists([]);
+      }
+    }
+
     // Fetch bands for band leaders
     if (roleData?.role === "band_leader" || roleData?.role === "super_admin") {
       const { data: bandsData } = await supabase

@@ -22,6 +22,7 @@ interface ArtistWithProfile {
   availability: string | null;
   rate_range: string | null;
   youtube_videos: Array<{ url: string; title: string }>;
+  venues?: string[];
   profile: {
     name: string;
     bio: string | null;

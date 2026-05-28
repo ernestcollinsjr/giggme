@@ -67,6 +67,8 @@ const Bookings = () => {
   const [gigs, setGigs] = useState<Gig[]>([]);
   const [gigRehearsals, setGigRehearsals] = useState<Record<string, { date: string; venue: string; end_time: string | null }>>({});
   const [gigResponseCounts, setGigResponseCounts] = useState<Record<string, { pending: number; accepted: number; declined: number }>>({});
+  const [bookingRequests, setBookingRequests] = useState<any[]>([]);
+  const [gigInvitations, setGigInvitations] = useState<any[]>([]);
   const [bands, setBands] = useState<{ id: string; name: string }[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -300,7 +302,23 @@ const Bookings = () => {
       
       setBandMembers((membersData as BandMember[]) || []);
     }
-    
+
+    // Fetch booking requests where the user is the performer (from venues / managers)
+    const { data: brData } = await supabase
+      .from("booking_requests")
+      .select("id, status, booker_name, dates_text, time_text, venue, budget, contact_person, event_date, created_at")
+      .eq("performer_id", user.id)
+      .order("created_at", { ascending: false });
+    setBookingRequests(brData || []);
+
+    // Fetch gig invitations from bands (gigs the user has been invited to)
+    const { data: giData } = await supabase
+      .from("gig_members")
+      .select("id, status, location_sharing_enabled, gigs!inner(id, date, venue, venue_name, notes)")
+      .eq("member_id", user.id)
+      .order("status", { ascending: true });
+    setGigInvitations(giData || []);
+
     setLoading(false);
   };
 
@@ -1351,6 +1369,61 @@ const Bookings = () => {
                 <Plus className="h-4 w-4 mr-2" />
                 {includeRehearsal ? "Add Gig & Rehearsal" : "Add Gig"} {selectedMembers.length > 0 && `& Invite ${selectedMembers.length}`}
               </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Current bookings (booking requests + gig invitations) */}
+        {(bookingRequests.length > 0 || gigInvitations.length > 0) && (
+          <Card className="border-border/50 shadow-lg mb-4">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CalendarIcon className="h-5 w-5 text-primary" />
+                Current Bookings
+              </CardTitle>
+              <CardDescription>Your booking requests and gig invitations</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {bookingRequests.map((br) => (
+                <div
+                  key={`br-${br.id}`}
+                  className="p-4 border rounded-lg cursor-pointer hover:bg-accent/40 transition-colors"
+                  onClick={() => navigate(`/booking-request/${br.id}`)}
+                >
+                  <div className="flex items-start justify-between gap-2 flex-wrap">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <Badge variant={br.status === 'accepted' ? 'default' : br.status === 'pending' ? 'secondary' : 'outline'}>
+                          {br.status}
+                        </Badge>
+                        <Badge variant="outline">Booking Request</Badge>
+                      </div>
+                      <p className="font-semibold truncate">{br.venue}</p>
+                      <p className="text-sm text-muted-foreground">
+                        From {br.booker_name || 'a client'} · {br.dates_text}
+                        {br.time_text && ` · ${br.time_text}`}
+                      </p>
+                      {br.budget && (
+                        <p className="text-xs text-muted-foreground mt-1">Budget: {br.budget}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {gigInvitations.map((gi: any) => (
+                <div key={`gi-${gi.id}`} className="p-4 border rounded-lg">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <Badge variant={gi.status === 'accepted' ? 'default' : gi.status === 'pending' ? 'secondary' : 'outline'}>
+                      {gi.status}
+                    </Badge>
+                    <Badge variant="outline">Band Gig</Badge>
+                  </div>
+                  <p className="font-semibold truncate">{gi.gigs?.venue_name || gi.gigs?.venue}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {gi.gigs?.date && format(new Date(gi.gigs.date), "PPP p")}
+                  </p>
+                </div>
+              ))}
             </CardContent>
           </Card>
         )}

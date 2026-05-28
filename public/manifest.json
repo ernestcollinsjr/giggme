@@ -8,8 +8,8 @@
   "theme_color": "#8B5CF6",
   "orientation": "portrait",
   "icons": [
-    { "src": "/gigme-icon-192-v7.png?v=7", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/gigme-icon-512-v7.png?v=7", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/gigme-maskable-icon-512-v7.png?v=7", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "/gigme-icon-192-v8.png?v=8", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/gigme-icon-512-v8.png?v=8", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/gigme-maskable-icon-512-v8.png?v=8", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }

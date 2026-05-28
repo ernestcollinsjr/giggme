@@ -164,6 +164,26 @@ const Auth = () => {
 
       if (error) throw error;
 
+      // For entertainer plans coming from /find-entertainers, redirect to checkout
+      if (entertainerPlan && signUpData.session) {
+        try {
+          const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke("create-checkout", {
+            body: { priceId: entertainerPlan.priceId },
+          });
+          if (checkoutError) throw checkoutError;
+          if (checkoutData?.url) {
+            toast({ title: "Account created!", description: "Redirecting to checkout..." });
+            window.location.href = checkoutData.url;
+            return;
+          }
+        } catch (checkoutErr) {
+          console.error("Checkout error:", checkoutErr);
+          toast({ title: "Account created!", description: "You can complete payment from your profile." });
+          navigate("/profile-setup");
+          return;
+        }
+      }
+
       // For venue owners, redirect to checkout
       if (role === "venue_owner" && signUpData.session) {
         const priceId = venuePricingType === "subscription" 

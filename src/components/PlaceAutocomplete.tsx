@@ -192,6 +192,8 @@ export const PlaceAutocomplete = ({
           (inputRef.current as any).readOnly = false;
           inputRef.current.removeEventListener("keydown", keydownHandler);
         }
+        // Remove any leftover Google autocomplete dropdowns appended to <body>
+        document.querySelectorAll(".pac-container").forEach((el) => el.remove());
         initializedRef.current = false;
       };
     } catch (e) {

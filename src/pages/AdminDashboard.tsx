@@ -461,6 +461,7 @@ const AdminDashboard = () => {
         <Tabs defaultValue="members" className="w-full">
           <TabsList className="mb-6">
             <TabsTrigger value="members">Members</TabsTrigger>
+            <TabsTrigger value="entertainers">Entertainers</TabsTrigger>
             <TabsTrigger value="groups">Groups</TabsTrigger>
           </TabsList>
 

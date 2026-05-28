@@ -1756,7 +1756,7 @@ const Bookings = () => {
                               is_group_message: false,
                             });
 
-                            const { error } = await supabase.functions.invoke("send-booking-request-email", {
+                            const { data: bookingEmailData, error } = await supabase.functions.invoke("send-booking-request-email", {
                               body: {
                                 performerId: quickBookPerformerId,
                                 performerEmail: performer.email,
@@ -1776,6 +1776,24 @@ const Bookings = () => {
                               },
                             });
                             if (error) throw error;
+
+                            if (bookingEmailData?.bookingRequestId) {
+                              setBookingRequests((prev) => [{
+                                id: bookingEmailData.bookingRequestId,
+                                status: "pending",
+                                booker_name: senderProfile?.name,
+                                performer_name: performer.name,
+                                dates_text: datesStr,
+                                time_text: timeStr,
+                                venue: quickBookVenue.trim(),
+                                budget: quickBookBudget.trim() || null,
+                                contact_person: quickBookContactPerson.trim() || null,
+                                event_date: eventDate.toISOString(),
+                                created_at: new Date().toISOString(),
+                                performer_id: quickBookPerformerId,
+                                booker_id: user.id,
+                              }, ...prev]);
+                            }
 
                             // Fire push notification to the performer
                             try {

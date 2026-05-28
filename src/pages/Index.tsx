@@ -308,7 +308,7 @@ const Index = () => {
           className="mt-14 relative rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-6 sm:p-8"
         >
           <h2 className="text-center text-lg font-semibold text-white mb-5">
-            Find the perfect entertainment for your event
+            Search for a particular performer for your event
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
             <div className="md:col-span-1 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">

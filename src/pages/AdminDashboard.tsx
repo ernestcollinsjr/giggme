@@ -458,265 +458,85 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-background">
       <TopNav userRole="super_admin" />
       <main className="container mx-auto px-4 py-6 pb-24">
-        <Tabs defaultValue="members" className="w-full">
-          <TabsList className="mb-6">
-            <TabsTrigger value="members">Members</TabsTrigger>
-            <TabsTrigger value="entertainers">Entertainers</TabsTrigger>
-            <TabsTrigger value="groups">Groups</TabsTrigger>
-          </TabsList>
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold">All Entertainers</h2>
+          <p className="text-muted-foreground">{entertainers.length} entertainers total</p>
+        </div>
 
-          {/* Members Tab */}
-          <TabsContent value="members">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold">All Members</h2>
-              <p className="text-muted-foreground">{users.length} members total</p>
-            </div>
+        <div className="flex justify-end mb-4">
+          <div className="relative w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search entertainers..."
+              value={entertainerSearchTerm}
+              onChange={(e) => setEntertainerSearchTerm(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+        </div>
 
-            <div className="flex justify-end mb-4">
-              <div className="relative w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search members..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-            </div>
-
-            <div className="bg-card rounded-lg border overflow-hidden">
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-muted/50">
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Phone</TableHead>
-                      <TableHead>Group</TableHead>
-                      <TableHead>Roles</TableHead>
-                      <TableHead>Joined</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredUsers.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell className="font-medium">{user.name}</TableCell>
-                        <TableCell className="text-muted-foreground">{user.email}</TableCell>
-                        <TableCell className="text-muted-foreground">{user.phone_number || "—"}</TableCell>
-                        <TableCell>
-                          {user.bandNames.length > 0 
-                            ? user.bandNames.join(", ") 
-                            : <span className="text-muted-foreground">No Group</span>
-                          }
-                        </TableCell>
-                        <TableCell>
-                          {user.role ? (
-                            <Badge variant="outline">
-                              {roleLabels[user.role]}
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline" className="text-muted-foreground">none</Badge>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {user.created_at
-                            ? new Date(user.created_at).toLocaleDateString()
-                            : "—"}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleEditUser(user)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-destructive hover:text-destructive"
-                              onClick={() => setDeleteConfirmUser(user)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    {filteredUsers.length === 0 && (
-                      <TableRow>
-                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                          No members found
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </div>
-          </TabsContent>
-
-          {/* Entertainers Tab */}
-          <TabsContent value="entertainers">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold">All Entertainers</h2>
-              <p className="text-muted-foreground">{entertainers.length} entertainers total</p>
-            </div>
-
-            <div className="flex justify-end mb-4">
-              <div className="relative w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search entertainers..."
-                  value={entertainerSearchTerm}
-                  onChange={(e) => setEntertainerSearchTerm(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-            </div>
-
-            <div className="bg-card rounded-lg border overflow-hidden">
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-muted/50">
-                      <TableHead className="w-10"></TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Phone</TableHead>
-                      <TableHead>Group</TableHead>
-                      <TableHead>Roles</TableHead>
-                      <TableHead>Joined</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredEntertainers.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell>
-                          <input type="checkbox" className="h-4 w-4 rounded border-muted-foreground/40" />
-                        </TableCell>
-                        <TableCell className="font-medium">{user.name}</TableCell>
-                        <TableCell className="text-muted-foreground">{user.email}</TableCell>
-                        <TableCell className="text-muted-foreground">{user.phone_number || "—"}</TableCell>
-                        <TableCell>
-                          {user.bandNames.length > 0
-                            ? user.bandNames.join(", ")
-                            : <span className="text-muted-foreground">No Group</span>}
-                        </TableCell>
-                        <TableCell>
-                          {user.role ? (
-                            <Badge variant="outline">{roleLabels[user.role]}</Badge>
-                          ) : (
-                            <Badge variant="outline" className="text-muted-foreground">none</Badge>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {user.created_at ? new Date(user.created_at).toLocaleDateString() : "—"}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => setDeleteConfirmUser(user)}
-                          >
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            Delete
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    {filteredEntertainers.length === 0 && (
-                      <TableRow>
-                        <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                          No entertainers found
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </div>
-          </TabsContent>
-
-          {/* Groups Tab */}
-          <TabsContent value="groups">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold">All Groups</h2>
-              <p className="text-muted-foreground">{bands.length} groups total</p>
-            </div>
-
-            <div className="flex justify-end mb-4">
-              <div className="relative w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search groups..."
-                  value={groupSearchTerm}
-                  onChange={(e) => setGroupSearchTerm(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-            </div>
-
-            <div className="bg-card rounded-lg border overflow-hidden">
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-muted/50">
-                      <TableHead>Group Name</TableHead>
-                      <TableHead className="text-center">Members</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead>Group ID</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredBands.map((band) => (
-                      <TableRow key={band.id}>
-                        <TableCell className="font-medium">{band.name}</TableCell>
-                        <TableCell className="text-center">{band.memberCount}</TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {new Date(band.created_at).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground font-mono text-sm">
-                          {band.id.slice(0, 8)}...
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleEditGroup(band)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-destructive hover:text-destructive"
-                              onClick={() => setDeleteConfirmGroup(band)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    {filteredBands.length === 0 && (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                          No groups found
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
+        <div className="bg-card rounded-lg border overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50 hover:bg-muted/50">
+                  <TableHead className="w-10"></TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>Group</TableHead>
+                  <TableHead>Roles</TableHead>
+                  <TableHead>Joined</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredEntertainers.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell>
+                      <input type="checkbox" className="h-4 w-4 rounded border-muted-foreground/40" />
+                    </TableCell>
+                    <TableCell className="font-medium">{user.name}</TableCell>
+                    <TableCell className="text-muted-foreground">{user.email}</TableCell>
+                    <TableCell className="text-muted-foreground">{user.phone_number || "—"}</TableCell>
+                    <TableCell>
+                      {user.bandNames.length > 0
+                        ? user.bandNames.join(", ")
+                        : <span className="text-muted-foreground">No Group</span>}
+                    </TableCell>
+                    <TableCell>
+                      {user.role ? (
+                        <Badge variant="outline">{roleLabels[user.role]}</Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-muted-foreground">none</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {user.created_at ? new Date(user.created_at).toLocaleDateString() : "—"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => setDeleteConfirmUser(user)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Delete
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {filteredEntertainers.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                      No entertainers found
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
       </main>
 
       {/* Edit User Dialog */}

@@ -1730,6 +1730,22 @@ const Bookings = () => {
                               },
                             });
                             if (error) throw error;
+
+                            // Fire push notification to the performer
+                            try {
+                              await supabase.functions.invoke("send-push-notification", {
+                                body: {
+                                  user_id: quickBookPerformerId,
+                                  title: "🎤 New Booking Request",
+                                  body: `${senderProfile?.name || "Someone"} sent you a booking request for ${datesStr} at ${quickBookVenue.trim()}`,
+                                  url: "/bookings",
+                                  data: { type: "booking_request", performer_id: quickBookPerformerId },
+                                },
+                              });
+                            } catch (pushErr) {
+                              console.warn("Push notification failed", pushErr);
+                            }
+
                             toast({ title: "Booking request sent", description: `Sent to ${performer.name}.` });
                             setQuickBookPerformerId("");
                             setQuickBookVenue("");

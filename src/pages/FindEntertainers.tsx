@@ -218,19 +218,12 @@ const FindEntertainers = () => {
       </section>
 
       {/* Entertainer grid */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <h3 className="text-2xl font-bold text-white mb-6">Featured entertainers</h3>
 
         {loading ? (
           <div className="flex justify-center py-16">
             <Loader2 className="h-8 w-8 animate-spin text-white/50" />
-          </div>
-        ) : entertainers.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-10 text-center">
-            <User className="h-10 w-10 mx-auto text-white/30" />
-            <p className="mt-4 text-white/60">
-              No featured entertainers yet. Be the first to join!
-            </p>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-5">
@@ -266,11 +259,78 @@ const FindEntertainers = () => {
                 </button>
               );
             })}
+
+            {/* Demo / sample performers */}
+            {DEMO_PERFORMERS.map((p) => (
+              <div
+                key={p.id}
+                className="group relative text-left rounded-2xl overflow-hidden border border-white/10 bg-white/[0.03] hover:border-white/30 hover:bg-white/[0.06] transition-all"
+              >
+                <div className="aspect-square w-full overflow-hidden">
+                  <img
+                    src={p.photo}
+                    alt={p.name}
+                    loading="lazy"
+                    width={1024}
+                    height={1024}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-medium bg-black/50 backdrop-blur text-white/80 border border-white/10">
+                    Sample
+                  </span>
+                </div>
+                <div className="p-3">
+                  <p className="text-sm font-semibold text-white truncate">{p.name}</p>
+                  <p className="text-xs text-white/55 truncate">{p.category}</p>
+                </div>
+              </div>
+            ))}
           </div>
         )}
+      </section>
+
+      {/* Testimonials */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+        <div className="text-center mb-10">
+          <h3 className="text-3xl font-bold text-white">What event planners are saying</h3>
+          <p className="mt-2 text-white/60">Real feedback from people who booked talent through GiggMe.</p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-5">
+          {TESTIMONIALS.map((t) => (
+            <figure
+              key={t.name}
+              className="relative rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-xl"
+            >
+              <Quote className="absolute top-4 right-4 h-8 w-8 text-violet-400/30" />
+              <div className="flex items-center gap-1 mb-3 text-amber-400">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="h-4 w-4 fill-current" />
+                ))}
+              </div>
+              <blockquote className="text-white/80 leading-relaxed text-sm">
+                "{t.quote}"
+              </blockquote>
+              <figcaption className="mt-5 flex items-center gap-3">
+                <img
+                  src={t.photo}
+                  alt={t.name}
+                  loading="lazy"
+                  width={96}
+                  height={96}
+                  className="h-11 w-11 rounded-full object-cover border border-white/10"
+                />
+                <div>
+                  <p className="text-sm font-semibold text-white">{t.name}</p>
+                  <p className="text-xs text-white/55">{t.role}</p>
+                </div>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
       </section>
     </div>
   );
 };
+
 
 export default FindEntertainers;

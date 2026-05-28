@@ -1406,13 +1406,23 @@ const Bookings = () => {
           });
           // Priority: confirmed (booked) > invitation (tentative) > request (unavailable)
           const dayKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-          const confirmedKeys = new Set(confirmedDates.map(dayKey));
-          const invitationDates = invitationDatesRaw.filter((d) => !confirmedKeys.has(dayKey(d)));
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const isFutureOrToday = (d: Date) => {
+            const x = new Date(d);
+            x.setHours(0, 0, 0, 0);
+            return x.getTime() >= today.getTime();
+          };
+          const confirmedDatesFiltered = confirmedDates.filter(isFutureOrToday);
+          const confirmedKeys = new Set(confirmedDatesFiltered.map(dayKey));
+          const invitationDates = invitationDatesRaw
+            .filter(isFutureOrToday)
+            .filter((d) => !confirmedKeys.has(dayKey(d)));
           const invitationKeys = new Set(invitationDates.map(dayKey));
-          const requestDates = requestDatesRaw.filter(
-            (d) => !confirmedKeys.has(dayKey(d)) && !invitationKeys.has(dayKey(d))
-          );
-          const allDates = [...requestDates, ...invitationDates, ...confirmedDates];
+          const requestDates = requestDatesRaw
+            .filter(isFutureOrToday)
+            .filter((d) => !confirmedKeys.has(dayKey(d)) && !invitationKeys.has(dayKey(d)));
+          const allDates = [...requestDates, ...invitationDates, ...confirmedDatesFiltered];
           return (
             <Card className="border-border/50 shadow-lg mb-4">
               <CardHeader>

@@ -22,6 +22,7 @@ interface ArtistWithProfile {
   availability: string | null;
   rate_range: string | null;
   youtube_videos: Array<{ url: string; title: string }>;
+  venues?: string[];
   profile: {
     name: string;
     bio: string | null;
@@ -65,9 +66,17 @@ const ArtistsDiscovery = () => {
 
   const fetchArtists = async () => {
     try {
-      const { data, error } = await (supabase as any).rpc("get_public_performers");
+      const [{ data, error }, { data: venuesData }] = await Promise.all([
+        (supabase as any).rpc("get_public_performers"),
+        (supabase as any).rpc("get_performer_venues"),
+      ]);
 
       if (error) throw error;
+
+      const venuesMap = new Map<string, string[]>();
+      (venuesData || []).forEach((row: any) => {
+        venuesMap.set(row.user_id, row.venues || []);
+      });
 
       const combined = (data || []).map((performer: any) => ({
         id: performer.user_id,
@@ -85,6 +94,7 @@ const ArtistsDiscovery = () => {
             : null
         ),
         youtube_videos: performer.youtube_videos || [],
+        venues: venuesMap.get(performer.user_id) || [],
         profile: {
           name: performer.name || "Unknown",
           bio: performer.bio || null,
@@ -114,13 +124,15 @@ const ArtistsDiscovery = () => {
   const filteredArtists = artists.filter((artist) => {
     const searchLower = searchTerm.toLowerCase();
     const genreText = artist.genres?.join(" ").toLowerCase() || "";
+    const venueText = artist.venues?.join(" ").toLowerCase() || "";
     const matchesSearch =
       artist.profile.name.toLowerCase().includes(searchLower) ||
       artist.stage_name?.toLowerCase().includes(searchLower) ||
       artist.genre?.toLowerCase().includes(searchLower) ||
       artist.instrument?.toLowerCase().includes(searchLower) ||
       artist.performer_category?.toLowerCase().includes(searchLower) ||
-      genreText.includes(searchLower);
+      genreText.includes(searchLower) ||
+      venueText.includes(searchLower);
     
     const matchesGenre = selectedGenre === "all" || artist.genre === selectedGenre;
     
@@ -161,7 +173,7 @@ const ArtistsDiscovery = () => {
             <div className="relative flex-1 max-w-md" ref={searchContainerRef}>
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
               <Input
-                placeholder="Search by name, stage name, or genre..."
+                placeholder="Search by name, genre, or venue..."
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);

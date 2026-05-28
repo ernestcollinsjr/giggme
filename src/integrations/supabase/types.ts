@@ -2235,6 +2235,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_performer_venues: {
+        Args: never
+        Returns: {
+          user_id: string
+          venues: string[]
+        }[]
+      }
       get_public_performers: {
         Args: never
         Returns: {

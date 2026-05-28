@@ -840,7 +840,7 @@ export default function BookingManagerAdmin() {
                       const d = new Date(gig.date);
                       const isCompletedRow = isGigCompleted(gig);
                       return (
-                        <li key={`${gig.id}-${gig.artist_id}`} className={cn("py-3 flex items-center gap-3", isCompletedRow && "opacity-50")}>
+                        <li key={`${gig.id}-${gig.artist_id}`} className="py-3 flex items-center gap-3">
                           <div className={cn("flex flex-col items-center justify-center w-12 h-12 rounded-md bg-muted text-center flex-shrink-0", isCompletedRow && "text-muted-foreground")}>
                             <span className="text-[10px] uppercase font-medium text-muted-foreground leading-none">
                               {d.toLocaleDateString("en-US", { month: "short" })}

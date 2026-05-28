@@ -1404,18 +1404,18 @@ const Bookings = () => {
                 <CardContent className="flex justify-center overflow-hidden">
                   <div className="scale-[1.6] origin-top transform-gpu" style={{ marginBottom: 'calc(1.6 * 350px - 350px)' }}>
                     <Calendar
-                      mode="multiple"
-                      selected={[]}
-                      onSelect={() => {}}
+                      mode="single"
+                      selected={selectedCalendarDate ?? undefined}
+                      onSelect={(d) => d && setSelectedCalendarDate(d)}
                       modifiers={{
                         confirmed: confirmedDates,
                         invitation: invitationDates,
                         request: requestDates,
                       }}
                       modifiersClassNames={{
-                        confirmed: "!bg-blue-500 !text-white hover:!bg-blue-500/90 rounded-md font-semibold",
-                        invitation: "!bg-yellow-400 !text-black hover:!bg-yellow-400/90 rounded-md font-semibold",
-                        request: "!bg-red-500 !text-white hover:!bg-red-500/90 rounded-md font-semibold",
+                        confirmed: "!bg-blue-500 !text-white hover:!bg-blue-500/90 rounded-md font-semibold cursor-pointer",
+                        invitation: "!bg-yellow-400 !text-black hover:!bg-yellow-400/90 rounded-md font-semibold cursor-pointer",
+                        request: "!bg-red-500 !text-white hover:!bg-red-500/90 rounded-md font-semibold cursor-pointer",
                       }}
                       className="rounded-md border border-border/50"
                     />

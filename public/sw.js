@@ -14,8 +14,8 @@ self.addEventListener('push', function(event) {
 
   const options = {
     body: data.body || data.message,
-    icon: '/gigme-icon-192-v3.png?v=3',
-    badge: '/gigme-icon-192-v3.png?v=3',
+    icon: '/gigme-icon-192-v4.png?v=4',
+    badge: '/gigme-icon-192-v4.png?v=4',
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),

@@ -212,7 +212,7 @@ const Index = () => {
                   How It Works
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/find-entertainers")}>
-                  Find Entertainers
+                  Entertainers
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/pricing")}>
                   <DollarSign className="mr-2 h-4 w-4" /> Pricing

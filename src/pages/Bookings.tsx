@@ -303,11 +303,11 @@ const Bookings = () => {
       setBandMembers((membersData as BandMember[]) || []);
     }
 
-    // Fetch booking requests where the user is the performer (from venues / managers)
+    // Fetch booking requests — performer OR booker (so booking managers see what they booked).
     const { data: brData } = await supabase
       .from("booking_requests")
-      .select("id, status, booker_name, dates_text, time_text, venue, budget, contact_person, event_date, created_at")
-      .eq("performer_id", user.id)
+      .select("id, status, booker_name, performer_name, dates_text, time_text, venue, budget, contact_person, event_date, created_at, performer_id, booker_id")
+      .or(`performer_id.eq.${user.id},booker_id.eq.${user.id}`)
       .order("created_at", { ascending: false });
     setBookingRequests(brData || []);
 
@@ -1400,7 +1400,11 @@ const Bookings = () => {
                       </div>
                       <p className="font-semibold truncate">{br.venue}</p>
                       <p className="text-sm text-muted-foreground">
-                        From {br.booker_name || 'a client'} · {br.dates_text}
+                        {br.booker_id === br.performer_id
+                          ? `${br.dates_text}`
+                          : br.performer_id && br.booker_name && br.performer_name
+                            ? `${br.booker_name} → ${br.performer_name} · ${br.dates_text}`
+                            : `From ${br.booker_name || 'a client'} · ${br.dates_text}`}
                         {br.time_text && ` · ${br.time_text}`}
                       </p>
                       {br.budget && (

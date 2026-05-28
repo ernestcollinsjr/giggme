@@ -2,10 +2,53 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Sparkles, CheckCircle2, Loader2, User } from "lucide-react";
+import { ArrowLeft, Sparkles, CheckCircle2, Loader2, User, Star, Quote } from "lucide-react";
 import logo from "@/assets/logo.png";
+import performer1 from "@/assets/performer-1.jpg";
+import performer2 from "@/assets/performer-2.jpg";
+import performer3 from "@/assets/performer-3.jpg";
+import performer4 from "@/assets/performer-4.jpg";
+import performer5 from "@/assets/performer-5.jpg";
+import performer6 from "@/assets/performer-6.jpg";
+import testimonial1 from "@/assets/testimonial-1.jpg";
+import testimonial2 from "@/assets/testimonial-2.jpg";
+import testimonial3 from "@/assets/testimonial-3.jpg";
 
 const ENTERTAINER_PRICE_ID = "price_1Tc7DGEPiAZgF8MeCcRLu2rd";
+
+const DEMO_PERFORMERS = [
+  { id: "demo-1", name: "Marcus Reed", category: "Jazz Saxophonist", photo: performer1 },
+  { id: "demo-2", name: "Sophia Vale", category: "Vocalist · Pop & Soul", photo: performer2 },
+  { id: "demo-3", name: "DJ Nova", category: "DJ · House & Top 40", photo: performer3 },
+  { id: "demo-4", name: "Ella Hart", category: "Acoustic Singer-Songwriter", photo: performer4 },
+  { id: "demo-5", name: "Andre Cole", category: "Rock Drummer", photo: performer5 },
+  { id: "demo-6", name: "Lucia Mendez", category: "Classical Violinist", photo: performer6 },
+];
+
+const TESTIMONIALS = [
+  {
+    name: "Jennifer Lawson",
+    role: "Event Planner · Austin, TX",
+    photo: testimonial1,
+    quote:
+      "Booking talent through GiggMe saved me hours every week. The roster is top-notch and every performer showed up ready to wow our guests.",
+  },
+  {
+    name: "Marcus Bennett",
+    role: "Wedding Coordinator · Atlanta, GA",
+    photo: testimonial2,
+    quote:
+      "I found the perfect jazz trio for our reception in under five minutes. Communication was seamless and the performance was unforgettable.",
+  },
+  {
+    name: "Mei Chen",
+    role: "Corporate Events · San Francisco, CA",
+    photo: testimonial3,
+    quote:
+      "Hands down the easiest way to hire vetted entertainers. Our annual gala has never sounded better — clients are already asking who we booked.",
+  },
+];
+
 
 interface FeaturedEntertainer {
   user_id: string;
@@ -175,19 +218,12 @@ const FindEntertainers = () => {
       </section>
 
       {/* Entertainer grid */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <h3 className="text-2xl font-bold text-white mb-6">Featured entertainers</h3>
 
         {loading ? (
           <div className="flex justify-center py-16">
             <Loader2 className="h-8 w-8 animate-spin text-white/50" />
-          </div>
-        ) : entertainers.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-10 text-center">
-            <User className="h-10 w-10 mx-auto text-white/30" />
-            <p className="mt-4 text-white/60">
-              No featured entertainers yet. Be the first to join!
-            </p>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-5">
@@ -223,11 +259,78 @@ const FindEntertainers = () => {
                 </button>
               );
             })}
+
+            {/* Demo / sample performers */}
+            {DEMO_PERFORMERS.map((p) => (
+              <div
+                key={p.id}
+                className="group relative text-left rounded-2xl overflow-hidden border border-white/10 bg-white/[0.03] hover:border-white/30 hover:bg-white/[0.06] transition-all"
+              >
+                <div className="aspect-square w-full overflow-hidden">
+                  <img
+                    src={p.photo}
+                    alt={p.name}
+                    loading="lazy"
+                    width={1024}
+                    height={1024}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-medium bg-black/50 backdrop-blur text-white/80 border border-white/10">
+                    Sample
+                  </span>
+                </div>
+                <div className="p-3">
+                  <p className="text-sm font-semibold text-white truncate">{p.name}</p>
+                  <p className="text-xs text-white/55 truncate">{p.category}</p>
+                </div>
+              </div>
+            ))}
           </div>
         )}
+      </section>
+
+      {/* Testimonials */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+        <div className="text-center mb-10">
+          <h3 className="text-3xl font-bold text-white">What event planners are saying</h3>
+          <p className="mt-2 text-white/60">Real feedback from people who booked talent through GiggMe.</p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-5">
+          {TESTIMONIALS.map((t) => (
+            <figure
+              key={t.name}
+              className="relative rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-xl"
+            >
+              <Quote className="absolute top-4 right-4 h-8 w-8 text-violet-400/30" />
+              <div className="flex items-center gap-1 mb-3 text-amber-400">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="h-4 w-4 fill-current" />
+                ))}
+              </div>
+              <blockquote className="text-white/80 leading-relaxed text-sm">
+                "{t.quote}"
+              </blockquote>
+              <figcaption className="mt-5 flex items-center gap-3">
+                <img
+                  src={t.photo}
+                  alt={t.name}
+                  loading="lazy"
+                  width={96}
+                  height={96}
+                  className="h-11 w-11 rounded-full object-cover border border-white/10"
+                />
+                <div>
+                  <p className="text-sm font-semibold text-white">{t.name}</p>
+                  <p className="text-xs text-white/55">{t.role}</p>
+                </div>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
       </section>
     </div>
   );
 };
+
 
 export default FindEntertainers;

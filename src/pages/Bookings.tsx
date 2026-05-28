@@ -67,6 +67,8 @@ const Bookings = () => {
   const [gigs, setGigs] = useState<Gig[]>([]);
   const [gigRehearsals, setGigRehearsals] = useState<Record<string, { date: string; venue: string; end_time: string | null }>>({});
   const [gigResponseCounts, setGigResponseCounts] = useState<Record<string, { pending: number; accepted: number; declined: number }>>({});
+  const [bookingRequests, setBookingRequests] = useState<any[]>([]);
+  const [gigInvitations, setGigInvitations] = useState<any[]>([]);
   const [bands, setBands] = useState<{ id: string; name: string }[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);

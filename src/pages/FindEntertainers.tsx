@@ -416,9 +416,6 @@ const FindEntertainers = () => {
                     height={1024}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-medium bg-black/50 backdrop-blur text-white/80 border border-white/10">
-                    Sample
-                  </span>
                 </div>
                 <div className="p-3">
                   <p className="text-sm font-semibold text-white truncate">{p.name}</p>

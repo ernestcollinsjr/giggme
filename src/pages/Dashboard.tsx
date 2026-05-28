@@ -2378,6 +2378,7 @@ const Dashboard = () => {
 
       <BottomNav />
     </div>
+    </AppShell>
   );
 };
 

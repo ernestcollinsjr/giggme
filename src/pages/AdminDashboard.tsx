@@ -47,6 +47,8 @@ interface UserWithRole {
   created_at: string | null;
   role: AppRole | null;
   bandNames: string[];
+  entertainer_categories?: string[] | null;
+  subscription_status?: string | null;
 }
 
 interface BandWithMembers {
@@ -75,6 +77,7 @@ const AdminDashboard = () => {
   const [bands, setBands] = useState<BandWithMembers[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [entertainerSearchTerm, setEntertainerSearchTerm] = useState("");
   const [groupSearchTerm, setGroupSearchTerm] = useState("");
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [editingUser, setEditingUser] = useState<UserWithRole | null>(null);
@@ -167,6 +170,11 @@ const AdminDashboard = () => {
 
       if (bandsError) throw bandsError;
 
+      // Fetch entertainer subscriptions
+      const { data: entSubs } = await supabase
+        .from("entertainer_subscribers")
+        .select("user_id, status");
+
       // Combine profiles with roles and band names
       const usersWithRoles: UserWithRole[] = (profiles || []).map((profile) => {
         const userRole = roles?.find((r) => r.user_id === profile.id);
@@ -185,10 +193,14 @@ const AdminDashboard = () => {
         // Combine and deduplicate band names
         const allBandNames = [...new Set([...memberBands, ...leaderBands])];
 
+        const sub = entSubs?.find((s) => s.user_id === profile.id);
+
         return {
           ...profile,
           role: userRole?.role as AppRole || null,
           bandNames: allBandNames,
+          entertainer_categories: (profile as any).entertainer_categories || [],
+          subscription_status: sub?.status || null,
         };
       });
 
@@ -414,6 +426,17 @@ const AdminDashboard = () => {
       user.bandNames.some((bn) => bn.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  const entertainers = users.filter(
+    (u) => u.role === "artist" || (u.entertainer_categories && u.entertainer_categories.length > 0) || u.subscription_status
+  );
+
+  const filteredEntertainers = entertainers.filter(
+    (user) =>
+      user.name.toLowerCase().includes(entertainerSearchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(entertainerSearchTerm.toLowerCase()) ||
+      (user.entertainer_categories || []).some((c) => c.toLowerCase().includes(entertainerSearchTerm.toLowerCase()))
+  );
+
   const filteredBands = bands.filter(
     (band) =>
       band.name.toLowerCase().includes(groupSearchTerm.toLowerCase())
@@ -438,6 +461,7 @@ const AdminDashboard = () => {
         <Tabs defaultValue="members" className="w-full">
           <TabsList className="mb-6">
             <TabsTrigger value="members">Members</TabsTrigger>
+            <TabsTrigger value="entertainers">Entertainers</TabsTrigger>
             <TabsTrigger value="groups">Groups</TabsTrigger>
           </TabsList>
 
@@ -525,6 +549,92 @@ const AdminDashboard = () => {
                       <TableRow>
                         <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                           No members found
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Entertainers Tab */}
+          <TabsContent value="entertainers">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold">All Entertainers</h2>
+              <p className="text-muted-foreground">{entertainers.length} entertainers total</p>
+            </div>
+
+            <div className="flex justify-end mb-4">
+              <div className="relative w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search entertainers..."
+                  value={entertainerSearchTerm}
+                  onChange={(e) => setEntertainerSearchTerm(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+            </div>
+
+            <div className="bg-card rounded-lg border overflow-hidden">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/50">
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Phone</TableHead>
+                      <TableHead>Categories</TableHead>
+                      <TableHead>Subscription</TableHead>
+                      <TableHead>Joined</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredEntertainers.map((user) => (
+                      <TableRow key={user.id}>
+                        <TableCell className="font-medium">{user.name}</TableCell>
+                        <TableCell className="text-muted-foreground">{user.email}</TableCell>
+                        <TableCell className="text-muted-foreground">{user.phone_number || "—"}</TableCell>
+                        <TableCell>
+                          {user.entertainer_categories && user.entertainer_categories.length > 0
+                            ? user.entertainer_categories.join(", ")
+                            : <span className="text-muted-foreground">—</span>}
+                        </TableCell>
+                        <TableCell>
+                          {user.subscription_status ? (
+                            <Badge variant={user.subscription_status === "active" ? "default" : "outline"}>
+                              {user.subscription_status}
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-muted-foreground">none</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {user.created_at ? new Date(user.created_at).toLocaleDateString() : "—"}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-1">
+                            <Button variant="ghost" size="icon" onClick={() => handleEditUser(user)}>
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-destructive hover:text-destructive"
+                              onClick={() => setDeleteConfirmUser(user)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {filteredEntertainers.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                          No entertainers found
                         </TableCell>
                       </TableRow>
                     )}

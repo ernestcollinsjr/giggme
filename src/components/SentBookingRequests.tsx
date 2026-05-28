@@ -122,7 +122,7 @@ export const SentBookingRequests = () => {
   useEffect(() => {
     fetchRequests();
     const channel = supabase
-      .channel("sent-booking-requests")
+      .channel(`sent-booking-requests-${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "booking_requests" },

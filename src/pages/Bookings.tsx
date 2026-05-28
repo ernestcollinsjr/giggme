@@ -1441,7 +1441,7 @@ const Bookings = () => {
                     selected={selectedCalendarDate ?? undefined}
                     onSelect={(d) => d && setSelectedCalendarDate(d)}
                     modifiers={{
-                      confirmed: confirmedDates,
+                      confirmed: confirmedDatesFiltered,
                       invitation: invitationDates,
                       request: requestDates,
                     }}

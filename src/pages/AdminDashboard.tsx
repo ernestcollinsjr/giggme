@@ -346,6 +346,20 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleUpdateCategory = async (user: UserWithRole, newCategory: string) => {
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ performer_category: newCategory })
+        .eq("id", user.id);
+      if (error) throw error;
+      toast({ title: "Category updated", description: `${user.name} is now ${newCategory}.` });
+      await fetchUsers();
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Error updating category", description: error.message });
+    }
+  };
+
   const handleDeleteUser = async () => {
     if (!deleteConfirmUser) return;
 

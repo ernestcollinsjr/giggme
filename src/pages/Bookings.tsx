@@ -1594,7 +1594,15 @@ const Bookings = () => {
                       </div>
                       <div className="space-y-2">
                         <Label>Venue</Label>
-                        <Input value={quickBookVenue} onChange={(e) => setQuickBookVenue(e.target.value)} placeholder="Venue name / address" />
+                        <PlaceAutocomplete
+                          value={quickBookVenue}
+                          onChange={(val, place) => {
+                            const addr = place?.formatted_address;
+                            const nm = place?.name;
+                            setQuickBookVenue(nm && addr ? `${nm} — ${addr}` : (addr || val));
+                          }}
+                          placeholder="Type a venue name to find its address"
+                        />
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         <div className="space-y-2">

@@ -142,9 +142,9 @@ const Index = () => {
 
       {/* Top Nav */}
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-[hsl(230_35%_7%/0.7)] border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 sm:h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src={logo} alt="GiggMe" className="h-16 sm:h-20 w-auto object-contain" />
+            <img src={logo} alt="GiggMe" className="h-24 sm:h-20 w-auto object-contain" />
           </div>
 
           <nav className="hidden lg:flex items-center gap-8">

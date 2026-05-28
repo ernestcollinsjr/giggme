@@ -1441,6 +1441,75 @@ const Bookings = () => {
           );
         })()}
 
+        {/* Date details dialog */}
+        <Dialog open={!!selectedCalendarDate} onOpenChange={(o) => !o && setSelectedCalendarDate(null)}>
+          <DialogContent className="max-w-lg bg-black/60 backdrop-blur-sm">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <CalendarIcon className="h-5 w-5 text-primary" />
+                {selectedCalendarDate && format(selectedCalendarDate, "EEEE, MMMM d, yyyy")}
+              </DialogTitle>
+              <DialogDescription>Bookings scheduled for this date</DialogDescription>
+            </DialogHeader>
+            {(() => {
+              if (!selectedCalendarDate) return null;
+              const sameDay = (a: string | Date | undefined) => {
+                if (!a) return false;
+                const d = new Date(a);
+                return d.getFullYear() === selectedCalendarDate.getFullYear() &&
+                  d.getMonth() === selectedCalendarDate.getMonth() &&
+                  d.getDate() === selectedCalendarDate.getDate();
+              };
+              const dayConfirmed = gigs.filter((g) => sameDay(g.date));
+              const dayInvites = gigInvitations.filter((gi: any) => sameDay(gi.gigs?.date));
+              const dayRequests = bookingRequests.filter((br: any) => sameDay(br.event_date));
+              const total = dayConfirmed.length + dayInvites.length + dayRequests.length;
+              if (total === 0) {
+                return <p className="text-sm text-muted-foreground py-4">No bookings on this date.</p>;
+              }
+              return (
+                <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                  {dayConfirmed.map((g) => (
+                    <div key={`g-${g.id}`} className="rounded-lg border border-border/50 p-3 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
+                        <Badge variant="secondary">Confirmed gig</Badge>
+                      </div>
+                      <div className="font-semibold">{g.venue_name || g.venue}</div>
+                      {g.venue_name && <div className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{g.venue}</div>}
+                      {(g as any).show_time && <div className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />{formatTime12Hour((g as any).show_time)}</div>}
+                    </div>
+                  ))}
+                  {dayInvites.map((gi: any) => (
+                    <div key={`i-${gi.id}`} className="rounded-lg border border-border/50 p-3 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
+                        <Badge variant="secondary">Gig invitation</Badge>
+                      </div>
+                      <div className="font-semibold">{gi.gigs?.venue_name || gi.gigs?.venue}</div>
+                      {gi.gigs?.venue && <div className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{gi.gigs.venue}</div>}
+                      <div className="text-xs text-muted-foreground">Status: {gi.status}</div>
+                    </div>
+                  ))}
+                  {dayRequests.map((br: any) => (
+                    <div key={`r-${br.id}`} className="rounded-lg border border-border/50 p-3 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
+                        <Badge variant="secondary">Booking request</Badge>
+                      </div>
+                      <div className="font-semibold">{br.event_type || br.venue_name || "Request"}</div>
+                      {br.venue_name && <div className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{br.venue_name}</div>}
+                      {br.client_name && <div className="text-xs text-muted-foreground">Client: {br.client_name}</div>}
+                      <div className="text-xs text-muted-foreground">Status: {br.status}</div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+          </DialogContent>
+        </Dialog>
+
+
         {/* Current bookings (booking requests + gig invitations) */}
 
         {(bookingRequests.length > 0 || gigInvitations.length > 0) && (

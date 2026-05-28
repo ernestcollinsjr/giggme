@@ -202,6 +202,7 @@ const AdminDashboard = () => {
           bandNames: allBandNames,
           entertainer_categories: (profile as any).entertainer_categories || [],
           subscription_status: sub?.status || null,
+          performer_category: (profile as any).performer_category || null,
         };
       });
 

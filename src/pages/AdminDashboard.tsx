@@ -582,11 +582,12 @@ const AdminDashboard = () => {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/50">
+                      <TableHead className="w-10"></TableHead>
                       <TableHead>Name</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Phone</TableHead>
-                      <TableHead>Categories</TableHead>
-                      <TableHead>Subscription</TableHead>
+                      <TableHead>Group</TableHead>
+                      <TableHead>Roles</TableHead>
                       <TableHead>Joined</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -594,19 +595,20 @@ const AdminDashboard = () => {
                   <TableBody>
                     {filteredEntertainers.map((user) => (
                       <TableRow key={user.id}>
+                        <TableCell>
+                          <input type="checkbox" className="h-4 w-4 rounded border-muted-foreground/40" />
+                        </TableCell>
                         <TableCell className="font-medium">{user.name}</TableCell>
                         <TableCell className="text-muted-foreground">{user.email}</TableCell>
                         <TableCell className="text-muted-foreground">{user.phone_number || "—"}</TableCell>
                         <TableCell>
-                          {user.entertainer_categories && user.entertainer_categories.length > 0
-                            ? user.entertainer_categories.join(", ")
-                            : <span className="text-muted-foreground">—</span>}
+                          {user.bandNames.length > 0
+                            ? user.bandNames.join(", ")
+                            : <span className="text-muted-foreground">No Group</span>}
                         </TableCell>
                         <TableCell>
-                          {user.subscription_status ? (
-                            <Badge variant={user.subscription_status === "active" ? "default" : "outline"}>
-                              {user.subscription_status}
-                            </Badge>
+                          {user.role ? (
+                            <Badge variant="outline">{roleLabels[user.role]}</Badge>
                           ) : (
                             <Badge variant="outline" className="text-muted-foreground">none</Badge>
                           )}
@@ -615,25 +617,20 @@ const AdminDashboard = () => {
                           {user.created_at ? new Date(user.created_at).toLocaleDateString() : "—"}
                         </TableCell>
                         <TableCell className="text-right">
-                          <div className="flex justify-end gap-1">
-                            <Button variant="ghost" size="icon" onClick={() => handleEditUser(user)}>
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-destructive hover:text-destructive"
-                              onClick={() => setDeleteConfirmUser(user)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => setDeleteConfirmUser(user)}
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Delete
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
                     {filteredEntertainers.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                        <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                           No entertainers found
                         </TableCell>
                       </TableRow>

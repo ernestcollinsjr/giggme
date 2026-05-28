@@ -312,6 +312,38 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleUpdateRole = async (user: UserWithRole, newRole: AppRole) => {
+    try {
+      await supabase.from("user_roles").delete().eq("user_id", user.id);
+      const { error } = await supabase
+        .from("user_roles")
+        .insert({ user_id: user.id, role: newRole });
+      if (error) throw error;
+      toast({ title: "Role updated", description: `${user.name} is now ${roleLabels[newRole]}.` });
+      await fetchUsers();
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Error updating role", description: error.message });
+    }
+  };
+
+  const handleUpdateBand = async (user: UserWithRole, newBandId: string) => {
+    try {
+      // Remove existing band memberships
+      await supabase.from("band_members").delete().eq("member_id", user.id);
+
+      if (newBandId && newBandId !== "__none__") {
+        const { error } = await supabase
+          .from("band_members")
+          .insert({ member_id: user.id, band_id: newBandId });
+        if (error) throw error;
+      }
+      toast({ title: "Group updated", description: `${user.name}'s group has been updated.` });
+      await Promise.all([fetchUsers(), fetchBands()]);
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Error updating group", description: error.message });
+    }
+  };
+
   const handleDeleteUser = async () => {
     if (!deleteConfirmUser) return;
 
@@ -515,16 +547,41 @@ const AdminDashboard = () => {
                     <TableCell className="text-muted-foreground">{user.email}</TableCell>
                     <TableCell className="text-muted-foreground">{user.phone_number || "—"}</TableCell>
                     <TableCell>
-                      {user.bandNames.length > 0
-                        ? user.bandNames.join(", ")
-                        : <span className="text-muted-foreground">No Group</span>}
+                      <Select
+                        value={
+                          bands.find((b) => user.bandNames.includes(b.name))?.id || "__none__"
+                        }
+                        onValueChange={(val) => handleUpdateBand(user, val)}
+                      >
+                        <SelectTrigger className="h-8 w-[160px]">
+                          <SelectValue placeholder="No Group" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__none__">No Group</SelectItem>
+                          {bands.map((b) => (
+                            <SelectItem key={b.id} value={b.id}>
+                              {b.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </TableCell>
                     <TableCell>
-                      {user.role ? (
-                        <Badge variant="outline">{roleLabels[user.role]}</Badge>
-                      ) : (
-                        <Badge variant="outline" className="text-muted-foreground">none</Badge>
-                      )}
+                      <Select
+                        value={user.role || ""}
+                        onValueChange={(val) => handleUpdateRole(user, val as AppRole)}
+                      >
+                        <SelectTrigger className="h-8 w-[140px]">
+                          <SelectValue placeholder="Select role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {(Object.keys(roleLabels) as AppRole[]).map((r) => (
+                            <SelectItem key={r} value={r}>
+                              {roleLabels[r]}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {user.created_at ? new Date(user.created_at).toLocaleDateString() : "—"}

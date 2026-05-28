@@ -268,6 +268,21 @@ const PerformerProfileView = () => {
         });
       }
 
+      // Push notification to performer
+      try {
+        await supabase.functions.invoke("send-push-notification", {
+          body: {
+            user_id: userId,
+            title: "🎤 New Booking Request",
+            body: `${(await supabase.from("profiles").select("name").eq("id", user.id).maybeSingle()).data?.name || "Someone"} sent you a booking request for ${datesStr}${bookingForm.venue.trim() ? " at " + bookingForm.venue.trim() : ""}`,
+            url: "/bookings",
+            data: { type: "booking_request", performer_id: userId },
+          },
+        });
+      } catch (pushErr) {
+        console.warn("Push notification failed", pushErr);
+      }
+
       toast({ title: "Booking request sent", description: `Your request was sent to ${profile?.name || "the performer"}.` });
       setBookingOpen(false);
       setBookingForm({ dates: [], startTime: "", endTime: "", venue: "", venueLat: null, venueLng: null, venuePhone: "", budget: "", foodDiscounts: "", dressCode: "", contactPerson: "" });

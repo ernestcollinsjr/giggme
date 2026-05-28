@@ -1396,17 +1396,19 @@ const Bookings = () => {
                   Highlighted dates show all scheduled bookings across your performers
                 </CardDescription>
               </CardHeader>
-              <CardContent className="flex justify-center">
-                <Calendar
-                  mode="multiple"
-                  selected={bookedDates}
-                  onSelect={() => {}}
-                  modifiers={{ booked: bookedDates }}
-                  modifiersClassNames={{
-                    booked: "bg-primary text-primary-foreground hover:bg-primary/90 rounded-md font-semibold",
-                  }}
-                  className="rounded-md border border-border/50 scale-[1.75] origin-top my-8 sm:my-16"
-                />
+              <CardContent className="flex justify-center overflow-hidden">
+                <div className="scale-[1.6] origin-top transform-gpu" style={{ marginBottom: 'calc(1.6 * 350px - 350px)' }}>
+                  <Calendar
+                    mode="multiple"
+                    selected={bookedDates}
+                    onSelect={() => {}}
+                    modifiers={{ booked: bookedDates }}
+                    modifiersClassNames={{
+                      booked: "bg-primary text-primary-foreground hover:bg-primary/90 rounded-md font-semibold",
+                    }}
+                    className="rounded-md border border-border/50"
+                  />
+                </div>
               </CardContent>
             </Card>
           );

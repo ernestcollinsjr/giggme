@@ -15,7 +15,8 @@ import testimonial2 from "@/assets/testimonial-2.jpg";
 import testimonial3 from "@/assets/testimonial-3.jpg";
 import testimonial4 from "@/assets/testimonial-4.jpg";
 
-const ENTERTAINER_PRICE_ID = "price_1Tc7DGEPiAZgF8MeCcRLu2rd";
+const BASIC_PRICE_ID = "price_1TcATOEPiAZgF8Me2TkOBbG0";
+const FEATURED_PRICE_ID = "price_1TcATsEPiAZgF8MeuJY76UlD";
 
 const DEMO_PERFORMERS = [
   { id: "demo-1", name: "Marcus Reed", category: "Jazz Saxophonist", photo: performer1 },

@@ -237,7 +237,15 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
   // to their booking manager card. Tries native share too on mobile.
   const shareTrackingLink = async (gig: UpcomingGig) => {
     const venueLabel = gig.venue_name || gig.venue || "your gig";
-    const link = `${window.location.origin}/bookings?gig=${gig.id}`;
+    // Always link to the public production app so recipients aren't sent to the
+    // Lovable preview (which would force them through lovable.dev login).
+    const host = window.location.hostname;
+    const isPreview =
+      host.includes("lovableproject.com") ||
+      host.includes("lovable.app") && host.includes("--") ||
+      host === "localhost";
+    const publicOrigin = isPreview ? "https://giggme.com" : window.location.origin;
+    const link = `${publicOrigin}/bookings?gig=${gig.id}`;
     const body = `Heads up for ${venueLabel} — tap Navigate on your gig card so we can track your route: ${link}`;
 
     // Figure out who to notify: gig owner + accepted gig members (not the manager)

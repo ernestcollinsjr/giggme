@@ -94,12 +94,29 @@ const Auth = () => {
     });
   }, []);
 
+  const redirectToEntertainerCheckout = async () => {
+    try {
+      const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke("create-checkout", {
+        body: { priceId: entertainerPlan!.priceId },
+      });
+      if (checkoutError) throw checkoutError;
+      if (checkoutData?.url) {
+        toast({ title: "Redirecting to checkout..." });
+        window.location.href = checkoutData.url;
+        return true;
+      }
+    } catch (err) {
+      console.error("Checkout error:", err);
+      toast({ variant: "destructive", title: "Checkout failed", description: "Please try again from your profile." });
+    }
+    return false;
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Validate input
       const validatedData = loginSchema.parse({
         email: loginEmail,
         password: loginPassword,
@@ -112,25 +129,19 @@ const Auth = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "Welcome back!",
-        description: "You've successfully logged in.",
-      });
-      
+      toast({ title: "Welcome back!", description: "You've successfully logged in." });
+
+      if (entertainerPlan) {
+        const ok = await redirectToEntertainerCheckout();
+        if (ok) return;
+      }
+
       navigate(postAuthPath);
     } catch (error: any) {
       if (error instanceof z.ZodError) {
-        toast({
-          variant: "destructive",
-          title: "Validation Error",
-          description: error.errors[0].message,
-        });
+        toast({ variant: "destructive", title: "Validation Error", description: error.errors[0].message });
       } else {
-        toast({
-          variant: "destructive",
-          title: "Login failed",
-          description: error.message,
-        });
+        toast({ variant: "destructive", title: "Login failed", description: error.message });
       }
     } finally {
       setLoading(false);

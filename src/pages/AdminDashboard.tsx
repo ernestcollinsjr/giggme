@@ -107,15 +107,14 @@ const AdminDashboard = () => {
         return;
       }
 
-      // Check if user is super admin (user may have multiple roles)
+      // Allow super_admin or booking_manager to access
       const { data: roleData } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id)
-        .eq("role", "super_admin")
-        .maybeSingle();
+        .in("role", ["super_admin", "booking_manager"]);
 
-      if (!roleData) {
+      if (!roleData || roleData.length === 0) {
         toast({
           variant: "destructive",
           title: "Access Denied",

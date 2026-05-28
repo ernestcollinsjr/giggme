@@ -248,7 +248,7 @@ const Index = () => {
                 Get Started Free <ArrowRight className="h-4 w-4" />
               </button>
               <button
-                onClick={() => navigate("/auth")}
+                onClick={() => document.getElementById("see-in-action")?.scrollIntoView({ behavior: "smooth", block: "start" })}
                 className="inline-flex items-center gap-2 h-12 px-2 pr-5 rounded-full text-white/90 hover:text-white font-medium group"
               >
                 <span className="h-10 w-10 rounded-full border border-white/20 flex items-center justify-center group-hover:border-white/40 group-hover:bg-white/5 transition-all">

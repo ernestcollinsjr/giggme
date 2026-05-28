@@ -125,9 +125,10 @@ const FindEntertainers = () => {
   };
 
   const handleSubscribe = async (priceId: string) => {
+    const plan = priceId === FEATURED_PRICE_ID ? "entertainer_featured" : "entertainer_basic";
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) {
-      navigate("/auth?mode=signup");
+      navigate(`/auth?mode=signup&plan=${plan}`);
       return;
     }
     setSubscribing(true);

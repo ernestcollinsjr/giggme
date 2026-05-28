@@ -747,6 +747,7 @@ const Auth = () => {
                       </div>
                     </div>
                   </div>
+                  )}
                 </div>
                 
                 <div className="space-y-2">

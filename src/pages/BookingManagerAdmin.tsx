@@ -838,16 +838,17 @@ export default function BookingManagerAdmin() {
                       const artist = managedArtists.find((a) => a.artist_id === gig.artist_id);
                       const photo = artist?.profile.photo_urls?.[0];
                       const d = new Date(gig.date);
+                      const isCompletedRow = isGigCompleted(gig);
                       return (
-                        <li key={`${gig.id}-${gig.artist_id}`} className="py-3 flex items-center gap-3">
-                          <div className="flex flex-col items-center justify-center w-12 h-12 rounded-md bg-muted text-center flex-shrink-0">
+                        <li key={`${gig.id}-${gig.artist_id}`} className={cn("py-3 flex items-center gap-3", isCompletedRow && "opacity-50")}>
+                          <div className={cn("flex flex-col items-center justify-center w-12 h-12 rounded-md bg-muted text-center flex-shrink-0", isCompletedRow && "text-muted-foreground")}>
                             <span className="text-[10px] uppercase font-medium text-muted-foreground leading-none">
                               {d.toLocaleDateString("en-US", { month: "short" })}
                             </span>
-                            <span className="text-lg font-bold leading-none mt-0.5">{d.getDate()}</span>
+                            <span className={cn("text-lg leading-none mt-0.5", isCompletedRow ? "font-normal text-muted-foreground" : "font-bold")}>{d.getDate()}</span>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium truncate">{gig.venue_name || gig.venue}</p>
+                            <p className={cn("truncate", isCompletedRow ? "font-normal text-muted-foreground" : "font-medium")}>{gig.venue_name || gig.venue}</p>
                             {gig.venue_name && (
                               <p className="text-xs text-muted-foreground truncate">{gig.venue}</p>
                             )}

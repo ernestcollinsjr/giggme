@@ -47,6 +47,8 @@ interface UserWithRole {
   created_at: string | null;
   role: AppRole | null;
   bandNames: string[];
+  entertainer_categories?: string[] | null;
+  subscription_status?: string | null;
 }
 
 interface BandWithMembers {

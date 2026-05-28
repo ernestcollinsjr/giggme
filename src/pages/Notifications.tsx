@@ -321,9 +321,13 @@ const Notifications = () => {
       
       <div className="container max-w-4xl mx-auto px-4 py-8">
         <div className="mb-8">
+          <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-4 -ml-2">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
           <h1 className="text-3xl font-bold flex items-center gap-3">
             <Bell className="h-8 w-8 text-primary" />
-            Notifications
+            Alerts
           </h1>
           <p className="text-muted-foreground mt-2">
             Manage your notification preferences and view notification history

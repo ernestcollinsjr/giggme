@@ -1412,9 +1412,9 @@ const Bookings = () => {
                         request: requestDates,
                       }}
                       modifiersClassNames={{
-                        confirmed: "!bg-primary !text-primary-foreground hover:!bg-primary/90 rounded-md font-semibold",
-                        invitation: "!bg-secondary !text-secondary-foreground hover:!bg-secondary/90 rounded-md font-semibold",
-                        request: "!bg-accent !text-accent-foreground hover:!bg-accent/90 rounded-md font-semibold",
+                        confirmed: "!bg-blue-500 !text-white hover:!bg-blue-500/90 rounded-md font-semibold",
+                        invitation: "!bg-yellow-400 !text-black hover:!bg-yellow-400/90 rounded-md font-semibold",
+                        request: "!bg-red-500 !text-white hover:!bg-red-500/90 rounded-md font-semibold",
                       }}
                       className="rounded-md border border-border/50"
                     />
@@ -1424,16 +1424,16 @@ const Bookings = () => {
               <div className="flex md:flex-col flex-wrap gap-3 text-sm md:w-48 md:pt-4">
                 <div className="font-semibold text-foreground w-full">Legend</div>
                 <div className="flex items-center gap-2">
-                  <span className="inline-block h-4 w-4 rounded bg-primary" />
-                  <span className="text-muted-foreground">Confirmed gigs</span>
+                  <span className="inline-block h-4 w-4 rounded-full bg-blue-500" />
+                  <span className="text-muted-foreground">Booked / Confirmed</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="inline-block h-4 w-4 rounded bg-secondary" />
-                  <span className="text-muted-foreground">Gig invitations</span>
+                  <span className="inline-block h-4 w-4 rounded-full bg-yellow-400" />
+                  <span className="text-muted-foreground">Tentative (invitations)</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="inline-block h-4 w-4 rounded bg-accent" />
-                  <span className="text-muted-foreground">Booking requests</span>
+                  <span className="inline-block h-4 w-4 rounded-full bg-red-500" />
+                  <span className="text-muted-foreground">Pending requests</span>
                 </div>
               </div>
             </div>

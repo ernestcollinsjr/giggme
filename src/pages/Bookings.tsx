@@ -85,6 +85,12 @@ const Bookings = () => {
   const [managedArtists, setManagedArtists] = useState<{ artist_id: string; name: string; email: string | null }[]>([]);
   const [quickBookPerformerId, setQuickBookPerformerId] = useState<string>("");
   const [quickBookVenue, setQuickBookVenue] = useState<string>("");
+  const [quickBookVenueLat, setQuickBookVenueLat] = useState<number | null>(null);
+  const [quickBookVenueLng, setQuickBookVenueLng] = useState<number | null>(null);
+  const [quickBookVenuePhone, setQuickBookVenuePhone] = useState<string>("");
+  const [quickBookContactPerson, setQuickBookContactPerson] = useState<string>("");
+  const [quickBookDressCode, setQuickBookDressCode] = useState<string>("");
+  const [quickBookNote, setQuickBookNote] = useState<string>("");
   const [quickBookStart, setQuickBookStart] = useState<string>("19:00");
   const [quickBookEnd, setQuickBookEnd] = useState<string>("22:00");
   const [quickBookBudget, setQuickBookBudget] = useState<string>("");
@@ -1592,18 +1598,6 @@ const Bookings = () => {
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="space-y-2">
-                        <Label>Venue</Label>
-                        <PlaceAutocomplete
-                          value={quickBookVenue}
-                          onChange={(val, place) => {
-                            const addr = place?.formatted_address;
-                            const nm = place?.name;
-                            setQuickBookVenue(nm && addr ? `${nm} — ${addr}` : (addr || val));
-                          }}
-                          placeholder="Type a venue name to find its address"
-                        />
-                      </div>
                       <div className="grid grid-cols-2 gap-2">
                         <div className="space-y-2">
                           <Label>Start</Label>
@@ -1615,8 +1609,65 @@ const Bookings = () => {
                         </div>
                       </div>
                       <div className="space-y-2">
+                        <Label>Venue *</Label>
+                        <div className="flex gap-2">
+                          <div className="flex-1">
+                            <PlaceAutocomplete
+                              value={quickBookVenue}
+                              onChange={(val, place) => {
+                                const lat = place?.geometry?.location?.lat?.();
+                                const lng = place?.geometry?.location?.lng?.();
+                                const phone = (place as any)?.formatted_phone_number || (place as any)?.international_phone_number;
+                                const placeName = (place as any)?.name as string | undefined;
+                                const formatted = (place as any)?.formatted_address as string | undefined;
+                                let combined = val;
+                                if (placeName && formatted && !formatted.toLowerCase().startsWith(placeName.toLowerCase())) {
+                                  combined = `${placeName} — ${formatted}`;
+                                }
+                                setQuickBookVenue(combined);
+                                if (typeof lat === "number") setQuickBookVenueLat(lat);
+                                if (typeof lng === "number") setQuickBookVenueLng(lng);
+                                if (phone) setQuickBookVenuePhone(phone);
+                              }}
+                              placeholder="Search venue or address"
+                            />
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            title="Navigate"
+                            disabled={!quickBookVenue.trim() && quickBookVenueLat == null}
+                            onClick={() => {
+                              const dest = quickBookVenueLat != null && quickBookVenueLng != null
+                                ? `${quickBookVenueLat},${quickBookVenueLng}`
+                                : quickBookVenue.trim();
+                              window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(dest)}`, "_blank");
+                            }}
+                          >
+                            <Navigation className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Venue Phone</Label>
+                        <Input type="tel" placeholder="In case you're running late" value={quickBookVenuePhone} onChange={(e) => setQuickBookVenuePhone(e.target.value)} />
+                      </div>
+                      <div className="space-y-2">
                         <Label>Budget (optional)</Label>
-                        <Input value={quickBookBudget} onChange={(e) => setQuickBookBudget(e.target.value)} placeholder="e.g. $250" />
+                        <Input value={quickBookBudget} onChange={(e) => setQuickBookBudget(e.target.value)} placeholder="e.g. $500" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Contact Person</Label>
+                        <Input placeholder="Venue contact name" value={quickBookContactPerson} onChange={(e) => setQuickBookContactPerson(e.target.value)} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Dress Code</Label>
+                        <Input placeholder="e.g. all black, formal" value={quickBookDressCode} onChange={(e) => setQuickBookDressCode(e.target.value)} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Note (optional)</Label>
+                        <Textarea placeholder="Any extra details..." value={quickBookNote} onChange={(e) => setQuickBookNote(e.target.value)} />
                       </div>
                       <Button
                         className="w-full"
@@ -1640,6 +1691,25 @@ const Bookings = () => {
                               .maybeSingle();
                             const datesStr = format(selectedCalendarDate, "EEE, MMM d, yyyy");
                             const timeStr = `(${quickBookStart}${quickBookEnd ? ` – ${quickBookEnd}` : ""})`;
+
+                            const lines = [
+                              `Booking request for ${performer.name}`,
+                              `Date: ${datesStr} ${timeStr}`,
+                              `Venue: ${quickBookVenue.trim()}`,
+                              quickBookVenuePhone.trim() ? `Venue Phone: ${quickBookVenuePhone.trim()}` : null,
+                              quickBookBudget.trim() ? `Budget: ${quickBookBudget.trim()}` : null,
+                              quickBookContactPerson.trim() ? `Contact Person: ${quickBookContactPerson.trim()}` : null,
+                              quickBookDressCode.trim() ? `Dress Code: ${quickBookDressCode.trim()}` : null,
+                              quickBookNote.trim() ? `Note: ${quickBookNote.trim()}` : null,
+                            ].filter(Boolean).join("\n");
+
+                            await supabase.from("messages").insert({
+                              sender_id: user.id,
+                              recipient_id: quickBookPerformerId,
+                              content: lines,
+                              is_group_message: false,
+                            });
+
                             const { error } = await supabase.functions.invoke("send-booking-request-email", {
                               body: {
                                 performerId: quickBookPerformerId,
@@ -1650,7 +1720,11 @@ const Bookings = () => {
                                 dates: datesStr,
                                 time: timeStr,
                                 venue: quickBookVenue.trim(),
+                                venuePhone: quickBookVenuePhone.trim() || undefined,
                                 budget: quickBookBudget.trim() || undefined,
+                                contactPerson: quickBookContactPerson.trim() || undefined,
+                                dressCode: quickBookDressCode.trim() || undefined,
+                                note: quickBookNote.trim() || undefined,
                                 eventDate: eventDate.toISOString(),
                                 appUrl: window.location.hostname.endsWith("lovable.app") || window.location.hostname.endsWith("lovable.dev") ? "https://giggme.com" : window.location.origin,
                               },
@@ -1659,7 +1733,13 @@ const Bookings = () => {
                             toast({ title: "Booking request sent", description: `Sent to ${performer.name}.` });
                             setQuickBookPerformerId("");
                             setQuickBookVenue("");
+                            setQuickBookVenueLat(null);
+                            setQuickBookVenueLng(null);
+                            setQuickBookVenuePhone("");
                             setQuickBookBudget("");
+                            setQuickBookContactPerson("");
+                            setQuickBookDressCode("");
+                            setQuickBookNote("");
                             setSelectedCalendarDate(null);
                             await checkAuthAndFetchData();
                           } catch (err: any) {
@@ -1669,6 +1749,7 @@ const Bookings = () => {
                           }
                         }}
                       >
+                        <Send className="h-4 w-4 mr-2" />
                         {quickBookSubmitting ? "Sending..." : "Send Booking Request"}
                       </Button>
                     </div>

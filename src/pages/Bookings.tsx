@@ -81,6 +81,7 @@ const Bookings = () => {
   const [resendingMemberId, setResendingMemberId] = useState<string | null>(null);
   const [resendingAll, setResendingAll] = useState(false);
   const [showPendingOnly, setShowPendingOnly] = useState(false);
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
   
   // Form state
   const [date, setDate] = useState<Date>();

@@ -230,7 +230,7 @@ export const TutorialSimulators = () => {
         @keyframes pulse-btn { 0%,100% { box-shadow: 0 0 0 0 rgba(59,130,246,.6) } 50% { box-shadow: 0 0 0 8px rgba(59,130,246,0) } }
       `}</style>
       <div className="text-center mb-12">
-        <h2 className="text-3xl sm:text-4xl font-bold text-white">See GigMe in action</h2>
+        <h2 className="text-3xl sm:text-4xl font-bold text-white">See GiggMe in action</h2>
         <p className="mt-3 text-white/60 max-w-2xl mx-auto">
           Four quick simulations of the features your team will use every day.
         </p>

@@ -377,7 +377,7 @@ const Index = () => {
         <div className="grid md:grid-cols-3 gap-6">
           {[
             { n: "01", t: "Browse and compare", d: "Discover talented bands and artists in your area, compare their rates and availability." },
-            { n: "02", t: "Book securely", d: "GigMe ensures secure connections, amazing service, and hassle-free coordination." },
+            { n: "02", t: "Book securely", d: "GiggMe ensures secure connections, amazing service, and hassle-free coordination." },
             { n: "03", t: "Enjoy your event", d: "Watch your special moment spring to life with professional talent." },
           ].map((s) => (
             <div key={s.n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-7">
@@ -395,7 +395,7 @@ const Index = () => {
           <Zap className="absolute top-6 right-6 h-10 w-10 text-white/30" />
           <h2 className="text-3xl sm:text-4xl font-bold text-white">Ready to transform your gig management?</h2>
           <p className="mt-3 text-white/85 max-w-2xl mx-auto">
-            Join GigMe today and experience seamless connections between band leaders, members, artists, and booking managers.
+            Join GiggMe today and experience seamless connections between band leaders, members, artists, and booking managers.
           </p>
           <button
             onClick={() => navigate("/auth")}
@@ -413,7 +413,7 @@ const Index = () => {
             <button onClick={() => navigate("/pricing")} className="hover:text-white transition-colors">Pricing</button>
             <button onClick={() => navigate("/auth")} className="hover:text-white transition-colors">Sign In</button>
           </div>
-          <p className="text-sm text-white/40">© 2026 GigMe. All rights reserved.</p>
+          <p className="text-sm text-white/40">© 2026 GiggMe. All rights reserved.</p>
         </div>
       </footer>
     </div>

@@ -171,7 +171,7 @@ const Auth = () => {
           // If checkout fails, still navigate to profile setup
           toast({
             title: "Account created!",
-            description: "Welcome to GigMe. You can complete payment later.",
+            description: "Welcome to GiggMe. You can complete payment later.",
           });
           navigate("/profile-setup");
           return;
@@ -180,7 +180,7 @@ const Auth = () => {
 
       toast({
         title: "Account created!",
-        description: "Welcome to GigMe. Complete your profile to get started.",
+        description: "Welcome to GiggMe. Complete your profile to get started.",
       });
       
       navigate("/profile-setup");

@@ -1,6 +1,6 @@
 {
-  "name": "GigMe - Band & Manager Connection",
-  "short_name": "GigMe",
+  "name": "GiggMe - Band & Manager Connection",
+  "short_name": "GiggMe",
   "description": "Connect bands and managers for seamless gig management",
   "start_url": "/",
   "display": "standalone",

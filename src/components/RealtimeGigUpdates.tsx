@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle, XCircle, Clock } from "lucide-react";
 
-interface GigMemberUpdate {
+interface GiggMemberUpdate {
   id: string;
   gig_id: string;
   member_id: string;
@@ -48,7 +48,7 @@ export const RealtimeGigUpdates = ({ gigId }: { gigId: string }) => {
           console.log("Gig member update:", payload);
           
           if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
-            const update = payload.new as GigMemberUpdate;
+            const update = payload.new as GiggMemberUpdate;
             
             // Fetch member name
             const { data: profile } = await supabase

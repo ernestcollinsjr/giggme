@@ -270,7 +270,7 @@ const Notifications = () => {
     try {
       if ('serviceWorker' in navigator && 'Notification' in window) {
         const registration = await navigator.serviceWorker.ready;
-        await registration.showNotification('Test Push from GigMe! 🎵', {
+        await registration.showNotification('Test Push from GiggMe! 🎵', {
           body: 'Your push notifications are working perfectly! 🎉',
           icon: '/favicon.ico',
           badge: '/favicon.ico',

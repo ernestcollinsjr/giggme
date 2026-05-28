@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Bell, Mail, MessageSquare, Smartphone, Loader2, Send, Clock, FileCheck, Settings, History, Check, CheckCheck, Filter } from "lucide-react";
+import { ArrowLeft, Bell, Mail, MessageSquare, Smartphone, Loader2, Send, Clock, FileCheck, Settings, History, Check, CheckCheck, Filter } from "lucide-react";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { TopNav } from "@/components/TopNav";
 import BottomNav from "@/components/BottomNav";
@@ -321,9 +321,13 @@ const Notifications = () => {
       
       <div className="container max-w-4xl mx-auto px-4 py-8">
         <div className="mb-8">
+          <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-4 -ml-2">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
           <h1 className="text-3xl font-bold flex items-center gap-3">
             <Bell className="h-8 w-8 text-primary" />
-            Notifications
+            Alerts
           </h1>
           <p className="text-muted-foreground mt-2">
             Manage your notification preferences and view notification history

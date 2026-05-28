@@ -87,7 +87,7 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
   const utilityItems = [
     { title: "Inbox", url: "/messages", icon: MessageSquare },
     { title: "Calendar", url: "/bookings", icon: Calendar },
-    { title: "Reports", url: "/notifications", icon: BarChart3 },
+    { title: "Alerts", url: "/notifications", icon: BarChart3 },
     { title: "Settings", url: "/profile-setup", icon: Settings },
   ];
 

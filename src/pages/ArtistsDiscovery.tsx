@@ -122,20 +122,33 @@ const ArtistsDiscovery = () => {
   }, [artists]);
 
   const filteredArtists = artists.filter((artist) => {
-    const searchLower = searchTerm.toLowerCase();
-    const genreText = artist.genres?.join(" ").toLowerCase() || "";
-    const venueText = artist.venues?.join(" ").toLowerCase() || "";
-    const matchesSearch =
-      artist.profile.name.toLowerCase().includes(searchLower) ||
-      artist.stage_name?.toLowerCase().includes(searchLower) ||
-      artist.genre?.toLowerCase().includes(searchLower) ||
-      artist.instrument?.toLowerCase().includes(searchLower) ||
-      artist.performer_category?.toLowerCase().includes(searchLower) ||
-      genreText.includes(searchLower) ||
-      venueText.includes(searchLower);
-    
+    const searchLower = searchTerm.trim().toLowerCase();
+    const haystack = [
+      artist.profile.name,
+      artist.stage_name,
+      artist.genre,
+      artist.instrument,
+      artist.performer_category,
+      ...(artist.genres || []),
+      ...(artist.venues || []),
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    let matchesSearch = !searchLower || haystack.includes(searchLower);
+
+    // Fuzzy fallback: also match if the search term overlaps any meaningful
+    // word in the haystack (e.g. "Donatellos" should still find "Donatello").
+    if (!matchesSearch && searchLower.length >= 4) {
+      const tokens = haystack.split(/[^a-z0-9]+/).filter((t) => t.length >= 4);
+      matchesSearch = tokens.some(
+        (t) => searchLower.includes(t) || t.includes(searchLower.slice(0, Math.max(4, searchLower.length - 2)))
+      );
+    }
+
     const matchesGenre = selectedGenre === "all" || artist.genre === selectedGenre;
-    
+
     return matchesSearch && matchesGenre;
   });
 

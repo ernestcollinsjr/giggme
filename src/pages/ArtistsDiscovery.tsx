@@ -124,13 +124,15 @@ const ArtistsDiscovery = () => {
   const filteredArtists = artists.filter((artist) => {
     const searchLower = searchTerm.toLowerCase();
     const genreText = artist.genres?.join(" ").toLowerCase() || "";
+    const venueText = artist.venues?.join(" ").toLowerCase() || "";
     const matchesSearch =
       artist.profile.name.toLowerCase().includes(searchLower) ||
       artist.stage_name?.toLowerCase().includes(searchLower) ||
       artist.genre?.toLowerCase().includes(searchLower) ||
       artist.instrument?.toLowerCase().includes(searchLower) ||
       artist.performer_category?.toLowerCase().includes(searchLower) ||
-      genreText.includes(searchLower);
+      genreText.includes(searchLower) ||
+      venueText.includes(searchLower);
     
     const matchesGenre = selectedGenre === "all" || artist.genre === selectedGenre;
     

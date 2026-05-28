@@ -148,7 +148,7 @@ const Index = () => {
           </div>
 
           <nav className="hidden lg:flex items-center gap-8">
-            {["Features", "How It Works", "Find Entertainers", "Pricing"].map((item) => (
+            {["Features", "How It Works", "Entertainers", "Pricing"].map((item) => (
               <button
                 key={item}
                 onClick={() => {
@@ -156,7 +156,7 @@ const Index = () => {
                     navigate("/pricing");
                   } else if (item === "How It Works") {
                     document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth", block: "start" });
-                  } else if (item === "Find Entertainers") {
+                  } else if (item === "Entertainers") {
                     navigate("/find-entertainers");
                   } else {
                     navigate("/auth");
@@ -212,7 +212,7 @@ const Index = () => {
                   How It Works
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/find-entertainers")}>
-                  Find Entertainers
+                  Entertainers
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/pricing")}>
                   <DollarSign className="mr-2 h-4 w-4" /> Pricing

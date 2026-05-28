@@ -1598,6 +1598,16 @@ const Bookings = () => {
                           </SelectContent>
                         </Select>
                       </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-2">
+                          <Label>Start</Label>
+                          <Input type="time" value={quickBookStart} onChange={(e) => setQuickBookStart(e.target.value)} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>End</Label>
+                          <Input type="time" value={quickBookEnd} onChange={(e) => setQuickBookEnd(e.target.value)} />
+                        </div>
+                      </div>
                       <div className="space-y-2">
                         <Label>Venue *</Label>
                         <div className="flex gap-2">

@@ -337,30 +337,8 @@ const Index = () => {
         </form>
       </section>
 
-      {/* Categories */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h2 className="text-center text-3xl sm:text-4xl font-bold text-white mb-12">
-          Browse popular categories
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {categories.map((c) => (
-            <button
-              key={c.title}
-              onClick={() => navigate("/artists")}
-              className="group text-left rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm p-6 hover:border-white/20 hover:bg-white/[0.06] transition-all"
-            >
-              <div className={`h-12 w-12 rounded-xl ${c.tile} flex items-center justify-center shadow-lg`}>
-                <c.icon className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="mt-5 text-lg font-semibold text-white">{c.title}</h3>
-              <p className="mt-2 text-sm text-white/55 leading-relaxed">{c.desc}</p>
-              <div className={`mt-5 inline-flex items-center gap-1 text-sm font-medium ${c.accent} group-hover:gap-2 transition-all`}>
-                Explore <ArrowRight className="h-4 w-4" />
-              </div>
-            </button>
-          ))}
-        </div>
-      </section>
+      {/* Feature simulators */}
+      <TutorialSimulators />
 
       {/* Features band */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">

@@ -69,6 +69,7 @@ const ProfileSetup = () => {
   const [newSkill, setNewSkill] = useState("");
   const [genres, setGenres] = useState<string[]>([]);
   const [newGenre, setNewGenre] = useState("");
+  const [entertainerCategories, setEntertainerCategories] = useState<string[]>([]);
   const [availabilityStatus, setAvailabilityStatus] = useState("available");
   const [todayCalendarStatus, setTodayCalendarStatus] = useState<string | null>(null);
   const [weekAvailability, setWeekAvailability] = useState<{date: string; status: string | null}[]>([]);

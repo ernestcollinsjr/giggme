@@ -245,7 +245,7 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
       host.includes("lovable.app") && host.includes("--") ||
       host === "localhost";
     const publicOrigin = isPreview ? "https://giggme.com" : window.location.origin;
-    const link = `${publicOrigin}/bookings?gig=${gig.id}`;
+    const link = `${publicOrigin}/dashboard?gig=${gig.id}`;
     const body = `Heads up for ${venueLabel} — tap Navigate on your gig card so we can track your route: ${link}`;
 
     // Figure out who to notify: gig owner + accepted gig members (not the manager)

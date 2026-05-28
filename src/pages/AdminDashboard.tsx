@@ -169,6 +169,11 @@ const AdminDashboard = () => {
 
       if (bandsError) throw bandsError;
 
+      // Fetch entertainer subscriptions
+      const { data: entSubs } = await supabase
+        .from("entertainer_subscribers")
+        .select("user_id, status");
+
       // Combine profiles with roles and band names
       const usersWithRoles: UserWithRole[] = (profiles || []).map((profile) => {
         const userRole = roles?.find((r) => r.user_id === profile.id);
@@ -187,10 +192,14 @@ const AdminDashboard = () => {
         // Combine and deduplicate band names
         const allBandNames = [...new Set([...memberBands, ...leaderBands])];
 
+        const sub = entSubs?.find((s) => s.user_id === profile.id);
+
         return {
           ...profile,
           role: userRole?.role as AppRole || null,
           bandNames: allBandNames,
+          entertainer_categories: (profile as any).entertainer_categories || [],
+          subscription_status: sub?.status || null,
         };
       });
 

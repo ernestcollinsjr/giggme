@@ -36,6 +36,8 @@ import Messages from "./pages/Messages";
 import BookingRequestResponse from "./pages/BookingRequestResponse";
 import BookingResponse from "./pages/BookingResponse";
 import FindEntertainers from "./pages/FindEntertainers";
+import PaymentSchedulerPage from "./pages/PaymentSchedulerPage";
+import BookingRequestsPage from "./pages/BookingRequestsPage";
 
 const queryClient = new QueryClient();
 

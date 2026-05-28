@@ -75,6 +75,7 @@ export function AppShell({ userRole, children }: AppShellProps) {
     .join("")
     .toUpperCase();
 
+  return (
     <>
       {/* Mobile: pass-through, BottomNav and TopNav inside children handle nav */}
       <div className="lg:hidden">{children}</div>

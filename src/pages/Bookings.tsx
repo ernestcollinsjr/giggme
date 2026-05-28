@@ -1405,7 +1405,7 @@ const Bookings = () => {
                   modifiersClassNames={{
                     booked: "bg-primary text-primary-foreground hover:bg-primary/90 rounded-md font-semibold",
                   }}
-                  className="rounded-md border border-border/50"
+                  className="rounded-md border border-border/50 scale-[1.75] origin-top my-8 sm:my-16"
                 />
               </CardContent>
             </Card>

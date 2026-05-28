@@ -15,7 +15,8 @@ import testimonial2 from "@/assets/testimonial-2.jpg";
 import testimonial3 from "@/assets/testimonial-3.jpg";
 import testimonial4 from "@/assets/testimonial-4.jpg";
 
-const ENTERTAINER_PRICE_ID = "price_1Tc7DGEPiAZgF8MeCcRLu2rd";
+const BASIC_PRICE_ID = "price_1TcATOEPiAZgF8Me2TkOBbG0";
+const FEATURED_PRICE_ID = "price_1TcATsEPiAZgF8MeuJY76UlD";
 
 const DEMO_PERFORMERS = [
   { id: "demo-1", name: "Marcus Reed", category: "Jazz Saxophonist", photo: performer1 },
@@ -111,7 +112,7 @@ const FindEntertainers = () => {
     loadEntertainers();
   };
 
-  const handleSubscribe = async () => {
+  const handleSubscribe = async (priceId: string) => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) {
       navigate("/auth");
@@ -120,13 +121,30 @@ const FindEntertainers = () => {
     setSubscribing(true);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { priceId: ENTERTAINER_PRICE_ID },
+        body: { priceId },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       if (error) throw error;
       if (data?.url) window.open(data.url, "_blank");
     } finally {
       setSubscribing(false);
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) {
+      navigate("/auth");
+      return;
+    }
+    try {
+      const { data, error } = await supabase.functions.invoke("customer-portal", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (error) throw error;
+      if (data?.url) window.open(data.url, "_blank");
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -181,49 +199,101 @@ const FindEntertainers = () => {
         </div>
 
         {/* Subscribe panel */}
-        <div className="mt-10 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-6 sm:p-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
-            <div>
-              <h2 className="text-xl font-semibold text-white">
-                {isSubscribed ? "You're a featured entertainer" : "Are you an entertainer?"}
-              </h2>
-              <p className="mt-1 text-white/60 max-w-xl">
-                {isSubscribed
-                  ? "Your profile is live on this page. Update your bio, photos and videos anytime."
-                  : "Get featured on this page for $10.99/month. Upload your bio, photos, and videos so event planners can find and book you."}
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              {isSubscribed ? (
-                <>
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/15 text-emerald-300 text-sm">
-                    <CheckCircle2 className="h-4 w-4" /> Active membership
-                  </div>
-                  <Button
-                    onClick={() => navigate("/artist-profile")}
-                    className="bg-gradient-to-r from-blue-500 to-violet-600 hover:from-blue-400 hover:to-violet-500"
-                  >
-                    Edit my profile
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  onClick={handleSubscribe}
-                  disabled={subscribing}
-                  className="bg-gradient-to-r from-blue-500 to-violet-600 hover:from-blue-400 hover:to-violet-500"
-                >
-                  {subscribing ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  ) : (
-                    <Sparkles className="h-4 w-4 mr-2" />
-                  )}
-                  Join for $10.99/mo
-                </Button>
-              )}
-            </div>
+        <div className="mt-10">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-white">
+              {isSubscribed ? "You're a featured entertainer" : "Are you an entertainer?"}
+            </h2>
+            <p className="mt-2 text-white/60">
+              {isSubscribed
+                ? "Manage your subscription or update your profile anytime."
+                : "Pick a plan to get your profile in front of event planners."}
+            </p>
           </div>
+
+          {isSubscribed ? (
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/15 text-emerald-300 text-sm">
+                <CheckCircle2 className="h-4 w-4" /> Active membership
+              </div>
+              <Button
+                onClick={() => navigate("/artist-profile")}
+                className="bg-gradient-to-r from-blue-500 to-violet-600 hover:from-blue-400 hover:to-violet-500"
+              >
+                Edit my profile
+              </Button>
+              <Button
+                onClick={handleManageSubscription}
+                variant="outline"
+                className="border-white/20 text-white hover:bg-white/5"
+              >
+                Manage subscription
+              </Button>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 gap-5 max-w-3xl mx-auto">
+              {/* Basic */}
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-6 flex flex-col">
+                <h3 className="text-lg font-semibold text-white">Basic Profile</h3>
+                <div className="mt-3 flex items-baseline gap-1">
+                  <span className="text-4xl font-bold text-white">$8</span>
+                  <span className="text-white/50">/mo</span>
+                </div>
+                <ul className="mt-4 space-y-2 text-sm text-white/70 flex-1">
+                  <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" /> Upload your profile, bio, photos & videos</li>
+                  <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" /> Listed in the entertainer directory</li>
+                  <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" /> Receive booking inquiries</li>
+                </ul>
+                <Button
+                  onClick={() => handleSubscribe(BASIC_PRICE_ID)}
+                  disabled={subscribing}
+                  className="mt-6 w-full"
+                  variant="outline"
+                >
+                  {subscribing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Get Basic — $8/mo
+                </Button>
+              </div>
+
+              {/* Featured */}
+              <div className="rounded-2xl border border-violet-400/40 bg-gradient-to-br from-violet-600/15 to-fuchsia-600/10 backdrop-blur-xl p-6 flex flex-col relative">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-[11px] font-semibold bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white">
+                  PRIME PLACEMENT
+                </span>
+                <h3 className="text-lg font-semibold text-white">Featured Entertainer</h3>
+                <div className="mt-3 flex items-baseline gap-1">
+                  <span className="text-4xl font-bold text-white">$14</span>
+                  <span className="text-white/50">/mo</span>
+                </div>
+                <ul className="mt-4 space-y-2 text-sm text-white/80 flex-1">
+                  <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-violet-300 shrink-0 mt-0.5" /> Everything in Basic</li>
+                  <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-violet-300 shrink-0 mt-0.5" /> Pushed to the front of the site for prime viewership</li>
+                  <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-violet-300 shrink-0 mt-0.5" /> Featured badge on your profile</li>
+                  <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-violet-300 shrink-0 mt-0.5" /> Priority in search results</li>
+                </ul>
+                <Button
+                  onClick={() => handleSubscribe(FEATURED_PRICE_ID)}
+                  disabled={subscribing}
+                  className="mt-6 w-full bg-gradient-to-r from-blue-500 to-violet-600 hover:from-blue-400 hover:to-violet-500"
+                >
+                  {subscribing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
+                  Get Featured — $14/mo
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {!isSubscribed && (
+            <p className="mt-5 text-center text-sm text-white/50">
+              Already subscribed?{" "}
+              <button onClick={handleManageSubscription} className="text-violet-300 hover:text-white underline underline-offset-2">
+                Open billing portal
+              </button>
+            </p>
+          )}
         </div>
       </section>
+
 
       {/* Entertainer grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">

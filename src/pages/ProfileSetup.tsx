@@ -181,6 +181,7 @@ const ProfileSetup = () => {
           setEquipment(profile.equipment || []);
           setSkills(profile.skills || []);
           setGenres(profile.genres || []);
+          setEntertainerCategories(((profile as any).entertainer_categories as string[]) || []);
           setAvailabilityStatus(profile.availability_status || "available");
           setTravelDistance(profile.travel_distance?.toString() || "");
           setYearsExperience(profile.years_experience?.toString() || "");

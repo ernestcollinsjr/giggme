@@ -176,21 +176,24 @@ const Auth = () => {
       if (error) throw error;
 
       // For entertainer plans coming from /find-entertainers, redirect to checkout
-      if (entertainerPlan && signUpData.session) {
-        try {
-          const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke("create-checkout", {
-            body: { priceId: entertainerPlan.priceId },
+      if (entertainerPlan) {
+        let session = signUpData.session;
+        if (!session) {
+          // Try to sign in immediately (works when auto-confirm is on)
+          const { data: signInData } = await supabase.auth.signInWithPassword({
+            email: validatedData.email,
+            password: validatedData.password,
           });
-          if (checkoutError) throw checkoutError;
-          if (checkoutData?.url) {
-            toast({ title: "Account created!", description: "Redirecting to checkout..." });
-            window.location.href = checkoutData.url;
-            return;
-          }
-        } catch (checkoutErr) {
-          console.error("Checkout error:", checkoutErr);
-          toast({ title: "Account created!", description: "You can complete payment from your profile." });
-          navigate("/profile-setup");
+          session = signInData?.session ?? null;
+        }
+        if (session) {
+          const ok = await redirectToEntertainerCheckout();
+          if (ok) return;
+        } else {
+          toast({
+            title: "Check your email",
+            description: "Confirm your email, then sign in to complete payment.",
+          });
           return;
         }
       }

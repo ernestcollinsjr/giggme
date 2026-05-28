@@ -88,6 +88,7 @@ const FindEntertainers = () => {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
   useEffect(() => {
     loadEntertainers();

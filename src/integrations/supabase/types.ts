@@ -2235,6 +2235,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_public_performers: {
+        Args: never
+        Returns: {
+          availability: string
+          bio: string
+          genre: string
+          genres: string[]
+          instrument: string
+          name: string
+          performer_category: string
+          photo_urls: string[]
+          preferred_pay: number
+          preferred_pay_hours: number
+          rate_range: string
+          stage_name: string
+          user_id: string
+          years_experience: number
+          youtube_videos: Json
+        }[]
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]

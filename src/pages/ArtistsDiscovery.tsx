@@ -15,6 +15,9 @@ interface ArtistWithProfile {
   user_id: string;
   stage_name: string | null;
   genre: string | null;
+  genres?: string[] | null;
+  instrument?: string | null;
+  performer_category?: string | null;
   years_experience: number | null;
   availability: string | null;
   rate_range: string | null;
@@ -62,34 +65,32 @@ const ArtistsDiscovery = () => {
 
   const fetchArtists = async () => {
     try {
-      // Fetch artist profiles
-      const { data: artistData, error: artistError } = await supabase
-        .from("artist_profiles")
-        .select("*");
+      const { data, error } = await (supabase as any).rpc("get_public_performers");
 
-      if (artistError) throw artistError;
+      if (error) throw error;
 
-      // Fetch all profiles for the artists
-      const userIds = artistData?.map((a) => a.user_id) || [];
-      const { data: profilesData, error: profilesError } = await supabase
-        .from("profiles")
-        .select("id, name, bio, photo_urls")
-        .in("id", userIds);
-
-      if (profilesError) throw profilesError;
-
-      // Combine the data
-      const combined = artistData?.map((artist) => {
-        const profile = profilesData?.find((p) => p.id === artist.user_id);
-        return {
-          ...artist,
-          profile: {
-            name: profile?.name || "Unknown",
-            bio: profile?.bio || null,
-            photo_urls: profile?.photo_urls || [],
-          },
-        };
-      }) || [];
+      const combined = (data || []).map((performer: any) => ({
+        id: performer.user_id,
+        user_id: performer.user_id,
+        stage_name: performer.stage_name || null,
+        genre: performer.genre || performer.genres?.[0] || performer.instrument || null,
+        genres: performer.genres || [],
+        instrument: performer.instrument || null,
+        performer_category: performer.performer_category || null,
+        years_experience: performer.years_experience ?? null,
+        availability: performer.availability || null,
+        rate_range: performer.rate_range || (
+          performer.preferred_pay
+            ? `$${performer.preferred_pay}${performer.preferred_pay_hours ? ` / ${performer.preferred_pay_hours}hr` : ""}`
+            : null
+        ),
+        youtube_videos: performer.youtube_videos || [],
+        profile: {
+          name: performer.name || "Unknown",
+          bio: performer.bio || null,
+          photo_urls: performer.photo_urls || [],
+        },
+      }));
 
       setArtists(combined as unknown as ArtistWithProfile[]);
     } catch (error: any) {
@@ -112,10 +113,14 @@ const ArtistsDiscovery = () => {
 
   const filteredArtists = artists.filter((artist) => {
     const searchLower = searchTerm.toLowerCase();
+    const genreText = artist.genres?.join(" ").toLowerCase() || "";
     const matchesSearch =
       artist.profile.name.toLowerCase().includes(searchLower) ||
       artist.stage_name?.toLowerCase().includes(searchLower) ||
-      artist.genre?.toLowerCase().includes(searchLower);
+      artist.genre?.toLowerCase().includes(searchLower) ||
+      artist.instrument?.toLowerCase().includes(searchLower) ||
+      artist.performer_category?.toLowerCase().includes(searchLower) ||
+      genreText.includes(searchLower);
     
     const matchesGenre = selectedGenre === "all" || artist.genre === selectedGenre;
     

@@ -312,6 +312,38 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleUpdateRole = async (user: UserWithRole, newRole: AppRole) => {
+    try {
+      await supabase.from("user_roles").delete().eq("user_id", user.id);
+      const { error } = await supabase
+        .from("user_roles")
+        .insert({ user_id: user.id, role: newRole });
+      if (error) throw error;
+      toast({ title: "Role updated", description: `${user.name} is now ${roleLabels[newRole]}.` });
+      await fetchUsers();
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Error updating role", description: error.message });
+    }
+  };
+
+  const handleUpdateBand = async (user: UserWithRole, newBandId: string) => {
+    try {
+      // Remove existing band memberships
+      await supabase.from("band_members").delete().eq("member_id", user.id);
+
+      if (newBandId && newBandId !== "__none__") {
+        const { error } = await supabase
+          .from("band_members")
+          .insert({ member_id: user.id, band_id: newBandId });
+        if (error) throw error;
+      }
+      toast({ title: "Group updated", description: `${user.name}'s group has been updated.` });
+      await Promise.all([fetchUsers(), fetchBands()]);
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Error updating group", description: error.message });
+    }
+  };
+
   const handleDeleteUser = async () => {
     if (!deleteConfirmUser) return;
 

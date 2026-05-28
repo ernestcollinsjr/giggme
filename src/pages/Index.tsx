@@ -377,7 +377,7 @@ const Index = () => {
         <div className="grid md:grid-cols-3 gap-6">
           {[
             { n: "01", t: "Search Roster", d: "Type in the search bar for your performers and see who's booked or available." },
-            { n: "02", t: "Book securely", d: "GiggMe ensures secure connections, amazing service, and hassle-free coordination." },
+            { n: "02", t: "Book securely", d: "GiggMe ensures secure connections, fast service, and smooth and efficient coordination." },
             { n: "03", t: "Enjoy your event", d: "Watch your special moment spring to life with professional talent." },
           ].map((s) => (
             <div key={s.n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-7">

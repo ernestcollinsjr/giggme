@@ -245,12 +245,16 @@ const FindEntertainers = () => {
           ) : (
             <div className="grid sm:grid-cols-2 gap-5 max-w-3xl mx-auto">
               {/* Basic */}
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-6 flex flex-col">
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-6 flex flex-col relative">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/90 text-white">
+                  7-DAY FREE TRIAL
+                </span>
                 <h3 className="text-lg font-semibold text-white">Basic Profile</h3>
                 <div className="mt-3 flex items-baseline gap-1">
                   <span className="text-4xl font-bold text-white">$8</span>
                   <span className="text-white/50">/mo</span>
                 </div>
+                <p className="mt-1 text-xs text-emerald-300">Free for 7 days, then $8/mo. Cancel anytime.</p>
                 <ul className="mt-4 space-y-2 text-sm text-white/70 flex-1">
                   <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" /> Upload your profile, bio, photos & videos</li>
                   <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" /> Listed in the entertainer directory</li>
@@ -263,20 +267,21 @@ const FindEntertainers = () => {
                   variant="outline"
                 >
                   {subscribing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                  Get Basic — $8/mo
+                  Start 7-Day Free Trial
                 </Button>
               </div>
 
               {/* Featured */}
               <div className="rounded-2xl border border-violet-400/40 bg-gradient-to-br from-violet-600/15 to-fuchsia-600/10 backdrop-blur-xl p-6 flex flex-col relative">
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-[11px] font-semibold bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white">
-                  PRIME PLACEMENT
+                  7-DAY FREE TRIAL · PRIME PLACEMENT
                 </span>
                 <h3 className="text-lg font-semibold text-white">Featured Entertainer</h3>
                 <div className="mt-3 flex items-baseline gap-1">
                   <span className="text-4xl font-bold text-white">$14</span>
                   <span className="text-white/50">/mo</span>
                 </div>
+                <p className="mt-1 text-xs text-violet-200">Free for 7 days, then $14/mo. Cancel anytime.</p>
                 <ul className="mt-4 space-y-2 text-sm text-white/80 flex-1">
                   <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-violet-300 shrink-0 mt-0.5" /> Everything in Basic</li>
                   <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-violet-300 shrink-0 mt-0.5" /> Pushed to the front of the site for prime viewership</li>
@@ -289,7 +294,7 @@ const FindEntertainers = () => {
                   className="mt-6 w-full bg-gradient-to-r from-blue-500 to-violet-600 hover:from-blue-400 hover:to-violet-500"
                 >
                   {subscribing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                  Get Featured — $14/mo
+                  Start 7-Day Free Trial
                 </Button>
               </div>
             </div>

@@ -77,6 +77,7 @@ const AdminDashboard = () => {
   const [bands, setBands] = useState<BandWithMembers[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [entertainerSearchTerm, setEntertainerSearchTerm] = useState("");
   const [groupSearchTerm, setGroupSearchTerm] = useState("");
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [editingUser, setEditingUser] = useState<UserWithRole | null>(null);

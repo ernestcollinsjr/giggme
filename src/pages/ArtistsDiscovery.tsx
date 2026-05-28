@@ -173,7 +173,7 @@ const ArtistsDiscovery = () => {
             <div className="relative flex-1 max-w-md" ref={searchContainerRef}>
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
               <Input
-                placeholder="Search by name, stage name, or genre..."
+                placeholder="Search by name, genre, or venue..."
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);

@@ -50,6 +50,7 @@ interface UserWithRole {
   bandNames: string[];
   entertainer_categories?: string[] | null;
   subscription_status?: string | null;
+  performer_category?: string | null;
 }
 
 interface BandWithMembers {
@@ -201,6 +202,7 @@ const AdminDashboard = () => {
           bandNames: allBandNames,
           entertainer_categories: (profile as any).entertainer_categories || [],
           subscription_status: sub?.status || null,
+          performer_category: (profile as any).performer_category || null,
         };
       });
 
@@ -341,6 +343,20 @@ const AdminDashboard = () => {
       await Promise.all([fetchUsers(), fetchBands()]);
     } catch (error: any) {
       toast({ variant: "destructive", title: "Error updating group", description: error.message });
+    }
+  };
+
+  const handleUpdateCategory = async (user: UserWithRole, newCategory: string) => {
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ performer_category: newCategory })
+        .eq("id", user.id);
+      if (error) throw error;
+      toast({ title: "Category updated", description: `${user.name} is now ${newCategory}.` });
+      await fetchUsers();
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Error updating category", description: error.message });
     }
   };
 
@@ -531,6 +547,7 @@ const AdminDashboard = () => {
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Phone</TableHead>
+                  <TableHead>Category</TableHead>
                   <TableHead>Group</TableHead>
                   <TableHead>Roles</TableHead>
                   <TableHead>Joined</TableHead>
@@ -546,6 +563,21 @@ const AdminDashboard = () => {
                     <TableCell className="font-medium">{user.name}</TableCell>
                     <TableCell className="text-muted-foreground">{user.email}</TableCell>
                     <TableCell className="text-muted-foreground">{user.phone_number || "—"}</TableCell>
+                    <TableCell>
+                      <Select
+                        value={user.performer_category || "Solo"}
+                        onValueChange={(val) => handleUpdateCategory(user, val)}
+                      >
+                        <SelectTrigger className="h-8 w-[110px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Solo">Solo</SelectItem>
+                          <SelectItem value="Duo">Duo</SelectItem>
+                          <SelectItem value="Band">Band</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
                     <TableCell>
                       <Select
                         value={
@@ -600,7 +632,7 @@ const AdminDashboard = () => {
                 ))}
                 {filteredEntertainers.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                       No entertainers found
                     </TableCell>
                   </TableRow>

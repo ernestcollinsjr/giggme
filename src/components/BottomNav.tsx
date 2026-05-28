@@ -171,7 +171,7 @@ const BottomNav = () => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-lg pb-[env(safe-area-inset-bottom)]">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-lg pb-[env(safe-area-inset-bottom)]">
       <div className="flex items-center justify-around h-16 max-w-4xl mx-auto px-4">
         {navItems.map((item) => {
           const Icon = item.icon;

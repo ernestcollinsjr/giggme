@@ -373,8 +373,8 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
             earliestTime = new Date(gigDate);
             earliestTime.setHours(hours, minutes, 0, 0);
           }
-          // End of gig: use end_time if set, else 4 hr after earliest time
-          let endTime = new Date(earliestTime.getTime() + 4 * 60 * 60 * 1000);
+          // End of gig: use end_time if set, else 2 hr after earliest time
+          let endTime = new Date(earliestTime.getTime() + 2 * 60 * 60 * 1000);
           if (gig.end_time) {
             const [eh, em] = gig.end_time.split(':').map(Number);
             endTime = new Date(gigDate);
@@ -383,7 +383,7 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
           }
           if (now > endTime) return false;
           const minutesUntil = differenceInMinutes(earliestTime, now);
-          return minutesUntil > -120 && minutesUntil <= 90;
+          return minutesUntil <= 90;
         }).map((gm: any) => ({
           id: gm.gigs.id,
           date: gm.gigs.date,
@@ -461,8 +461,8 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
             earliestTime = new Date(gigDate);
             earliestTime.setHours(hours, minutes, 0, 0);
           }
-          // End of gig: use end_time if set, else 4 hr after earliest time
-          let endTime = new Date(earliestTime.getTime() + 4 * 60 * 60 * 1000);
+          // End of gig: use end_time if set, else 2 hr after earliest time
+          let endTime = new Date(earliestTime.getTime() + 2 * 60 * 60 * 1000);
           if (gig.end_time) {
             const [eh, em] = gig.end_time.split(':').map(Number);
             endTime = new Date(gigDate);
@@ -472,8 +472,8 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
           // Hide card once the gig has ended
           if (now > endTime) return false;
           const minutesUntil = differenceInMinutes(earliestTime, now);
-          const isGigToday = isToday(gigDate) || isToday(earliestTime);
-          return isGigToday || (minutesUntil > -120 && minutesUntil <= 150);
+          // Show from 150 min before until end of gig
+          return minutesUntil <= 150;
         }).map((gig: any) => ({
           id: gig.id,
           date: gig.date,

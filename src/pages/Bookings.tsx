@@ -82,6 +82,13 @@ const Bookings = () => {
   const [resendingAll, setResendingAll] = useState(false);
   const [showPendingOnly, setShowPendingOnly] = useState(false);
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
+  const [managedArtists, setManagedArtists] = useState<{ artist_id: string; name: string; email: string | null }[]>([]);
+  const [quickBookPerformerId, setQuickBookPerformerId] = useState<string>("");
+  const [quickBookVenue, setQuickBookVenue] = useState<string>("");
+  const [quickBookStart, setQuickBookStart] = useState<string>("19:00");
+  const [quickBookEnd, setQuickBookEnd] = useState<string>("22:00");
+  const [quickBookBudget, setQuickBookBudget] = useState<string>("");
+  const [quickBookSubmitting, setQuickBookSubmitting] = useState(false);
   
   // Form state
   const [date, setDate] = useState<Date>();

@@ -85,6 +85,12 @@ const Bookings = () => {
   const [managedArtists, setManagedArtists] = useState<{ artist_id: string; name: string; email: string | null }[]>([]);
   const [quickBookPerformerId, setQuickBookPerformerId] = useState<string>("");
   const [quickBookVenue, setQuickBookVenue] = useState<string>("");
+  const [quickBookVenueLat, setQuickBookVenueLat] = useState<number | null>(null);
+  const [quickBookVenueLng, setQuickBookVenueLng] = useState<number | null>(null);
+  const [quickBookVenuePhone, setQuickBookVenuePhone] = useState<string>("");
+  const [quickBookContactPerson, setQuickBookContactPerson] = useState<string>("");
+  const [quickBookDressCode, setQuickBookDressCode] = useState<string>("");
+  const [quickBookNote, setQuickBookNote] = useState<string>("");
   const [quickBookStart, setQuickBookStart] = useState<string>("19:00");
   const [quickBookEnd, setQuickBookEnd] = useState<string>("22:00");
   const [quickBookBudget, setQuickBookBudget] = useState<string>("");

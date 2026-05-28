@@ -60,6 +60,53 @@ const formatTime12Hour = (time24: string | null): string => {
   return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`;
 };
 
+const monthIndexes: Record<string, number> = {
+  jan: 0,
+  january: 0,
+  feb: 1,
+  february: 1,
+  mar: 2,
+  march: 2,
+  apr: 3,
+  april: 3,
+  may: 4,
+  jun: 5,
+  june: 5,
+  jul: 6,
+  july: 6,
+  aug: 7,
+  august: 7,
+  sep: 8,
+  sept: 8,
+  september: 8,
+  oct: 9,
+  october: 9,
+  nov: 10,
+  november: 10,
+  dec: 11,
+  december: 11,
+};
+
+const calendarDate = (year: number, month: number, day: number) => new Date(year, month, day, 12, 0, 0, 0);
+
+const getBookingRequestCalendarDates = (request: any): Date[] => {
+  const datesText = typeof request?.dates_text === "string" ? request.dates_text : "";
+  const parsedDates = [...datesText.matchAll(/\b(?:Sun|Mon|Tue|Wed|Thu|Fri|Sat),\s+([A-Za-z]+)\s+(\d{1,2}),\s+(\d{4})/g)]
+    .map((match) => {
+      const month = monthIndexes[match[1].toLowerCase()];
+      const day = Number(match[2]);
+      const year = Number(match[3]);
+      return month === undefined || Number.isNaN(day) || Number.isNaN(year) ? null : calendarDate(year, month, day);
+    })
+    .filter((date): date is Date => Boolean(date));
+
+  if (parsedDates.length > 0) return parsedDates;
+
+  if (!request?.event_date) return [];
+  const fallback = new Date(request.event_date);
+  return Number.isNaN(fallback.getTime()) ? [] : [calendarDate(fallback.getFullYear(), fallback.getMonth(), fallback.getDate())];
+};
+
 const Bookings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();

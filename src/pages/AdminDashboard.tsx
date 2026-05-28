@@ -613,13 +613,18 @@ const AdminDashboard = () => {
                         value={user.role || ""}
                         onValueChange={(val) => handleUpdateRole(user, val as AppRole)}
                       >
-                        <SelectTrigger className="h-8 w-[140px]">
+                        <SelectTrigger className="h-8 w-[160px]">
                           <SelectValue placeholder="Select role" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="max-w-[280px]">
                           {(Object.keys(roleLabels) as AppRole[]).map((r) => (
                             <SelectItem key={r} value={r}>
-                              {roleLabels[r]}
+                              <div className="flex flex-col py-0.5">
+                                <span className="font-medium">{roleLabels[r]}</span>
+                                <span className="text-xs text-muted-foreground whitespace-normal leading-snug">
+                                  {roleDescriptions[r]}
+                                </span>
+                              </div>
                             </SelectItem>
                           ))}
                         </SelectContent>

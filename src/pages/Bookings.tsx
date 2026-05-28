@@ -1375,16 +1375,19 @@ const Bookings = () => {
 
         {/* Calendar overview — highlights all booking dates */}
         {(() => {
-          const bookedDates: Date[] = [];
+          const requestDates: Date[] = [];
+          const invitationDates: Date[] = [];
+          const confirmedDates: Date[] = [];
           bookingRequests.forEach((br: any) => {
-            if (br.event_date) bookedDates.push(new Date(br.event_date));
+            if (br.event_date) requestDates.push(new Date(br.event_date));
           });
           gigInvitations.forEach((gi: any) => {
-            if (gi.gigs?.date) bookedDates.push(new Date(gi.gigs.date));
+            if (gi.gigs?.date) invitationDates.push(new Date(gi.gigs.date));
           });
           gigs.forEach((g) => {
-            if (g.date) bookedDates.push(new Date(g.date));
+            if (g.date) confirmedDates.push(new Date(g.date));
           });
+          const allDates = [...requestDates, ...invitationDates, ...confirmedDates];
           return (
             <Card className="border-border/50 shadow-lg mb-4">
               <CardHeader>
@@ -1396,18 +1399,41 @@ const Bookings = () => {
                   Highlighted dates show all scheduled bookings across your performers
                 </CardDescription>
               </CardHeader>
-              <CardContent className="flex justify-center overflow-hidden">
-                <div className="scale-[1.6] origin-top transform-gpu" style={{ marginBottom: 'calc(1.6 * 350px - 350px)' }}>
-                  <Calendar
-                    mode="multiple"
-                    selected={bookedDates}
-                    onSelect={() => {}}
-                    modifiers={{ booked: bookedDates }}
-                    modifiersClassNames={{
-                      booked: "bg-primary text-primary-foreground hover:bg-primary/90 rounded-md font-semibold",
-                    }}
-                    className="rounded-md border border-border/50"
-                  />
+              <CardContent>
+                <div className="flex flex-col md:flex-row items-start justify-center gap-8 overflow-hidden">
+                  <div className="scale-[1.6] origin-top transform-gpu" style={{ marginBottom: 'calc(1.6 * 350px - 350px)' }}>
+                    <Calendar
+                      mode="multiple"
+                      selected={allDates}
+                      onSelect={() => {}}
+                      modifiers={{
+                        confirmed: confirmedDates,
+                        invitation: invitationDates,
+                        request: requestDates,
+                      }}
+                      modifiersClassNames={{
+                        confirmed: "bg-primary text-primary-foreground hover:bg-primary/90 rounded-md font-semibold",
+                        invitation: "bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-md font-semibold",
+                        request: "bg-accent text-accent-foreground hover:bg-accent/90 rounded-md font-semibold",
+                      }}
+                      className="rounded-md border border-border/50"
+                    />
+                  </div>
+                  <div className="flex md:flex-col flex-wrap gap-3 md:pt-2 text-sm">
+                    <div className="font-semibold text-foreground mb-1 w-full">Legend</div>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-block h-4 w-4 rounded bg-primary" />
+                      <span className="text-muted-foreground">Confirmed gigs</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-block h-4 w-4 rounded bg-secondary" />
+                      <span className="text-muted-foreground">Gig invitations</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-block h-4 w-4 rounded bg-accent" />
+                      <span className="text-muted-foreground">Booking requests</span>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>

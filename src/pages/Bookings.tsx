@@ -60,6 +60,58 @@ const formatTime12Hour = (time24: string | null): string => {
   return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`;
 };
 
+const monthIndexes: Record<string, number> = {
+  jan: 0,
+  january: 0,
+  feb: 1,
+  february: 1,
+  mar: 2,
+  march: 2,
+  apr: 3,
+  april: 3,
+  may: 4,
+  jun: 5,
+  june: 5,
+  jul: 6,
+  july: 6,
+  aug: 7,
+  august: 7,
+  sep: 8,
+  sept: 8,
+  september: 8,
+  oct: 9,
+  october: 9,
+  nov: 10,
+  november: 10,
+  dec: 11,
+  december: 11,
+};
+
+const calendarDate = (year: number, month: number, day: number) => new Date(year, month, day, 12, 0, 0, 0);
+
+type BookingRequestCalendarSource = {
+  dates_text?: string | null;
+  event_date?: string | null;
+};
+
+const getBookingRequestCalendarDates = (request: BookingRequestCalendarSource): Date[] => {
+  const datesText = typeof request?.dates_text === "string" ? request.dates_text : "";
+  const parsedDates = [...datesText.matchAll(/\b(?:Sun|Mon|Tue|Wed|Thu|Fri|Sat),\s+([A-Za-z]+)\s+(\d{1,2}),\s+(\d{4})/g)]
+    .map((match) => {
+      const month = monthIndexes[match[1].toLowerCase()];
+      const day = Number(match[2]);
+      const year = Number(match[3]);
+      return month === undefined || Number.isNaN(day) || Number.isNaN(year) ? null : calendarDate(year, month, day);
+    })
+    .filter((date): date is Date => Boolean(date));
+
+  if (parsedDates.length > 0) return parsedDates;
+
+  if (!request?.event_date) return [];
+  const fallback = new Date(request.event_date);
+  return Number.isNaN(fallback.getTime()) ? [] : [calendarDate(fallback.getFullYear(), fallback.getMonth(), fallback.getDate())];
+};
+
 const Bookings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -1418,13 +1470,12 @@ const Bookings = () => {
           const confirmedDates: Date[] = [];
           // Booking requests: accepted -> booked (blue), others (pending/sent) -> unavailable (red)
           bookingRequests.forEach((br: any) => {
-            if (!br.event_date) return;
-            const d = new Date(br.event_date);
+            const dates = getBookingRequestCalendarDates(br);
             const status = (br.status || "").toLowerCase();
             if (status === "accepted" || status === "confirmed") {
-              confirmedDates.push(d);
+              confirmedDates.push(...dates);
             } else if (status !== "declined" && status !== "rejected" && status !== "cancelled") {
-              requestDatesRaw.push(d);
+              requestDatesRaw.push(...dates);
             }
           });
           // Gig invitations: accepted -> booked (blue), pending -> tentative (yellow)
@@ -1534,7 +1585,7 @@ const Bookings = () => {
               };
               const dayConfirmed = gigs.filter((g) => sameDay(g.date));
               const dayInvites = gigInvitations.filter((gi: any) => sameDay(gi.gigs?.date));
-              const dayRequests = bookingRequests.filter((br: any) => sameDay(br.event_date));
+              const dayRequests = bookingRequests.filter((br: any) => getBookingRequestCalendarDates(br).some(sameDay));
               const total = dayConfirmed.length + dayInvites.length + dayRequests.length;
               const canQuickBook = managedArtists.length > 0;
               return (
@@ -1710,7 +1761,7 @@ const Bookings = () => {
                               is_group_message: false,
                             });
 
-                            const { error } = await supabase.functions.invoke("send-booking-request-email", {
+                            const { data: bookingEmailData, error } = await supabase.functions.invoke("send-booking-request-email", {
                               body: {
                                 performerId: quickBookPerformerId,
                                 performerEmail: performer.email,
@@ -1730,6 +1781,24 @@ const Bookings = () => {
                               },
                             });
                             if (error) throw error;
+
+                            if (bookingEmailData?.bookingRequestId) {
+                              setBookingRequests((prev) => [{
+                                id: bookingEmailData.bookingRequestId,
+                                status: "pending",
+                                booker_name: senderProfile?.name,
+                                performer_name: performer.name,
+                                dates_text: datesStr,
+                                time_text: timeStr,
+                                venue: quickBookVenue.trim(),
+                                budget: quickBookBudget.trim() || null,
+                                contact_person: quickBookContactPerson.trim() || null,
+                                event_date: eventDate.toISOString(),
+                                created_at: new Date().toISOString(),
+                                performer_id: quickBookPerformerId,
+                                booker_id: user.id,
+                              }, ...prev]);
+                            }
 
                             // Fire push notification to the performer
                             try {

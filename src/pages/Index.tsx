@@ -352,32 +352,6 @@ const Index = () => {
       {/* Feature simulators */}
       <TutorialSimulators />
 
-      {/* Features band */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-        <div className="relative rounded-3xl border border-white/10 bg-gradient-to-br from-violet-900/30 via-indigo-900/20 to-blue-900/20 p-10 sm:p-14 backdrop-blur-sm overflow-hidden">
-          <div className="absolute inset-0 -z-10 opacity-40">
-            <div className="absolute top-0 left-1/4 h-72 w-72 rounded-full bg-violet-500/30 blur-3xl" />
-            <div className="absolute bottom-0 right-1/4 h-72 w-72 rounded-full bg-cyan-500/20 blur-3xl" />
-          </div>
-          <div className="text-center max-w-2xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-bold text-white">We make booking effortless</h2>
-            <p className="mt-3 text-white/60">
-              Everything you need to plan amazing events, all in one place.
-            </p>
-          </div>
-          <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((f) => (
-              <div key={f.title} className="flex items-start gap-3">
-                <f.icon className={`h-6 w-6 mt-0.5 shrink-0 ${f.color}`} />
-                <div>
-                  <h3 className="text-white font-semibold">{f.title}</h3>
-                  <p className="mt-1 text-sm text-white/55 leading-relaxed">{f.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* How it works */}
       <section id="how-it-works" className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 scroll-mt-20">

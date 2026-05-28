@@ -35,15 +35,34 @@ const newPasswordSchema = z.object({
   path: ["confirmPassword"],
 });
 
+const ENTERTAINER_PLANS: Record<string, { priceId: string; label: string; price: string; description: string; trial: string }> = {
+  entertainer_basic: {
+    priceId: "price_1TcATOEPiAZgF8Me2TkOBbG0",
+    label: "Basic Profile",
+    price: "$8",
+    description: "Upload your profile, get listed in the entertainer directory, and receive booking inquiries.",
+    trial: "7-day free trial",
+  },
+  entertainer_featured: {
+    priceId: "price_1TcATsEPiAZgF8MeuJY76UlD",
+    label: "Featured Entertainer",
+    price: "$14",
+    description: "Prime placement at the front of the site, featured badge, and priority in search results.",
+    trial: "7-day free trial",
+  },
+};
+
 const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirectParam = searchParams.get("redirect");
+  const planParam = searchParams.get("plan");
+  const entertainerPlan = planParam && ENTERTAINER_PLANS[planParam] ? ENTERTAINER_PLANS[planParam] : null;
   const safeRedirect = redirectParam && redirectParam.startsWith("/") && !redirectParam.startsWith("//") ? redirectParam : null;
   const postAuthPath = safeRedirect || "/dashboard";
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [role, setRole] = useState<"band_leader" | "band_member" | "booking_manager" | "artist" | "venue_owner">("band_leader");
+  const [role, setRole] = useState<"band_leader" | "band_member" | "booking_manager" | "artist" | "venue_owner">(entertainerPlan ? "artist" : "band_leader");
   const [venuePricingType, setVenuePricingType] = useState<"subscription" | "one_time">("subscription");
   
   const [loginEmail, setLoginEmail] = useState("");
@@ -144,6 +163,26 @@ const Auth = () => {
       });
 
       if (error) throw error;
+
+      // For entertainer plans coming from /find-entertainers, redirect to checkout
+      if (entertainerPlan && signUpData.session) {
+        try {
+          const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke("create-checkout", {
+            body: { priceId: entertainerPlan.priceId },
+          });
+          if (checkoutError) throw checkoutError;
+          if (checkoutData?.url) {
+            toast({ title: "Account created!", description: "Redirecting to checkout..." });
+            window.location.href = checkoutData.url;
+            return;
+          }
+        } catch (checkoutErr) {
+          console.error("Checkout error:", checkoutErr);
+          toast({ title: "Account created!", description: "You can complete payment from your profile." });
+          navigate("/profile-setup");
+          return;
+        }
+      }
 
       // For venue owners, redirect to checkout
       if (role === "venue_owner" && signUpData.session) {
@@ -477,6 +516,31 @@ const Auth = () => {
               <form onSubmit={handleSignup} className="space-y-4">
                 <div className="space-y-3">
                   <Label className="text-base font-semibold">Choose Your Plan</Label>
+                  {entertainerPlan ? (
+                    <div className="relative rounded-xl border-2 border-primary bg-primary/5 shadow-md p-4">
+                      <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                        <Check className="h-4 w-4 text-primary-foreground" />
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-primary text-primary-foreground">
+                          <Music className="h-6 w-6" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <h3 className="font-semibold">{entertainerPlan.label}</h3>
+                            <div className="text-right">
+                              <span className="font-bold text-primary">{entertainerPlan.price}</span>
+                              <span className="text-xs text-muted-foreground">/mo</span>
+                            </div>
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1">{entertainerPlan.description}</p>
+                          <div className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                            {entertainerPlan.trial}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
                   <div className="grid grid-cols-1 gap-3">
                     {/* Band Manager Card */}
                     <div
@@ -683,6 +747,7 @@ const Auth = () => {
                       </div>
                     </div>
                   </div>
+                  )}
                 </div>
                 
                 <div className="space-y-2">

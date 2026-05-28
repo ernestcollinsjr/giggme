@@ -1428,7 +1428,7 @@ const Bookings = () => {
           </Card>
         )}
 
-
+        <Card className="border-border/50 shadow-lg">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>

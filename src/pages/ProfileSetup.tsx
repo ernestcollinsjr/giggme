@@ -1219,8 +1219,8 @@ const ProfileSetup = () => {
                 Manage your account information
               </CardDescription>
             </div>
-            <Button variant="ghost" size="icon" onClick={handleLogout}>
-              <LogOut className="h-5 w-5" />
+            <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")} aria-label="Back to dashboard">
+              <ArrowLeft className="h-5 w-5" />
             </Button>
           </div>
         </CardHeader>

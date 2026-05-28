@@ -379,7 +379,7 @@ const Index = () => {
       {/* How it works */}
       <section id="how-it-works" className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 scroll-mt-20">
         <div className="text-center mb-14">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white">How it works</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white">Main Features</h2>
           <p className="mt-3 text-white/60">Book the best. Exceptional talent is just a few clicks away.</p>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">

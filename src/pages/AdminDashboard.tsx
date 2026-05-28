@@ -565,6 +565,21 @@ const AdminDashboard = () => {
                     <TableCell className="text-muted-foreground">{user.phone_number || "—"}</TableCell>
                     <TableCell>
                       <Select
+                        value={user.performer_category || "Solo"}
+                        onValueChange={(val) => handleUpdateCategory(user, val)}
+                      >
+                        <SelectTrigger className="h-8 w-[110px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Solo">Solo</SelectItem>
+                          <SelectItem value="Duo">Duo</SelectItem>
+                          <SelectItem value="Band">Band</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      <Select
                         value={
                           bands.find((b) => user.bandNames.includes(b.name))?.id || "__none__"
                         }

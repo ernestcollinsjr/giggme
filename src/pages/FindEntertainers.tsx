@@ -112,7 +112,7 @@ const FindEntertainers = () => {
     loadEntertainers();
   };
 
-  const handleSubscribe = async () => {
+  const handleSubscribe = async (priceId: string) => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) {
       navigate("/auth");
@@ -121,13 +121,30 @@ const FindEntertainers = () => {
     setSubscribing(true);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { priceId: ENTERTAINER_PRICE_ID },
+        body: { priceId },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       if (error) throw error;
       if (data?.url) window.open(data.url, "_blank");
     } finally {
       setSubscribing(false);
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) {
+      navigate("/auth");
+      return;
+    }
+    try {
+      const { data, error } = await supabase.functions.invoke("customer-portal", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (error) throw error;
+      if (data?.url) window.open(data.url, "_blank");
+    } catch (e) {
+      console.error(e);
     }
   };
 

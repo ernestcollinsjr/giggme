@@ -33,6 +33,7 @@ import {
   Trash2, 
   Edit, 
   Search,
+  ArrowLeft,
 } from "lucide-react";
 import { TopNav } from "@/components/TopNav";
 

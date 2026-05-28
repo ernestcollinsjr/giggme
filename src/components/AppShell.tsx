@@ -111,10 +111,13 @@ export function AppShell({ userRole, children }: AppShellProps) {
                     </button>
                     <button
                       onClick={() => navigate("/profile-setup")}
-                      className="flex items-center gap-2 px-3 h-9 rounded-lg border border-border/60 hover:bg-muted transition-colors text-sm"
+                      className="flex items-center gap-2 px-2 h-9 rounded-lg border border-border/60 hover:bg-muted transition-colors text-sm"
                     >
-                      <div className="h-6 w-6 rounded-full bg-gradient-to-br from-violet-500 to-blue-500" />
-                      <span className="font-medium">{roleLabel}</span>
+                      <Avatar className="h-7 w-7">
+                        {avatarSrc && <AvatarImage src={avatarSrc} alt={displayName} />}
+                        <AvatarFallback className="text-[10px] bg-primary/10 text-primary">{initials || "U"}</AvatarFallback>
+                      </Avatar>
+                      <span className="font-medium max-w-[140px] truncate">{displayName}</span>
                       <ChevronDown className="h-4 w-4 text-muted-foreground" />
                     </button>
                   </div>

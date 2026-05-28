@@ -351,7 +351,8 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
               venue_lat,
               venue_lng,
               loading_time,
-              sound_check_time
+              sound_check_time,
+              end_time
             )
           `)
           .eq("member_id", userId)

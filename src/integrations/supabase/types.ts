@@ -578,6 +578,33 @@ export type Database = {
           },
         ]
       }
+      entertainer_subscribers: {
+        Row: {
+          created_at: string
+          current_period_end: string | null
+          status: string
+          stripe_customer_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_period_end?: string | null
+          status?: string
+          stripe_customer_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string | null
+          status?: string
+          stripe_customer_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       entertainment_bookings: {
         Row: {
           callout_reason: string | null
@@ -2235,6 +2262,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_featured_entertainers: {
+        Args: never
+        Returns: {
+          bio: string
+          genre: string
+          instrument: string
+          name: string
+          performer_category: string
+          photo_urls: string[]
+          stage_name: string
+          user_id: string
+        }[]
+      }
       get_performer_venues: {
         Args: never
         Returns: {

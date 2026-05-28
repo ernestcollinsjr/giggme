@@ -13,6 +13,7 @@ import performer6 from "@/assets/performer-6.jpg";
 import testimonial1 from "@/assets/testimonial-1.jpg";
 import testimonial2 from "@/assets/testimonial-2.jpg";
 import testimonial3 from "@/assets/testimonial-3.jpg";
+import testimonial4 from "@/assets/testimonial-4.jpg";
 
 const ENTERTAINER_PRICE_ID = "price_1Tc7DGEPiAZgF8MeCcRLu2rd";
 
@@ -46,6 +47,13 @@ const TESTIMONIALS = [
     photo: testimonial3,
     quote:
       "Hands down the easiest way to hire vetted entertainers. Our annual gala has never sounded better — clients are already asking who we booked.",
+  },
+  {
+    name: "Tiana Brooks",
+    role: "Brand Experience Lead · Brooklyn, NY",
+    photo: testimonial4,
+    quote:
+      "GiggMe is a game changer. I discovered incredible Black artists I never would have found anywhere else, and the booking process was effortless from first message to showtime.",
   },
 ];
 

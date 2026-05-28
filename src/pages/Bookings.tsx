@@ -302,7 +302,23 @@ const Bookings = () => {
       
       setBandMembers((membersData as BandMember[]) || []);
     }
-    
+
+    // Fetch booking requests where the user is the performer (from venues / managers)
+    const { data: brData } = await supabase
+      .from("booking_requests")
+      .select("id, status, booker_name, dates_text, time_text, venue, budget, contact_person, event_date, created_at")
+      .eq("performer_id", user.id)
+      .order("created_at", { ascending: false });
+    setBookingRequests(brData || []);
+
+    // Fetch gig invitations from bands (gigs the user has been invited to)
+    const { data: giData } = await supabase
+      .from("gig_members")
+      .select("id, status, location_sharing_enabled, gigs!inner(id, date, venue, venue_name, notes)")
+      .eq("member_id", user.id)
+      .order("status", { ascending: true });
+    setGigInvitations(giData || []);
+
     setLoading(false);
   };
 

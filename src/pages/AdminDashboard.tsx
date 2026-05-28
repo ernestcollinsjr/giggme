@@ -547,6 +547,7 @@ const AdminDashboard = () => {
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Phone</TableHead>
+                  <TableHead>Category</TableHead>
                   <TableHead>Group</TableHead>
                   <TableHead>Roles</TableHead>
                   <TableHead>Joined</TableHead>

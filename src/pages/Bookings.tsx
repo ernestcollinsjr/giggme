@@ -1619,28 +1619,55 @@ const Bookings = () => {
                   ) : (
                     <>
                       {dayConfirmed.map((g) => (
-                        <div key={`g-${g.id}`} className="rounded-lg border border-border/50 p-3 space-y-1">
+                        <div key={`g-${g.id}`} className="rounded-lg border border-border/50 p-3 space-y-1 relative">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-2 right-2 h-7 w-7"
+                            onClick={() => handleDeleteGig(g.id)}
+                            aria-label="Delete booking"
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
                           <div className="flex items-center gap-2">
                             <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
                             <Badge variant="secondary">Confirmed gig</Badge>
                           </div>
-                          <div className="font-semibold">{g.venue_name || g.venue}</div>
+                          <div className="font-semibold pr-8">{g.venue_name || g.venue}</div>
                           {g.venue_name && <div className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{g.venue}</div>}
                         </div>
                       ))}
                       {dayInvites.map((gi: any) => (
-                        <div key={`i-${gi.id}`} className="rounded-lg border border-border/50 p-3 space-y-1">
+                        <div key={`i-${gi.id}`} className="rounded-lg border border-border/50 p-3 space-y-1 relative">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-2 right-2 h-7 w-7"
+                            onClick={() => handleDeleteGigInvitation(gi.id)}
+                            aria-label="Delete invitation"
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
                           <div className="flex items-center gap-2">
                             <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
                             <Badge variant="secondary">Gig invitation</Badge>
                           </div>
-                          <div className="font-semibold">{gi.gigs?.venue_name || gi.gigs?.venue}</div>
+                          <div className="font-semibold pr-8">{gi.gigs?.venue_name || gi.gigs?.venue}</div>
                           {gi.gigs?.venue && <div className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{gi.gigs.venue}</div>}
                           <div className="text-xs text-muted-foreground">Status: {gi.status}</div>
                         </div>
                       ))}
                       {dayRequests.map((br: any) => (
-                        <div key={`r-${br.id}`} className="rounded-lg border border-border/50 p-3 space-y-1">
+                        <div key={`r-${br.id}`} className="rounded-lg border border-border/50 p-3 space-y-1 relative">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-2 right-2 h-7 w-7"
+                            onClick={() => handleDeleteBookingRequest(br.id)}
+                            aria-label="Delete booking request"
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
                           <div className="flex items-center gap-2">
                             <span className={cn(
                               "h-2.5 w-2.5 rounded-full",
@@ -1648,7 +1675,7 @@ const Bookings = () => {
                             )} />
                             <Badge variant="secondary">Booking request</Badge>
                           </div>
-                          <div className="font-semibold">{br.venue}</div>
+                          <div className="font-semibold pr-8">{br.venue}</div>
                           {br.performer_name && <div className="text-xs text-muted-foreground">Performer: {br.performer_name}</div>}
                           <div className="text-xs text-muted-foreground">Status: {br.status}</div>
                         </div>

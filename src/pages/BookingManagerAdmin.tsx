@@ -657,16 +657,7 @@ export default function BookingManagerAdmin() {
               className="gap-1 text-xs sm:text-sm"
             >
               <CalendarPlus className="h-4 w-4" />
-              Book Talent
-            </Button>
-            <Button
-              onClick={() => navigate("/artists")}
-              size="sm"
-              variant="secondary"
-              className="gap-1 text-xs sm:text-sm"
-            >
-              <Search className="h-4 w-4" />
-              <span className="hidden sm:inline">Search</span> Talent
+              Admin
             </Button>
           </div>
         </div>

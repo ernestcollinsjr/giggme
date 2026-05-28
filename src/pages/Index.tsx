@@ -38,6 +38,9 @@ import {
 
 import heroVirtualAssistant from "@/assets/hero-virtual-assistant.jpg";
 import { TutorialSimulators } from "@/components/TutorialSimulators";
+import avatar1 from "@/assets/avatar-1.jpg";
+import avatar2 from "@/assets/avatar-2.jpg";
+import avatar3 from "@/assets/avatar-3.jpg";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -262,9 +265,9 @@ const Index = () => {
             <div className="mt-12 grid grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="flex flex-col items-center text-center gap-2">
                 <div className="flex -space-x-2">
-                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-pink-400 to-orange-400 border-2 border-[hsl(230_35%_7%)]" />
-                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-violet-400 to-blue-500 border-2 border-[hsl(230_35%_7%)]" />
-                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 border-2 border-[hsl(230_35%_7%)]" />
+                  <img src={avatar1} alt="Event planner" loading="lazy" width={64} height={64} className="h-8 w-8 rounded-full object-cover border-2 border-[hsl(230_35%_7%)]" />
+                  <img src={avatar2} alt="Event planner" loading="lazy" width={64} height={64} className="h-8 w-8 rounded-full object-cover border-2 border-[hsl(230_35%_7%)]" />
+                  <img src={avatar3} alt="Event planner" loading="lazy" width={64} height={64} className="h-8 w-8 rounded-full object-cover border-2 border-[hsl(230_35%_7%)]" />
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-white leading-tight">Loved by 2,000+</p>

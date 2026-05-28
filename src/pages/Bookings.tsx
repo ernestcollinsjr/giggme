@@ -89,6 +89,8 @@ const monthIndexes: Record<string, number> = {
 
 const calendarDate = (year: number, month: number, day: number) => new Date(year, month, day, 12, 0, 0, 0);
 
+const normalizeCalendarSelection = (date: Date) => calendarDate(date.getFullYear(), date.getMonth(), date.getDate());
+
 type BookingRequestCalendarSource = {
   dates_text?: string | null;
   event_date?: string | null;
@@ -1527,7 +1529,7 @@ const Bookings = () => {
                   <Calendar
                     mode="single"
                     selected={selectedCalendarDate ?? undefined}
-                    onSelect={(d) => d && setSelectedCalendarDate(d)}
+                    onSelect={(d) => d && setSelectedCalendarDate(normalizeCalendarSelection(d))}
                     modifiers={{
                       confirmed: confirmedDatesFiltered,
                       invitation: invitationDates,

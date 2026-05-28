@@ -91,12 +91,22 @@ const FindEntertainers = () => {
           <button onClick={() => navigate("/")} className="flex items-center gap-2">
             <img src={logo} alt="GiggMe" className="h-12 sm:h-16 w-auto object-contain" />
           </button>
-          <button
-            onClick={() => navigate("/")}
-            className="text-sm text-white/70 hover:text-white flex items-center gap-1"
-          >
-            <ArrowLeft className="h-4 w-4" /> Home
-          </button>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              onClick={() => navigate("/")}
+              className="text-sm text-white/70 hover:text-white flex items-center gap-1"
+            >
+              <ArrowLeft className="h-4 w-4" /> Home
+            </button>
+            {!user && (
+              <button
+                onClick={() => navigate("/auth")}
+                className="inline-flex h-9 items-center px-4 rounded-lg border border-white/15 text-sm font-medium text-white hover:bg-white/5 transition-colors"
+              >
+                Log In
+              </button>
+            )}
+          </div>
         </div>
       </header>
 

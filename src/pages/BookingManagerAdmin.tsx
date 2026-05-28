@@ -576,12 +576,20 @@ export default function BookingManagerAdmin() {
     return pendingInvites.filter((i) => i.artist_id === artistFilter);
   }, [pendingInvites, artistFilter]);
 
+  // Tick every 30s so gigs that just ended re-sort to the bottom without a refetch
+  const [nowTick, setNowTick] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNowTick(Date.now()), 30000);
+    return () => clearInterval(t);
+  }, []);
+
   const upcomingVisible = useMemo(() => {
     const byDateAsc = (a: UpcomingGig, b: UpcomingGig) => new Date(a.date).getTime() - new Date(b.date).getTime();
     const upcoming = visibleGigs.filter((g) => !isGigCompleted(g)).sort(byDateAsc);
     const completed = visibleGigs.filter((g) => isGigCompleted(g)).sort(byDateAsc);
     return [...upcoming, ...completed];
-  }, [visibleGigs]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibleGigs, nowTick]);
   const completedVisible: UpcomingGig[] = [];
 
   const setArtistFilter = (id: string | null) => {

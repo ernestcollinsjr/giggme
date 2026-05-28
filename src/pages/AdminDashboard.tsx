@@ -33,6 +33,7 @@ import {
   Trash2, 
   Edit, 
   Search,
+  ArrowLeft,
 } from "lucide-react";
 import { TopNav } from "@/components/TopNav";
 
@@ -426,7 +427,12 @@ const AdminDashboard = () => {
   );
 
   const entertainers = users.filter(
-    (u) => u.role === "artist" || (u.entertainer_categories && u.entertainer_categories.length > 0) || u.subscription_status
+    (u) =>
+      u.role === "artist" ||
+      u.role === "band_member" ||
+      u.role === "band_leader" ||
+      (u.entertainer_categories && u.entertainer_categories.length > 0) ||
+      !!u.subscription_status
   );
 
   const filteredEntertainers = entertainers.filter(
@@ -457,6 +463,16 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-background">
       <TopNav userRole="super_admin" />
       <main className="container mx-auto px-4 py-6 pb-24">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="mb-4 -ml-2"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
+        </Button>
+
         <div className="mb-6">
           <h2 className="text-2xl font-bold">All Entertainers</h2>
           <p className="text-muted-foreground">{entertainers.length} entertainers total</p>

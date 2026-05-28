@@ -204,9 +204,21 @@ const Index = () => {
                   <Menu className="h-5 w-5" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth", block: "start" })}>
+                  Features
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth", block: "start" })}>
+                  How It Works
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/find-entertainers")}>
+                  Find Entertainers
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/pricing")}>
                   <DollarSign className="mr-2 h-4 w-4" /> Pricing
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/auth")}>
+                  Resources
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/auth")}>
                   <HelpCircle className="mr-2 h-4 w-4" /> Support

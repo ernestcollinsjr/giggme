@@ -35,15 +35,34 @@ const newPasswordSchema = z.object({
   path: ["confirmPassword"],
 });
 
+const ENTERTAINER_PLANS: Record<string, { priceId: string; label: string; price: string; description: string; trial: string }> = {
+  entertainer_basic: {
+    priceId: "price_1TcATOEPiAZgF8Me2TkOBbG0",
+    label: "Basic Profile",
+    price: "$8",
+    description: "Upload your profile, get listed in the entertainer directory, and receive booking inquiries.",
+    trial: "7-day free trial",
+  },
+  entertainer_featured: {
+    priceId: "price_1TcATsEPiAZgF8MeuJY76UlD",
+    label: "Featured Entertainer",
+    price: "$14",
+    description: "Prime placement at the front of the site, featured badge, and priority in search results.",
+    trial: "7-day free trial",
+  },
+};
+
 const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirectParam = searchParams.get("redirect");
+  const planParam = searchParams.get("plan");
+  const entertainerPlan = planParam && ENTERTAINER_PLANS[planParam] ? ENTERTAINER_PLANS[planParam] : null;
   const safeRedirect = redirectParam && redirectParam.startsWith("/") && !redirectParam.startsWith("//") ? redirectParam : null;
   const postAuthPath = safeRedirect || "/dashboard";
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [role, setRole] = useState<"band_leader" | "band_member" | "booking_manager" | "artist" | "venue_owner">("band_leader");
+  const [role, setRole] = useState<"band_leader" | "band_member" | "booking_manager" | "artist" | "venue_owner">(entertainerPlan ? "artist" : "band_leader");
   const [venuePricingType, setVenuePricingType] = useState<"subscription" | "one_time">("subscription");
   
   const [loginEmail, setLoginEmail] = useState("");

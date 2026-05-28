@@ -36,6 +36,8 @@ import Messages from "./pages/Messages";
 import BookingRequestResponse from "./pages/BookingRequestResponse";
 import BookingResponse from "./pages/BookingResponse";
 import FindEntertainers from "./pages/FindEntertainers";
+import PaymentSchedulerPage from "./pages/PaymentSchedulerPage";
+import BookingRequestsPage from "./pages/BookingRequestsPage";
 
 const queryClient = new QueryClient();
 
@@ -80,6 +82,8 @@ const App = () => (
             <Route path="/booking-request/:id" element={<BookingRequestResponse />} />
             <Route path="/booking-response" element={<BookingResponse />} />
             <Route path="/find-entertainers" element={<FindEntertainers />} />
+            <Route path="/payment-scheduler" element={<PaymentSchedulerPage />} />
+            <Route path="/booking-requests" element={<BookingRequestsPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

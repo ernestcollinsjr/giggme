@@ -1530,45 +1530,141 @@ const Bookings = () => {
               const dayInvites = gigInvitations.filter((gi: any) => sameDay(gi.gigs?.date));
               const dayRequests = bookingRequests.filter((br: any) => sameDay(br.event_date));
               const total = dayConfirmed.length + dayInvites.length + dayRequests.length;
-              if (total === 0) {
-                return <p className="text-sm text-muted-foreground py-4">No bookings on this date.</p>;
-              }
+              const canQuickBook = managedArtists.length > 0;
               return (
-                <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-                  {dayConfirmed.map((g) => (
-                    <div key={`g-${g.id}`} className="rounded-lg border border-border/50 p-3 space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
-                        <Badge variant="secondary">Confirmed gig</Badge>
+                <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+                  {total === 0 ? (
+                    <p className="text-sm text-muted-foreground">No bookings on this date yet.</p>
+                  ) : (
+                    <>
+                      {dayConfirmed.map((g) => (
+                        <div key={`g-${g.id}`} className="rounded-lg border border-border/50 p-3 space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
+                            <Badge variant="secondary">Confirmed gig</Badge>
+                          </div>
+                          <div className="font-semibold">{g.venue_name || g.venue}</div>
+                          {g.venue_name && <div className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{g.venue}</div>}
+                        </div>
+                      ))}
+                      {dayInvites.map((gi: any) => (
+                        <div key={`i-${gi.id}`} className="rounded-lg border border-border/50 p-3 space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
+                            <Badge variant="secondary">Gig invitation</Badge>
+                          </div>
+                          <div className="font-semibold">{gi.gigs?.venue_name || gi.gigs?.venue}</div>
+                          {gi.gigs?.venue && <div className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{gi.gigs.venue}</div>}
+                          <div className="text-xs text-muted-foreground">Status: {gi.status}</div>
+                        </div>
+                      ))}
+                      {dayRequests.map((br: any) => (
+                        <div key={`r-${br.id}`} className="rounded-lg border border-border/50 p-3 space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className={cn(
+                              "h-2.5 w-2.5 rounded-full",
+                              br.status === "accepted" || br.status === "confirmed" ? "bg-blue-500" : "bg-red-500"
+                            )} />
+                            <Badge variant="secondary">Booking request</Badge>
+                          </div>
+                          <div className="font-semibold">{br.venue}</div>
+                          {br.performer_name && <div className="text-xs text-muted-foreground">Performer: {br.performer_name}</div>}
+                          <div className="text-xs text-muted-foreground">Status: {br.status}</div>
+                        </div>
+                      ))}
+                    </>
+                  )}
+
+                  {canQuickBook && (
+                    <div className="rounded-lg border border-primary/40 bg-primary/5 p-4 space-y-3">
+                      <div className="font-semibold flex items-center gap-2">
+                        <Send className="h-4 w-4 text-primary" />
+                        Book a performer for this date
                       </div>
-                      <div className="font-semibold">{g.venue_name || g.venue}</div>
-                      {g.venue_name && <div className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{g.venue}</div>}
-                      {(g as any).show_time && <div className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />{formatTime12Hour((g as any).show_time)}</div>}
-                    </div>
-                  ))}
-                  {dayInvites.map((gi: any) => (
-                    <div key={`i-${gi.id}`} className="rounded-lg border border-border/50 p-3 space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
-                        <Badge variant="secondary">Gig invitation</Badge>
+                      <div className="space-y-2">
+                        <Label>Performer</Label>
+                        <Select value={quickBookPerformerId} onValueChange={setQuickBookPerformerId}>
+                          <SelectTrigger><SelectValue placeholder="Select performer" /></SelectTrigger>
+                          <SelectContent>
+                            {managedArtists.map((a) => (
+                              <SelectItem key={a.artist_id} value={a.artist_id}>{a.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
-                      <div className="font-semibold">{gi.gigs?.venue_name || gi.gigs?.venue}</div>
-                      {gi.gigs?.venue && <div className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{gi.gigs.venue}</div>}
-                      <div className="text-xs text-muted-foreground">Status: {gi.status}</div>
-                    </div>
-                  ))}
-                  {dayRequests.map((br: any) => (
-                    <div key={`r-${br.id}`} className="rounded-lg border border-border/50 p-3 space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
-                        <Badge variant="secondary">Booking request</Badge>
+                      <div className="space-y-2">
+                        <Label>Venue</Label>
+                        <Input value={quickBookVenue} onChange={(e) => setQuickBookVenue(e.target.value)} placeholder="Venue name / address" />
                       </div>
-                      <div className="font-semibold">{br.event_type || br.venue_name || "Request"}</div>
-                      {br.venue_name && <div className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{br.venue_name}</div>}
-                      {br.client_name && <div className="text-xs text-muted-foreground">Client: {br.client_name}</div>}
-                      <div className="text-xs text-muted-foreground">Status: {br.status}</div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-2">
+                          <Label>Start</Label>
+                          <Input type="time" value={quickBookStart} onChange={(e) => setQuickBookStart(e.target.value)} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>End</Label>
+                          <Input type="time" value={quickBookEnd} onChange={(e) => setQuickBookEnd(e.target.value)} />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Budget (optional)</Label>
+                        <Input value={quickBookBudget} onChange={(e) => setQuickBookBudget(e.target.value)} placeholder="e.g. $250" />
+                      </div>
+                      <Button
+                        className="w-full"
+                        disabled={quickBookSubmitting || !quickBookPerformerId || !quickBookVenue.trim()}
+                        onClick={async () => {
+                          if (!selectedCalendarDate || !quickBookPerformerId || !quickBookVenue.trim()) return;
+                          setQuickBookSubmitting(true);
+                          try {
+                            const { data: { session } } = await supabase.auth.getSession();
+                            const user = session?.user;
+                            if (!user) throw new Error("Not authenticated");
+                            const performer = managedArtists.find((a) => a.artist_id === quickBookPerformerId);
+                            if (!performer?.email) throw new Error("Performer has no email on file.");
+                            const eventDate = new Date(selectedCalendarDate);
+                            const [hh, mm] = (quickBookStart || "19:00").split(":").map(Number);
+                            eventDate.setHours(hh || 19, mm || 0, 0, 0);
+                            const { data: senderProfile } = await supabase
+                              .from("profiles")
+                              .select("name, email")
+                              .eq("id", user.id)
+                              .maybeSingle();
+                            const datesStr = format(selectedCalendarDate, "EEE, MMM d, yyyy");
+                            const timeStr = `(${quickBookStart}${quickBookEnd ? ` – ${quickBookEnd}` : ""})`;
+                            const { error } = await supabase.functions.invoke("send-booking-request-email", {
+                              body: {
+                                performerId: quickBookPerformerId,
+                                performerEmail: performer.email,
+                                performerName: performer.name,
+                                bookerName: senderProfile?.name,
+                                bookerEmail: senderProfile?.email || user.email,
+                                dates: datesStr,
+                                time: timeStr,
+                                venue: quickBookVenue.trim(),
+                                budget: quickBookBudget.trim() || undefined,
+                                eventDate: eventDate.toISOString(),
+                                appUrl: window.location.hostname.endsWith("lovable.app") || window.location.hostname.endsWith("lovable.dev") ? "https://giggme.com" : window.location.origin,
+                              },
+                            });
+                            if (error) throw error;
+                            toast({ title: "Booking request sent", description: `Sent to ${performer.name}.` });
+                            setQuickBookPerformerId("");
+                            setQuickBookVenue("");
+                            setQuickBookBudget("");
+                            setSelectedCalendarDate(null);
+                            await fetchData();
+                          } catch (err: any) {
+                            toast({ variant: "destructive", title: "Could not send request", description: err.message });
+                          } finally {
+                            setQuickBookSubmitting(false);
+                          }
+                        }}
+                      >
+                        {quickBookSubmitting ? "Sending..." : "Send Booking Request"}
+                      </Button>
                     </div>
-                  ))}
+                  )}
                 </div>
               );
             })()}

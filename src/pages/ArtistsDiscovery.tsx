@@ -15,6 +15,9 @@ interface ArtistWithProfile {
   user_id: string;
   stage_name: string | null;
   genre: string | null;
+  genres?: string[] | null;
+  instrument?: string | null;
+  performer_category?: string | null;
   years_experience: number | null;
   availability: string | null;
   rate_range: string | null;
@@ -62,34 +65,65 @@ const ArtistsDiscovery = () => {
 
   const fetchArtists = async () => {
     try {
-      // Fetch artist profiles
-      const { data: artistData, error: artistError } = await supabase
-        .from("artist_profiles")
-        .select("*");
+      // Fetch both legacy artist profile rows and all performer-role users.
+      // Some performers only have a profile + role, so artist_profiles alone can miss them.
+      const [{ data: artistData, error: artistError }, { data: performerRoles, error: rolesError }] = await Promise.all([
+        supabase.from("artist_profiles").select("*"),
+        supabase.from("user_roles").select("user_id").in("role", ["artist", "band_member"]),
+      ]);
 
       if (artistError) throw artistError;
+      if (rolesError) throw rolesError;
 
-      // Fetch all profiles for the artists
-      const userIds = artistData?.map((a) => a.user_id) || [];
+      const artistProfileByUserId = new Map((artistData || []).map((a: any) => [a.user_id, a]));
+      const userIds = Array.from(
+        new Set([
+          ...(artistData?.map((a: any) => a.user_id) || []),
+          ...(performerRoles?.map((r: any) => r.user_id) || []),
+        ])
+      );
+
+      if (userIds.length === 0) {
+        setArtists([]);
+        return;
+      }
+
       const { data: profilesData, error: profilesError } = await supabase
         .from("profiles")
-        .select("id, name, bio, photo_urls")
+        .select("id, name, bio, photo_urls, genres, instrument, years_experience, preferred_pay, preferred_pay_hours, performer_category")
         .in("id", userIds);
 
       if (profilesError) throw profilesError;
 
-      // Combine the data
-      const combined = artistData?.map((artist) => {
-        const profile = profilesData?.find((p) => p.id === artist.user_id);
+      // Combine artist-specific data with base performer profiles.
+      const combined = (profilesData || []).map((profile: any) => {
+        const artist = artistProfileByUserId.get(profile.id) as any;
+        const primaryGenre = artist?.genre || profile.genres?.[0] || profile.instrument || null;
+        const rateRange = artist?.rate_range || (
+          profile.preferred_pay
+            ? `$${profile.preferred_pay}${profile.preferred_pay_hours ? ` / ${profile.preferred_pay_hours}hr` : ""}`
+            : null
+        );
+
         return {
-          ...artist,
+          id: artist?.id || profile.id,
+          user_id: profile.id,
+          stage_name: artist?.stage_name || null,
+          genre: primaryGenre,
+          genres: profile.genres || [],
+          instrument: profile.instrument || null,
+          performer_category: profile.performer_category || null,
+          years_experience: artist?.years_experience ?? profile.years_experience ?? null,
+          availability: artist?.availability || profile.availability_status || null,
+          rate_range: rateRange,
+          youtube_videos: artist?.youtube_videos || [],
           profile: {
-            name: profile?.name || "Unknown",
-            bio: profile?.bio || null,
-            photo_urls: profile?.photo_urls || [],
+            name: profile.name || "Unknown",
+            bio: profile.bio || null,
+            photo_urls: profile.photo_urls || [],
           },
         };
-      }) || [];
+      });
 
       setArtists(combined as unknown as ArtistWithProfile[]);
     } catch (error: any) {
@@ -112,10 +146,14 @@ const ArtistsDiscovery = () => {
 
   const filteredArtists = artists.filter((artist) => {
     const searchLower = searchTerm.toLowerCase();
+    const genreText = artist.genres?.join(" ").toLowerCase() || "";
     const matchesSearch =
       artist.profile.name.toLowerCase().includes(searchLower) ||
       artist.stage_name?.toLowerCase().includes(searchLower) ||
-      artist.genre?.toLowerCase().includes(searchLower);
+      artist.genre?.toLowerCase().includes(searchLower) ||
+      artist.instrument?.toLowerCase().includes(searchLower) ||
+      artist.performer_category?.toLowerCase().includes(searchLower) ||
+      genreText.includes(searchLower);
     
     const matchesGenre = selectedGenre === "all" || artist.genre === selectedGenre;
     

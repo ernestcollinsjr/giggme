@@ -1653,7 +1653,7 @@ const Bookings = () => {
                             setQuickBookVenue("");
                             setQuickBookBudget("");
                             setSelectedCalendarDate(null);
-                            await fetchData();
+                            await checkAuthAndFetchData();
                           } catch (err: any) {
                             toast({ variant: "destructive", title: "Could not send request", description: err.message });
                           } finally {

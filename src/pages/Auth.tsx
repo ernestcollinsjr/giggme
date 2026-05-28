@@ -516,6 +516,31 @@ const Auth = () => {
               <form onSubmit={handleSignup} className="space-y-4">
                 <div className="space-y-3">
                   <Label className="text-base font-semibold">Choose Your Plan</Label>
+                  {entertainerPlan ? (
+                    <div className="relative rounded-xl border-2 border-primary bg-primary/5 shadow-md p-4">
+                      <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                        <Check className="h-4 w-4 text-primary-foreground" />
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-primary text-primary-foreground">
+                          <Music className="h-6 w-6" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <h3 className="font-semibold">{entertainerPlan.label}</h3>
+                            <div className="text-right">
+                              <span className="font-bold text-primary">{entertainerPlan.price}</span>
+                              <span className="text-xs text-muted-foreground">/mo</span>
+                            </div>
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1">{entertainerPlan.description}</p>
+                          <div className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                            {entertainerPlan.trial}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
                   <div className="grid grid-cols-1 gap-3">
                     {/* Band Manager Card */}
                     <div

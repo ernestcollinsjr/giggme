@@ -879,7 +879,7 @@ const Bookings = () => {
   const handleDeleteGigInvitation = async (id: string) => {
     if (!confirm("Delete this gig invitation?")) return;
     try {
-      const { error } = await supabase.from("gig_invitations").delete().eq("id", id);
+      const { error } = await supabase.from("gig_members").delete().eq("id", id);
       if (error) throw error;
       setGigInvitations((prev: any) => prev.filter((g: any) => g.id !== id));
       toast({ title: "Invitation deleted" });

@@ -1864,7 +1864,82 @@ const ProfileSetup = () => {
                   )}
                 </div>
               )}
+
+              {/* Entertainer Categories (multi-select) */}
+              {(role === "band_leader" || role === "band_member" || role === "artist") && (
+                <div className="space-y-3 pt-4 border-t">
+                  <div>
+                    <Label className="flex items-center gap-2">
+                      <Music className="h-4 w-4" />
+                      Entertainer Categories
+                    </Label>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Select all that apply — helps people searching for entertainers find you.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      "Musician/Church",
+                      "RnB Musician",
+                      "Musician/Church + RnB",
+                      "RnB Singer",
+                      "Church Singer",
+                      "Minister of Music",
+                      "Choir Director",
+                      "Rap",
+                      "RnB",
+                      "Hip Hop",
+                      "Country",
+                      "Pop",
+                      "Folk",
+                      "Jazz",
+                      "Opera",
+                      "Rock",
+                      "Band",
+                      "Solo",
+                      "Duo",
+                      "Trio",
+                      "Drummer",
+                      "Sax",
+                      "Keyboardist",
+                      "Trombone",
+                      "Horn",
+                      "Guitar",
+                      "Bass",
+                      "Cello",
+                      "Flute",
+                      "String",
+                    ].map((cat) => {
+                      const selected = entertainerCategories.includes(cat);
+                      return (
+                        <button
+                          key={cat}
+                          type="button"
+                          onClick={() =>
+                            setEntertainerCategories((prev) =>
+                              prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
+                            )
+                          }
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                            selected
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "bg-background text-foreground border-border hover:bg-muted"
+                          }`}
+                        >
+                          {cat}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {entertainerCategories.length > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      {entertainerCategories.length} selected
+                    </p>
+                  )}
+                </div>
+              )}
               </TabsContent>
+
 
               {/* Alerts Tab */}
               <TabsContent value="alerts" className="mt-0 space-y-6">

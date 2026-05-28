@@ -189,7 +189,7 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
     fetchTravelStatus(ids);
     if (ids.length === 0) return;
     const channel = supabase
-      .channel(`gig-travel-${userId}`)
+      .channel(`gig-travel-${userId}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "gig_travel_status" },

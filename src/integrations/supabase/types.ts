@@ -2269,6 +2269,7 @@ export type Database = {
         Args: never
         Returns: {
           bio: string
+          entertainer_categories: string[]
           genre: string
           instrument: string
           name: string

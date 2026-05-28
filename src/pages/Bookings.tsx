@@ -1465,13 +1465,12 @@ const Bookings = () => {
           const confirmedDates: Date[] = [];
           // Booking requests: accepted -> booked (blue), others (pending/sent) -> unavailable (red)
           bookingRequests.forEach((br: any) => {
-            if (!br.event_date) return;
-            const d = new Date(br.event_date);
+            const dates = getBookingRequestCalendarDates(br);
             const status = (br.status || "").toLowerCase();
             if (status === "accepted" || status === "confirmed") {
-              confirmedDates.push(d);
+              confirmedDates.push(...dates);
             } else if (status !== "declined" && status !== "rejected" && status !== "cancelled") {
-              requestDatesRaw.push(d);
+              requestDatesRaw.push(...dates);
             }
           });
           // Gig invitations: accepted -> booked (blue), pending -> tentative (yellow)
@@ -1581,7 +1580,7 @@ const Bookings = () => {
               };
               const dayConfirmed = gigs.filter((g) => sameDay(g.date));
               const dayInvites = gigInvitations.filter((gi: any) => sameDay(gi.gigs?.date));
-              const dayRequests = bookingRequests.filter((br: any) => sameDay(br.event_date));
+              const dayRequests = bookingRequests.filter((br: any) => getBookingRequestCalendarDates(br).some(sameDay));
               const total = dayConfirmed.length + dayInvites.length + dayRequests.length;
               const canQuickBook = managedArtists.length > 0;
               return (

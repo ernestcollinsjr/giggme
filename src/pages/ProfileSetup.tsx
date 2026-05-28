@@ -448,6 +448,7 @@ const ProfileSetup = () => {
         years_experience: yearsExperience ? parseInt(yearsExperience) : null,
         union_memberships: finalUnions,
         performer_category: performerCategory,
+        entertainer_categories: entertainerCategories,
         preferred_pay: preferredPay ? parseFloat(preferredPay) : null,
         preferred_pay_hours: preferredPayHours ? parseFloat(preferredPayHours) : null,
         updated_at: new Date().toISOString(),

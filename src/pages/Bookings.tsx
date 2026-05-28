@@ -1400,7 +1400,11 @@ const Bookings = () => {
                       </div>
                       <p className="font-semibold truncate">{br.venue}</p>
                       <p className="text-sm text-muted-foreground">
-                        From {br.booker_name || 'a client'} · {br.dates_text}
+                        {br.booker_id === br.performer_id
+                          ? `${br.dates_text}`
+                          : br.performer_id && br.booker_name && br.performer_name
+                            ? `${br.booker_name} → ${br.performer_name} · ${br.dates_text}`
+                            : `From ${br.booker_name || 'a client'} · ${br.dates_text}`}
                         {br.time_text && ` · ${br.time_text}`}
                       </p>
                       {br.budget && (

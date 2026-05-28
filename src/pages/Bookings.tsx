@@ -864,6 +864,30 @@ const Bookings = () => {
     }
   };
 
+  const handleDeleteBookingRequest = async (id: string) => {
+    if (!confirm("Delete this booking request? This cannot be undone.")) return;
+    try {
+      const { error } = await supabase.from("booking_requests").delete().eq("id", id);
+      if (error) throw error;
+      setBookingRequests((prev) => prev.filter((b: any) => b.id !== id));
+      toast({ title: "Booking request deleted" });
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Failed to delete", description: error.message });
+    }
+  };
+
+  const handleDeleteGigInvitation = async (id: string) => {
+    if (!confirm("Delete this gig invitation?")) return;
+    try {
+      const { error } = await supabase.from("gig_invitations").delete().eq("id", id);
+      if (error) throw error;
+      setGigInvitations((prev: any) => prev.filter((g: any) => g.id !== id));
+      toast({ title: "Invitation deleted" });
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Failed to delete", description: error.message });
+    }
+  };
+
   const openEditGigDialog = (gig: Gig) => {
     setEditingGig(gig);
     const gigDate = new Date(gig.date);

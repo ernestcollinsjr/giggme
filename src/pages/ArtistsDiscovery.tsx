@@ -65,65 +65,32 @@ const ArtistsDiscovery = () => {
 
   const fetchArtists = async () => {
     try {
-      // Fetch both legacy artist profile rows and all performer-role users.
-      // Some performers only have a profile + role, so artist_profiles alone can miss them.
-      const [{ data: artistData, error: artistError }, { data: performerRoles, error: rolesError }] = await Promise.all([
-        supabase.from("artist_profiles").select("*"),
-        supabase.from("user_roles").select("user_id").in("role", ["artist", "band_member"]),
-      ]);
+      const { data, error } = await (supabase as any).rpc("get_public_performers");
 
-      if (artistError) throw artistError;
-      if (rolesError) throw rolesError;
+      if (error) throw error;
 
-      const artistProfileByUserId = new Map((artistData || []).map((a: any) => [a.user_id, a]));
-      const userIds = Array.from(
-        new Set([
-          ...(artistData?.map((a: any) => a.user_id) || []),
-          ...(performerRoles?.map((r: any) => r.user_id) || []),
-        ])
-      );
-
-      if (userIds.length === 0) {
-        setArtists([]);
-        return;
-      }
-
-      const { data: profilesData, error: profilesError } = await supabase
-        .from("profiles")
-        .select("id, name, bio, photo_urls, genres, instrument, years_experience, preferred_pay, preferred_pay_hours, performer_category")
-        .in("id", userIds);
-
-      if (profilesError) throw profilesError;
-
-      // Combine artist-specific data with base performer profiles.
-      const combined = (profilesData || []).map((profile: any) => {
-        const artist = artistProfileByUserId.get(profile.id) as any;
-        const primaryGenre = artist?.genre || profile.genres?.[0] || profile.instrument || null;
-        const rateRange = artist?.rate_range || (
-          profile.preferred_pay
-            ? `$${profile.preferred_pay}${profile.preferred_pay_hours ? ` / ${profile.preferred_pay_hours}hr` : ""}`
+      const combined = (data || []).map((performer: any) => ({
+        id: performer.user_id,
+        user_id: performer.user_id,
+        stage_name: performer.stage_name || null,
+        genre: performer.genre || performer.genres?.[0] || performer.instrument || null,
+        genres: performer.genres || [],
+        instrument: performer.instrument || null,
+        performer_category: performer.performer_category || null,
+        years_experience: performer.years_experience ?? null,
+        availability: performer.availability || null,
+        rate_range: performer.rate_range || (
+          performer.preferred_pay
+            ? `$${performer.preferred_pay}${performer.preferred_pay_hours ? ` / ${performer.preferred_pay_hours}hr` : ""}`
             : null
-        );
-
-        return {
-          id: artist?.id || profile.id,
-          user_id: profile.id,
-          stage_name: artist?.stage_name || null,
-          genre: primaryGenre,
-          genres: profile.genres || [],
-          instrument: profile.instrument || null,
-          performer_category: profile.performer_category || null,
-          years_experience: artist?.years_experience ?? profile.years_experience ?? null,
-          availability: artist?.availability || profile.availability_status || null,
-          rate_range: rateRange,
-          youtube_videos: artist?.youtube_videos || [],
-          profile: {
-            name: profile.name || "Unknown",
-            bio: profile.bio || null,
-            photo_urls: profile.photo_urls || [],
-          },
-        };
-      });
+        ),
+        youtube_videos: performer.youtube_videos || [],
+        profile: {
+          name: performer.name || "Unknown",
+          bio: performer.bio || null,
+          photo_urls: performer.photo_urls || [],
+        },
+      }));
 
       setArtists(combined as unknown as ArtistWithProfile[]);
     } catch (error: any) {

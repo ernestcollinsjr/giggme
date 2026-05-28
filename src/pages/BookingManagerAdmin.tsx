@@ -652,7 +652,7 @@ export default function BookingManagerAdmin() {
               <span className="hidden sm:inline">Schedule</span> Reminder
             </Button>
             <Button
-              onClick={() => navigate("/booking-manager/roster")}
+              onClick={() => navigate("/admin")}
               size="sm"
               className="gap-1 text-xs sm:text-sm"
             >

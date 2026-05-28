@@ -1389,22 +1389,22 @@ const Bookings = () => {
           });
           const allDates = [...requestDates, ...invitationDates, ...confirmedDates];
           return (
-            <Card className="border-border/50 shadow-lg mb-4">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CalendarIcon className="h-5 w-5 text-primary" />
-                  Booking Calendar
-                </CardTitle>
-                <CardDescription>
-                  Highlighted dates show all scheduled bookings across your performers
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col md:flex-row items-start justify-center gap-8 overflow-hidden">
+            <div className="flex flex-col md:flex-row items-start gap-6 mb-4">
+              <Card className="border-border/50 shadow-lg flex-1 w-full">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CalendarIcon className="h-5 w-5 text-primary" />
+                    Booking Calendar
+                  </CardTitle>
+                  <CardDescription>
+                    Highlighted dates show all scheduled bookings across your performers
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex justify-center overflow-hidden">
                   <div className="scale-[1.6] origin-top transform-gpu" style={{ marginBottom: 'calc(1.6 * 350px - 350px)' }}>
                     <Calendar
                       mode="multiple"
-                      selected={allDates}
+                      selected={[]}
                       onSelect={() => {}}
                       modifiers={{
                         confirmed: confirmedDates,
@@ -1412,31 +1412,31 @@ const Bookings = () => {
                         request: requestDates,
                       }}
                       modifiersClassNames={{
-                        confirmed: "bg-primary text-primary-foreground hover:bg-primary/90 rounded-md font-semibold",
-                        invitation: "bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-md font-semibold",
-                        request: "bg-accent text-accent-foreground hover:bg-accent/90 rounded-md font-semibold",
+                        confirmed: "!bg-primary !text-primary-foreground hover:!bg-primary/90 rounded-md font-semibold",
+                        invitation: "!bg-secondary !text-secondary-foreground hover:!bg-secondary/90 rounded-md font-semibold",
+                        request: "!bg-accent !text-accent-foreground hover:!bg-accent/90 rounded-md font-semibold",
                       }}
                       className="rounded-md border border-border/50"
                     />
                   </div>
-                  <div className="flex md:flex-col flex-wrap gap-3 md:pt-2 text-sm">
-                    <div className="font-semibold text-foreground mb-1 w-full">Legend</div>
-                    <div className="flex items-center gap-2">
-                      <span className="inline-block h-4 w-4 rounded bg-primary" />
-                      <span className="text-muted-foreground">Confirmed gigs</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="inline-block h-4 w-4 rounded bg-secondary" />
-                      <span className="text-muted-foreground">Gig invitations</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="inline-block h-4 w-4 rounded bg-accent" />
-                      <span className="text-muted-foreground">Booking requests</span>
-                    </div>
-                  </div>
+                </CardContent>
+              </Card>
+              <div className="flex md:flex-col flex-wrap gap-3 text-sm md:w-48 md:pt-4">
+                <div className="font-semibold text-foreground w-full">Legend</div>
+                <div className="flex items-center gap-2">
+                  <span className="inline-block h-4 w-4 rounded bg-primary" />
+                  <span className="text-muted-foreground">Confirmed gigs</span>
                 </div>
-              </CardContent>
-            </Card>
+                <div className="flex items-center gap-2">
+                  <span className="inline-block h-4 w-4 rounded bg-secondary" />
+                  <span className="text-muted-foreground">Gig invitations</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="inline-block h-4 w-4 rounded bg-accent" />
+                  <span className="text-muted-foreground">Booking requests</span>
+                </div>
+              </div>
+            </div>
           );
         })()}
 

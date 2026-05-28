@@ -151,12 +151,10 @@ const BottomNav = () => {
   // Route to role-appropriate dashboard
   const dashboardPath = userRole === "booking_manager" ? "/booking-manager" : "/dashboard";
   
-  // Book Gig path - for booking managers, go to the categorized roster
-  const bookGigPath = userRole === "booking_manager" 
-    ? "/booking-manager/roster" 
-    : userRole === "band_leader" || userRole === "super_admin"
-      ? "/bookings?new=true" 
-      : "/bookings?new=true";
+  // Book Gig path
+  const bookGigPath = userRole === "booking_manager"
+    ? "/booking-manager"
+    : "/bookings?new=true";
   
   const navItems = [
     { id: "dashboard", icon: Home, label: "Dashboard", path: dashboardPath },

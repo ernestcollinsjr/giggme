@@ -16,7 +16,7 @@ import SongLyrics from "./pages/SongLyrics";
 import Pricing from "./pages/Pricing";
 import PerformerProfileView from "./pages/PerformerProfileView";
 import ArtistsDiscovery from "./pages/ArtistsDiscovery";
-import BookingManager from "./pages/BookingManager";
+
 import NotFound from "./pages/NotFound";
 import OpenExternal from "./pages/OpenExternal";
 import Tours from "./pages/Tours";
@@ -68,7 +68,7 @@ const App = () => (
             <Route path="/tour-invite/:token" element={<TourInvite />} />
             <Route path="/band-invite/:token" element={<BandInvite />} />
             <Route path="/booking-manager" element={<BookingManagerAdmin />} />
-            <Route path="/booking-manager/roster" element={<BookingManager />} />
+            
             <Route path="/venue-dashboard" element={<VenueDashboard />} />
             <Route path="/entertainers" element={<EntertainerMarketplace />} />
             <Route path="/entertainer-dashboard" element={<EntertainerDashboard />} />

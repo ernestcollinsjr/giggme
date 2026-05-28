@@ -66,9 +66,17 @@ const ArtistsDiscovery = () => {
 
   const fetchArtists = async () => {
     try {
-      const { data, error } = await (supabase as any).rpc("get_public_performers");
+      const [{ data, error }, { data: venuesData }] = await Promise.all([
+        (supabase as any).rpc("get_public_performers"),
+        (supabase as any).rpc("get_performer_venues"),
+      ]);
 
       if (error) throw error;
+
+      const venuesMap = new Map<string, string[]>();
+      (venuesData || []).forEach((row: any) => {
+        venuesMap.set(row.user_id, row.venues || []);
+      });
 
       const combined = (data || []).map((performer: any) => ({
         id: performer.user_id,
@@ -86,6 +94,7 @@ const ArtistsDiscovery = () => {
             : null
         ),
         youtube_videos: performer.youtube_videos || [],
+        venues: venuesMap.get(performer.user_id) || [],
         profile: {
           name: performer.name || "Unknown",
           bio: performer.bio || null,

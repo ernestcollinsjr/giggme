@@ -47,6 +47,7 @@ import { cn } from "@/lib/utils";
 
 const CATEGORIES = ["Soloist", "Duo", "Band"] as const;
 type Category = typeof CATEGORIES[number];
+const DEFAULT_GIG_DURATION_MS = 2 * 60 * 60 * 1000;
 
 const CATEGORY_ICON: Record<Category, typeof User> = {
   Soloist: User,
@@ -400,12 +401,16 @@ export default function BookingManagerAdmin() {
   };
 
   const getGigCompletionTime = (gig: UpcomingGig): number => {
+    const startTime = new Date(gig.date).getTime();
+    if (Number.isNaN(startTime)) return 0;
+
+    if (!gig.end_time) return startTime + DEFAULT_GIG_DURATION_MS;
+
     const dateOnly = gig.date.split("T")[0];
-    const endIso = gig.end_time
-      ? `${dateOnly}T${gig.end_time}`
-      : `${dateOnly}T23:59:59`;
-    const completionTime = new Date(endIso).getTime();
-    return Number.isNaN(completionTime) ? new Date(gig.date).getTime() : completionTime;
+    const endTime = new Date(`${dateOnly}T${gig.end_time}`).getTime();
+    if (Number.isNaN(endTime)) return startTime + DEFAULT_GIG_DURATION_MS;
+
+    return endTime < startTime ? endTime + 24 * 60 * 60 * 1000 : endTime;
   };
 
   const isGigCompleted = (gig: UpcomingGig): boolean => {
@@ -859,8 +864,7 @@ export default function BookingManagerAdmin() {
                             </div>
                           </div>
                           {(() => {
-                            const isPast = d.getTime() < new Date(new Date().toDateString()).getTime();
-                            const isCompleted = gig.status === "completed" || (isPast && gig.status === "confirmed");
+                            const isCompleted = isGigCompleted(gig);
                             const isPaid = (paymentStatuses[paymentKey(gig)] || "pending") === "paid";
                             return (
                               <div className="flex flex-col items-end gap-1 flex-shrink-0">

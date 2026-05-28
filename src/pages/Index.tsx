@@ -228,7 +228,7 @@ const Index = () => {
             </h1>
 
             <p className="mt-6 text-lg text-white/60 max-w-xl leading-relaxed">
-              Our virtual assistant handles everything — finding talent, scheduling, and managing your recurring bookings automatically.
+              Our agents will handle everything — secure talent, scheduling, and managing your recurring bookings.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-4">

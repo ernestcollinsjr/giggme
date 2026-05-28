@@ -309,20 +309,31 @@ const FindEntertainers = () => {
 
       {/* Entertainer grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-          <h3 className="text-2xl font-bold text-white">Get Featured Here</h3>
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-white/60">Category</label>
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/30"
-            >
-              <option value="all">All categories</option>
-              {ALL_CATEGORIES.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
+        <div className="flex flex-col gap-3 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <h3 className="text-2xl font-bold text-white">Get Featured Here</h3>
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-white/60">Category</label>
+              <select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/30"
+              >
+                <option value="all">All categories</option>
+                {ALL_CATEGORIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+            <Input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search by name, category, genre, or instrument..."
+              className="pl-10 bg-white/[0.05] border-white/10 text-white placeholder:text-white/40"
+            />
           </div>
         </div>
 
@@ -333,11 +344,25 @@ const FindEntertainers = () => {
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-5">
             {entertainers
-              .filter((e) =>
-                categoryFilter === "all"
-                  ? true
-                  : (e.entertainer_categories || []).includes(categoryFilter)
-              )
+              .filter((e) => {
+                const matchesCategory =
+                  categoryFilter === "all" ||
+                  (e.entertainer_categories || []).includes(categoryFilter);
+                const q = searchTerm.trim().toLowerCase();
+                if (!q) return matchesCategory;
+                const haystack = [
+                  e.name,
+                  e.stage_name,
+                  e.genre,
+                  e.instrument,
+                  e.performer_category,
+                  ...(e.entertainer_categories || []),
+                ]
+                  .filter(Boolean)
+                  .join(" ")
+                  .toLowerCase();
+                return matchesCategory && haystack.includes(q);
+              })
               .map((e) => {
               const photo = e.photo_urls?.[0];
               const displayName = e.stage_name || e.name || "Entertainer";

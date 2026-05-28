@@ -219,7 +219,7 @@ const Index = () => {
               <span className="text-xs font-medium text-white/80">Your personal booking assistant</span>
             </div>
 
-            <h1 className="mt-6 text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.05]">
+            <h1 className="mt-6 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-[1.1]">
               Let us manage your{" "}
               <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-500 bg-clip-text text-transparent">
                 entertainment

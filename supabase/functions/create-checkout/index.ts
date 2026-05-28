@@ -44,6 +44,10 @@ serve(async (req) => {
       "price_1Sfl29EPiAZgF8Me7Z7r8ty8": { trialDays: 7 },
       // Venue Owner - $26/mo, 14-day free trial
       "price_1Sj4nrEPiAZgF8MeCOUpkIfg": { trialDays: 14 },
+      // Entertainer Basic - $8/mo, 7-day free trial
+      "price_1TcATOEPiAZgF8Me2TkOBbG0": { trialDays: 7 },
+      // Featured Entertainer - $14/mo, 7-day free trial
+      "price_1TcATsEPiAZgF8MeuJY76UlD": { trialDays: 7 },
     };
 
     // One-time payment prices (no trial, payment mode)

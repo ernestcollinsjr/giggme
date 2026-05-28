@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { TopNav } from "@/components/TopNav";
 import BottomNav from "@/components/BottomNav";
+import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -165,8 +166,10 @@ const EntertainerDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <AppShell userRole="artist">
+    <div className="min-h-screen bg-background pb-20 lg:pb-6">
       <TopNav userRole="artist" />
+
       
       <main className="container mx-auto px-4 py-6 max-w-4xl">
         {/* Header */}
@@ -412,6 +415,7 @@ const EntertainerDashboard = () => {
       
       <BottomNav />
     </div>
+    </AppShell>
   );
 };
 

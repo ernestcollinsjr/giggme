@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import { TopNav } from "@/components/TopNav";
 import BottomNav from "@/components/BottomNav";
+import { AppShell } from "@/components/AppShell";
 import { SentBookingRequests } from "@/components/SentBookingRequests";
 import { PaymentScheduler } from "@/components/PaymentScheduler";
 import { UpcomingGigLocationTracker } from "@/components/UpcomingGigLocationTracker";
@@ -628,8 +629,10 @@ export default function BookingManagerAdmin() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24 overflow-x-hidden">
+    <AppShell userRole="booking_manager">
+    <div className="min-h-screen bg-background pb-24 lg:pb-6 overflow-x-hidden">
       <TopNav userRole="booking_manager" />
+
       <main className="container mx-auto px-3 sm:px-4 py-6">
         <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
           <div>
@@ -1280,5 +1283,6 @@ export default function BookingManagerAdmin() {
       </main>
       <BottomNav />
     </div>
+    </AppShell>
   );
 }

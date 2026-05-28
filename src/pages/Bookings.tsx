@@ -89,7 +89,12 @@ const monthIndexes: Record<string, number> = {
 
 const calendarDate = (year: number, month: number, day: number) => new Date(year, month, day, 12, 0, 0, 0);
 
-const getBookingRequestCalendarDates = (request: any): Date[] => {
+type BookingRequestCalendarSource = {
+  dates_text?: string | null;
+  event_date?: string | null;
+};
+
+const getBookingRequestCalendarDates = (request: BookingRequestCalendarSource): Date[] => {
   const datesText = typeof request?.dates_text === "string" ? request.dates_text : "";
   const parsedDates = [...datesText.matchAll(/\b(?:Sun|Mon|Tue|Wed|Thu|Fri|Sat),\s+([A-Za-z]+)\s+(\d{1,2}),\s+(\d{4})/g)]
     .map((match) => {

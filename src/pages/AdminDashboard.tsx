@@ -547,16 +547,41 @@ const AdminDashboard = () => {
                     <TableCell className="text-muted-foreground">{user.email}</TableCell>
                     <TableCell className="text-muted-foreground">{user.phone_number || "—"}</TableCell>
                     <TableCell>
-                      {user.bandNames.length > 0
-                        ? user.bandNames.join(", ")
-                        : <span className="text-muted-foreground">No Group</span>}
+                      <Select
+                        value={
+                          bands.find((b) => user.bandNames.includes(b.name))?.id || "__none__"
+                        }
+                        onValueChange={(val) => handleUpdateBand(user, val)}
+                      >
+                        <SelectTrigger className="h-8 w-[160px]">
+                          <SelectValue placeholder="No Group" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__none__">No Group</SelectItem>
+                          {bands.map((b) => (
+                            <SelectItem key={b.id} value={b.id}>
+                              {b.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </TableCell>
                     <TableCell>
-                      {user.role ? (
-                        <Badge variant="outline">{roleLabels[user.role]}</Badge>
-                      ) : (
-                        <Badge variant="outline" className="text-muted-foreground">none</Badge>
-                      )}
+                      <Select
+                        value={user.role || ""}
+                        onValueChange={(val) => handleUpdateRole(user, val as AppRole)}
+                      >
+                        <SelectTrigger className="h-8 w-[140px]">
+                          <SelectValue placeholder="Select role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {(Object.keys(roleLabels) as AppRole[]).map((r) => (
+                            <SelectItem key={r} value={r}>
+                              {roleLabels[r]}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {user.created_at ? new Date(user.created_at).toLocaleDateString() : "—"}

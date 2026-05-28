@@ -250,14 +250,14 @@ const Index = () => {
             </div>
 
             {/* Trust strip */}
-            <div className="mt-12 grid grid-cols-2 lg:grid-cols-4 gap-x-5 gap-y-5">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="flex -space-x-2 shrink-0">
+            <div className="mt-12 grid grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="flex flex-col items-center text-center gap-2">
+                <div className="flex -space-x-2">
                   <div className="h-8 w-8 rounded-full bg-gradient-to-br from-pink-400 to-orange-400 border-2 border-[hsl(230_35%_7%)]" />
                   <div className="h-8 w-8 rounded-full bg-gradient-to-br from-violet-400 to-blue-500 border-2 border-[hsl(230_35%_7%)]" />
                   <div className="h-8 w-8 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 border-2 border-[hsl(230_35%_7%)]" />
                 </div>
-                <div className="min-w-0">
+                <div>
                   <p className="text-sm font-semibold text-white leading-tight">Loved by 2,000+</p>
                   <p className="text-xs text-white/50 leading-tight mt-0.5">event planners</p>
                 </div>
@@ -267,9 +267,9 @@ const Index = () => {
                 { icon: ShieldCheck, title: "Verified Talent", sub: "Trusted professionals", color: "text-violet-400" },
                 { icon: Headphones, title: "24/7 Support", sub: "We're here to help", color: "text-cyan-400" },
               ].map((t) => (
-                <div key={t.title} className="flex items-center gap-3 min-w-0">
-                  <t.icon className={`h-7 w-7 shrink-0 ${t.color}`} />
-                  <div className="min-w-0">
+                <div key={t.title} className="flex flex-col items-center text-center gap-2">
+                  <t.icon className={`h-7 w-7 ${t.color}`} />
+                  <div>
                     <p className="text-sm font-semibold text-white leading-tight">{t.title}</p>
                     <p className="text-xs text-white/50 leading-tight mt-0.5">{t.sub}</p>
                   </div>

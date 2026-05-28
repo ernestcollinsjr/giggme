@@ -35,6 +35,7 @@ import RatePerformer from "./pages/RatePerformer";
 import Messages from "./pages/Messages";
 import BookingRequestResponse from "./pages/BookingRequestResponse";
 import BookingResponse from "./pages/BookingResponse";
+import FindEntertainers from "./pages/FindEntertainers";
 
 const queryClient = new QueryClient();
 
@@ -78,6 +79,7 @@ const App = () => (
             <Route path="/open" element={<OpenExternal />} />
             <Route path="/booking-request/:id" element={<BookingRequestResponse />} />
             <Route path="/booking-response" element={<BookingResponse />} />
+            <Route path="/find-entertainers" element={<FindEntertainers />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

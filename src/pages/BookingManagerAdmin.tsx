@@ -1143,9 +1143,6 @@ export default function BookingManagerAdmin() {
           </section>
           </div>
 
-          <PaymentScheduler mode="manager" />
-
-          <SentBookingRequests />
         </div>
 
 

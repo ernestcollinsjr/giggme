@@ -2,10 +2,53 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Sparkles, CheckCircle2, Loader2, User } from "lucide-react";
+import { ArrowLeft, Sparkles, CheckCircle2, Loader2, User, Star, Quote } from "lucide-react";
 import logo from "@/assets/logo.png";
+import performer1 from "@/assets/performer-1.jpg";
+import performer2 from "@/assets/performer-2.jpg";
+import performer3 from "@/assets/performer-3.jpg";
+import performer4 from "@/assets/performer-4.jpg";
+import performer5 from "@/assets/performer-5.jpg";
+import performer6 from "@/assets/performer-6.jpg";
+import testimonial1 from "@/assets/testimonial-1.jpg";
+import testimonial2 from "@/assets/testimonial-2.jpg";
+import testimonial3 from "@/assets/testimonial-3.jpg";
 
 const ENTERTAINER_PRICE_ID = "price_1Tc7DGEPiAZgF8MeCcRLu2rd";
+
+const DEMO_PERFORMERS = [
+  { id: "demo-1", name: "Marcus Reed", category: "Jazz Saxophonist", photo: performer1 },
+  { id: "demo-2", name: "Sophia Vale", category: "Vocalist · Pop & Soul", photo: performer2 },
+  { id: "demo-3", name: "DJ Nova", category: "DJ · House & Top 40", photo: performer3 },
+  { id: "demo-4", name: "Ella Hart", category: "Acoustic Singer-Songwriter", photo: performer4 },
+  { id: "demo-5", name: "Andre Cole", category: "Rock Drummer", photo: performer5 },
+  { id: "demo-6", name: "Lucia Mendez", category: "Classical Violinist", photo: performer6 },
+];
+
+const TESTIMONIALS = [
+  {
+    name: "Jennifer Lawson",
+    role: "Event Planner · Austin, TX",
+    photo: testimonial1,
+    quote:
+      "Booking talent through GiggMe saved me hours every week. The roster is top-notch and every performer showed up ready to wow our guests.",
+  },
+  {
+    name: "Marcus Bennett",
+    role: "Wedding Coordinator · Atlanta, GA",
+    photo: testimonial2,
+    quote:
+      "I found the perfect jazz trio for our reception in under five minutes. Communication was seamless and the performance was unforgettable.",
+  },
+  {
+    name: "Mei Chen",
+    role: "Corporate Events · San Francisco, CA",
+    photo: testimonial3,
+    quote:
+      "Hands down the easiest way to hire vetted entertainers. Our annual gala has never sounded better — clients are already asking who we booked.",
+  },
+];
+
 
 interface FeaturedEntertainer {
   user_id: string;

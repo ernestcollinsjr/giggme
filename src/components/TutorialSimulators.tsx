@@ -216,7 +216,7 @@ const sims: Sim[] = [
 
 export const TutorialSimulators = () => {
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <section id="see-in-action" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 scroll-mt-20">
       <style>{`
         @keyframes msg-in { from { opacity:0; transform: translateY(8px) } to { opacity:1; transform: translateY(0) } }
         @keyframes slide-in { from { opacity:0; transform: translateX(20px) } to { opacity:1; transform: translateX(0) } }

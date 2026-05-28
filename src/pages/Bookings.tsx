@@ -1376,18 +1376,26 @@ const Bookings = () => {
 
         {/* Calendar overview — highlights all booking dates */}
         {(() => {
-          const requestDates: Date[] = [];
-          const invitationDates: Date[] = [];
+          const requestDatesRaw: Date[] = [];
+          const invitationDatesRaw: Date[] = [];
           const confirmedDates: Date[] = [];
           bookingRequests.forEach((br: any) => {
-            if (br.event_date) requestDates.push(new Date(br.event_date));
+            if (br.event_date) requestDatesRaw.push(new Date(br.event_date));
           });
           gigInvitations.forEach((gi: any) => {
-            if (gi.gigs?.date) invitationDates.push(new Date(gi.gigs.date));
+            if (gi.gigs?.date) invitationDatesRaw.push(new Date(gi.gigs.date));
           });
           gigs.forEach((g) => {
             if (g.date) confirmedDates.push(new Date(g.date));
           });
+          // Priority: confirmed (booked) > invitation (tentative) > request (unavailable)
+          const dayKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+          const confirmedKeys = new Set(confirmedDates.map(dayKey));
+          const invitationDates = invitationDatesRaw.filter((d) => !confirmedKeys.has(dayKey(d)));
+          const invitationKeys = new Set(invitationDates.map(dayKey));
+          const requestDates = requestDatesRaw.filter(
+            (d) => !confirmedKeys.has(dayKey(d)) && !invitationKeys.has(dayKey(d))
+          );
           const allDates = [...requestDates, ...invitationDates, ...confirmedDates];
           return (
             <Card className="border-border/50 shadow-lg mb-4">

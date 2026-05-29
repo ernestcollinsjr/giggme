@@ -12,7 +12,7 @@ interface BandInvitation {
   email: string;
   status: string;
   expires_at: string;
-  role: "member" | "entertainer";
+  role: "member" | "entertainer" | "admin";
   bands: {
     name: string;
     description: string | null;
@@ -76,7 +76,7 @@ const BandInvite = () => {
         email: row.email,
         status: row.status,
         expires_at: row.expires_at,
-        role: ((row as any).role === "entertainer" ? "entertainer" : "member"),
+        role: (["entertainer","admin","member"].includes((row as any).role) ? (row as any).role : "member"),
         bands: { name: row.band_name, description: row.band_description },
       });
     } catch (err: any) {
@@ -145,6 +145,29 @@ const BandInvite = () => {
       } catch (e) {
         console.error("Failed to assign invited role:", e);
       }
+
+      // If invited as admin, link this user to the inviting Booking Manager.
+      if (invitation.role === "admin") {
+        try {
+          const { data: bandRow } = await supabase
+            .from("bands")
+            .select("band_leader_id")
+            .eq("id", invitation.band_id)
+            .maybeSingle();
+          if (bandRow?.band_leader_id) {
+            await supabase
+              .from("booking_manager_admins")
+              .upsert(
+                { booking_manager_id: bandRow.band_leader_id, admin_user_id: user.id },
+                { onConflict: "booking_manager_id,admin_user_id" }
+              );
+          }
+        } catch (e) {
+          console.error("Failed to link admin to booking manager:", e);
+        }
+      }
+
+
 
 
       // Notify band leader via edge function (fire and forget)

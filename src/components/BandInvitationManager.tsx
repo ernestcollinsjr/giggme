@@ -36,7 +36,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
   const { playNotificationSound } = useSoundPreference();
   const [recipientName, setRecipientName] = useState("");
   const [email, setEmail] = useState("");
-  const [inviteRole, setInviteRole] = useState<"member" | "entertainer">("member");
+  const [inviteRole, setInviteRole] = useState<"member" | "entertainer" | "admin">("member");
   const [sending, setSending] = useState(false);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -561,7 +561,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
             <Label>Assign Role</Label>
             <Select
               value={inviteRole}
-              onValueChange={(v: "member" | "entertainer") => setInviteRole(v)}
+              onValueChange={(v: "member" | "entertainer" | "admin") => setInviteRole(v)}
               disabled={sending}
             >
               <SelectTrigger>
@@ -570,6 +570,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
               <SelectContent>
                 <SelectItem value="member">Member — invited into your group, no subscription</SelectItem>
                 <SelectItem value="entertainer">Entertainer — subscription-based, listed publicly</SelectItem>
+                <SelectItem value="admin">Admin — helps you manage your roster</SelectItem>
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">

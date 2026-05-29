@@ -121,7 +121,7 @@ interface Setlist {
   songs: SetlistSong[];
 }
 
-type UserRole = "booking_manager" | "entertainer" | "booking_manager" | "artist" | "entertainer" | "super_admin";
+type UserRole = "super_admin" | "booking_manager" | "admin" | "entertainer";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -226,8 +226,8 @@ const Dashboard = () => {
         primaryRole = "entertainer";
       } else if (roles.includes("booking_manager")) {
         primaryRole = "booking_manager";
-      } else if (roles.includes("artist")) {
-        primaryRole = "artist";
+      } else if (roles.includes("admin")) {
+        primaryRole = "admin";
       } else if (roles.includes("super_admin")) {
         primaryRole = "super_admin";
       } else {
@@ -2009,7 +2009,7 @@ const Dashboard = () => {
           </div>
         )}
 
-        {userRole === "artist" && (
+        {false && userRole === "entertainer" && (
           <div className="space-y-6">
             {/* Availability Requests for Artists */}
             <AvailabilityRequestResponder />
@@ -2142,7 +2142,7 @@ const Dashboard = () => {
           </div>
         )}
 
-        {userRole !== "entertainer" && userRole !== "artist" && userRole !== "booking_manager" && userRole !== "super_admin" && (
+        {userRole === "admin" && (
           <Card className="border-border/50 shadow-lg bg-gradient-to-br from-primary/5 to-accent/5">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">

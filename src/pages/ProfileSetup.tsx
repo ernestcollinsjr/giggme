@@ -1158,36 +1158,28 @@ const ProfileSetup = () => {
           </CardHeader>
           
           <CardContent>
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-2 gap-6">
               {[
-                { 
-                  value: "booking_manager", 
-                  label: "Band Leader", 
-                  description: "Lead your band, manage your group, and connect with booking managers",
-                  icon: Crown,
+                {
+                  value: "booking_manager",
+                  label: "Booking Manager",
+                  description: "Build your roster, invite entertainers into named groups, and manage bookings.",
+                  icon: Briefcase,
                   iconBg: "bg-primary/10",
                   iconColor: "text-primary"
                 },
-                { 
-                  value: "entertainer", 
-                  label: "Band Member", 
-                  description: "Share your location, showcase your skills, and stay connected",
+                {
+                  value: "entertainer",
+                  label: "Entertainer",
+                  description: "Subscription-based. Showcase your profile, accept gigs, and edit your own page.",
                   icon: Music,
                   iconBg: "bg-secondary/10",
                   iconColor: "text-secondary"
                 },
-                { 
-                  value: "booking_manager", 
-                  label: "Booking Manager", 
-                  description: "Discover talented bands and manage your roster",
-                  icon: Briefcase,
-                  iconBg: "bg-accent/10",
-                  iconColor: "text-accent"
-                },
               ].map((roleOption) => {
                 const Icon = roleOption.icon;
                 return (
-                  <Card 
+                  <Card
                     key={roleOption.value}
                     className="border-border/50 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105"
                     onClick={() => !loading && handleRoleSelection(roleOption.value)}
@@ -1205,6 +1197,9 @@ const ProfileSetup = () => {
                 );
               })}
             </div>
+            <p className="text-xs text-muted-foreground mt-4 text-center">
+              The Admin role is granted by a Booking Manager from their admin page — it's not self-selectable.
+            </p>
           </CardContent>
         </Card>
       </div>

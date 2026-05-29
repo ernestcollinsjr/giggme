@@ -254,7 +254,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
   };
 
   const copyInviteLink = (token: string) => {
-    const inviteUrl = `${window.location.origin}/band-invite/${token}`;
+    const inviteUrl = `https://giggme.com/band-invite/${token}`;
     navigator.clipboard.writeText(inviteUrl);
     toast({
       title: "Copied!",

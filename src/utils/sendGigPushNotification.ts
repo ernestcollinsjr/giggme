@@ -49,7 +49,7 @@ export async function sendGigPushNotifications({
   
   if (bandId) {
     const { data: band } = await supabase
-      .from('groups')
+      .from('bands')
       .select('name, band_leader_id')
       .eq('id', bandId)
       .single();

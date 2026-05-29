@@ -1366,9 +1366,17 @@ const ProfileSetup = () => {
                     </>
                   ) : (
                     <div className="h-24 w-24 rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-muted/10">
-                      <span className="text-muted-foreground text-xs">Upload</span>
+                      <span className="text-muted-foreground text-xs">Tap to upload</span>
                     </div>
                   )}
+                  <input
+                    id="main-photo"
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    onChange={(e) => handlePhotoChange(e, 0)}
+                    className="hidden"
+                    disabled={processingPhoto !== null}
+                  />
                 </div>
                 <div className="flex-1 min-w-0 space-y-2">
                   <Input
@@ -1407,23 +1415,11 @@ const ProfileSetup = () => {
                       Member since {memberSince}
                     </p>
                   )}
-
-                </div>
-
-                <div className="flex-1">
-                  <Input
-                    id="main-photo"
-                    type="file"
-                    accept="image/jpeg,image/jpg,image/png,image/webp"
-                    onChange={(e) => handlePhotoChange(e, 0)}
-                    className={photoPreviews[0] ? "hidden" : ""}
-                    disabled={processingPhoto !== null}
-                  />
                   {!photoPreviews[0] && processingPhoto !== 0 && (
-                    <span className="text-sm text-muted-foreground">AI will auto-center your face</span>
+                    <p className="text-xs text-muted-foreground">AI will auto-center your face</p>
                   )}
                   {processingPhoto === 0 && (
-                    <span className="text-sm text-muted-foreground">Processing with AI...</span>
+                    <p className="text-xs text-muted-foreground">Processing with AI...</p>
                   )}
                 </div>
               </div>

@@ -1308,10 +1308,10 @@ const Dashboard = () => {
           />
         )}
 
-        {(userRole === "band_leader" || userRole === "super_admin") && (
+        {userRole === "band_leader" && (
           <div className="space-y-4">
             <div className="space-y-3">
-              <h2 className="text-xl font-semibold">{userRole === "super_admin" ? "All Bands" : "My Bands"}</h2>
+              <h2 className="text-xl font-semibold">My Bands</h2>
               <div className="flex gap-2">
                 <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                   <DialogTrigger asChild>
@@ -1806,7 +1806,7 @@ const Dashboard = () => {
           </Tabs>
         )}
 
-        {(userRole === "band_leader" || userRole === "band_member" || userRole === "super_admin") && (
+        {(userRole === "band_leader" || userRole === "band_member") && (
           <>
             <div className="grid md:grid-cols-2 gap-4">
               <Card

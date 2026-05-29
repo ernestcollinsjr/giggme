@@ -1464,11 +1464,11 @@ const Bookings = () => {
                       <div className="grid grid-cols-2 gap-2">
                         <div className="space-y-2">
                           <Label>Start</Label>
-                          <Input type="time" value={quickBookStart} onChange={(e) => setQuickBookStart(e.target.value)} />
+                          <TimePicker12h value={quickBookStart} onChange={(v) => setQuickBookStart(v)} />
                         </div>
                         <div className="space-y-2">
                           <Label>End</Label>
-                          <Input type="time" value={quickBookEnd} onChange={(e) => setQuickBookEnd(e.target.value)} />
+                          <TimePicker12h value={quickBookEnd} onChange={(v) => setQuickBookEnd(v)} />
                         </div>
                       </div>
                       <div className="space-y-2">
@@ -2177,38 +2177,22 @@ const Bookings = () => {
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-2">
                 <Label>Show Time</Label>
-                <Input
-                  type="time"
-                  value={editShowTime}
-                  onChange={(e) => setEditShowTime(e.target.value)}
-                />
+                <TimePicker12h value={editShowTime} onChange={(v) => setEditShowTime(v)} />
               </div>
               <div className="space-y-2">
                 <Label>End Time</Label>
-                <Input
-                  type="time"
-                  value={editEndTime}
-                  onChange={(e) => setEditEndTime(e.target.value)}
-                />
+                <TimePicker12h value={editEndTime} onChange={(v) => setEditEndTime(v)} />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-2">
                 <Label>Load-in Time</Label>
-                <Input
-                  type="time"
-                  value={editLoadingTime}
-                  onChange={(e) => setEditLoadingTime(e.target.value)}
-                />
+                <TimePicker12h value={editLoadingTime} onChange={(v) => setEditLoadingTime(v)} />
               </div>
               <div className="space-y-2">
                 <Label>Sound Check</Label>
-                <Input
-                  type="time"
-                  value={editSoundCheckTime}
-                  onChange={(e) => setEditSoundCheckTime(e.target.value)}
-                />
+                <TimePicker12h value={editSoundCheckTime} onChange={(v) => setEditSoundCheckTime(v)} />
               </div>
             </div>
 

@@ -569,7 +569,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="member">Member — invited into your group, no subscription</SelectItem>
-                <SelectItem value="entertainer">Entertainer — subscription-based, listed publicly</SelectItem>
+                
                 <SelectItem value="admin">Admin — helps you manage your roster</SelectItem>
               </SelectContent>
             </Select>

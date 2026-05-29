@@ -1485,8 +1485,10 @@ const ProfileSetup = () => {
                 ))}
               </div>
             </div>
+            )}
 
 
+            {(role === "entertainer" || role === "member" || role === "artist") && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="bio">Bio</Label>
@@ -1497,19 +1499,17 @@ const ProfileSetup = () => {
               <Textarea
                 id="bio"
                 placeholder={
-                  role === "booking_manager"
-                    ? "Tell us about your band, music style, experience, and what makes you unique..."
-                    : role === "entertainer"
+                  role === "entertainer"
                     ? "Tell us about your music style, experience, and what makes you unique..."
-                    : "Tell us about your experience managing bands and artists..."
+                    : "Tell us a bit about yourself..."
                 }
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 maxLength={350}
                 rows={4}
-                required
               />
             </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>

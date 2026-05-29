@@ -237,39 +237,30 @@ export default function BookingManagerAdmin() {
       .from("bands")
       .select("id, name")
       .eq("band_leader_id", uid)
-      .order("created_at", { ascending: true })
-      .limit(1)
-      .maybeSingle();
-    if (data) setMyBand(data);
+      .order("created_at", { ascending: true });
+    setMyBands(data || []);
   };
 
-  const ensureBandAndOpenInvite = async () => {
-    if (!userId) return;
-    if (myBand) { setInviteOpen(true); return; }
-    setEnsuringBand(true);
+  const createGroupAndContinue = async () => {
+    if (!userId || !newGroupName.trim()) return;
+    setCreatingGroup(true);
     try {
-      // Use profile's band/org name if set
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("band_name, name")
-        .eq("id", userId)
-        .maybeSingle();
-      const name = (profile?.band_name && profile.band_name.trim()) ||
-                   (profile?.name ? `${profile.name}'s Group` : "My Group");
       const { data: band, error } = await supabase
         .from("bands")
-        .insert({ name, band_leader_id: userId })
+        .insert({ name: newGroupName.trim(), band_leader_id: userId })
         .select("id, name")
         .single();
       if (error) throw error;
-      setMyBand(band);
-      setInviteOpen(true);
+      setMyBands((prev) => [...prev, band]);
+      setActiveBand(band);
+      setNewGroupName("");
     } catch (e: any) {
-      toast({ variant: "destructive", title: "Couldn't open invite", description: e.message });
+      toast({ variant: "destructive", title: "Couldn't create group", description: e.message });
     } finally {
-      setEnsuringBand(false);
+      setCreatingGroup(false);
     }
   };
+
 
   const fetchManagedArtists = async (uid: string) => {
     const { data, error } = await supabase

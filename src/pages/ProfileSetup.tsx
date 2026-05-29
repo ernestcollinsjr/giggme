@@ -1324,7 +1324,7 @@ const ProfileSetup = () => {
                 </div>
                 
                 <RoleSwitcher 
-                  currentRole={role as "booking_manager" | "entertainer" | "booking_manager" | "artist" | "entertainer" | "super_admin" | null} 
+                  currentRole={role as "super_admin" | "booking_manager" | "admin" | "entertainer" | "member" | null} 
                   onRoleChange={() => {
                     // Refresh the page to update role-specific features
                     window.location.reload();
@@ -1334,11 +1334,11 @@ const ProfileSetup = () => {
                 <div className="p-4 bg-muted/50 rounded-lg">
                   <h4 className="font-medium mb-2">About Roles:</h4>
                   <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                    <li><strong>Band Leader:</strong> Create and manage bands, schedule gigs and rehearsals</li>
-                    <li><strong>Band Member:</strong> Respond to gig invites, view schedules, share availability</li>
-                    <li><strong>Booking Manager:</strong> Discover and manage multiple bands and artists</li>
-                    <li><strong>Tour Manager:</strong> Coordinate tours and manage crew members</li>
-                    <li><strong>Artist/Musician:</strong> Build your portfolio and get discovered</li>
+                    <li><strong>Super Admin:</strong> Full control over the entire site, all users, and all settings</li>
+                    <li><strong>Booking Manager:</strong> Run a roster, create groups/bands, book gigs, and manage the workspace</li>
+                    <li><strong>Admin:</strong> Granted by a Booking Manager to help manage their roster — can edit, cannot delete the manager</li>
+                    <li><strong>Entertainer:</strong> Subscription-based performer profile — visible in public Discover</li>
+                    <li><strong>Member:</strong> Invited by a Booking Manager into a group — no subscription required, not listed publicly</li>
                   </ul>
                 </div>
               </div>

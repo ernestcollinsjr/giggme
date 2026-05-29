@@ -255,7 +255,18 @@ const ProfileSetup = () => {
       // Additional photos preserve full aspect ratio so nothing is cut off.
       let processedBlob: Blob;
       if (index === 0) {
-        processedBlob = await detectFaceAndCrop(img, 400);
+        // Race face detection against a timeout so a slow/failed AI model
+        // download (e.g. on mobile or limited bandwidth) doesn't block the
+        // upload — fall back to a simple center-crop after 8s.
+        const timeoutFallback = new Promise<Blob>((resolve) => {
+          setTimeout(async () => {
+            try { resolve(await centerCropImage(img, 400)); } catch { /* ignore */ }
+          }, 8000);
+        });
+        processedBlob = await Promise.race([
+          detectFaceAndCrop(img, 400).catch(() => centerCropImage(img, 400)),
+          timeoutFallback,
+        ]);
       } else {
         processedBlob = await resizeImagePreserveAspect(img, 1200);
       }

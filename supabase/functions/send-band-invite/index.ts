@@ -15,7 +15,6 @@ interface BandInviteRequest {
   bandName: string;
   inviteToken: string;
   bandLeaderName: string;
-  siteOrigin?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -25,15 +24,13 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { recipientEmail, recipientName, bandName, inviteToken, bandLeaderName, siteOrigin }: BandInviteRequest = await req.json();
+    const { recipientEmail, recipientName, bandName, inviteToken, bandLeaderName }: BandInviteRequest = await req.json();
 
     console.log("Sending band invite to:", recipientEmail, recipientName);
 
-    // Always use the production domain for invite links so recipients don't get
-    // redirected to the Lovable preview/login. siteOrigin from the browser is ignored
-    // unless it's an explicit production/custom domain.
-    const configured = Deno.env.get("PUBLIC_SITE_URL") || Deno.env.get("SITE_URL") || "https://giggme.com";
-    const base = configured.toString().replace(/\/$/, "");
+    // Always use the production domain for invite links so recipients never land
+    // on Lovable preview/login URLs, even if environment settings are incorrect.
+    const base = "https://giggme.com";
     const inviteUrl = `${base}/band-invite/${inviteToken}`;
 
     const greeting = recipientName ? `Hello ${recipientName}!` : "Hello!";

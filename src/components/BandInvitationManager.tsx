@@ -228,7 +228,6 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
           bandName: bandName,
           inviteToken: invitation.token,
           bandLeaderName: profile?.name || "Group Leader",
-          siteOrigin: window.location.origin,
         },
       });
 
@@ -255,7 +254,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
   };
 
   const copyInviteLink = (token: string) => {
-    const inviteUrl = `${window.location.origin}/band-invite/${token}`;
+    const inviteUrl = `https://giggme.com/band-invite/${token}`;
     navigator.clipboard.writeText(inviteUrl);
     toast({
       title: "Copied!",
@@ -426,7 +425,6 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
           bandName: bandName,
           inviteToken: newInvitation.token,
           bandLeaderName: profile?.name || "Group Leader",
-          siteOrigin: window.location.origin,
         },
       });
 

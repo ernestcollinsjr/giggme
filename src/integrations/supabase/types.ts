@@ -2402,6 +2402,7 @@ export type Database = {
         | "super_admin"
         | "admin"
         | "entertainer"
+        | "member"
       booking_request_status: "pending" | "accepted" | "declined" | "expired"
       booking_status:
         | "pending"
@@ -2558,6 +2559,7 @@ export const Constants = {
         "super_admin",
         "admin",
         "entertainer",
+        "member",
       ],
       booking_request_status: ["pending", "accepted", "declined", "expired"],
       booking_status: [

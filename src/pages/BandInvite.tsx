@@ -138,6 +138,19 @@ const BandInvite = () => {
       } catch (e) {
         console.error("Failed to set band_name on profile:", e);
       }
+      // Ensure the invitee has the "member" role so they get roster-only access
+      // (no subscription required, hidden from public Discover).
+      try {
+        await supabase
+          .from("user_roles")
+          .upsert(
+            { user_id: user.id, role: "member" as any },
+            { onConflict: "user_id,role" }
+          );
+      } catch (e) {
+        console.error("Failed to upsert member role:", e);
+      }
+
 
       // Notify band leader via edge function (fire and forget)
       supabase.functions.invoke("notify-invitation-accepted", {

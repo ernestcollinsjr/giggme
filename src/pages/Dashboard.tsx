@@ -121,7 +121,7 @@ interface Setlist {
   songs: SetlistSong[];
 }
 
-type UserRole = "super_admin" | "booking_manager" | "admin" | "entertainer";
+type UserRole = "super_admin" | "booking_manager" | "admin" | "entertainer" | "member";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -220,18 +220,18 @@ const Dashboard = () => {
     let primaryRole: UserRole | null = null;
     if (rolesData && rolesData.length > 0) {
       const roles = rolesData.map(r => r.role);
-      if (roles.includes("booking_manager")) {
-        primaryRole = "booking_manager";
-      } else if (roles.includes("entertainer")) {
-        primaryRole = "entertainer";
+      if (roles.includes("super_admin")) {
+        primaryRole = "super_admin";
       } else if (roles.includes("booking_manager")) {
         primaryRole = "booking_manager";
       } else if (roles.includes("admin")) {
         primaryRole = "admin";
-      } else if (roles.includes("super_admin")) {
-        primaryRole = "super_admin";
+      } else if (roles.includes("entertainer")) {
+        primaryRole = "entertainer";
+      } else if (roles.includes("member")) {
+        primaryRole = "member";
       } else {
-        primaryRole = roles[0] as UserRole;
+        primaryRole = "member";
       }
     }
     
@@ -1291,8 +1291,8 @@ const Dashboard = () => {
                 : userRole === "admin"
                 ? "Admin"
                 : userRole === "entertainer"
-                ? "Tour/Road Manager"
-                : "Band Member"}
+                ? "Entertainer"
+                : "Member"}
             </Badge>
           </div>
           <LivePresence />

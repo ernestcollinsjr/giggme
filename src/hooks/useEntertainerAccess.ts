@@ -36,11 +36,9 @@ export const useEntertainerAccess = (): EntertainerAccess => {
         .eq("user_id", user.id);
 
       const roleSet = new Set((roles ?? []).map((r) => r.role as string));
-      const isEntertainer =
-        roleSet.has("entertainer") ||
-        roleSet.has("artist") ||
-        roleSet.has("band_member") ||
-        roleSet.has("tour_manager");
+      // Only "entertainer" requires a paid subscription. Members (BM-invited
+      // roster users), artists, tour_managers, etc. are not gated here.
+      const isEntertainer = roleSet.has("entertainer");
 
       // Non-entertainers (BMs, admins, super_admins) bypass the gate.
       if (!isEntertainer) {

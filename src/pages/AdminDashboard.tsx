@@ -340,6 +340,20 @@ const AdminDashboard = () => {
 
   const handleUpdateBand = async (user: UserWithRole, newBandId: string) => {
     try {
+      // Virtual category options (Solo/Duo/Trio/Band) — set performer_category, no band assignment
+      if (newBandId.startsWith("__cat_")) {
+        const cat = newBandId.replace("__cat_", "").replace(/__$/, "");
+        await supabase.from("band_members").delete().eq("member_id", user.id);
+        const { error } = await supabase
+          .from("profiles")
+          .update({ performer_category: cat })
+          .eq("id", user.id);
+        if (error) throw error;
+        toast({ title: "Group updated", description: `${user.name} set to ${cat}.` });
+        await Promise.all([fetchUsers(), fetchBands()]);
+        return;
+      }
+
       // Remove existing band memberships
       await supabase.from("band_members").delete().eq("member_id", user.id);
 
@@ -585,6 +599,7 @@ const AdminDashboard = () => {
                         <SelectContent>
                           <SelectItem value="Solo">Solo</SelectItem>
                           <SelectItem value="Duo">Duo</SelectItem>
+                          <SelectItem value="Trio">Trio</SelectItem>
                           <SelectItem value="Band">Band</SelectItem>
                         </SelectContent>
                       </Select>
@@ -592,7 +607,8 @@ const AdminDashboard = () => {
                     <TableCell>
                       <Select
                         value={
-                          bands.find((b) => user.bandNames.includes(b.name))?.id || "__none__"
+                          bands.find((b) => user.bandNames.includes(b.name))?.id ||
+                          (user.performer_category ? `__cat_${user.performer_category}__` : "__none__")
                         }
                         onValueChange={(val) => handleUpdateBand(user, val)}
                       >
@@ -601,6 +617,10 @@ const AdminDashboard = () => {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="__none__">No Group</SelectItem>
+                          <SelectItem value="__cat_Solo__">Solo</SelectItem>
+                          <SelectItem value="__cat_Duo__">Duo</SelectItem>
+                          <SelectItem value="__cat_Trio__">Trio</SelectItem>
+                          <SelectItem value="__cat_Band__">Band</SelectItem>
                           {bands.map((b) => (
                             <SelectItem key={b.id} value={b.id}>
                               {b.name}

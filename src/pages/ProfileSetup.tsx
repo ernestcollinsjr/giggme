@@ -1384,7 +1384,7 @@ const ProfileSetup = () => {
                     <Input
                       id="band_name"
                       type="text"
-                      placeholder="Band name (e.g. The Headliners)"
+                      placeholder="Group Name"
                       value={bandName}
                       onChange={(e) => setBandName(e.target.value)}
                       className="text-sm"

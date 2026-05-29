@@ -1948,7 +1948,7 @@ const Bookings = () => {
                         <p className="text-xs text-muted-foreground mt-1">Budget: {br.budget}</p>
                       )}
                     </div>
-                    {(isBandLeader || br.booker_id === currentUserId) && (
+                    {(userRole === "booking_manager" || userRole === "admin" || userRole === "super_admin") && (
                       <Button
                         size="icon"
                         variant="ghost"
@@ -1989,7 +1989,7 @@ const Bookings = () => {
                           {gi.gigs?.date && format(new Date(gi.gigs.date), "PPP p")}
                         </p>
                       </div>
-                      {isBandLeader && fullGig && (
+                      {(userRole === "booking_manager" || userRole === "admin" || userRole === "super_admin") && fullGig && (
                         <Button
                           size="icon"
                           variant="ghost"

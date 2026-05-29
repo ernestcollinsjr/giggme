@@ -37,15 +37,13 @@ export function AppShell({ userRole, children }: AppShellProps) {
   const navigate = useNavigate();
   const roleLabel =
     userRole === "super_admin"
-      ? "Admin"
+      ? "Super Admin"
       : userRole === "booking_manager"
       ? "Booking Mgr"
-      : userRole === "booking_manager"
-      ? "Band Leader"
-      : userRole === "booking_manager"
-      ? "Venue"
-      : userRole === "artist"
-      ? "Artist"
+      : userRole === "admin"
+      ? "Admin"
+      : userRole === "entertainer"
+      ? "Entertainer"
       : "Member";
 
   const [profile, setProfile] = useState<{ name: string | null; photo_urls: string[] | null }>({ name: null, photo_urls: null });

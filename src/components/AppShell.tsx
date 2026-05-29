@@ -12,13 +12,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 
 type UserRole =
-  | "booking_manager"
-  | "entertainer"
-  | "booking_manager"
-  | "artist"
-  | "entertainer"
-  | "booking_manager"
   | "super_admin"
+  | "booking_manager"
+  | "admin"
+  | "entertainer"
   | null;
 
 interface AppShellProps {

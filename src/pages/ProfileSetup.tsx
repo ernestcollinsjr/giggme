@@ -1398,14 +1398,16 @@ const ProfileSetup = () => {
                     />
                   )}
                   {usesEntertainerProfile && (
-                    <Select value={performerCategory} onValueChange={setPerformerCategory}>
+                    <Select value={performerCategory} onValueChange={setPerformerCategory} disabled={role === "member"}>
                       <SelectTrigger className="text-sm text-muted-foreground h-auto py-1">
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Solo">Solo</SelectItem>
                         <SelectItem value="Duo">Duo</SelectItem>
-                        <SelectItem value="Band">Group</SelectItem>
+                        <SelectItem value="Trio">Trio</SelectItem>
+                        <SelectItem value="Band">Band</SelectItem>
+                        <SelectItem value="Group">Group</SelectItem>
                       </SelectContent>
                     </Select>
                   )}

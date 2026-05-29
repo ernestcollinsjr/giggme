@@ -326,7 +326,7 @@ const Dashboard = () => {
       }
       
       // Fetch pending gig invites for band members only
-      if (primaryRole === "entertainer") {
+      if (primaryRole === "entertainer" || primaryRole === "member") {
         const { data: inviteData } = await supabase
           .from("gig_members")
           .select(`

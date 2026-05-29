@@ -32,16 +32,9 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import type { AppRole } from "@/lib/roles";
 
-type UserRole =
-  | "booking_manager"
-  | "entertainer"
-  | "booking_manager"
-  | "artist"
-  | "entertainer"
-  | "booking_manager"
-  | "super_admin"
-  | null;
+type UserRole = AppRole | null;
 
 interface AppSidebarProps {
   userRole: UserRole;
@@ -54,11 +47,9 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
   const collapsed = state === "collapsed";
 
   const dashboardPath =
-    userRole === "booking_manager"
+    userRole === "booking_manager" || userRole === "admin"
       ? "/booking-manager"
-      : userRole === "booking_manager"
-      ? "/venue-dashboard"
-      : userRole === "artist"
+      : userRole === "entertainer"
       ? "/entertainer-dashboard"
       : "/dashboard";
 

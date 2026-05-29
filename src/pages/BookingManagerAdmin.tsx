@@ -729,10 +729,9 @@ export default function BookingManagerAdmin() {
               <span className="hidden sm:inline">Schedule</span> Reminder
             </Button>
             <Button
-              onClick={ensureBandAndOpenInvite}
+              onClick={() => { setActiveBand(null); setInviteOpen(true); }}
               size="sm"
               variant="outline"
-              disabled={ensuringBand}
               className="gap-1 text-xs sm:text-sm"
             >
               <UserPlus className="h-4 w-4" />

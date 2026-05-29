@@ -224,6 +224,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
           recipient_name: recipientName.trim(),
           invited_by: user.id,
           role: inviteRole,
+          performer_category: performerCategory,
         } as any)
         .select()
         .single();

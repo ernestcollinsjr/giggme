@@ -1313,21 +1313,29 @@ const ProfileSetup = () => {
                 <div>
                   <h3 className="text-lg font-semibold flex items-center gap-2">
                     <Crown className="h-5 w-5 text-primary" />
-                    Switch Your Role
+                    {role === "member" ? "Your Role" : "Switch Your Role"}
                   </h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Choose the role that best describes how you use this app
+                    {role === "member"
+                      ? "Your role was assigned by your Booking Manager and cannot be changed here."
+                      : "Choose the role that best describes how you use this app"}
                   </p>
                 </div>
-                
-                <RoleSwitcher 
-                  currentRole={role as "super_admin" | "booking_manager" | "admin" | "entertainer" | "member" | null} 
-                  onRoleChange={() => {
-                    // Refresh the page to update role-specific features
-                    window.location.reload();
-                  }} 
-                />
-                
+
+                {role === "member" ? (
+                  <div className="p-4 border rounded-lg bg-muted/30 space-y-1">
+                    <div className="text-sm text-muted-foreground">Role</div>
+                    <div className="text-base font-medium">Member</div>
+                  </div>
+                ) : (
+                  <RoleSwitcher
+                    currentRole={role as "super_admin" | "booking_manager" | "admin" | "entertainer" | "member" | null}
+                    onRoleChange={() => {
+                      window.location.reload();
+                    }}
+                  />
+                )}
+
                 <div className="p-4 bg-muted/50 rounded-lg">
                   <h4 className="font-medium mb-2">About Roles:</h4>
                   <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
@@ -1398,14 +1406,16 @@ const ProfileSetup = () => {
                     />
                   )}
                   {usesEntertainerProfile && (
-                    <Select value={performerCategory} onValueChange={setPerformerCategory}>
+                    <Select value={performerCategory} onValueChange={setPerformerCategory} disabled={role === "member"}>
                       <SelectTrigger className="text-sm text-muted-foreground h-auto py-1">
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Solo">Solo</SelectItem>
                         <SelectItem value="Duo">Duo</SelectItem>
-                        <SelectItem value="Band">Group</SelectItem>
+                        <SelectItem value="Trio">Trio</SelectItem>
+                        <SelectItem value="Band">Band</SelectItem>
+                        <SelectItem value="Group">Group</SelectItem>
                       </SelectContent>
                     </Select>
                   )}

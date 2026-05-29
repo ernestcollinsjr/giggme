@@ -36,6 +36,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
   const { playNotificationSound } = useSoundPreference();
   const [recipientName, setRecipientName] = useState("");
   const [email, setEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState<"member" | "entertainer">("member");
   const [sending, setSending] = useState(false);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -207,7 +208,8 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
           email: normalizedEmail,
           recipient_name: recipientName.trim(),
           invited_by: user.id,
-        })
+          role: inviteRole,
+        } as any)
         .select()
         .single();
 
@@ -554,6 +556,25 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
                 disabled={sending}
               />
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Assign Role</Label>
+            <Select
+              value={inviteRole}
+              onValueChange={(v: "member" | "entertainer") => setInviteRole(v)}
+              disabled={sending}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="member">Member — invited into your group, no subscription</SelectItem>
+                <SelectItem value="entertainer">Entertainer — subscription-based, listed publicly</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              The invitee will be assigned this role when they accept and won't be able to change it themselves.
+            </p>
           </div>
           <Button type="submit" disabled={sending} className="w-full sm:w-auto">
             {sending ? (

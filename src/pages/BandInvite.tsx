@@ -12,6 +12,7 @@ interface BandInvitation {
   email: string;
   status: string;
   expires_at: string;
+  role: "member" | "entertainer";
   bands: {
     name: string;
     description: string | null;
@@ -75,6 +76,7 @@ const BandInvite = () => {
         email: row.email,
         status: row.status,
         expires_at: row.expires_at,
+        role: ((row as any).role === "entertainer" ? "entertainer" : "member"),
         bands: { name: row.band_name, description: row.band_description },
       });
     } catch (err: any) {
@@ -133,17 +135,15 @@ const BandInvite = () => {
       } catch (e) {
         console.error("Failed to set band_name on profile:", e);
       }
-      // Ensure the invitee has the "member" role so they get roster-only access
-      // (no subscription required, hidden from public Discover).
+      // Assign the role the Booking Manager chose at invite time, and remove
+      // any other roles so the invitee can't pick something else.
       try {
+        await supabase.from("user_roles").delete().eq("user_id", user.id);
         await supabase
           .from("user_roles")
-          .upsert(
-            { user_id: user.id, role: "member" as any },
-            { onConflict: "user_id,role" }
-          );
+          .insert({ user_id: user.id, role: invitation.role as any });
       } catch (e) {
-        console.error("Failed to upsert member role:", e);
+        console.error("Failed to assign invited role:", e);
       }
 
 

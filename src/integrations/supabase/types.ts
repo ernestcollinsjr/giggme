@@ -190,6 +190,7 @@ export type Database = {
           id: string
           invited_by: string
           recipient_name: string | null
+          role: string
           status: string
           token: string
         }
@@ -202,6 +203,7 @@ export type Database = {
           id?: string
           invited_by: string
           recipient_name?: string | null
+          role?: string
           status?: string
           token?: string
         }
@@ -214,6 +216,7 @@ export type Database = {
           id?: string
           invited_by?: string
           recipient_name?: string | null
+          role?: string
           status?: string
           token?: string
         }
@@ -2309,6 +2312,7 @@ export type Database = {
           email: string
           expires_at: string
           id: string
+          role: string
           status: string
         }[]
       }

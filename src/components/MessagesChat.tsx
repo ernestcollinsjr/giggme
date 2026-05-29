@@ -195,7 +195,7 @@ export const MessagesChat = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingChannelRef = useRef<RealtimeChannel | null>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [conversationColors, setConversationColors] = useState<Record<string, string>>(() => {
     try {

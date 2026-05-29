@@ -87,7 +87,7 @@ const Chat = () => {
   const [urlParamsProcessed, setUrlParamsProcessed] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const typingChannelRef = useRef<RealtimeChannel | null>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Handle URL parameters to open specific conversations
   useEffect(() => {

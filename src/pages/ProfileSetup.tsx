@@ -89,8 +89,8 @@ const ProfileSetup = () => {
   const [undoData, setUndoData] = useState<{availability: {date: string; status: string | null}[], todayStatus: string | null} | null>(null);
   const [showUndo, setShowUndo] = useState(false);
   const [undoCountdown, setUndoCountdown] = useState(5);
-  const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const undoIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const undoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const undoIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [travelDistance, setTravelDistance] = useState<string>("");
   const [yearsExperience, setYearsExperience] = useState<string>("");
   const [preferredPay, setPreferredPay] = useState<string>("");

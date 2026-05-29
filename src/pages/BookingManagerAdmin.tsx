@@ -131,8 +131,10 @@ export default function BookingManagerAdmin() {
   const [broadcastVenue, setBroadcastVenue] = useState("");
   const [broadcastSending, setBroadcastSending] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
-  const [myBand, setMyBand] = useState<{ id: string; name: string } | null>(null);
-  const [ensuringBand, setEnsuringBand] = useState(false);
+  const [myBands, setMyBands] = useState<Array<{ id: string; name: string }>>([]);
+  const [activeBand, setActiveBand] = useState<{ id: string; name: string } | null>(null);
+  const [newGroupName, setNewGroupName] = useState("");
+  const [creatingGroup, setCreatingGroup] = useState(false);
 
   const paymentKey = (gig: { source: string; id: string; artist_id: string }) =>
     `${gig.source}:${gig.id}:${gig.artist_id}`;

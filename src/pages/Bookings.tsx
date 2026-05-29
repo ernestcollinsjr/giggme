@@ -1419,7 +1419,7 @@ const Bookings = () => {
               <div className="space-y-3 pt-4 border-t">
                 <Label className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
-                  Invite Band Members (Optional)
+                  Invite Group Members (Optional)
                 </Label>
                 
                 {/* Response Deadline Selector */}

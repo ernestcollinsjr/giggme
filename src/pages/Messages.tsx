@@ -241,7 +241,7 @@ const Messages = () => {
   // Long press state for mobile context menu
   const [longPressMessage, setLongPressMessage] = useState<Message | null>(null);
   const [pressingMessageId, setPressingMessageId] = useState<string | null>(null);
-  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Swipe gesture state
   const [swipeState, setSwipeState] = useState<{
@@ -382,7 +382,7 @@ const Messages = () => {
       return () => scrollContainer.removeEventListener('scroll', handleScroll);
     }
   }, [handleScroll, activeConversation]);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     (async () => {

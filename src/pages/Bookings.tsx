@@ -1946,6 +1946,27 @@ const Bookings = () => {
                         <p className="text-xs text-muted-foreground mt-1">Budget: {br.budget}</p>
                       )}
                     </div>
+                    {br.booker_id === currentUserId && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 shrink-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingRequest(br);
+                          setEditForm({
+                            venue: br.venue || "",
+                            dates_text: br.dates_text || "",
+                            time_text: br.time_text || "",
+                            budget: br.budget || "",
+                            note: br.note || "",
+                          });
+                        }}
+                        aria-label="Edit booking request"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}

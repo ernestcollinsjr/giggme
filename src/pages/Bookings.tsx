@@ -1948,11 +1948,11 @@ const Bookings = () => {
                         <p className="text-xs text-muted-foreground mt-1">Budget: {br.budget}</p>
                       )}
                     </div>
-                    {br.booker_id === currentUserId && (
+                    {(isBandLeader || br.booker_id === currentUserId) && (
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-8 w-8 shrink-0"
+                        className="h-9 w-9 shrink-0 border border-border/60 bg-background/80 text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground"
                         onClick={(e) => {
                           e.stopPropagation();
                           setEditingRequest(br);

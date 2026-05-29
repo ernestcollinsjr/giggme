@@ -67,9 +67,10 @@ const roleLabels: Partial<Record<AppRole, string>> = {
   booking_manager: "Booking Manager",
   admin: "Admin",
   entertainer: "Entertainer",
+  member: "Member",
   // legacy fallbacks (data may still hold these in audit/history)
   band_leader: "Booking Manager",
-  band_member: "Entertainer",
+  band_member: "Member",
   artist: "Entertainer",
   tour_manager: "Entertainer",
   venue_owner: "Booking Manager",
@@ -80,6 +81,7 @@ const roleDescriptions: Partial<Record<AppRole, string>> = {
   booking_manager: "Manages a roster of entertainers, books gigs, runs the workspace",
   admin: "Granted by a Booking Manager to assist with their roster — can edit, cannot delete the manager's account",
   entertainer: "Subscription-based performer profile — can edit only their own page",
+  member: "Invited by a Booking Manager into a group — sees their gigs/messages, edits own profile, no subscription",
 };
 
 const AdminDashboard = () => {

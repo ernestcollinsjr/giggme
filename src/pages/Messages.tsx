@@ -408,7 +408,7 @@ const Messages = () => {
         if (roleData.role === "booking_manager") {
           // Get bands the user leads
           const { data: bands } = await supabase
-            .from("groups")
+            .from("bands")
             .select("id")
             .eq("band_leader_id", user.id);
           

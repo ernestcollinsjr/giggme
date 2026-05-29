@@ -109,7 +109,7 @@ export default function SharedSetlist() {
       let bandName: string | null = null;
       if (setlist.band_id) {
         const { data: band } = await supabase
-          .from("groups")
+          .from("bands")
           .select("name")
           .eq("id", setlist.band_id)
           .maybeSingle();

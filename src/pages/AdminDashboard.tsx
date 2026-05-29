@@ -178,7 +178,7 @@ const AdminDashboard = () => {
 
       // Fetch bands for leaders
       const { data: allBands, error: bandsError } = await supabase
-        .from("groups")
+        .from("bands")
         .select("id, name, band_leader_id");
 
       if (bandsError) throw bandsError;
@@ -233,7 +233,7 @@ const AdminDashboard = () => {
     try {
       // Fetch all bands
       const { data: bandsData, error: bandsError } = await supabase
-        .from("groups")
+        .from("bands")
         .select("*")
         .order("created_at", { ascending: false });
 
@@ -432,7 +432,7 @@ const AdminDashboard = () => {
 
       // Delete the band
       const { error } = await supabase
-        .from("groups")
+        .from("bands")
         .delete()
         .eq("id", deleteConfirmGroup.id);
 
@@ -467,7 +467,7 @@ const AdminDashboard = () => {
 
     try {
       const { error } = await supabase
-        .from("groups")
+        .from("bands")
         .update({
           name: groupEditForm.name,
           description: groupEditForm.description || null,

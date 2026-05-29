@@ -234,7 +234,7 @@ export default function BookingManagerAdmin() {
 
   const fetchMyBand = async (uid: string) => {
     const { data } = await supabase
-      .from("groups")
+      .from("bands")
       .select("id, name")
       .eq("band_leader_id", uid)
       .order("created_at", { ascending: true });
@@ -246,7 +246,7 @@ export default function BookingManagerAdmin() {
     setCreatingGroup(true);
     try {
       const { data: band, error } = await supabase
-        .from("groups")
+        .from("bands")
         .insert({ name: newGroupName.trim(), band_leader_id: userId })
         .select("id, name")
         .single();

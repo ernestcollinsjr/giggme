@@ -119,7 +119,7 @@ export function PaymentScheduler({ mode }: { mode: Mode }) {
 
   const loadBandLeader = async (uid: string) => {
     // Bands led by this user
-    const { data: bands } = await supabase.from("groups").select("id").eq("band_leader_id", uid);
+    const { data: bands } = await supabase.from("bands").select("id").eq("band_leader_id", uid);
     const bandIds = (bands || []).map((b: any) => b.id);
     // Members of those bands
     let memberIds: string[] = [];

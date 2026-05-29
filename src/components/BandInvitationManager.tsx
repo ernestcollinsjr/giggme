@@ -111,7 +111,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
       if (!user) return;
 
       const { data, error } = await supabase
-        .from("groups")
+        .from("bands")
         .select("id, name")
         .eq("band_leader_id", user.id)
         .order("name");

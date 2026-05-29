@@ -244,7 +244,7 @@ const Dashboard = () => {
       // Fetch bands for band leaders and super admins
       if (primaryRole === "booking_manager" || primaryRole === "super_admin") {
         // For super_admin, fetch all bands; for band_leader, fetch only their bands
-        let bandsQuery = supabase.from("groups").select("*");
+        let bandsQuery = supabase.from("bands").select("*");
         if (primaryRole !== "super_admin") {
           bandsQuery = bandsQuery.eq("band_leader_id", user.id);
         }
@@ -415,7 +415,7 @@ const Dashboard = () => {
         if (managedBandLinks && managedBandLinks.length > 0) {
           const bandIds = managedBandLinks.map(link => link.band_id);
           const { data: bandsData } = await supabase
-            .from("groups")
+            .from("bands")
             .select("*")
             .in("id", bandIds);
           

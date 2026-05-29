@@ -313,7 +313,7 @@ const Bookings = () => {
     // Fetch bands for band leaders
     if (roleData?.role === "booking_manager" || roleData?.role === "super_admin") {
       const { data: bandsData } = await supabase
-        .from("groups")
+        .from("bands")
         .select("id, name")
         .eq("band_leader_id", user.id)
         .order("created_at", { ascending: true });

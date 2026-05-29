@@ -40,7 +40,7 @@ export const BandProfileEditor = ({ bandId, bandName }: BandProfileEditorProps) 
   const fetchBandProfile = async () => {
     try {
       const { data, error } = await supabase
-        .from("groups")
+        .from("bands")
         .select("social_links, youtube_links")
         .eq("id", bandId)
         .single();
@@ -60,7 +60,7 @@ export const BandProfileEditor = ({ bandId, bandName }: BandProfileEditorProps) 
     setSaving(true);
     try {
       const { error } = await supabase
-        .from("groups")
+        .from("bands")
         .update({
           social_links: socialLinks as Json,
           youtube_links: youtubeLinks,

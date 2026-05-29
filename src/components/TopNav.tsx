@@ -113,17 +113,11 @@ export const TopNav = ({ userRole }: TopNavProps) => {
       case "super_admin":
         return getSuperAdminLinks();
       case "booking_manager":
-        return bandLeaderLinks;
-      case "entertainer":
-        return bandMemberLinks;
-      case "booking_manager":
         return bookingManagerLinks;
-      case "artist":
-        return artistLinks;
+      case "admin":
+        return bookingManagerLinks;
       case "entertainer":
-        return tourManagerLinks;
-      case "booking_manager":
-        return venueOwnerLinks;
+        return artistLinks;
       default:
         return [];
     }

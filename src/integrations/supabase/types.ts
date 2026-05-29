@@ -318,6 +318,7 @@ export type Database = {
           artist_id: string
           booking_manager_id: string
           created_at: string
+          group_name: string | null
           group_type: string | null
           id: string
           notes: string | null
@@ -326,6 +327,7 @@ export type Database = {
           artist_id: string
           booking_manager_id: string
           created_at?: string
+          group_name?: string | null
           group_type?: string | null
           id?: string
           notes?: string | null
@@ -334,6 +336,7 @@ export type Database = {
           artist_id?: string
           booking_manager_id?: string
           created_at?: string
+          group_name?: string | null
           group_type?: string | null
           id?: string
           notes?: string | null

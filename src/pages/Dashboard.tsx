@@ -2144,7 +2144,7 @@ const Dashboard = () => {
           </div>
         )}
 
-        {userRole !== "band_member" && userRole !== "artist" && (
+        {userRole !== "band_member" && userRole !== "artist" && userRole !== "booking_manager" && userRole !== "super_admin" && (
           <Card className="border-border/50 shadow-lg bg-gradient-to-br from-primary/5 to-accent/5">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">

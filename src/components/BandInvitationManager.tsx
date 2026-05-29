@@ -576,6 +576,25 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
             </div>
           </div>
           <div className="space-y-2">
+            <Label>Category</Label>
+            <Select
+              value={performerCategory}
+              onValueChange={(v: "Solo" | "Duo" | "Trio" | "Band" | "Group") => setPerformerCategory(v)}
+              disabled={sending}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Solo">Solo</SelectItem>
+                <SelectItem value="Duo">Duo</SelectItem>
+                <SelectItem value="Trio">Trio</SelectItem>
+                <SelectItem value="Band">Band</SelectItem>
+                <SelectItem value="Group">Group</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
             <Label>Assign Role</Label>
             <Select
               value={inviteRole}

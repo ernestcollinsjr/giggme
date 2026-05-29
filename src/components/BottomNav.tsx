@@ -45,7 +45,7 @@ const BottomNav = () => {
 
       // Fetch associated members based on role
       let memberIds: string[] = [];
-      if (role === "band_leader") {
+      if (role === "booking_manager") {
         const { data: bands } = await supabase
           .from("bands")
           .select("id")
@@ -62,14 +62,14 @@ const BottomNav = () => {
             memberIds = members.map(m => m.member_id);
           }
         }
-      } else if (role === "booking_manager") {
+
         const { data: managedArtists } = await supabase
           .from("booking_manager_artists")
           .select("artist_id")
           .eq("booking_manager_id", user.id);
 
         if (managedArtists) {
-          memberIds = managedArtists.map(a => a.artist_id);
+          memberIds = [...memberIds, ...managedArtists.map(a => a.artist_id)];
         }
       }
       if (cancelled) return;
@@ -112,7 +112,7 @@ const BottomNav = () => {
   const fetchUnreadCount = async (uid: string, role: string | null, memberIds: string[]) => {
     try {
       // For band_leader/booking_manager: ONLY count messages from their assigned members
-      const isRestrictedRole = role === "band_leader" || role === "booking_manager";
+      const isRestrictedRole = role === "booking_manager" || role === "booking_manager";
       
       // Only fetch messages relevant to this user (group messages OR messages where user is sender/recipient)
       const { data, error } = await supabase

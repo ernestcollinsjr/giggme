@@ -78,7 +78,7 @@ const VenueDashboard = () => {
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id)
-        .eq("role", "venue_owner")
+        .eq("role", "booking_manager")
         .maybeSingle();
 
       if (!roleData) {
@@ -174,9 +174,9 @@ const VenueDashboard = () => {
   }
 
   return (
-    <AppShell userRole="venue_owner">
+    <AppShell userRole="booking_manager">
     <div className="min-h-screen bg-background pb-20 lg:pb-6">
-      <TopNav userRole="venue_owner" />
+      <TopNav userRole="booking_manager" />
 
       
       <main className="container mx-auto px-4 py-6 max-w-6xl">

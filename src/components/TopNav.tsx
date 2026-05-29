@@ -35,7 +35,7 @@ import { cn } from "@/lib/utils";
 import { NotificationBell } from "./NotificationBell";
 
 interface TopNavProps {
-  userRole: "band_leader" | "band_member" | "booking_manager" | "artist" | "tour_manager" | "venue_owner" | "super_admin" | null;
+  userRole: "booking_manager" | "entertainer" | "booking_manager" | "artist" | "entertainer" | "booking_manager" | "super_admin" | null;
 }
 
 export const TopNav = ({ userRole }: TopNavProps) => {
@@ -112,17 +112,17 @@ export const TopNav = ({ userRole }: TopNavProps) => {
     switch (userRole) {
       case "super_admin":
         return getSuperAdminLinks();
-      case "band_leader":
+      case "booking_manager":
         return bandLeaderLinks;
-      case "band_member":
+      case "entertainer":
         return bandMemberLinks;
       case "booking_manager":
         return bookingManagerLinks;
       case "artist":
         return artistLinks;
-      case "tour_manager":
+      case "entertainer":
         return tourManagerLinks;
-      case "venue_owner":
+      case "booking_manager":
         return venueOwnerLinks;
       default:
         return [];
@@ -149,7 +149,7 @@ export const TopNav = ({ userRole }: TopNavProps) => {
           >
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
-          {(userRole === "band_leader" || userRole === "super_admin") && (
+          {(userRole === "booking_manager" || userRole === "super_admin") && (
             <Button
               variant="default"
               size="sm"
@@ -218,7 +218,7 @@ export const TopNav = ({ userRole }: TopNavProps) => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 bg-popover">
-              {(userRole === "band_leader" || userRole === "super_admin") && (
+              {(userRole === "booking_manager" || userRole === "super_admin") && (
                 <>
                   <DropdownMenuItem onClick={() => navigate("/bookings")}>
                     <Plus className="mr-2 h-4 w-4" />

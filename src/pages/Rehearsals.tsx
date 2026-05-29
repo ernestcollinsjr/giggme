@@ -273,7 +273,7 @@ const Rehearsals = () => {
     );
   }
 
-  const isBandLeader = userRole === "band_leader";
+  const isBandLeader = userRole === "booking_manager";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/10 pb-20">

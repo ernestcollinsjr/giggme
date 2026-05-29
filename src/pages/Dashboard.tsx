@@ -121,7 +121,7 @@ interface Setlist {
   songs: SetlistSong[];
 }
 
-type UserRole = "band_leader" | "band_member" | "booking_manager" | "artist" | "tour_manager" | "super_admin";
+type UserRole = "booking_manager" | "entertainer" | "booking_manager" | "artist" | "entertainer" | "super_admin";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -220,10 +220,10 @@ const Dashboard = () => {
     let primaryRole: UserRole | null = null;
     if (rolesData && rolesData.length > 0) {
       const roles = rolesData.map(r => r.role);
-      if (roles.includes("band_leader")) {
-        primaryRole = "band_leader";
-      } else if (roles.includes("tour_manager")) {
-        primaryRole = "tour_manager";
+      if (roles.includes("booking_manager")) {
+        primaryRole = "booking_manager";
+      } else if (roles.includes("entertainer")) {
+        primaryRole = "entertainer";
       } else if (roles.includes("booking_manager")) {
         primaryRole = "booking_manager";
       } else if (roles.includes("artist")) {
@@ -242,7 +242,7 @@ const Dashboard = () => {
 
       
       // Fetch bands for band leaders and super admins
-      if (primaryRole === "band_leader" || primaryRole === "super_admin") {
+      if (primaryRole === "booking_manager" || primaryRole === "super_admin") {
         // For super_admin, fetch all bands; for band_leader, fetch only their bands
         let bandsQuery = supabase.from("bands").select("*");
         if (primaryRole !== "super_admin") {
@@ -259,7 +259,7 @@ const Dashboard = () => {
         const { data: artistRoles } = await supabase
           .from("user_roles")
           .select("user_id")
-          .in("role", ["band_member", "artist"]);
+          .in("role", ["entertainer", "artist"]);
         
         if (artistRoles && artistRoles.length > 0) {
           const userIds = artistRoles.map(r => r.user_id);
@@ -288,7 +288,7 @@ const Dashboard = () => {
       }
       
       // Fetch rehearsals for band members, leaders, and super admins
-      if (primaryRole === "band_member" || primaryRole === "band_leader" || primaryRole === "super_admin") {
+      if (primaryRole === "entertainer" || primaryRole === "booking_manager" || primaryRole === "super_admin") {
         const { data: rehearsalData } = await supabase
           .from("rehearsals")
           .select("*")
@@ -326,7 +326,7 @@ const Dashboard = () => {
       }
       
       // Fetch pending gig invites for band members only
-      if (primaryRole === "band_member") {
+      if (primaryRole === "entertainer") {
         const { data: inviteData } = await supabase
           .from("gig_members")
           .select(`
@@ -379,7 +379,7 @@ const Dashboard = () => {
         const { data: bandLeaders } = await supabase
           .from("user_roles")
           .select("user_id")
-          .in("role", ["band_leader", "band_member", "artist"]);
+          .in("role", ["booking_manager", "entertainer", "artist"]);
         
         if (bandLeaders && bandLeaders.length > 0) {
           const userIds = bandLeaders.map(r => r.user_id);
@@ -454,7 +454,7 @@ const Dashboard = () => {
 
   // Real-time updates for gig member responses (for band leaders and super admins)
   useEffect(() => {
-    if ((userRole !== "band_leader" && userRole !== "super_admin") || !user) return;
+    if ((userRole !== "booking_manager" && userRole !== "super_admin") || !user) return;
 
     const channel = supabase
       .channel('gig-members-dashboard')
@@ -1286,13 +1286,11 @@ const Dashboard = () => {
             <Badge variant="secondary" className="mt-2">
               {userRole === "super_admin"
                 ? "Super Admin"
-                : userRole === "booking_manager" 
-                ? "Booking Manager" 
-                : userRole === "band_leader"
-                ? "Band Leader"
-                : userRole === "artist"
-                ? "Artist/Musician"
-                : userRole === "tour_manager"
+                : userRole === "booking_manager"
+                ? "Booking Manager"
+                : userRole === "admin"
+                ? "Admin"
+                : userRole === "entertainer"
                 ? "Tour/Road Manager"
                 : "Band Member"}
             </Badge>
@@ -1308,7 +1306,7 @@ const Dashboard = () => {
           />
         )}
 
-        {userRole === "band_leader" && (
+        {userRole === "booking_manager" && (
           <div className="space-y-4">
             <div className="space-y-3">
               <h2 className="text-xl font-semibold">My Bands</h2>
@@ -1613,7 +1611,7 @@ const Dashboard = () => {
         )}
 
 
-        {userRole === "band_member" && (
+        {userRole === "entertainer" && (
           <Tabs defaultValue="overview" className="space-y-4">
             <TabsList className="bg-transparent border-0 p-0 h-auto gap-2">
               <TabsTrigger value="overview" className="border-2 border-border shadow-sm">
@@ -1696,7 +1694,7 @@ const Dashboard = () => {
               <AcceptedGigsCard userId={user?.id || ""} />
             </div>
 
-            {userRole === "band_member" && (
+            {userRole === "entertainer" && (
               <AutoLocationTracker
                 userId={user?.id || ""}
                 isEnabled={activeGigsWithSharing.length > 0}
@@ -1806,7 +1804,7 @@ const Dashboard = () => {
           </Tabs>
         )}
 
-        {(userRole === "band_leader" || userRole === "band_member") && (
+        {(userRole === "booking_manager" || userRole === "entertainer") && (
           <>
             <div className="grid md:grid-cols-2 gap-4">
               <Card
@@ -2079,7 +2077,7 @@ const Dashboard = () => {
           </div>
         )}
 
-        {userRole === "tour_manager" && (
+        {userRole === "entertainer" && (
           <div className="space-y-6">
             <Card className="border-border/50 shadow-lg bg-gradient-to-br from-primary/5 to-secondary/5">
               <CardHeader>
@@ -2144,7 +2142,7 @@ const Dashboard = () => {
           </div>
         )}
 
-        {userRole !== "band_member" && userRole !== "artist" && userRole !== "booking_manager" && userRole !== "super_admin" && (
+        {userRole !== "entertainer" && userRole !== "artist" && userRole !== "booking_manager" && userRole !== "super_admin" && (
           <Card className="border-border/50 shadow-lg bg-gradient-to-br from-primary/5 to-accent/5">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">

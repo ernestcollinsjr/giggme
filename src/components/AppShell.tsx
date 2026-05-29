@@ -10,16 +10,9 @@ import { NotificationBell } from "@/components/NotificationBell";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
+import type { AppRole } from "@/lib/roles";
 
-type UserRole =
-  | "band_leader"
-  | "band_member"
-  | "booking_manager"
-  | "artist"
-  | "tour_manager"
-  | "venue_owner"
-  | "super_admin"
-  | null;
+type UserRole = AppRole | null;
 
 interface AppShellProps {
   userRole: UserRole;
@@ -37,15 +30,13 @@ export function AppShell({ userRole, children }: AppShellProps) {
   const navigate = useNavigate();
   const roleLabel =
     userRole === "super_admin"
-      ? "Admin"
+      ? "Super Admin"
       : userRole === "booking_manager"
       ? "Booking Mgr"
-      : userRole === "band_leader"
-      ? "Band Leader"
-      : userRole === "venue_owner"
-      ? "Venue"
-      : userRole === "artist"
-      ? "Artist"
+      : userRole === "admin"
+      ? "Admin"
+      : userRole === "entertainer"
+      ? "Entertainer"
       : "Member";
 
   const [profile, setProfile] = useState<{ name: string | null; photo_urls: string[] | null }>({ name: null, photo_urls: null });

@@ -78,7 +78,7 @@ export default function Tours() {
       .eq("user_id", user.id)
       .single();
 
-    if (!roleData || roleData.role !== "tour_manager") {
+    if (!roleData || roleData.role !== "entertainer") {
       toast({
         title: "Access Denied",
         description: "You need to be a Tour Manager to access this page.",

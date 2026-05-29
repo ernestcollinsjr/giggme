@@ -430,10 +430,10 @@ const ProfileSetup = () => {
       const updates = {
         id: user.id,
         name,
-        band_name: (role === "band_member" || role === "band_leader") ? (bandName || null) : null,
+        band_name: (role === "entertainer" || role === "booking_manager") ? (bandName || null) : null,
         bio,
         email,
-        instrument: (role === "band_leader" || role === "band_member" ? instrument : null) as any,
+        instrument: (role === "booking_manager" || role === "entertainer" ? instrument : null) as any,
         phone_number: phoneNumber || null,
         rider_notes: riderNotes,
         timezone,
@@ -548,13 +548,13 @@ const ProfileSetup = () => {
       // Determine price ID based on role
       let priceId: string;
       switch (userRole) {
-        case "band_leader":
+        case "booking_manager":
           priceId = "price_1Sfl1yEPiAZgF8MerV2S8Hcf"; // $14/mo
           break;
         case "booking_manager":
           priceId = "price_1Sfl29EPiAZgF8Me7Z7r8ty8"; // $26/mo
           break;
-        case "venue_owner":
+        case "booking_manager":
           priceId = venuePricingType === "one_time" 
             ? "price_1Sj4o1EPiAZgF8MeVAfYLZ1h" // $49 one-time
             : "price_1Sj4nrEPiAZgF8MeCOUpkIfg"; // $26/mo
@@ -1161,7 +1161,7 @@ const ProfileSetup = () => {
             <div className="grid md:grid-cols-3 gap-6">
               {[
                 { 
-                  value: "band_leader", 
+                  value: "booking_manager", 
                   label: "Band Leader", 
                   description: "Lead your band, manage your group, and connect with booking managers",
                   icon: Crown,
@@ -1169,7 +1169,7 @@ const ProfileSetup = () => {
                   iconColor: "text-primary"
                 },
                 { 
-                  value: "band_member", 
+                  value: "entertainer", 
                   label: "Band Member", 
                   description: "Share your location, showcase your skills, and stay connected",
                   icon: Music,
@@ -1240,10 +1240,10 @@ const ProfileSetup = () => {
                   <h3 className="font-semibold text-foreground">Complete Your Subscription</h3>
                   <p className="text-sm text-muted-foreground mt-1">
                     {role === "artist" && "Start your 14-day free trial at $10.99/mo to unlock all features."}
-                    {role === "band_leader" && "Start your 7-day free trial at $14/mo to manage your band."}
+                    {role === "booking_manager" && "Start your 7-day free trial at $14/mo to manage your band."}
                     {role === "booking_manager" && "Start your 7-day free trial at $26/mo to manage artists."}
-                    {role === "venue_owner" && "Subscribe at $26/mo (14-day trial) or $49 one-time to book entertainers."}
-                    {!["artist", "band_leader", "booking_manager", "venue_owner"].includes(role) && "Subscribe to unlock all features."}
+                    {role === "booking_manager" && "Subscribe at $26/mo (14-day trial) or $49 one-time to book entertainers."}
+                    {!["artist", "booking_manager", "booking_manager", "booking_manager"].includes(role) && "Subscribe to unlock all features."}
                   </p>
                   <Button 
                     onClick={handleSubscribe} 
@@ -1298,7 +1298,7 @@ const ProfileSetup = () => {
             </TabsList>
           
             {/* Profile Completeness Indicator */}
-            {(role === "band_leader" || role === "band_member" || role === "artist") && (
+            {(role === "booking_manager" || role === "entertainer" || role === "artist") && (
               <div className="mb-6 p-4 bg-muted/50 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
                   <Label className="text-sm font-medium">Profile Completeness</Label>
@@ -1329,7 +1329,7 @@ const ProfileSetup = () => {
                 </div>
                 
                 <RoleSwitcher 
-                  currentRole={role as "band_leader" | "band_member" | "booking_manager" | "artist" | "tour_manager" | "super_admin" | null} 
+                  currentRole={role as "booking_manager" | "entertainer" | "booking_manager" | "artist" | "entertainer" | "super_admin" | null} 
                   onRoleChange={() => {
                     // Refresh the page to update role-specific features
                     window.location.reload();
@@ -1385,7 +1385,7 @@ const ProfileSetup = () => {
                     required
                     className="text-xl font-semibold h-auto py-1 px-2"
                   />
-                  {(role === "band_member" || role === "band_leader") && (
+                  {(role === "entertainer" || role === "booking_manager") && (
                     <Input
                       id="band_name"
                       type="text"
@@ -1497,9 +1497,9 @@ const ProfileSetup = () => {
               <Textarea
                 id="bio"
                 placeholder={
-                  role === "band_leader"
+                  role === "booking_manager"
                     ? "Tell us about your band, music style, experience, and what makes you unique..."
-                    : role === "band_member"
+                    : role === "entertainer"
                     ? "Tell us about your music style, experience, and what makes you unique..."
                     : "Tell us about your experience managing bands and artists..."
                 }
@@ -1583,7 +1583,7 @@ const ProfileSetup = () => {
               </p>
             </div>
             
-            {(role === "band_leader" || role === "band_member") && (
+            {(role === "booking_manager" || role === "entertainer") && (
               <div className="space-y-2">
                 <Label htmlFor="instrument">Primary Instrument</Label>
                 <Select value={instrument} onValueChange={setInstrument} required>
@@ -1605,7 +1605,7 @@ const ProfileSetup = () => {
             )}
 
             {/* Social Media Links */}
-            {(role === "band_leader" || role === "band_member" || role === "artist") && (
+            {(role === "booking_manager" || role === "entertainer" || role === "artist") && (
               <div className="space-y-4 pt-4 border-t">
                 <div>
                   <Label className="flex items-center gap-2">
@@ -1635,7 +1635,7 @@ const ProfileSetup = () => {
             )}
 
             {/* YouTube Links */}
-            {(role === "band_leader" || role === "band_member" || role === "artist") && (
+            {(role === "booking_manager" || role === "entertainer" || role === "artist") && (
               <div className="space-y-4 pt-4 border-t">
                 <div>
                   <Label className="flex items-center gap-2">
@@ -1734,7 +1734,7 @@ const ProfileSetup = () => {
             )}
 
             {/* Equipment List */}
-            {(role === "band_leader" || role === "band_member" || role === "artist") && (
+            {(role === "booking_manager" || role === "entertainer" || role === "artist") && (
               <div className="space-y-4 pt-4 border-t">
                 <div>
                   <Label className="flex items-center gap-2">
@@ -1778,7 +1778,7 @@ const ProfileSetup = () => {
             )}
 
             {/* Skills & Abilities */}
-            {(role === "band_leader" || role === "band_member" || role === "artist") && (
+            {(role === "booking_manager" || role === "entertainer" || role === "artist") && (
               <div className="space-y-4 pt-4 border-t">
                 <div>
                   <Label className="flex items-center gap-2">
@@ -1822,7 +1822,7 @@ const ProfileSetup = () => {
             )}
 
             {/* Genres */}
-            {(role === "band_leader" || role === "band_member" || role === "artist") && (
+            {(role === "booking_manager" || role === "entertainer" || role === "artist") && (
               <div className="space-y-4 pt-4 border-t">
                 <div>
                   <Label className="flex items-center gap-2">
@@ -1866,7 +1866,7 @@ const ProfileSetup = () => {
               )}
 
               {/* Entertainer Categories (multi-select) */}
-              {(role === "band_leader" || role === "band_member" || role === "artist") && (
+              {(role === "booking_manager" || role === "entertainer" || role === "artist") && (
                 <div className="space-y-3 pt-4 border-t">
                   <div>
                     <Label className="flex items-center gap-2">
@@ -1953,7 +1953,7 @@ const ProfileSetup = () => {
 
               {/* Availability Tab */}
               <TabsContent value="availability" className="mt-0 space-y-6">
-            {(role === "band_leader" || role === "band_member" || role === "artist") && (
+            {(role === "booking_manager" || role === "entertainer" || role === "artist") && (
               <div className="space-y-4 pt-4 border-t">
                 <Label className="flex items-center gap-2">
                   <Briefcase className="h-4 w-4" />
@@ -2286,14 +2286,14 @@ const ProfileSetup = () => {
                   <div>
                     <Label className="flex items-center gap-2 text-lg font-semibold">
                       <FileText className="h-5 w-5" />
-                      {role === "band_leader" || role === "band_member" ? "Rider Requirements" : "Management Notes"}
+                      {role === "booking_manager" || role === "entertainer" ? "Rider Requirements" : "Management Notes"}
                     </Label>
                     <p className="text-sm text-muted-foreground mt-1">
                       Your technical and hospitality requirements for gigs
                     </p>
                   </div>
                   
-                  {(role === "band_leader" || role === "band_member") && riderNotes && (
+                  {(role === "booking_manager" || role === "entertainer") && riderNotes && (
                     <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
                       <DialogTrigger asChild>
                         <Button variant="outline" size="sm" type="button" className="w-full sm:w-auto">
@@ -2344,7 +2344,7 @@ const ProfileSetup = () => {
                   <Textarea
                     id="rider2"
                     placeholder={
-                      role === "band_leader" || role === "band_member"
+                      role === "booking_manager" || role === "entertainer"
                         ? "Stage setup, sound requirements, green room needs, etc.\nExample: Needs quiet green room, 3 vocal mics, drum riser"
                         : "Your approach to management, availability, preferred genres..."
                     }

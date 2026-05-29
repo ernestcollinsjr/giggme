@@ -221,7 +221,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
       }
 
       // Send email via edge function
-      const { error: emailError } = await supabase.functions.invoke("send-group-invite", {
+      const { error: emailError } = await supabase.functions.invoke("send-band-invite", {
         body: {
           recipientEmail: normalizedEmail,
           recipientName: recipientName.trim(),

@@ -999,6 +999,7 @@ const Bookings = () => {
     );
   }
 
+  const canEditBookings = userRole === "booking_manager" || userRole === "admin" || userRole === "super_admin";
   const isBandLeader = userRole === "booking_manager" || userRole === "super_admin";
 
   return (
@@ -1645,20 +1646,33 @@ const Bookings = () => {
                     <>
                       {dayConfirmed.map((g) => (
                         <div key={`g-${g.id}`} className="rounded-lg border border-border/50 p-3 space-y-1 relative">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute top-2 right-2 h-7 w-7"
-                            onClick={() => handleDeleteGig(g.id)}
-                            aria-label="Delete booking"
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
+                          <div className="absolute top-2 right-2 flex items-center gap-1">
+                            {canEditBookings && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 border border-border/60 bg-background/80 text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground"
+                                onClick={() => openEditGigDialog(g)}
+                                aria-label="Edit booking"
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={() => handleDeleteGig(g.id)}
+                              aria-label="Delete booking"
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
                           <div className="flex items-center gap-2">
                             <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
                             <Badge variant="secondary">Confirmed gig</Badge>
                           </div>
-                          <div className="font-semibold pr-8">{g.venue_name || g.venue}</div>
+                          <div className="font-semibold pr-16">{g.venue_name || g.venue}</div>
                           {g.venue_name && <div className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{g.venue}</div>}
                         </div>
                       ))}
@@ -1961,7 +1975,7 @@ const Bookings = () => {
                         <p className="text-xs text-muted-foreground mt-1">Budget: {br.budget}</p>
                       )}
                     </div>
-                    {(userRole === "booking_manager" || userRole === "admin" || userRole === "super_admin") && (
+                    {canEditBookings && (
                       <Button
                         size="icon"
                         variant="ghost"
@@ -2002,7 +2016,7 @@ const Bookings = () => {
                           {gi.gigs?.date && format(new Date(gi.gigs.date), "PPP p")}
                         </p>
                       </div>
-                      {(userRole === "booking_manager" || userRole === "admin" || userRole === "super_admin") && fullGig && (
+                      {canEditBookings && fullGig && (
                         <Button
                           size="icon"
                           variant="ghost"

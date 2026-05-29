@@ -51,6 +51,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
   const [recipientName, setRecipientName] = useState("");
   const [email, setEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<"member" | "entertainer" | "admin">("member");
+  const [performerCategory, setPerformerCategory] = useState<"Solo" | "Duo" | "Trio" | "Band" | "Group">("Solo");
   const [sending, setSending] = useState(false);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -223,6 +224,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
           recipient_name: recipientName.trim(),
           invited_by: user.id,
           role: inviteRole,
+          performer_category: performerCategory,
         } as any)
         .select()
         .single();
@@ -572,6 +574,25 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
                 disabled={sending}
               />
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Category</Label>
+            <Select
+              value={performerCategory}
+              onValueChange={(v: "Solo" | "Duo" | "Trio" | "Band" | "Group") => setPerformerCategory(v)}
+              disabled={sending}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Solo">Solo</SelectItem>
+                <SelectItem value="Duo">Duo</SelectItem>
+                <SelectItem value="Trio">Trio</SelectItem>
+                <SelectItem value="Band">Band</SelectItem>
+                <SelectItem value="Group">Group</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label>Assign Role</Label>

@@ -425,7 +425,7 @@ const Messages = () => {
               setAllowedMemberIds(memberIds);
             }
           }
-        } else if (roleData.role === "booking_manager" || roleData.role === "admin") {
+        } else if (roleData.role === "admin") {
           // Booking managers (and their admins) can see ALL their messages - no filtering
           setAllowedMemberIds([]);
         }

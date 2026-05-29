@@ -1429,7 +1429,9 @@ const ProfileSetup = () => {
               </div>
             </div>
 
+            {(role === "entertainer" || role === "member" || role === "artist") && (
             <div className="space-y-2">
+
               <Label>Additional Photos (Optional, 3 max)</Label>
               <div className="grid grid-cols-3 gap-4">
                 {[1, 2, 3].map((index) => (

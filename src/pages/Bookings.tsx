@@ -116,6 +116,7 @@ const getBookingRequestCalendarDates = (request: BookingRequestCalendarSource): 
 
 const Bookings = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const { selectedBandId, setSelectedBandId } = useBand();
   const [gigs, setGigs] = useState<Gig[]>([]);

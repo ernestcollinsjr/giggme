@@ -107,7 +107,7 @@ interface UpcomingGig {
 
 interface UpcomingGigLocationTrackerProps {
   userId: string;
-  userRole: "entertainer" | "booking_manager" | "artist" | "booking_manager" | "entertainer" | "super_admin";
+  userRole: import("@/lib/roles").AppRole;
 }
 
 export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLocationTrackerProps) => {

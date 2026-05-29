@@ -29,9 +29,11 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Sending band invite to:", recipientEmail, recipientName);
 
+    // Always use the production domain for invite links so recipients don't get
+    // redirected to the Lovable preview/login. siteOrigin from the browser is ignored
+    // unless it's an explicit production/custom domain.
     const configured = Deno.env.get("PUBLIC_SITE_URL") || Deno.env.get("SITE_URL") || "https://giggme.com";
-    const origin = req.headers.get("origin") || req.headers.get("referer") || "";
-    const base = (siteOrigin || origin || configured).toString().replace(/\/$/, "");
+    const base = configured.toString().replace(/\/$/, "");
     const inviteUrl = `${base}/band-invite/${inviteToken}`;
 
     const greeting = recipientName ? `Hello ${recipientName}!` : "Hello!";

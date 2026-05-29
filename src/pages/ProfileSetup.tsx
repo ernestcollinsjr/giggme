@@ -42,6 +42,7 @@ const ProfileSetup = () => {
   const [role, setRole] = useState<string>("");
   const [hasRole, setHasRole] = useState(false);
   const [roleLoading, setRoleLoading] = useState(true);
+  const [showRoleChooser, setShowRoleChooser] = useState(false);
   
   const [name, setName] = useState("");
   const [bandName, setBandName] = useState("");
@@ -201,21 +202,33 @@ const ProfileSetup = () => {
           }
         }
         
-        if (roleData) {
-          setRole(roleData.role);
-          setHasRole(true);
-        } else if (profile) {
-          // Existing onboarded user without a user_roles row — don't show
-          // the Choose Your Role chooser; treat them as already having a role.
-          setHasRole(true);
-        }
-
         // Detect invited performers (added to a band or booking manager roster)
         const [{ data: bandMem }, { data: bmArtist }] = await Promise.all([
           supabase.from("band_members").select("id").eq("member_id", user.id).limit(1),
           supabase.from("booking_manager_artists").select("id").eq("artist_id", user.id).limit(1),
         ]);
-        if ((bandMem && bandMem.length > 0) || (bmArtist && bmArtist.length > 0)) {
+        const isBandMember = Boolean(bandMem && bandMem.length > 0);
+        const isManagedArtist = Boolean(bmArtist && bmArtist.length > 0);
+        const isInvitedUser = isBandMember || isManagedArtist;
+
+        if (roleData) {
+          setRole(roleData.role);
+          setHasRole(true);
+        } else if (isBandMember) {
+          setRole("member");
+          setHasRole(true);
+        } else if (isManagedArtist) {
+          setRole("entertainer");
+          setHasRole(true);
+        } else if (profile) {
+          // Existing onboarded user without a user_roles row — don't show
+          // the Choose Your Role chooser; treat them as already having a role.
+          setHasRole(true);
+        } else {
+          setShowRoleChooser(true);
+        }
+
+        if (isInvitedUser) {
           setIsInvitedPerformer(true);
         }
       }
@@ -384,6 +397,7 @@ const ProfileSetup = () => {
 
       setRole(selectedRole);
       setHasRole(true);
+      setShowRoleChooser(false);
 
       toast({
         title: "Role selected!",

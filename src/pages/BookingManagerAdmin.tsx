@@ -45,6 +45,7 @@ import { PaymentScheduler } from "@/components/PaymentScheduler";
 import { UpcomingGigLocationTracker } from "@/components/UpcomingGigLocationTracker";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { AdminsManager } from "@/components/AdminsManager";
 
 const CATEGORIES = ["Soloist", "Duo", "Band"] as const;
 type Category = typeof CATEGORIES[number];

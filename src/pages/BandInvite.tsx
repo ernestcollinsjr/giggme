@@ -146,6 +146,29 @@ const BandInvite = () => {
         console.error("Failed to assign invited role:", e);
       }
 
+      // If invited as admin, link this user to the inviting Booking Manager.
+      if (invitation.role === "admin") {
+        try {
+          const { data: bandRow } = await supabase
+            .from("bands")
+            .select("band_leader_id")
+            .eq("id", invitation.band_id)
+            .maybeSingle();
+          if (bandRow?.band_leader_id) {
+            await supabase
+              .from("booking_manager_admins")
+              .upsert(
+                { booking_manager_id: bandRow.band_leader_id, admin_user_id: user.id },
+                { onConflict: "booking_manager_id,admin_user_id" }
+              );
+          }
+        } catch (e) {
+          console.error("Failed to link admin to booking manager:", e);
+        }
+      }
+
+
+
 
       // Notify band leader via edge function (fire and forget)
       supabase.functions.invoke("notify-invitation-accepted", {

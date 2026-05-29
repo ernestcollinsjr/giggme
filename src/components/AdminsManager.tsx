@@ -8,7 +8,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Shield, Trash2, UserPlus } from "lucide-react";
 
 interface AdminRow {
-  id: string;
   admin_user_id: string;
   created_at: string;
   email?: string;
@@ -24,21 +23,20 @@ export const AdminsManager = ({ bookingManagerId }: { bookingManagerId: string }
   const load = async () => {
     const { data, error } = await supabase
       .from("booking_manager_admins")
-      .select("id, admin_user_id, created_at")
+      .select("admin_user_id, created_at")
       .eq("booking_manager_id", bookingManagerId);
-    if (error) return;
-    const rows = data ?? [];
-    if (rows.length === 0) {
+    if (error || !data) return;
+    if (data.length === 0) {
       setAdmins([]);
       return;
     }
-    const ids = rows.map((r) => r.admin_user_id);
+    const ids = data.map((r) => r.admin_user_id);
     const { data: profiles } = await supabase
       .from("profiles")
       .select("id, email, name")
       .in("id", ids);
     setAdmins(
-      rows.map((r) => {
+      data.map((r) => {
         const p = profiles?.find((pp) => pp.id === r.admin_user_id);
         return { ...r, email: p?.email, name: p?.name };
       })
@@ -82,8 +80,12 @@ export const AdminsManager = ({ bookingManagerId }: { bookingManagerId: string }
     }
   };
 
-  const removeAdmin = async (id: string) => {
-    const { error } = await supabase.from("booking_manager_admins").delete().eq("id", id);
+  const removeAdmin = async (adminUserId: string) => {
+    const { error } = await supabase
+      .from("booking_manager_admins")
+      .delete()
+      .eq("booking_manager_id", bookingManagerId)
+      .eq("admin_user_id", adminUserId);
     if (error) {
       toast({ title: "Failed", description: error.message, variant: "destructive" });
       return;
@@ -123,12 +125,12 @@ export const AdminsManager = ({ bookingManagerId }: { bookingManagerId: string }
             <p className="text-sm text-muted-foreground">No admins yet.</p>
           ) : (
             admins.map((a) => (
-              <div key={a.id} className="flex items-center justify-between rounded-md border p-3">
+              <div key={a.admin_user_id} className="flex items-center justify-between rounded-md border p-3">
                 <div className="min-w-0">
                   <p className="font-medium truncate">{a.name || a.email || a.admin_user_id}</p>
                   {a.email && <p className="text-xs text-muted-foreground truncate">{a.email}</p>}
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => removeAdmin(a.id)}>
+                <Button variant="ghost" size="icon" onClick={() => removeAdmin(a.admin_user_id)}>
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>

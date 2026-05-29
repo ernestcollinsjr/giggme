@@ -60,6 +60,7 @@ interface ManagedArtist {
   id: string;
   artist_id: string;
   group_type: string | null;
+  group_name: string | null;
   notes: string | null;
   created_at: string;
   profile: {
@@ -71,6 +72,8 @@ interface ManagedArtist {
     photo_urls: string[] | null;
   };
 }
+
+const UNGROUPED = "Ungrouped";
 
 interface UpcomingGig {
   id: string;

@@ -593,7 +593,8 @@ const AdminDashboard = () => {
                     <TableCell>
                       <Select
                         value={
-                          bands.find((b) => user.bandNames.includes(b.name))?.id || "__none__"
+                          bands.find((b) => user.bandNames.includes(b.name))?.id ||
+                          (user.performer_category ? `__cat_${user.performer_category}__` : "__none__")
                         }
                         onValueChange={(val) => handleUpdateBand(user, val)}
                       >
@@ -602,6 +603,10 @@ const AdminDashboard = () => {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="__none__">No Group</SelectItem>
+                          <SelectItem value="__cat_Solo__">Solo</SelectItem>
+                          <SelectItem value="__cat_Duo__">Duo</SelectItem>
+                          <SelectItem value="__cat_Trio__">Trio</SelectItem>
+                          <SelectItem value="__cat_Band__">Band</SelectItem>
                           {bands.map((b) => (
                             <SelectItem key={b.id} value={b.id}>
                               {b.name}

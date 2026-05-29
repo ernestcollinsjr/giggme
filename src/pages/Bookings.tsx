@@ -297,17 +297,24 @@ const Bookings = () => {
         .select("artist_id")
         .eq("booking_manager_id", user.id);
       const ids = (links || []).map((l: any) => l.artist_id);
+      let artists: { artist_id: string; name: string; email: string | null }[] = [];
       if (ids.length > 0) {
         const { data: profs } = await supabase
           .from("profiles")
           .select("id, name, email")
           .in("id", ids);
-        setManagedArtists(
-          (profs || []).map((p: any) => ({ artist_id: p.id, name: p.name, email: p.email }))
-        );
-      } else {
-        setManagedArtists([]);
+        artists = (profs || []).map((p: any) => ({ artist_id: p.id, name: p.name, email: p.email }));
       }
+      // Fallback: if no managed artists, allow booking any public entertainer from this calendar
+      if (artists.length === 0) {
+        const { data: pub } = await supabase.rpc("get_public_performers");
+        artists = (pub || []).map((p: any) => ({
+          artist_id: p.user_id,
+          name: p.stage_name || p.name,
+          email: null,
+        }));
+      }
+      setManagedArtists(artists);
     }
 
     // Fetch bands for band leaders

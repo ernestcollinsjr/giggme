@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-type UserRole = "booking_manager" | "entertainer" | "booking_manager" | "artist" | "entertainer" | "super_admin";
+type UserRole = "super_admin" | "booking_manager" | "admin" | "entertainer" | "member";
 
 interface RoleSwitcherProps {
   currentRole: UserRole | null;
@@ -27,55 +27,55 @@ const RoleSwitcher = ({ currentRole, onRoleChange }: RoleSwitcherProps) => {
   const [pendingRole, setPendingRole] = useState<UserRole | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
-  
-  // Band members cannot change their own role - only Band Leaders and Booking Managers can assign roles
-  const canSwitchRole = currentRole !== "entertainer";
+
+  // Members are assigned by a Booking Manager and cannot self-switch.
+  const canSwitchRole = currentRole !== "member";
 
   const roles = [
     {
-      value: "super_admin" as UserRole, 
-      label: "Super Admin", 
+      value: "super_admin" as UserRole,
+      label: "Super Admin",
       description: "Full control over the entire site, all users, and all settings",
       icon: Shield,
       iconBg: "bg-red-100",
       iconColor: "text-red-600",
-      badge: { icon: Star, text: "Admin Role", color: "text-red-600" }
+      badge: { icon: Star, text: "System Role", color: "text-red-600" },
     },
     {
-      value: "booking_manager" as UserRole, 
-      label: "Band Leaders", 
-      description: "Lead your band, manage your group, and connect with booking managers to secure gigs",
-      icon: Crown,
-      iconBg: "bg-primary/10",
-      iconColor: "text-primary",
-      badge: { icon: Star, text: "Premium Role", color: "text-primary" }
-    },
-    { 
-      value: "booking_manager" as UserRole, 
-      label: "Booking Managers", 
-      description: "Discover talented bands, track their locations, and manage your roster all in one place",
+      value: "booking_manager" as UserRole,
+      label: "Booking Manager",
+      description: "Run a roster of entertainers, create groups, book gigs, and manage the workspace",
       icon: Briefcase,
       iconBg: "bg-accent/10",
       iconColor: "text-accent",
-      badge: { icon: Star, text: "Premium Role", color: "text-accent" }
+      badge: { icon: Star, text: "Premium Role", color: "text-accent" },
     },
-    { 
-      value: "entertainer" as UserRole, 
-      label: "Tour/Road Managers", 
-      description: "Manage tours and coordinate with tour crew members efficiently",
-      icon: Calendar,
-      iconBg: "bg-orange-100",
-      iconColor: "text-orange-600",
-      badge: { icon: Star, text: "Premium Role", color: "text-orange-600" }
+    {
+      value: "admin" as UserRole,
+      label: "Admin",
+      description: "Granted by a Booking Manager to help manage their roster — can edit, cannot delete the manager",
+      icon: Crown,
+      iconBg: "bg-primary/10",
+      iconColor: "text-primary",
+      badge: { icon: Users, text: "Assigned Role", color: "text-primary" },
     },
-    { 
-      value: "artist" as UserRole, 
-      label: "Artist/Musician", 
-      description: "Showcase your talent, build your portfolio, and get discovered by booking managers",
+    {
+      value: "entertainer" as UserRole,
+      label: "Entertainer",
+      description: "Subscription-based performer profile — showcase your talent and get discovered",
       icon: Music,
       iconBg: "bg-purple-100",
       iconColor: "text-purple-600",
-      badge: { icon: Star, text: "Premium Role", color: "text-purple-600" }
+      badge: { icon: Star, text: "Subscription", color: "text-purple-600" },
+    },
+    {
+      value: "member" as UserRole,
+      label: "Member",
+      description: "Invited by a Booking Manager into a group — view gigs/messages and edit your own profile",
+      icon: Calendar,
+      iconBg: "bg-orange-100",
+      iconColor: "text-orange-600",
+      badge: { icon: Users, text: "Invite Only", color: "text-orange-600" },
     },
   ];
 

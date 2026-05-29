@@ -76,7 +76,7 @@ const BandInvite = () => {
         email: row.email,
         status: row.status,
         expires_at: row.expires_at,
-        role: ((row as any).role === "entertainer" ? "entertainer" : "member"),
+        role: (["entertainer","admin","member"].includes((row as any).role) ? (row as any).role : "member"),
         bands: { name: row.band_name, description: row.band_description },
       });
     } catch (err: any) {

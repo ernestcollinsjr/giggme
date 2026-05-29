@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { User } from "@supabase/supabase-js";
 import { ArrowLeft, LogOut, Crown, Music, Briefcase, Mail, Loader2, Youtube, Facebook, Instagram, Twitter, Globe, Plus, Trash2, Wrench, Tag, MapPin, Clock, Play, X, Check, HelpCircle, Volume2, VolumeX, Undo2, Bell, Shield, FileText, Ban, Flag, Users, AlertTriangle, CreditCard } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { detectFaceAndCrop, resizeImagePreserveAspect, loadImage, centerCropImage } from "@/utils/imageCropping";
+import { resizeImagePreserveAspect, loadImage, centerCropImage } from "@/utils/imageCropping";
 import { Browser } from '@capacitor/browser';
 import { Capacitor } from '@capacitor/core';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
@@ -281,22 +281,13 @@ const ProfileSetup = () => {
       // Load the image
       const img = await loadImage(file);
       
-      // Primary avatar (index 0) gets face-centered square crop.
+      // Primary avatar (index 0) gets a square crop.
       // Additional photos preserve full aspect ratio so nothing is cut off.
       let processedBlob: Blob;
       if (index === 0) {
-        // Race face detection against a timeout so a slow/failed AI model
-        // download (e.g. on mobile or limited bandwidth) doesn't block the
-        // upload — fall back to a simple center-crop after 8s.
-        const timeoutFallback = new Promise<Blob>((resolve) => {
-          setTimeout(async () => {
-            try { resolve(await centerCropImage(img, 400)); } catch { /* ignore */ }
-          }, 8000);
-        });
-        processedBlob = await Promise.race([
-          detectFaceAndCrop(img, 400).catch(() => centerCropImage(img, 400)),
-          timeoutFallback,
-        ]);
+        // Keep this local and lightweight. Loading the AI face-detection model
+        // on mobile/in-app browsers can blank the page before the preview saves.
+        processedBlob = await centerCropImage(img, 400);
       } else {
         processedBlob = await resizeImagePreserveAspect(img, 1200);
       }
@@ -1489,10 +1480,10 @@ const ProfileSetup = () => {
                     </p>
                   )}
                   {!photoPreviews[0] && processingPhoto !== 0 && (
-                    <p className="text-xs text-muted-foreground">AI will auto-center your face</p>
+                    <p className="text-xs text-muted-foreground">Main profile photo</p>
                   )}
                   {processingPhoto === 0 && (
-                    <p className="text-xs text-muted-foreground">Processing with AI...</p>
+                    <p className="text-xs text-muted-foreground">Processing photo...</p>
                   )}
                 </div>
               </div>

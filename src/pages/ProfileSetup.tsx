@@ -41,6 +41,7 @@ const ProfileSetup = () => {
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<string>("");
   const [hasRole, setHasRole] = useState(false);
+  const [roleLoading, setRoleLoading] = useState(true);
   
   const [name, setName] = useState("");
   const [bandName, setBandName] = useState("");

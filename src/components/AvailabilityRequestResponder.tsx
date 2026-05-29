@@ -71,7 +71,7 @@ export function AvailabilityRequestResponder() {
         if (error) throw error;
 
         if (bandRequests) {
-          allRequests.push(...bandRequests.map(r => ({ ...r, source: 'band' as const })));
+          allRequests.push(...bandRequests.map(r => ({ ...r, source: 'group' as const })));
         }
       }
 

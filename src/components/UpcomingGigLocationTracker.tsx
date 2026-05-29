@@ -406,7 +406,7 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
         }));
 
         setUpcomingGigs(gigsWithinWindow);
-      } else if (userRole === "booking_manager" || userRole === "booking_manager" || userRole === "entertainer" || userRole === "super_admin") {
+      } else if (userRole === "booking_manager" || userRole === "admin" || userRole === "entertainer" || userRole === "super_admin") {
         // Manager: visibility starts 1 hr before driver leaves = 150 min before event
         // Collect owner IDs: the manager themselves + any managed artists/bands
         const ownerIds = new Set<string>([userId]);

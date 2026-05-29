@@ -2009,7 +2009,7 @@ const Dashboard = () => {
           </div>
         )}
 
-        {userRole === "artist" && (
+        {false && userRole === "entertainer" && (
           <div className="space-y-6">
             {/* Availability Requests for Artists */}
             <AvailabilityRequestResponder />

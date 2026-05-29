@@ -116,6 +116,18 @@ const getBookingRequestCalendarDates = (request: BookingRequestCalendarSource): 
   return Number.isNaN(fallback.getTime()) ? [] : [calendarDate(fallback.getFullYear(), fallback.getMonth(), fallback.getDate())];
 };
 
+// Convert any "HH:MM" 24-hour times inside a string to 12-hour format with AM/PM.
+const to12hText = (text: string | null | undefined): string => {
+  if (!text) return "";
+  return text.replace(/\b(\d{1,2}):(\d{2})\b/g, (_m, h, m) => {
+    const hour = parseInt(h, 10);
+    if (isNaN(hour) || hour > 23) return _m;
+    const period = hour >= 12 ? "PM" : "AM";
+    const h12 = hour % 12 === 0 ? 12 : hour % 12;
+    return `${h12}:${m} ${period}`;
+  });
+};
+
 const Bookings = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();

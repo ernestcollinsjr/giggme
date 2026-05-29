@@ -722,12 +722,10 @@ const AdminDashboard = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="super_admin">Super Admin</SelectItem>
-                  <SelectItem value="booking_manager">Band Leader</SelectItem>
-                  <SelectItem value="entertainer">Band Member</SelectItem>
                   <SelectItem value="booking_manager">Booking Manager</SelectItem>
-                  <SelectItem value="artist">Artist</SelectItem>
-                  <SelectItem value="entertainer">Tour Manager</SelectItem>
-                  <SelectItem value="booking_manager">Venue Owner</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="entertainer">Entertainer</SelectItem>
+                  <SelectItem value="member">Member</SelectItem>
                 </SelectContent>
               </Select>
             </div>

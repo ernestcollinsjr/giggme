@@ -1990,6 +1990,68 @@ const Bookings = () => {
           </Card>
         )}
 
+        <Dialog open={!!editingRequest} onOpenChange={(open) => !open && setEditingRequest(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Booking Request</DialogTitle>
+              <DialogDescription>Update the details for this booking request.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="edit-venue">Venue</Label>
+                <Input id="edit-venue" value={editForm.venue} onChange={(e) => setEditForm((f) => ({ ...f, venue: e.target.value }))} />
+              </div>
+              <div>
+                <Label htmlFor="edit-dates">Date(s)</Label>
+                <Input id="edit-dates" value={editForm.dates_text} onChange={(e) => setEditForm((f) => ({ ...f, dates_text: e.target.value }))} />
+              </div>
+              <div>
+                <Label htmlFor="edit-time">Time</Label>
+                <Input id="edit-time" value={editForm.time_text} onChange={(e) => setEditForm((f) => ({ ...f, time_text: e.target.value }))} />
+              </div>
+              <div>
+                <Label htmlFor="edit-budget">Budget</Label>
+                <Input id="edit-budget" value={editForm.budget} onChange={(e) => setEditForm((f) => ({ ...f, budget: e.target.value }))} />
+              </div>
+              <div>
+                <Label htmlFor="edit-note">Note</Label>
+                <Textarea id="edit-note" value={editForm.note} onChange={(e) => setEditForm((f) => ({ ...f, note: e.target.value }))} />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => setEditingRequest(null)} disabled={savingEdit}>Cancel</Button>
+                <Button
+                  disabled={savingEdit}
+                  onClick={async () => {
+                    if (!editingRequest) return;
+                    setSavingEdit(true);
+                    const { error } = await supabase
+                      .from("booking_requests")
+                      .update({
+                        venue: editForm.venue,
+                        dates_text: editForm.dates_text,
+                        time_text: editForm.time_text || null,
+                        budget: editForm.budget || null,
+                        note: editForm.note || null,
+                      })
+                      .eq("id", editingRequest.id);
+                    setSavingEdit(false);
+                    if (error) {
+                      toast({ title: "Update failed", description: error.message, variant: "destructive" });
+                      return;
+                    }
+                    setBookingRequests((prev) => prev.map((b: any) => b.id === editingRequest.id ? { ...b, ...editForm, time_text: editForm.time_text || null, budget: editForm.budget || null, note: editForm.note || null } : b));
+                    setEditingRequest(null);
+                    toast({ title: "Booking request updated" });
+                  }}
+                >
+                  {savingEdit ? "Saving..." : "Save changes"}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+
         <Card className="border-border/50 shadow-lg">
           <CardHeader>
             <div className="flex items-center justify-between">

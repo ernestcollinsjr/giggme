@@ -35,7 +35,7 @@ import { cn } from "@/lib/utils";
 import { NotificationBell } from "./NotificationBell";
 
 interface TopNavProps {
-  userRole: "super_admin" | "booking_manager" | "admin" | "entertainer" | null;
+  userRole: "super_admin" | "booking_manager" | "admin" | "entertainer" | "member" | null;
 }
 
 export const TopNav = ({ userRole }: TopNavProps) => {

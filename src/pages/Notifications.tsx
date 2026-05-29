@@ -34,7 +34,7 @@ interface Notification {
   created_at: string;
 }
 
-type UserRole = "super_admin" | "booking_manager" | "admin" | "entertainer" | null;
+type UserRole = "super_admin" | "booking_manager" | "admin" | "entertainer" | "member" | null;
 type FilterType = "all" | "unread" | "read";
 
 const Notifications = () => {

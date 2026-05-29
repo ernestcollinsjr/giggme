@@ -6,7 +6,7 @@ import { TopNav } from "@/components/TopNav";
 import BottomNav from "@/components/BottomNav";
 import { PaymentScheduler } from "@/components/PaymentScheduler";
 
-type UserRole = "super_admin" | "booking_manager" | "admin" | "entertainer" | null;
+type UserRole = "super_admin" | "booking_manager" | "admin" | "entertainer" | "member" | null;
 
 const PaymentSchedulerPage = () => {
   const navigate = useNavigate();

@@ -27,6 +27,7 @@ interface AcceptedGigsCardProps {
 export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
   const [acceptedGigs, setAcceptedGigs] = useState<AcceptedGig[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -36,6 +37,7 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
 
   const fetchAcceptedGigs = async () => {
     try {
+      setErrorMessage(null);
       const { data, error } = await supabase
         .from("gig_members")
         .select(`
@@ -51,8 +53,7 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
           )
         `)
         .eq("member_id", userId)
-        .eq("status", "accepted")
-        .order("gigs(date)", { ascending: true });
+        .eq("status", "accepted");
 
       if (error) throw error;
 
@@ -60,11 +61,14 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
         id: item.id,
         location_sharing_enabled: item.location_sharing_enabled,
         gig: item.gigs,
-      })) || [];
+      })).sort((a: AcceptedGig, b: AcceptedGig) =>
+        new Date(a.gig.date).getTime() - new Date(b.gig.date).getTime()
+      ) || [];
 
       setAcceptedGigs(formatted);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching accepted gigs:", error);
+      setErrorMessage(error?.message || "Unable to load accepted gigs.");
     } finally {
       setLoading(false);
     }
@@ -112,8 +116,32 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
     );
   }
 
+  if (errorMessage) {
+    return (
+      <Card className="border-border/50 shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MapPin className="h-5 w-5 text-primary" />
+            Your Accepted Gigs
+          </CardTitle>
+          <CardDescription className="text-destructive">{errorMessage}</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
   if (acceptedGigs.length === 0) {
-    return null;
+    return (
+      <Card className="border-border/50 shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MapPin className="h-5 w-5 text-primary" />
+            Your Accepted Gigs
+          </CardTitle>
+          <CardDescription>No accepted gigs are assigned to this account yet.</CardDescription>
+        </CardHeader>
+      </Card>
+    );
   }
 
   return (

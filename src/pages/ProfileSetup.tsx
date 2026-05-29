@@ -1293,7 +1293,7 @@ const ProfileSetup = () => {
             </TabsList>
           
             {/* Profile Completeness Indicator */}
-            {(role === "entertainer" || role === "artist") && (
+            {(role === "entertainer" || role === "artist" || role === "booking_manager" || role === "super_admin" || role === "admin" || role === "member") && (
               <div className="mb-6 p-4 bg-muted/50 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
                   <Label className="text-sm font-medium">Profile Completeness</Label>
@@ -1601,7 +1601,7 @@ const ProfileSetup = () => {
             )}
 
             {/* Social Media Links */}
-            {(role === "entertainer" || role === "artist") && (
+            {(role === "entertainer" || role === "artist" || role === "booking_manager" || role === "super_admin" || role === "admin" || role === "member") && (
               <div className="space-y-4 pt-4 border-t">
                 <div>
                   <Label className="flex items-center gap-2">
@@ -1631,7 +1631,7 @@ const ProfileSetup = () => {
             )}
 
             {/* YouTube Links */}
-            {(role === "entertainer" || role === "artist") && (
+            {(role === "entertainer" || role === "artist" || role === "booking_manager" || role === "super_admin" || role === "admin" || role === "member") && (
               <div className="space-y-4 pt-4 border-t">
                 <div>
                   <Label className="flex items-center gap-2">
@@ -1730,7 +1730,7 @@ const ProfileSetup = () => {
             )}
 
             {/* Equipment List */}
-            {(role === "entertainer" || role === "artist") && (
+            {(role === "entertainer" || role === "artist" || role === "booking_manager" || role === "super_admin" || role === "admin" || role === "member") && (
               <div className="space-y-4 pt-4 border-t">
                 <div>
                   <Label className="flex items-center gap-2">
@@ -1774,7 +1774,7 @@ const ProfileSetup = () => {
             )}
 
             {/* Skills & Abilities */}
-            {(role === "entertainer" || role === "artist") && (
+            {(role === "entertainer" || role === "artist" || role === "booking_manager" || role === "super_admin" || role === "admin" || role === "member") && (
               <div className="space-y-4 pt-4 border-t">
                 <div>
                   <Label className="flex items-center gap-2">
@@ -1818,7 +1818,7 @@ const ProfileSetup = () => {
             )}
 
             {/* Genres */}
-            {(role === "entertainer" || role === "artist") && (
+            {(role === "entertainer" || role === "artist" || role === "booking_manager" || role === "super_admin" || role === "admin" || role === "member") && (
               <div className="space-y-4 pt-4 border-t">
                 <div>
                   <Label className="flex items-center gap-2">
@@ -1862,7 +1862,7 @@ const ProfileSetup = () => {
               )}
 
               {/* Entertainer Categories (multi-select) */}
-              {(role === "entertainer" || role === "artist") && (
+              {(role === "entertainer" || role === "artist" || role === "booking_manager" || role === "super_admin" || role === "admin" || role === "member") && (
                 <div className="space-y-3 pt-4 border-t">
                   <div>
                     <Label className="flex items-center gap-2">
@@ -1949,7 +1949,7 @@ const ProfileSetup = () => {
 
               {/* Availability Tab */}
               <TabsContent value="availability" className="mt-0 space-y-6">
-            {(role === "entertainer" || role === "artist") && (
+            {(role === "entertainer" || role === "artist" || role === "booking_manager" || role === "super_admin" || role === "admin" || role === "member") && (
               <div className="space-y-4 pt-4 border-t">
                 <Label className="flex items-center gap-2">
                   <Briefcase className="h-4 w-4" />

@@ -31,6 +31,20 @@ interface BandInvitationManagerProps {
   bandName: string;
 }
 
+const getBandInviteBaseUrl = () => {
+  const host = window.location.hostname.toLowerCase();
+
+  if (host === "giggme.com" || host === "giggme.lovable.app") {
+    return "https://giggme.com";
+  }
+
+  if (host.endsWith(".lovable.app") && host.includes("--")) {
+    return window.location.origin;
+  }
+
+  return "https://giggme.com";
+};
+
 export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManagerProps) => {
   const { toast } = useToast();
   const { playNotificationSound } = useSoundPreference();
@@ -228,6 +242,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
           bandName: bandName,
           inviteToken: invitation.token,
           bandLeaderName: profile?.name || "Group Leader",
+          siteOrigin: getBandInviteBaseUrl(),
         },
       });
 
@@ -254,7 +269,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
   };
 
   const copyInviteLink = (token: string) => {
-    const inviteUrl = `https://giggme.com/band-invite/${token}`;
+    const inviteUrl = `${getBandInviteBaseUrl()}/band-invite/${token}`;
     navigator.clipboard.writeText(inviteUrl);
     toast({
       title: "Copied!",
@@ -425,6 +440,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
           bandName: bandName,
           inviteToken: newInvitation.token,
           bandLeaderName: profile?.name || "Group Leader",
+          siteOrigin: getBandInviteBaseUrl(),
         },
       });
 

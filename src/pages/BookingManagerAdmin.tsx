@@ -46,6 +46,7 @@ import { UpcomingGigLocationTracker } from "@/components/UpcomingGigLocationTrac
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { AdminsManager } from "@/components/AdminsManager";
+import { BandInvitationManager } from "@/components/BandInvitationManager";
 
 const CATEGORIES = ["Soloist", "Duo", "Band"] as const;
 type Category = typeof CATEGORIES[number];

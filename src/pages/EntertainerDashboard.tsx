@@ -166,9 +166,9 @@ const EntertainerDashboard = () => {
   }
 
   return (
-    <AppShell userRole="artist">
+    <AppShell userRole="entertainer">
     <div className="min-h-screen bg-background pb-20 lg:pb-6">
-      <TopNav userRole="artist" />
+      <TopNav userRole="entertainer" />
 
       
       <main className="container mx-auto px-4 py-6 max-w-4xl">
@@ -190,7 +190,7 @@ const EntertainerDashboard = () => {
         {userId && (
           <UpcomingGigLocationTracker 
             userId={userId} 
-            userRole="artist" 
+            userRole="entertainer" 
           />
         )}
 

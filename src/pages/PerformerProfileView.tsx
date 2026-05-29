@@ -313,7 +313,7 @@ const PerformerProfileView = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/10">
-      <TopNav userRole="artist" />
+      <TopNav userRole="entertainer" />
       <div className="p-4 sm:p-6">
         <div className="max-w-2xl mx-auto">
           <Button

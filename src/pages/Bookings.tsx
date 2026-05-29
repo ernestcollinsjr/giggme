@@ -1711,15 +1711,37 @@ const Bookings = () => {
                       ))}
                       {dayRequests.map((br: any) => (
                         <div key={`r-${br.id}`} className="rounded-lg border border-border/50 p-3 space-y-1 relative">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute top-2 right-2 h-7 w-7"
-                            onClick={() => handleDeleteBookingRequest(br.id)}
-                            aria-label="Delete booking request"
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
+                          <div className="absolute top-2 right-2 flex items-center gap-1">
+                            {canEditBookings && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 border border-border/60 bg-background/80 text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground"
+                                onClick={() => {
+                                  setEditingRequest(br);
+                                  setEditForm({
+                                    venue: br.venue || "",
+                                    dates_text: br.dates_text || "",
+                                    time_text: br.time_text || "",
+                                    budget: br.budget || "",
+                                    note: br.note || "",
+                                  });
+                                }}
+                                aria-label="Edit booking request"
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={() => handleDeleteBookingRequest(br.id)}
+                              aria-label="Delete booking request"
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
                           <div className="flex items-center gap-2">
                             <span className={cn(
                               "h-2.5 w-2.5 rounded-full",
@@ -1727,7 +1749,7 @@ const Bookings = () => {
                             )} />
                             <Badge variant="secondary">Booking request</Badge>
                           </div>
-                          <div className="font-semibold pr-8">{br.venue}</div>
+                          <div className="font-semibold pr-16">{br.venue}</div>
                           {br.performer_name && <div className="text-xs text-muted-foreground">Performer: {br.performer_name}</div>}
                           <div className="text-xs text-muted-foreground">Status: {br.status}</div>
                         </div>

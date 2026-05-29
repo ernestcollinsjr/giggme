@@ -289,7 +289,7 @@ const Bookings = () => {
     // Fetch managed artists (for quick-book from calendar) — booking managers & band leaders
     if (
       roleData?.role === "booking_manager" ||
-      roleData?.role === "booking_manager" ||
+      roleData?.role === "admin" ||
       roleData?.role === "super_admin"
     ) {
       const { data: links } = await supabase

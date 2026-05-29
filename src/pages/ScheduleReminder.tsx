@@ -119,9 +119,8 @@ export default function ScheduleReminder() {
       if (roleData) {
         setUserRole(roleData.role);
         
-        if (roleData.role === "booking_manager") {
+        if (roleData.role === "booking_manager" || roleData.role === "admin") {
           await fetchBands(user.id);
-        } else if (roleData.role === "booking_manager") {
           await fetchManagedArtists(user.id);
         }
       }

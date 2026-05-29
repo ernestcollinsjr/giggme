@@ -1286,12 +1286,10 @@ const Dashboard = () => {
             <Badge variant="secondary" className="mt-2">
               {userRole === "super_admin"
                 ? "Super Admin"
-                : userRole === "booking_manager" 
-                ? "Booking Manager" 
                 : userRole === "booking_manager"
-                ? "Band Leader"
-                : userRole === "artist"
-                ? "Artist/Musician"
+                ? "Booking Manager"
+                : userRole === "admin"
+                ? "Admin"
                 : userRole === "entertainer"
                 ? "Tour/Road Manager"
                 : "Band Member"}

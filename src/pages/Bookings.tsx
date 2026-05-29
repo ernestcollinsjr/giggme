@@ -922,6 +922,19 @@ const Bookings = () => {
     setEditDialogOpen(true);
   };
 
+  useEffect(() => {
+    const editId = searchParams.get("edit");
+    if (!editId || gigs.length === 0) return;
+    const gig = gigs.find((g) => g.id === editId);
+    if (gig) {
+      openEditGigDialog(gig);
+      searchParams.delete("edit");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [gigs, searchParams]);
+
+  const _placeholder_ = () => {
+
   const handleUpdateGig = async () => {
     if (!editingGig || !editDate || !editVenue.trim()) {
       toast({

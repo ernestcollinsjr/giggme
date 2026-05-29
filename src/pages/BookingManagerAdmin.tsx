@@ -1334,6 +1334,11 @@ export default function BookingManagerAdmin() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        {userId && (
+          <div className="mt-6">
+            <AdminsManager bookingManagerId={userId} />
+          </div>
+        )}
       </main>
       <BottomNav />
     </div>

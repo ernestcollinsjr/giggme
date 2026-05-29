@@ -23,6 +23,7 @@ import { GigTemplateSelector } from "@/components/GigTemplateSelector";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { sendGigPushNotifications } from "@/utils/sendGigPushNotification";
+import { normalizeRole } from "@/lib/roles";
 
 interface Gig {
   id: string;
@@ -283,20 +284,32 @@ const Bookings = () => {
     }
 
     // Get user role
-    const { data: roleData } = await supabase
+    const { data: roleRows } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", user.id)
-      .single();
+      .order("role", { ascending: true });
+    const roles = (roleRows || []).map((row: any) => normalizeRole(row.role)).filter(Boolean);
+    const userActiveRole = roles.includes("super_admin")
+      ? "super_admin"
+      : roles.includes("booking_manager")
+        ? "booking_manager"
+        : roles.includes("admin")
+          ? "admin"
+          : roles.includes("entertainer")
+            ? "entertainer"
+            : roles.includes("member")
+              ? "member"
+              : null;
 
-    setUserRole(roleData?.role || null);
+    setUserRole(userActiveRole);
     setCurrentUserId(user.id);
 
     // Fetch managed artists (for quick-book from calendar) — booking managers & band leaders
     if (
-      roleData?.role === "booking_manager" ||
-      roleData?.role === "admin" ||
-      roleData?.role === "super_admin"
+      userActiveRole === "booking_manager" ||
+      userActiveRole === "admin" ||
+      userActiveRole === "super_admin"
     ) {
       const { data: links } = await supabase
         .from("booking_manager_artists")
@@ -324,7 +337,7 @@ const Bookings = () => {
     }
 
     // Fetch bands for band leaders
-    if (roleData?.role === "booking_manager" || roleData?.role === "super_admin") {
+    if (userActiveRole === "booking_manager" || userActiveRole === "super_admin") {
       const { data: bandsData } = await supabase
         .from("bands")
         .select("id, name")
@@ -399,7 +412,7 @@ const Bookings = () => {
     }
     
     // Fetch band members if a band is selected
-    if (selectedBandId && (roleData?.role === "booking_manager" || roleData?.role === "super_admin")) {
+    if (selectedBandId && (userActiveRole === "booking_manager" || userActiveRole === "super_admin")) {
       const { data: membersData } = await supabase
         .from("profiles")
         .select("id, name, email, instrument")

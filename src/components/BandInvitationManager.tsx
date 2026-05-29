@@ -208,7 +208,8 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
           email: normalizedEmail,
           recipient_name: recipientName.trim(),
           invited_by: user.id,
-        })
+          role: inviteRole,
+        } as any)
         .select()
         .single();
 

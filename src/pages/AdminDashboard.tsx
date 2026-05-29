@@ -585,6 +585,7 @@ const AdminDashboard = () => {
                         <SelectContent>
                           <SelectItem value="Solo">Solo</SelectItem>
                           <SelectItem value="Duo">Duo</SelectItem>
+                          <SelectItem value="Trio">Trio</SelectItem>
                           <SelectItem value="Band">Band</SelectItem>
                         </SelectContent>
                       </Select>

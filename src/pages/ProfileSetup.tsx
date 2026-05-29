@@ -272,15 +272,17 @@ const ProfileSetup = () => {
   }, []);
 
   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    // Capture the input element synchronously — React nulls e.currentTarget after awaits.
+    const inputEl = e.currentTarget;
     const file = e.target.files?.[0];
     if (!file) return;
 
     setProcessingPhoto(index);
-    
+
     try {
       // Load the image
       const img = await loadImage(file);
-      
+
       // Primary avatar (index 0) gets a square crop.
       // Additional photos preserve full aspect ratio so nothing is cut off.
       let processedBlob: Blob;
@@ -293,15 +295,18 @@ const ProfileSetup = () => {
       }
 
       // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoPreviews((currentPreviews) => {
-          const newPreviews = normalizePhotoSlots(currentPreviews);
-          newPreviews[index] = reader.result as string;
-          return newPreviews;
-        });
-      };
-      reader.readAsDataURL(processedBlob);
+      const dataUrl: string = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(processedBlob);
+      });
+
+      setPhotoPreviews((currentPreviews) => {
+        const newPreviews = normalizePhotoSlots(currentPreviews);
+        newPreviews[index] = dataUrl;
+        return newPreviews;
+      });
 
       // Store the processed file
       setPhotoFiles((currentFiles) => {
@@ -322,7 +327,11 @@ const ProfileSetup = () => {
         description: "Could not process the photo. Please try another image.",
       });
     } finally {
-      e.currentTarget.value = "";
+      try {
+        if (inputEl) inputEl.value = "";
+      } catch {
+        // ignore — element may have unmounted
+      }
       setProcessingPhoto(null);
     }
   };

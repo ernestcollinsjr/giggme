@@ -1972,20 +1972,41 @@ const Bookings = () => {
                   </div>
                 </div>
               ))}
-              {gigInvitations.map((gi: any) => (
-                <div key={`gi-${gi.id}`} className="p-4 border rounded-lg">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <Badge variant={gi.status === 'accepted' ? 'default' : gi.status === 'pending' ? 'secondary' : 'outline'}>
-                      {gi.status}
-                    </Badge>
-                    <Badge variant="outline">Group Gig</Badge>
+              {gigInvitations.map((gi: any) => {
+                const fullGig = gigs.find((g) => g.id === gi.gigs?.id);
+                return (
+                  <div key={`gi-${gi.id}`} className="p-4 border rounded-lg">
+                    <div className="flex items-start justify-between gap-2 flex-wrap">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <Badge variant={gi.status === 'accepted' ? 'default' : gi.status === 'pending' ? 'secondary' : 'outline'}>
+                            {gi.status}
+                          </Badge>
+                          <Badge variant="outline">Group Gig</Badge>
+                        </div>
+                        <p className="font-semibold truncate">{gi.gigs?.venue_name || gi.gigs?.venue}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {gi.gigs?.date && format(new Date(gi.gigs.date), "PPP p")}
+                        </p>
+                      </div>
+                      {isBandLeader && fullGig && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 shrink-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openEditGigDialog(fullGig);
+                          }}
+                          aria-label="Edit gig"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                  <p className="font-semibold truncate">{gi.gigs?.venue_name || gi.gigs?.venue}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {gi.gigs?.date && format(new Date(gi.gigs.date), "PPP p")}
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </CardContent>
           </Card>
         )}

@@ -490,7 +490,8 @@ const AdminDashboard = () => {
       u.role === "band_member" ||
       u.role === "band_leader" ||
       (u.entertainer_categories && u.entertainer_categories.length > 0) ||
-      !!u.subscription_status
+      !!u.subscription_status ||
+      !!u.performer_category
   );
 
   const filteredEntertainers = entertainers.filter(

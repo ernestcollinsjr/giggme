@@ -933,7 +933,6 @@ const Bookings = () => {
     }
   }, [gigs, searchParams]);
 
-  const _placeholder_ = () => {
 
   const handleUpdateGig = async () => {
     if (!editingGig || !editDate || !editVenue.trim()) {

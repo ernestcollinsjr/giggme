@@ -1110,11 +1110,11 @@ const Bookings = () => {
                       <p className="font-semibold truncate">{br.venue}</p>
                       <p className="text-sm text-muted-foreground">
                         {br.booker_id === br.performer_id
-                          ? `${br.dates_text}`
+                          ? `${to12hText(br.dates_text)}`
                           : br.performer_id && br.booker_name && br.performer_name
-                            ? `${br.booker_name} → ${br.performer_name} · ${br.dates_text}`
-                            : `From ${br.booker_name || 'a client'} · ${br.dates_text}`}
-                        {br.time_text && ` · ${br.time_text}`}
+                            ? `${br.booker_name} → ${br.performer_name} · ${to12hText(br.dates_text)}`
+                            : `From ${br.booker_name || 'a client'} · ${to12hText(br.dates_text)}`}
+                        {br.time_text && ` · ${to12hText(br.time_text)}`}
                       </p>
                       {br.budget && (
                         <p className="text-xs text-muted-foreground mt-1">Budget: {br.budget}</p>

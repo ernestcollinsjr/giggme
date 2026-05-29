@@ -289,6 +289,7 @@ const Bookings = () => {
       .single();
 
     setUserRole(roleData?.role || null);
+    setCurrentUserId(user.id);
 
     // Fetch managed artists (for quick-book from calendar) — booking managers & band leaders
     if (

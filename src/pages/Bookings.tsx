@@ -1989,7 +1989,7 @@ const Bookings = () => {
                           {gi.gigs?.date && format(new Date(gi.gigs.date), "PPP p")}
                         </p>
                       </div>
-                      {isBandLeader && fullGig && (
+                      {(userRole === "booking_manager" || userRole === "admin" || userRole === "super_admin") && fullGig && (
                         <Button
                           size="icon"
                           variant="ghost"

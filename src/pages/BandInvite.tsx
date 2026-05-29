@@ -12,7 +12,7 @@ interface BandInvitation {
   email: string;
   status: string;
   expires_at: string;
-  role: "member" | "entertainer";
+  role: "member" | "entertainer" | "admin";
   bands: {
     name: string;
     description: string | null;

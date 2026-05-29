@@ -1291,8 +1291,8 @@ const Dashboard = () => {
                 : userRole === "admin"
                 ? "Admin"
                 : userRole === "entertainer"
-                ? "Tour/Road Manager"
-                : "Band Member"}
+                ? "Entertainer"
+                : "Member"}
             </Badge>
           </div>
           <LivePresence />

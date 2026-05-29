@@ -133,7 +133,7 @@ export default function ScheduleReminder() {
 
   const fetchBands = async (userId: string) => {
     const { data } = await supabase
-      .from("bands")
+      .from("groups")
       .select("id, name")
       .eq("band_leader_id", userId);
     

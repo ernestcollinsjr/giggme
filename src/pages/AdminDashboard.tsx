@@ -178,7 +178,7 @@ const AdminDashboard = () => {
 
       // Fetch bands for leaders
       const { data: allBands, error: bandsError } = await supabase
-        .from("bands")
+        .from("groups")
         .select("id, name, band_leader_id");
 
       if (bandsError) throw bandsError;
@@ -233,7 +233,7 @@ const AdminDashboard = () => {
     try {
       // Fetch all bands
       const { data: bandsData, error: bandsError } = await supabase
-        .from("bands")
+        .from("groups")
         .select("*")
         .order("created_at", { ascending: false });
 
@@ -257,7 +257,7 @@ const AdminDashboard = () => {
 
       setBands(bandsWithMembers);
     } catch (error: any) {
-      console.error("Error fetching bands:", error);
+      console.error("Error fetching groups:", error);
       toast({
         variant: "destructive",
         title: "Error fetching groups",
@@ -432,7 +432,7 @@ const AdminDashboard = () => {
 
       // Delete the band
       const { error } = await supabase
-        .from("bands")
+        .from("groups")
         .delete()
         .eq("id", deleteConfirmGroup.id);
 
@@ -467,7 +467,7 @@ const AdminDashboard = () => {
 
     try {
       const { error } = await supabase
-        .from("bands")
+        .from("groups")
         .update({
           name: groupEditForm.name,
           description: groupEditForm.description || null,
@@ -602,7 +602,7 @@ const AdminDashboard = () => {
                           <SelectItem value="Solo">Solo</SelectItem>
                           <SelectItem value="Duo">Duo</SelectItem>
                           <SelectItem value="Trio">Trio</SelectItem>
-                          <SelectItem value="Band">Band</SelectItem>
+                          <SelectItem value="Band">Group</SelectItem>
                         </SelectContent>
                       </Select>
                     </TableCell>
@@ -622,7 +622,7 @@ const AdminDashboard = () => {
                           <SelectItem value="__cat_Solo__">Solo</SelectItem>
                           <SelectItem value="__cat_Duo__">Duo</SelectItem>
                           <SelectItem value="__cat_Trio__">Trio</SelectItem>
-                          <SelectItem value="__cat_Band__">Band</SelectItem>
+                          <SelectItem value="__cat_Band__">Group</SelectItem>
                           {bands.map((b) => (
                             <SelectItem key={b.id} value={b.id}>
                               {b.name}

@@ -72,7 +72,7 @@ export function AvailabilityCalendar({ userId, readOnly = false, onTodayStatusCh
       const targetUserId = userId || (await supabase.auth.getUser()).data.user?.id;
       if (!targetUserId) return;
 
-      // Gigs where this user is the owner (band leader)
+      // Gigs where this user is the owner (group leader)
       const { data: ownGigs } = await supabase
         .from('gigs')
         .select('id, date, venue, venue_name, end_time, status, payment_amount, notes')

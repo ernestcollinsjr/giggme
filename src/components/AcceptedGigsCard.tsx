@@ -124,7 +124,7 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
           Your Accepted Gigs
         </CardTitle>
         <CardDescription>
-          Enable location sharing to help the band leader coordinate arrival times
+          Enable location sharing to help the group leader coordinate arrival times
         </CardDescription>
       </CardHeader>
       <CardContent>

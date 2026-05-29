@@ -135,7 +135,7 @@ export function AvailabilityRequestManager({ bandId, onViewResponses }: Availabi
       // Select all members by default
       setSelectedMembers(members.map(m => m.member_id));
     } catch (error) {
-      console.error("Error fetching band members:", error);
+      console.error("Error fetching group members:", error);
     }
   };
 
@@ -422,7 +422,7 @@ export function AvailabilityRequestManager({ bandId, onViewResponses }: Availabi
               Availability Requests
             </CardTitle>
             <CardDescription>
-              Request availability from your band members for upcoming dates
+              Request availability from your group members for upcoming dates
             </CardDescription>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -522,7 +522,7 @@ export function AvailabilityRequestManager({ bandId, onViewResponses }: Availabi
                   )}
 
                   {bandMembers.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No band members found</p>
+                    <p className="text-sm text-muted-foreground">No group members found</p>
                   ) : (
                     <div className="space-y-2 max-h-[150px] overflow-y-auto border rounded-md p-2">
                       {bandMembers.map((member) => (

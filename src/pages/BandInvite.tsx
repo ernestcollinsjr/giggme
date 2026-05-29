@@ -155,7 +155,7 @@ const BandInvite = () => {
           acceptedByEmail: user.email || "",
         },
       }).catch((err) => {
-        console.error("Failed to send notification to band leader:", err);
+        console.error("Failed to send notification to group leader:", err);
       });
 
       toast({
@@ -219,7 +219,7 @@ const BandInvite = () => {
           </div>
           <CardTitle>Group Member</CardTitle>
           <CardDescription>
-            You've been invited to join a band
+            You've been invited to join a group
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

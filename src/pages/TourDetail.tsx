@@ -607,7 +607,7 @@ export default function TourDetail() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="band_members">Band Members</SelectItem>
+                      <SelectItem value="band_members">Group Members</SelectItem>
                       <SelectItem value="singer">Singer</SelectItem>
                       <SelectItem value="sound_crew">Sound Crew</SelectItem>
                       <SelectItem value="lighting_crew">Lighting Crew</SelectItem>
@@ -659,7 +659,7 @@ export default function TourDetail() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="band_members">Band Members</SelectItem>
+                    <SelectItem value="band_members">Group Members</SelectItem>
                     <SelectItem value="singer">Singer</SelectItem>
                     <SelectItem value="sound_crew">Sound Crew</SelectItem>
                     <SelectItem value="lighting_crew">Lighting Crew</SelectItem>
@@ -698,7 +698,7 @@ export default function TourDetail() {
                   if (typeMembers.length === 0) return null;
                   
                   const typeLabels = {
-                    band_members: 'Band Members',
+                    band_members: 'Group Members',
                     singer: 'Singer',
                     sound_crew: 'Sound Crew',
                     lighting_crew: 'Lighting Crew'

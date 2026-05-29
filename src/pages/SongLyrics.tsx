@@ -196,7 +196,7 @@ const SongLyrics = () => {
                   <div className="text-center py-12">
                     <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <p className="text-muted-foreground">
-                      No lyrics available yet. {userRole === "booking_manager" ? "Click 'Import Lyrics' to add them." : "Your band leader can add them."}
+                      No lyrics available yet. {userRole === "booking_manager" ? "Click 'Import Lyrics' to add them." : "Your group leader can add them."}
                     </p>
                   </div>
                 )}

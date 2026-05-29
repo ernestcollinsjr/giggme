@@ -40,7 +40,7 @@ export const BandProfileEditor = ({ bandId, bandName }: BandProfileEditorProps) 
   const fetchBandProfile = async () => {
     try {
       const { data, error } = await supabase
-        .from("bands")
+        .from("groups")
         .select("social_links, youtube_links")
         .eq("id", bandId)
         .single();
@@ -50,7 +50,7 @@ export const BandProfileEditor = ({ bandId, bandName }: BandProfileEditorProps) 
       setSocialLinks((data?.social_links as SocialLinks) || {});
       setYoutubeLinks(data?.youtube_links || []);
     } catch (error: any) {
-      console.error("Error fetching band profile:", error);
+      console.error("Error fetching group profile:", error);
     } finally {
       setLoading(false);
     }
@@ -60,7 +60,7 @@ export const BandProfileEditor = ({ bandId, bandName }: BandProfileEditorProps) 
     setSaving(true);
     try {
       const { error } = await supabase
-        .from("bands")
+        .from("groups")
         .update({
           social_links: socialLinks as Json,
           youtube_links: youtubeLinks,
@@ -70,16 +70,16 @@ export const BandProfileEditor = ({ bandId, bandName }: BandProfileEditorProps) 
       if (error) throw error;
 
       toast({
-        title: "Band profile updated!",
+        title: "Group profile updated!",
         description: "Your social media and YouTube links have been saved.",
       });
       setDialogOpen(false);
     } catch (error: any) {
-      console.error("Error saving band profile:", error);
+      console.error("Error saving group profile:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to save band profile.",
+        description: "Failed to save group profile.",
       });
     } finally {
       setSaving(false);
@@ -128,14 +128,14 @@ export const BandProfileEditor = ({ bandId, bandName }: BandProfileEditorProps) 
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
           <Globe className="h-4 w-4" />
-          Edit Band Profile
+          Edit Group Profile
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Band Profile - {bandName}</DialogTitle>
           <DialogDescription>
-            Add social media links and YouTube videos to showcase your band
+            Add social media links and YouTube videos to showcase your group
           </DialogDescription>
         </DialogHeader>
 

@@ -21,7 +21,7 @@ interface AvailabilityRequest {
   end_date: string;
   status: string;
   created_at: string;
-  source?: 'band' | 'booking_manager';
+  source?: 'group' | 'booking_manager';
 }
 
 interface AvailabilityResponse {
@@ -215,7 +215,7 @@ export function AvailabilityRequestResponder() {
           Availability Requests
         </CardTitle>
         <CardDescription>
-          Respond to availability requests from band leaders and booking managers
+          Respond to availability requests from group leaders and booking managers
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">

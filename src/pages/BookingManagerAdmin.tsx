@@ -103,7 +103,7 @@ interface PendingInvite {
 function normalizeCategory(value: string | null): Category {
   if (!value) return "Soloist";
   const v = value.toLowerCase();
-  if (v.startsWith("band")) return "Band";
+  if (v.startsWith("group")) return "Band";
   if (v.startsWith("duo")) return "Duo";
   return "Soloist";
 }
@@ -234,7 +234,7 @@ export default function BookingManagerAdmin() {
 
   const fetchMyBand = async (uid: string) => {
     const { data } = await supabase
-      .from("bands")
+      .from("groups")
       .select("id, name")
       .eq("band_leader_id", uid)
       .order("created_at", { ascending: true });
@@ -246,7 +246,7 @@ export default function BookingManagerAdmin() {
     setCreatingGroup(true);
     try {
       const { data: band, error } = await supabase
-        .from("bands")
+        .from("groups")
         .insert({ name: newGroupName.trim(), band_leader_id: userId })
         .select("id, name")
         .single();
@@ -868,7 +868,7 @@ export default function BookingManagerAdmin() {
                                   onKeyDown={(e) => {
                                     if (e.key === "Enter") (e.target as HTMLInputElement).blur();
                                   }}
-                                  title="Group name (e.g. Motown Band)"
+                                  title="Group name (e.g. Motown Group)"
                                 />
                                 <Select
                                   value={normalizeCategory(artist.group_type)}
@@ -1423,7 +1423,7 @@ export default function BookingManagerAdmin() {
                 <div className="flex gap-2">
                   <Input
                     id="new-group-name"
-                    placeholder="e.g. Saturday Night Band"
+                    placeholder="e.g. Saturday Night Group"
                     value={newGroupName}
                     onChange={(e) => setNewGroupName(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter") createGroupAndContinue(); }}

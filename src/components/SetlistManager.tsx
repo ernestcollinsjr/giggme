@@ -1248,7 +1248,7 @@ export const SetlistManager = () => {
 
               {/* Select Band */}
               <div>
-                <Label htmlFor="band">Band/Team</Label>
+                <Label htmlFor="band">Group/Team</Label>
                 <Select 
                   value={newSetlistBandId} 
                   onValueChange={(value) => {
@@ -1433,7 +1433,7 @@ export const SetlistManager = () => {
 
               {/* Select Band */}
               <div>
-                <Label htmlFor="edit-band">Band/Team</Label>
+                <Label htmlFor="edit-band">Group/Team</Label>
                 <Select 
                   value={newSetlistBandId} 
                   onValueChange={(value) => {
@@ -2241,7 +2241,7 @@ export const SetlistManager = () => {
               Share Setlist
             </DialogTitle>
             <DialogDescription>
-              Create a shareable link for band members to view this setlist.
+              Create a shareable link for group members to view this setlist.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-2">

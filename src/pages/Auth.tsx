@@ -360,7 +360,7 @@ const Auth = () => {
       <Card className="w-full max-w-md border-border/50 shadow-xl">
         <CardHeader className="space-y-2 text-center">
           <img src={logo} alt="GiggMe" className="mx-auto h-40 w-auto object-contain mb-2" />
-          <CardDescription>Connect bands and managers for seamless gig management</CardDescription>
+          <CardDescription>Connect groups and managers for seamless gig management</CardDescription>
         </CardHeader>
         
         <CardContent>
@@ -589,7 +589,7 @@ const Auth = () => {
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <h3 className="font-semibold">Band Manager</h3>
+                              <h3 className="font-semibold">Group Manager</h3>
                               <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
                             </div>
                             <div className="text-right">
@@ -598,7 +598,7 @@ const Auth = () => {
                             </div>
                           </div>
                           <p className="text-sm text-muted-foreground mt-1">
-                            Manage your band, schedule gigs, coordinate with venues, and keep your team organized.
+                            Manage your group, schedule gigs, coordinate with venues, and keep your team organized.
                           </p>
                           <div className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
                             7-day free trial

@@ -96,7 +96,7 @@ export const TopNav = ({ userRole }: TopNavProps) => {
     // When on booking-manager, hide both as well
     // On other pages, show both options
     if (currentPath !== "/dashboard" && currentPath !== "/booking-manager") {
-      links.push({ path: "/dashboard", label: "Band Leader", icon: Music });
+      links.push({ path: "/dashboard", label: "Group Leader", icon: Music });
       links.push({ path: "/booking-manager", label: "Booking Agent", icon: Briefcase });
     }
     

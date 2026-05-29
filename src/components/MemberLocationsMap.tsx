@@ -141,7 +141,7 @@ export const MemberLocationsMap = ({ gigId }: MemberLocationsMapProps) => {
           Member Locations
         </CardTitle>
         <CardDescription className="text-xs">
-          Real-time band member locations
+          Real-time group member locations
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-2 pb-4">

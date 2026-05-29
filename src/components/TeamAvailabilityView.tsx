@@ -181,8 +181,8 @@ export function TeamAvailabilityView({ bandId }: TeamAvailabilityViewProps) {
         {members.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <Users className="h-12 w-12 mx-auto mb-2 opacity-50" />
-            <p>No band members found</p>
-            <p className="text-sm">Invite members to your band to see their availability</p>
+            <p>No group members found</p>
+            <p className="text-sm">Invite members to your group to see their availability</p>
           </div>
         ) : (
           <>

@@ -121,7 +121,7 @@ const RoleSwitcher = ({ currentRole, onRoleChange }: RoleSwitcherProps) => {
   if (!canSwitchRole) {
     return (
       <div className="p-4 text-center text-muted-foreground">
-        <p className="text-sm">Your role is assigned by your Band Leader or Booking Manager.</p>
+        <p className="text-sm">Your role is assigned by your Group Leader or Booking Manager.</p>
       </div>
     );
   }

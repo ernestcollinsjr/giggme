@@ -119,7 +119,7 @@ export function PaymentScheduler({ mode }: { mode: Mode }) {
 
   const loadBandLeader = async (uid: string) => {
     // Bands led by this user
-    const { data: bands } = await supabase.from("bands").select("id").eq("band_leader_id", uid);
+    const { data: bands } = await supabase.from("groups").select("id").eq("band_leader_id", uid);
     const bandIds = (bands || []).map((b: any) => b.id);
     // Members of those bands
     let memberIds: string[] = [];
@@ -245,7 +245,7 @@ export function PaymentScheduler({ mode }: { mode: Mode }) {
           <p className="text-sm text-muted-foreground">
             {mode === "manager"
               ? "Add managed performers to start scheduling payouts."
-              : "Add band members and assign them to gigs to schedule payouts."}
+              : "Add group members and assign them to gigs to schedule payouts."}
           </p>
         ) : (
           <>

@@ -47,7 +47,7 @@ const BottomNav = () => {
       let memberIds: string[] = [];
       if (role === "booking_manager") {
         const { data: bands } = await supabase
-          .from("bands")
+          .from("groups")
           .select("id")
           .eq("band_leader_id", user.id);
 

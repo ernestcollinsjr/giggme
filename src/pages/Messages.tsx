@@ -408,7 +408,7 @@ const Messages = () => {
         if (roleData.role === "booking_manager") {
           // Get bands the user leads
           const { data: bands } = await supabase
-            .from("bands")
+            .from("groups")
             .select("id")
             .eq("band_leader_id", user.id);
           
@@ -1111,10 +1111,10 @@ const Messages = () => {
                 <div>
                   <h1 className="text-xl font-semibold flex items-center gap-2">
                     <MessageCircle className="h-5 w-5 text-primary" />
-                    {userRole === "booking_manager" ? "Band Messages" : userRole === "booking_manager" ? "Artist Messages" : "Messages"}
+                    {userRole === "booking_manager" ? "Group Messages" : userRole === "booking_manager" ? "Artist Messages" : "Messages"}
                   </h1>
                   <p className="text-xs text-muted-foreground">
-                    {userRole === "booking_manager" ? "Messages with your band members" : userRole === "booking_manager" ? "Messages with your managed artists" : "Direct & group messages"}
+                    {userRole === "booking_manager" ? "Messages with your group members" : userRole === "booking_manager" ? "Messages with your managed artists" : "Direct & group messages"}
                   </p>
                 </div>
               </div>

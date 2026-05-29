@@ -1806,7 +1806,7 @@ const Dashboard = () => {
           </Tabs>
         )}
 
-        {(userRole === "band_leader" || userRole === "band_member") && (
+        {(userRole === "band_leader" || userRole === "band_member" || userRole === "super_admin") && (
           <>
             <div className="grid md:grid-cols-2 gap-4">
               <Card

@@ -15,6 +15,7 @@ interface BandInviteRequest {
   bandName: string;
   inviteToken: string;
   bandLeaderName: string;
+  siteOrigin?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -24,13 +25,13 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { recipientEmail, recipientName, bandName, inviteToken, bandLeaderName }: BandInviteRequest = await req.json();
+    const { recipientEmail, recipientName, bandName, inviteToken, bandLeaderName, siteOrigin }: BandInviteRequest = await req.json();
 
     console.log("Sending band invite to:", recipientEmail, recipientName);
 
-    const configured = Deno.env.get("PUBLIC_SITE_URL") || Deno.env.get("SITE_URL") || "";
+    const configured = Deno.env.get("PUBLIC_SITE_URL") || Deno.env.get("SITE_URL") || "https://giggme.com";
     const origin = req.headers.get("origin") || req.headers.get("referer") || "";
-    const base = (configured || origin).toString().replace(/\/$/, "");
+    const base = (siteOrigin || origin || configured).toString().replace(/\/$/, "");
     const inviteUrl = `${base}/band-invite/${inviteToken}`;
 
     const greeting = recipientName ? `Hello ${recipientName}!` : "Hello!";
@@ -41,7 +42,7 @@ const handler = async (req: Request): Promise<Response> => {
       subject: `You're invited to join ${bandName}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #333;">Band Invitation</h1>
+          <h1 style="color: #333;">Group Invitation</h1>
           <p>${greeting}</p>
           <p>${bandLeaderName} has invited you to join <strong>${bandName}</strong>.</p>
           <p>Click the button below to accept this invitation:</p>

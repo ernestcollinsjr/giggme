@@ -122,6 +122,9 @@ const Bookings = () => {
   const [gigRehearsals, setGigRehearsals] = useState<Record<string, { date: string; venue: string; end_time: string | null }>>({});
   const [gigResponseCounts, setGigResponseCounts] = useState<Record<string, { pending: number; accepted: number; declined: number }>>({});
   const [bookingRequests, setBookingRequests] = useState<any[]>([]);
+  const [editingRequest, setEditingRequest] = useState<any | null>(null);
+  const [editForm, setEditForm] = useState({ venue: "", dates_text: "", time_text: "", budget: "", note: "" });
+  const [savingEdit, setSavingEdit] = useState(false);
   const [gigInvitations, setGigInvitations] = useState<any[]>([]);
   const [bands, setBands] = useState<{ id: string; name: string }[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);

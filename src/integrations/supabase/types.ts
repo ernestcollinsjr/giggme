@@ -2289,6 +2289,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_band_invitation: { Args: { _token: string }; Returns: Json }
       get_featured_entertainers: {
         Args: never
         Returns: {

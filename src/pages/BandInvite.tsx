@@ -105,67 +105,12 @@ const BandInvite = () => {
         return;
       }
 
-      // Update invitation status with acceptance timestamp
-      const { error: updateError } = await supabase
-        .from("band_invitations")
-        .update({ 
-          status: "accepted",
-          accepted_at: new Date().toISOString()
-        })
-        .eq("id", invitation.id);
+      // Server-side accept: assigns role, adds to band_members, links admins, etc.
+      const { error: rpcError } = await supabase.rpc("accept_band_invitation" as any, {
+        _token: token,
+      });
+      if (rpcError) throw rpcError;
 
-      if (updateError) throw updateError;
-
-      // Auto-fill the member's band_name on their profile if not already set
-      try {
-        const bandName = (invitation as any).bands?.name;
-        if (bandName) {
-          const { data: existingProfile } = await supabase
-            .from("profiles")
-            .select("band_name")
-            .eq("id", user.id)
-            .maybeSingle();
-          if (!existingProfile?.band_name) {
-            await supabase
-              .from("profiles")
-              .update({ band_name: bandName })
-              .eq("id", user.id);
-          }
-        }
-      } catch (e) {
-        console.error("Failed to set band_name on profile:", e);
-      }
-      // Assign the role the Booking Manager chose at invite time, and remove
-      // any other roles so the invitee can't pick something else.
-      try {
-        await supabase.from("user_roles").delete().eq("user_id", user.id);
-        await supabase
-          .from("user_roles")
-          .insert({ user_id: user.id, role: invitation.role as any });
-      } catch (e) {
-        console.error("Failed to assign invited role:", e);
-      }
-
-      // If invited as admin, link this user to the inviting Booking Manager.
-      if (invitation.role === "admin") {
-        try {
-          const { data: bandRow } = await supabase
-            .from("bands")
-            .select("band_leader_id")
-            .eq("id", invitation.band_id)
-            .maybeSingle();
-          if (bandRow?.band_leader_id) {
-            await supabase
-              .from("booking_manager_admins")
-              .upsert(
-                { booking_manager_id: bandRow.band_leader_id, admin_user_id: user.id },
-                { onConflict: "booking_manager_id,admin_user_id" }
-              );
-          }
-        } catch (e) {
-          console.error("Failed to link admin to booking manager:", e);
-        }
-      }
 
 
 

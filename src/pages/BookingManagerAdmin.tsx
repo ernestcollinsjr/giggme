@@ -1393,6 +1393,17 @@ export default function BookingManagerAdmin() {
           </div>
         )}
       </main>
+      <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-black/60 backdrop-blur-sm">
+          <DialogHeader>
+            <DialogTitle>Invite Group Member</DialogTitle>
+            <DialogDescription>Send an invite to add someone to your group.</DialogDescription>
+          </DialogHeader>
+          {myBand && (
+            <BandInvitationManager bandId={myBand.id} bandName={myBand.name} />
+          )}
+        </DialogContent>
+      </Dialog>
       <BottomNav />
     </div>
     </AppShell>

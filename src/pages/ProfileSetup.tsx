@@ -1235,11 +1235,7 @@ const ProfileSetup = () => {
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-foreground">Complete Your Subscription</h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {role === "artist" && "Start your 14-day free trial at $10.99/mo to unlock all features."}
-                    {role === "booking_manager" && "Start your 7-day free trial at $14/mo to manage your group."}
-                    {role === "booking_manager" && "Start your 7-day free trial at $26/mo to manage artists."}
-                    {role === "booking_manager" && "Subscribe at $26/mo (14-day trial) or $49 one-time to book entertainers."}
-                    {!["artist", "booking_manager", "booking_manager", "booking_manager"].includes(role) && "Subscribe to unlock all features."}
+                    Start your 14-day free trial at $10.99/mo to unlock all features.
                   </p>
                   <Button 
                     onClick={handleSubscribe} 

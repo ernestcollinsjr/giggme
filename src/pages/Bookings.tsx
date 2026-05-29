@@ -128,6 +128,7 @@ const Bookings = () => {
   const [gigInvitations, setGigInvitations] = useState<any[]>([]);
   const [bands, setBands] = useState<{ id: string; name: string }[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [bandMembers, setBandMembers] = useState<BandMember[]>([]);
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);

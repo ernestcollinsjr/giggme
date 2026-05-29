@@ -1948,7 +1948,7 @@ const Bookings = () => {
                         <p className="text-xs text-muted-foreground mt-1">Budget: {br.budget}</p>
                       )}
                     </div>
-                    {(isBandLeader || br.booker_id === currentUserId) && (
+                    {(userRole === "booking_manager" || userRole === "admin" || userRole === "super_admin") && (
                       <Button
                         size="icon"
                         variant="ghost"

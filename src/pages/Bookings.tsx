@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useBand } from "@/contexts/BandContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -116,6 +116,7 @@ const getBookingRequestCalendarDates = (request: BookingRequestCalendarSource): 
 
 const Bookings = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const { selectedBandId, setSelectedBandId } = useBand();
   const [gigs, setGigs] = useState<Gig[]>([]);
@@ -920,6 +921,18 @@ const Bookings = () => {
     setEditAutoRemindersDisabled((gig as any).auto_reminders_disabled ?? false);
     setEditDialogOpen(true);
   };
+
+  useEffect(() => {
+    const editId = searchParams.get("edit");
+    if (!editId || gigs.length === 0) return;
+    const gig = gigs.find((g) => g.id === editId);
+    if (gig) {
+      openEditGigDialog(gig);
+      searchParams.delete("edit");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [gigs, searchParams]);
+
 
   const handleUpdateGig = async () => {
     if (!editingGig || !editDate || !editVenue.trim()) {

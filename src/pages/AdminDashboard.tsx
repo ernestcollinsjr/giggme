@@ -340,6 +340,20 @@ const AdminDashboard = () => {
 
   const handleUpdateBand = async (user: UserWithRole, newBandId: string) => {
     try {
+      // Virtual category options (Solo/Duo/Trio/Band) — set performer_category, no band assignment
+      if (newBandId.startsWith("__cat_")) {
+        const cat = newBandId.replace("__cat_", "").replace(/__$/, "");
+        await supabase.from("band_members").delete().eq("member_id", user.id);
+        const { error } = await supabase
+          .from("profiles")
+          .update({ performer_category: cat })
+          .eq("id", user.id);
+        if (error) throw error;
+        toast({ title: "Group updated", description: `${user.name} set to ${cat}.` });
+        await Promise.all([fetchUsers(), fetchBands()]);
+        return;
+      }
+
       // Remove existing band memberships
       await supabase.from("band_members").delete().eq("member_id", user.id);
 

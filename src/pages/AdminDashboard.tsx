@@ -37,7 +37,7 @@ import {
 } from "lucide-react";
 import { TopNav } from "@/components/TopNav";
 
-type AppRole = "booking_manager" | "entertainer" | "booking_manager" | "artist" | "entertainer" | "booking_manager" | "super_admin";
+import type { AppRole } from "@/lib/roles";
 
 interface UserWithRole {
   id: string;

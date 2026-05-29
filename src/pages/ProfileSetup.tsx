@@ -204,6 +204,10 @@ const ProfileSetup = () => {
         if (roleData) {
           setRole(roleData.role);
           setHasRole(true);
+        } else if (profile) {
+          // Existing onboarded user without a user_roles row — don't show
+          // the Choose Your Role chooser; treat them as already having a role.
+          setHasRole(true);
         }
 
         // Detect invited performers (added to a band or booking manager roster)

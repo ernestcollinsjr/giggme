@@ -67,9 +67,10 @@ const roleLabels: Partial<Record<AppRole, string>> = {
   booking_manager: "Booking Manager",
   admin: "Admin",
   entertainer: "Entertainer",
+  member: "Member",
   // legacy fallbacks (data may still hold these in audit/history)
   band_leader: "Booking Manager",
-  band_member: "Entertainer",
+  band_member: "Member",
   artist: "Entertainer",
   tour_manager: "Entertainer",
   venue_owner: "Booking Manager",
@@ -80,6 +81,7 @@ const roleDescriptions: Partial<Record<AppRole, string>> = {
   booking_manager: "Manages a roster of entertainers, books gigs, runs the workspace",
   admin: "Granted by a Booking Manager to assist with their roster — can edit, cannot delete the manager's account",
   entertainer: "Subscription-based performer profile — can edit only their own page",
+  member: "Invited by a Booking Manager into a group — sees their gigs/messages, edits own profile, no subscription",
 };
 
 const AdminDashboard = () => {
@@ -720,12 +722,10 @@ const AdminDashboard = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="super_admin">Super Admin</SelectItem>
-                  <SelectItem value="booking_manager">Band Leader</SelectItem>
-                  <SelectItem value="entertainer">Band Member</SelectItem>
                   <SelectItem value="booking_manager">Booking Manager</SelectItem>
-                  <SelectItem value="artist">Artist</SelectItem>
-                  <SelectItem value="entertainer">Tour Manager</SelectItem>
-                  <SelectItem value="booking_manager">Venue Owner</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="entertainer">Entertainer</SelectItem>
+                  <SelectItem value="member">Member</SelectItem>
                 </SelectContent>
               </Select>
             </div>

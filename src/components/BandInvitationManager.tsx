@@ -55,7 +55,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
 
     // Subscribe to real-time changes on band_invitations
     const channel = supabase
-      .channel(`band-invitations-${bandId}`)
+      .channel(`band-invitations-${bandId}-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         {

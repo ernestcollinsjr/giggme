@@ -51,6 +51,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
   const [recipientName, setRecipientName] = useState("");
   const [email, setEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<"member" | "entertainer" | "admin">("member");
+  const [performerCategory, setPerformerCategory] = useState<"Solo" | "Duo" | "Trio" | "Band" | "Group">("Solo");
   const [sending, setSending] = useState(false);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);

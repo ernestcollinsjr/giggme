@@ -215,6 +215,7 @@ const ProfileSetup = () => {
           setIsInvitedPerformer(true);
         }
       }
+      setRoleLoading(false);
     };
     
     getUser();

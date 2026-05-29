@@ -228,7 +228,7 @@ export default function BookingManagerAdmin() {
   const fetchManagedArtists = async (uid: string) => {
     const { data, error } = await supabase
       .from("booking_manager_artists")
-      .select("id, artist_id, group_type, notes, created_at")
+      .select("id, artist_id, group_type, group_name, notes, created_at")
       .eq("booking_manager_id", uid)
       .order("created_at", { ascending: false });
 

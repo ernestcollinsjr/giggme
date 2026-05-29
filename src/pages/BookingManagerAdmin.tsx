@@ -36,6 +36,7 @@ import {
   CalendarPlus,
   MessageSquare,
   Send,
+  Pencil,
 } from "lucide-react";
 import { TopNav } from "@/components/TopNav";
 import BottomNav from "@/components/BottomNav";

@@ -15,7 +15,27 @@ interface BandInviteRequest {
   bandName: string;
   inviteToken: string;
   bandLeaderName: string;
+  siteOrigin?: string;
 }
+
+const getInviteBaseUrl = (siteOrigin?: string) => {
+  try {
+    const url = new URL(siteOrigin || "");
+    const host = url.hostname.toLowerCase();
+
+    if (host === "giggme.com" || host === "giggme.lovable.app") {
+      return "https://giggme.com";
+    }
+
+    if (host.endsWith(".lovable.app") && host.includes("--")) {
+      return url.origin;
+    }
+  } catch (_) {
+    // Fall through to production below.
+  }
+
+  return "https://giggme.com";
+};
 
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
@@ -24,14 +44,15 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { recipientEmail, recipientName, bandName, inviteToken, bandLeaderName }: BandInviteRequest = await req.json();
+    const { recipientEmail, recipientName, bandName, inviteToken, bandLeaderName, siteOrigin }: BandInviteRequest = await req.json();
 
     console.log("Sending band invite to:", recipientEmail, recipientName);
 
-    // Always use the production domain for invite links so recipients never land
-    // on Lovable preview/login URLs, even if environment settings are incorrect.
-    const base = "https://giggme.com";
+    // Match the invite link to the environment where it was created, while
+    // blocking lovable.dev editor/login origins from ever being emailed.
+    const base = getInviteBaseUrl(siteOrigin);
     const inviteUrl = `${base}/band-invite/${inviteToken}`;
+    console.log("Band invite URL base:", base);
 
     const greeting = recipientName ? `Hello ${recipientName}!` : "Hello!";
 

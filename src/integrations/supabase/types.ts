@@ -313,6 +313,24 @@ export type Database = {
         }
         Relationships: []
       }
+      booking_manager_admins: {
+        Row: {
+          admin_user_id: string
+          booking_manager_id: string
+          created_at: string
+        }
+        Insert: {
+          admin_user_id: string
+          booking_manager_id: string
+          created_at?: string
+        }
+        Update: {
+          admin_user_id?: string
+          booking_manager_id?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       booking_manager_artists: {
         Row: {
           artist_id: string
@@ -2320,6 +2338,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_admin_for: {
+        Args: { _admin_id: string; _booking_manager_id: string }
+        Returns: boolean
+      }
       is_assigned_to_tour: {
         Args: { _tour_id: string; _user_id: string }
         Returns: boolean
@@ -2330,6 +2352,10 @@ export type Database = {
       }
       is_band_member: {
         Args: { _band_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_entertainer_subscribed: {
+        Args: { _user_id: string }
         Returns: boolean
       }
       is_gig_member: {

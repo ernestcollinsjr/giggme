@@ -602,7 +602,8 @@ const AdminDashboard = () => {
                           <SelectItem value="Solo">Solo</SelectItem>
                           <SelectItem value="Duo">Duo</SelectItem>
                           <SelectItem value="Trio">Trio</SelectItem>
-                          <SelectItem value="Band">Group</SelectItem>
+                          <SelectItem value="Band">Band</SelectItem>
+                          <SelectItem value="Group">Group</SelectItem>
                         </SelectContent>
                       </Select>
                     </TableCell>

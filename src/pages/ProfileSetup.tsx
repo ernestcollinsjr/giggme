@@ -1293,7 +1293,7 @@ const ProfileSetup = () => {
             </TabsList>
           
             {/* Profile Completeness Indicator */}
-            {(role === "booking_manager" || role === "entertainer" || role === "artist") && (
+            {(role === "entertainer" || role === "artist") && (
               <div className="mb-6 p-4 bg-muted/50 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
                   <Label className="text-sm font-medium">Profile Completeness</Label>
@@ -1578,7 +1578,7 @@ const ProfileSetup = () => {
               </p>
             </div>
             
-            {(role === "booking_manager" || role === "entertainer") && (
+            {role === "entertainer" && (
               <div className="space-y-2">
                 <Label htmlFor="instrument">Primary Instrument</Label>
                 <Select value={instrument} onValueChange={setInstrument} required>
@@ -1600,7 +1600,7 @@ const ProfileSetup = () => {
             )}
 
             {/* Social Media Links */}
-            {(role === "booking_manager" || role === "entertainer" || role === "artist") && (
+            {(role === "entertainer" || role === "artist") && (
               <div className="space-y-4 pt-4 border-t">
                 <div>
                   <Label className="flex items-center gap-2">
@@ -1630,7 +1630,7 @@ const ProfileSetup = () => {
             )}
 
             {/* YouTube Links */}
-            {(role === "booking_manager" || role === "entertainer" || role === "artist") && (
+            {(role === "entertainer" || role === "artist") && (
               <div className="space-y-4 pt-4 border-t">
                 <div>
                   <Label className="flex items-center gap-2">
@@ -1729,7 +1729,7 @@ const ProfileSetup = () => {
             )}
 
             {/* Equipment List */}
-            {(role === "booking_manager" || role === "entertainer" || role === "artist") && (
+            {(role === "entertainer" || role === "artist") && (
               <div className="space-y-4 pt-4 border-t">
                 <div>
                   <Label className="flex items-center gap-2">
@@ -1773,7 +1773,7 @@ const ProfileSetup = () => {
             )}
 
             {/* Skills & Abilities */}
-            {(role === "booking_manager" || role === "entertainer" || role === "artist") && (
+            {(role === "entertainer" || role === "artist") && (
               <div className="space-y-4 pt-4 border-t">
                 <div>
                   <Label className="flex items-center gap-2">
@@ -1817,7 +1817,7 @@ const ProfileSetup = () => {
             )}
 
             {/* Genres */}
-            {(role === "booking_manager" || role === "entertainer" || role === "artist") && (
+            {(role === "entertainer" || role === "artist") && (
               <div className="space-y-4 pt-4 border-t">
                 <div>
                   <Label className="flex items-center gap-2">
@@ -1861,7 +1861,7 @@ const ProfileSetup = () => {
               )}
 
               {/* Entertainer Categories (multi-select) */}
-              {(role === "booking_manager" || role === "entertainer" || role === "artist") && (
+              {(role === "entertainer" || role === "artist") && (
                 <div className="space-y-3 pt-4 border-t">
                   <div>
                     <Label className="flex items-center gap-2">
@@ -1948,7 +1948,7 @@ const ProfileSetup = () => {
 
               {/* Availability Tab */}
               <TabsContent value="availability" className="mt-0 space-y-6">
-            {(role === "booking_manager" || role === "entertainer" || role === "artist") && (
+            {(role === "entertainer" || role === "artist") && (
               <div className="space-y-4 pt-4 border-t">
                 <Label className="flex items-center gap-2">
                   <Briefcase className="h-4 w-4" />

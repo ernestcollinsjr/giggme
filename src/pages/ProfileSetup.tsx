@@ -1380,31 +1380,34 @@ const ProfileSetup = () => {
                     required
                     className="text-xl font-semibold h-auto py-1 px-2"
                   />
-                  {(role === "entertainer" || role === "booking_manager") && (
+                  {(role === "entertainer" || role === "booking_manager" || role === "super_admin") && (
                     <Input
                       id="band_name"
                       type="text"
-                      placeholder="Group Name"
+                      placeholder={role === "entertainer" ? "Group Name" : "Organization Name"}
                       value={bandName}
                       onChange={(e) => setBandName(e.target.value)}
                       className="text-sm"
                     />
                   )}
-                  <Select value={performerCategory} onValueChange={setPerformerCategory}>
-                    <SelectTrigger className="text-sm text-muted-foreground h-auto py-1">
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Solo">Solo</SelectItem>
-                      <SelectItem value="Duo">Duo</SelectItem>
-                      <SelectItem value="Band">Band</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  {role === "entertainer" && (
+                    <Select value={performerCategory} onValueChange={setPerformerCategory}>
+                      <SelectTrigger className="text-sm text-muted-foreground h-auto py-1">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Solo">Solo</SelectItem>
+                        <SelectItem value="Duo">Duo</SelectItem>
+                        <SelectItem value="Band">Band</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
                   {memberSince && (
                     <p className="text-xs text-muted-foreground">
                       Member since {memberSince}
                     </p>
                   )}
+
                 </div>
 
                 <div className="flex-1">

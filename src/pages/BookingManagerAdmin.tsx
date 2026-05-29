@@ -534,15 +534,31 @@ export default function BookingManagerAdmin() {
       const venues = artistVenues[a.artist_id] || [];
       return venues.some((v) => v.toLowerCase().includes(q));
     });
-    const map: Record<Category, ManagedArtist[]> = { Soloist: [], Duo: [], Band: [] };
+    const map = new Map<string, ManagedArtist[]>();
     filtered.forEach((a) => {
-      map[normalizeCategory(a.group_type)].push(a);
+      const key = (a.group_name && a.group_name.trim()) || UNGROUPED;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(a);
     });
-    return map;
+    const entries = Array.from(map.entries()).sort(([a], [b]) => {
+      if (a === UNGROUPED) return 1;
+      if (b === UNGROUPED) return -1;
+      return a.localeCompare(b);
+    });
+    return entries;
   }, [managedArtists, searchTerm, artistVenues]);
 
+  const allGroupNames = useMemo(() => {
+    const set = new Set<string>();
+    managedArtists.forEach((a) => {
+      const n = a.group_name?.trim();
+      if (n) set.add(n);
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [managedArtists]);
+
   const broadcastRecipients = useMemo(() => {
-    const all = [...grouped.Soloist, ...grouped.Duo, ...grouped.Band];
+    const all = grouped.flatMap(([, items]) => items);
     const vq = broadcastVenue.trim().toLowerCase();
     if (!vq) return all;
     return all.filter((a) =>

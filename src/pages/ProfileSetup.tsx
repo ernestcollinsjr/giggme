@@ -1396,6 +1396,8 @@ const ProfileSetup = () => {
                       placeholder={usesEntertainerProfile ? "Group Name" : "Organization Name"}
                       value={bandName}
                       onChange={(e) => setBandName(e.target.value)}
+                      readOnly={role === "member"}
+                      disabled={role === "member"}
                       className="text-sm"
                     />
                   )}

@@ -740,101 +740,126 @@ export default function BookingManagerAdmin() {
                 No artists yet. Add some from Discover.
               </p>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {CATEGORIES.map((cat) => {
-                  const Icon = CATEGORY_ICON[cat];
-                  const items = grouped[cat];
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {grouped.map(([groupName, items]) => {
+                  const isUngrouped = groupName === UNGROUPED;
                   return (
-                    <section key={cat} className="bg-muted/30 rounded-md p-3">
+                    <section key={groupName} className="bg-muted/30 rounded-md p-3">
                       <header className="flex items-center gap-2 mb-2 px-1">
-                        <Icon className="h-4 w-4 text-muted-foreground" />
-                        <h2 className="text-sm font-semibold">{cat}</h2>
+                        <Users className="h-4 w-4 text-muted-foreground" />
+                        <h2
+                          className={cn(
+                            "text-sm font-semibold truncate",
+                            isUngrouped && "italic text-muted-foreground"
+                          )}
+                          title={groupName}
+                        >
+                          {groupName}
+                        </h2>
                         <Badge variant="secondary" className="ml-auto text-xs">
                           {items.length}
                         </Badge>
                       </header>
-                      {items.length === 0 ? (
-                        <p className="text-xs text-muted-foreground px-1 italic">None assigned</p>
-                      ) : (
-                        <ul className="space-y-1">
-                          {items.map((artist) => {
-                            const isActive = selectedArtist?.artist_id === artist.artist_id;
-                            const photo = artist.profile.photo_urls?.[0];
-                            return (
-                              <li key={artist.id}>
-                                <div
-                                  className={cn(
-                                    "group flex items-center gap-2 rounded-md p-1.5 transition-colors",
-                                    isActive ? "bg-accent" : "hover:bg-muted/60"
-                                  )}
+                      <ul className="space-y-1">
+                        {items.map((artist) => {
+                          const isActive = selectedArtist?.artist_id === artist.artist_id;
+                          const photo = artist.profile.photo_urls?.[0];
+                          return (
+                            <li key={artist.id}>
+                              <div
+                                className={cn(
+                                  "group flex items-center gap-2 rounded-md p-1.5 transition-colors",
+                                  isActive ? "bg-accent" : "hover:bg-muted/60"
+                                )}
+                              >
+                                <button
+                                  type="button"
+                                  onClick={() => navigate(`/artist-profile/${artist.artist_id}`)}
+                                  className="flex items-center gap-2 flex-1 min-w-0 text-left"
                                 >
-                                  <button
-                                    type="button"
-                                    onClick={() => navigate(`/artist-profile/${artist.artist_id}`)}
-                                    className="flex items-center gap-2 flex-1 min-w-0 text-left"
-                                  >
-                                    <Avatar className="h-8 w-8">
-                                      {photo && <AvatarImage src={photo} alt={artist.profile.name} />}
-                                      <AvatarFallback className="text-xs">
-                                        {artist.profile.name.charAt(0).toUpperCase()}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                    <div className="min-w-0 flex-1">
-                                      <div className="flex items-center gap-1.5 min-w-0">
-                                        <span
-                                          className={cn(
-                                            "h-2 w-2 rounded-full flex-shrink-0",
-                                            getArtistStatus(artist.artist_id) === "booked" && "bg-green-500",
-                                            getArtistStatus(artist.artist_id) === "pending" && "bg-yellow-500",
-                                            getArtistStatus(artist.artist_id) === "none" && "bg-red-500"
-                                          )}
-                                          title={
-                                            getArtistStatus(artist.artist_id) === "booked"
-                                              ? "Booked"
-                                              : getArtistStatus(artist.artist_id) === "pending"
-                                              ? "Pending"
-                                              : "Not booked"
-                                          }
-                                        />
-                                        <p className="text-sm font-medium truncate">{artist.profile.name}</p>
-                                      </div>
-                                      <p className="text-[11px] text-muted-foreground truncate">
-                                        {normalizeCategory(artist.group_type)}
-                                      </p>
+                                  <Avatar className="h-8 w-8">
+                                    {photo && <AvatarImage src={photo} alt={artist.profile.name} />}
+                                    <AvatarFallback className="text-xs">
+                                      {artist.profile.name.charAt(0).toUpperCase()}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-1.5 min-w-0">
+                                      <span
+                                        className={cn(
+                                          "h-2 w-2 rounded-full flex-shrink-0",
+                                          getArtistStatus(artist.artist_id) === "booked" && "bg-green-500",
+                                          getArtistStatus(artist.artist_id) === "pending" && "bg-yellow-500",
+                                          getArtistStatus(artist.artist_id) === "none" && "bg-red-500"
+                                        )}
+                                        title={
+                                          getArtistStatus(artist.artist_id) === "booked"
+                                            ? "Booked"
+                                            : getArtistStatus(artist.artist_id) === "pending"
+                                            ? "Pending"
+                                            : "Not booked"
+                                        }
+                                      />
+                                      <p className="text-sm font-medium truncate">{artist.profile.name}</p>
                                     </div>
-                                  </button>
-                                  <Select
-                                    value={normalizeCategory(artist.group_type)}
-                                    onValueChange={(v) => handleAssignCategory(artist, v as Category)}
-                                  >
-                                    <SelectTrigger className="h-7 w-[72px] text-[11px] px-2">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {CATEGORIES.map((c) => (
-                                        <SelectItem key={c} value={c} className="text-xs">
-                                          {c}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-7 w-7 opacity-0 group-hover:opacity-100 text-destructive"
-                                    onClick={() => setDeleteConfirmArtist(artist)}
-                                  >
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                  </Button>
-                                </div>
-                              </li>
-                            );
-                          })}
-                        </ul>
-                      )}
+                                    <p className="text-[11px] text-muted-foreground truncate">
+                                      {normalizeCategory(artist.group_type)}
+                                    </p>
+                                  </div>
+                                </button>
+                                <Input
+                                  type="text"
+                                  list="bm-group-name-suggestions"
+                                  defaultValue={artist.group_name ?? ""}
+                                  placeholder="Group"
+                                  className="h-7 w-[96px] text-[11px] px-2"
+                                  onBlur={(e) => {
+                                    const v = e.target.value;
+                                    if ((v.trim() || null) !== (artist.group_name?.trim() || null)) {
+                                      handleAssignGroupName(artist, v);
+                                    }
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                                  }}
+                                  title="Group name (e.g. Motown Band)"
+                                />
+                                <Select
+                                  value={normalizeCategory(artist.group_type)}
+                                  onValueChange={(v) => handleAssignCategory(artist, v as Category)}
+                                >
+                                  <SelectTrigger className="h-7 w-[72px] text-[11px] px-2">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {CATEGORIES.map((c) => (
+                                      <SelectItem key={c} value={c} className="text-xs">
+                                        {c}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7 opacity-0 group-hover:opacity-100 text-destructive"
+                                  onClick={() => setDeleteConfirmArtist(artist)}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </div>
+                            </li>
+                          );
+                        })}
+                      </ul>
                     </section>
                   );
                 })}
+                <datalist id="bm-group-name-suggestions">
+                  {allGroupNames.map((n) => (
+                    <option key={n} value={n} />
+                  ))}
+                </datalist>
               </div>
             )}
           </aside>

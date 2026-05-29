@@ -1078,6 +1078,110 @@ const Bookings = () => {
         )}
 
 
+
+
+        {/* Current bookings (booking requests + gig invitations) */}
+
+        {(bookingRequests.length > 0 || gigInvitations.length > 0) && (
+          <Card className="border-border/50 shadow-lg mb-4">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CalendarIcon className="h-5 w-5 text-primary" />
+                Current Bookings
+              </CardTitle>
+              <CardDescription>Your booking requests and gig invitations</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {bookingRequests.map((br) => (
+                <div
+                  key={`br-${br.id}`}
+                  className="p-4 border rounded-lg cursor-pointer hover:bg-accent/40 transition-colors"
+                  onClick={() => navigate(`/booking-request/${br.id}`)}
+                >
+                  <div className="flex items-start justify-between gap-2 flex-wrap">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <Badge variant={br.status === 'accepted' ? 'default' : br.status === 'pending' ? 'secondary' : 'outline'}>
+                          {br.status}
+                        </Badge>
+                        <Badge variant="outline">Booking Request</Badge>
+                      </div>
+                      <p className="font-semibold truncate">{br.venue}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {br.booker_id === br.performer_id
+                          ? `${br.dates_text}`
+                          : br.performer_id && br.booker_name && br.performer_name
+                            ? `${br.booker_name} → ${br.performer_name} · ${br.dates_text}`
+                            : `From ${br.booker_name || 'a client'} · ${br.dates_text}`}
+                        {br.time_text && ` · ${br.time_text}`}
+                      </p>
+                      {br.budget && (
+                        <p className="text-xs text-muted-foreground mt-1">Budget: {br.budget}</p>
+                      )}
+                    </div>
+                    {canEditBookings && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-9 w-9 shrink-0 border border-border/60 bg-background/80 text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingRequest(br);
+                          setEditForm({
+                            venue: br.venue || "",
+                            dates_text: br.dates_text || "",
+                            time_text: br.time_text || "",
+                            budget: br.budget || "",
+                            note: br.note || "",
+                          });
+                        }}
+                        aria-label="Edit booking request"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {gigInvitations.map((gi: any) => {
+                const fullGig = gigs.find((g) => g.id === gi.gigs?.id);
+                return (
+                  <div key={`gi-${gi.id}`} className="p-4 border rounded-lg">
+                    <div className="flex items-start justify-between gap-2 flex-wrap">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <Badge variant={gi.status === 'accepted' ? 'default' : gi.status === 'pending' ? 'secondary' : 'outline'}>
+                            {gi.status}
+                          </Badge>
+                          <Badge variant="outline">Group Gig</Badge>
+                        </div>
+                        <p className="font-semibold truncate">{gi.gigs?.venue_name || gi.gigs?.venue}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {gi.gigs?.date && format(new Date(gi.gigs.date), "PPP p")}
+                        </p>
+                      </div>
+                      {canEditBookings && fullGig && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 shrink-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openEditGigDialog(fullGig);
+                          }}
+                          aria-label="Edit gig"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Calendar overview — highlights all booking dates */}
         {(() => {
           const requestDatesRaw: Date[] = [];
@@ -1519,109 +1623,6 @@ const Bookings = () => {
             })()}
           </DialogContent>
         </Dialog>
-
-
-        {/* Current bookings (booking requests + gig invitations) */}
-
-        {(bookingRequests.length > 0 || gigInvitations.length > 0) && (
-          <Card className="border-border/50 shadow-lg mb-4">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CalendarIcon className="h-5 w-5 text-primary" />
-                Current Bookings
-              </CardTitle>
-              <CardDescription>Your booking requests and gig invitations</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {bookingRequests.map((br) => (
-                <div
-                  key={`br-${br.id}`}
-                  className="p-4 border rounded-lg cursor-pointer hover:bg-accent/40 transition-colors"
-                  onClick={() => navigate(`/booking-request/${br.id}`)}
-                >
-                  <div className="flex items-start justify-between gap-2 flex-wrap">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <Badge variant={br.status === 'accepted' ? 'default' : br.status === 'pending' ? 'secondary' : 'outline'}>
-                          {br.status}
-                        </Badge>
-                        <Badge variant="outline">Booking Request</Badge>
-                      </div>
-                      <p className="font-semibold truncate">{br.venue}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {br.booker_id === br.performer_id
-                          ? `${br.dates_text}`
-                          : br.performer_id && br.booker_name && br.performer_name
-                            ? `${br.booker_name} → ${br.performer_name} · ${br.dates_text}`
-                            : `From ${br.booker_name || 'a client'} · ${br.dates_text}`}
-                        {br.time_text && ` · ${br.time_text}`}
-                      </p>
-                      {br.budget && (
-                        <p className="text-xs text-muted-foreground mt-1">Budget: {br.budget}</p>
-                      )}
-                    </div>
-                    {canEditBookings && (
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-9 w-9 shrink-0 border border-border/60 bg-background/80 text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingRequest(br);
-                          setEditForm({
-                            venue: br.venue || "",
-                            dates_text: br.dates_text || "",
-                            time_text: br.time_text || "",
-                            budget: br.budget || "",
-                            note: br.note || "",
-                          });
-                        }}
-                        aria-label="Edit booking request"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
-              {gigInvitations.map((gi: any) => {
-                const fullGig = gigs.find((g) => g.id === gi.gigs?.id);
-                return (
-                  <div key={`gi-${gi.id}`} className="p-4 border rounded-lg">
-                    <div className="flex items-start justify-between gap-2 flex-wrap">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <Badge variant={gi.status === 'accepted' ? 'default' : gi.status === 'pending' ? 'secondary' : 'outline'}>
-                            {gi.status}
-                          </Badge>
-                          <Badge variant="outline">Group Gig</Badge>
-                        </div>
-                        <p className="font-semibold truncate">{gi.gigs?.venue_name || gi.gigs?.venue}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {gi.gigs?.date && format(new Date(gi.gigs.date), "PPP p")}
-                        </p>
-                      </div>
-                      {canEditBookings && fullGig && (
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8 shrink-0"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openEditGigDialog(fullGig);
-                          }}
-                          aria-label="Edit gig"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </CardContent>
-          </Card>
-        )}
 
         <Dialog open={!!editingRequest} onOpenChange={(open) => !open && setEditingRequest(null)}>
           <DialogContent>

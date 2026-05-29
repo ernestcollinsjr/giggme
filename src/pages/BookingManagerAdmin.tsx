@@ -447,6 +447,27 @@ export default function BookingManagerAdmin() {
     }
   };
 
+  const handleAssignGroupName = async (artist: ManagedArtist, rawName: string) => {
+    const trimmed = rawName.trim();
+    const next = trimmed.length > 0 ? trimmed : null;
+    setManagedArtists((prev) =>
+      prev.map((a) => (a.id === artist.id ? { ...a, group_name: next } : a))
+    );
+    const { error } = await supabase
+      .from("booking_manager_artists")
+      .update({ group_name: next })
+      .eq("id", artist.id);
+    if (error) {
+      toast({ variant: "destructive", title: "Couldn't update group", description: error.message });
+      if (userId) fetchManagedArtists(userId);
+    } else {
+      toast({
+        title: "Group updated",
+        description: `${artist.profile.name} → ${next ?? UNGROUPED}`,
+      });
+    }
+  };
+
   const handleRemoveArtist = async () => {
     if (!deleteConfirmArtist) return;
     const { error } = await supabase

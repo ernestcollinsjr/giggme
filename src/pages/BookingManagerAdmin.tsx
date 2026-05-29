@@ -1018,6 +1018,17 @@ export default function BookingManagerAdmin() {
                               </div>
                             );
                           })()}
+                          {gig.source === "gig" && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 flex-shrink-0 text-muted-foreground hover:text-primary"
+                              onClick={() => navigate(`/bookings?edit=${gig.id}`)}
+                              aria-label="Edit booking"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="icon"

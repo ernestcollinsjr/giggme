@@ -49,39 +49,34 @@ const BandInvite = () => {
   const fetchInvitation = async () => {
     try {
       const { data, error } = await supabase
-        .from("band_invitations")
-        .select(`
-          id,
-          band_id,
-          email,
-          status,
-          expires_at,
-          bands (
-            name,
-            description
-          )
-        `)
-        .eq("token", token)
-        .single();
+        .rpc("get_invitation_by_token", { _token: token as string });
 
       if (error) throw error;
 
-      if (!data) {
+      const row = Array.isArray(data) ? data[0] : data;
+      if (!row) {
         setError("Invitation not found.");
         return;
       }
 
-      if (data.status === "accepted") {
+      if (row.status === "accepted") {
         setError("This invitation has already been accepted.");
         return;
       }
 
-      if (data.status === "expired" || new Date(data.expires_at) < new Date()) {
+      if (row.status === "expired" || new Date(row.expires_at) < new Date()) {
         setError("This invitation has expired.");
         return;
       }
 
-      setInvitation(data);
+      setInvitation({
+        id: row.id,
+        band_id: row.band_id,
+        email: row.email,
+        status: row.status,
+        expires_at: row.expires_at,
+        bands: { name: row.band_name, description: row.band_description },
+      });
     } catch (err: any) {
       console.error("Error fetching invitation:", err);
       setError("Unable to load invitation details.");

@@ -2300,6 +2300,18 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_invitation_by_token: {
+        Args: { _token: string }
+        Returns: {
+          band_description: string
+          band_id: string
+          band_name: string
+          email: string
+          expires_at: string
+          id: string
+          status: string
+        }[]
+      }
       get_performer_venues: {
         Args: never
         Returns: {

@@ -226,8 +226,8 @@ const Dashboard = () => {
         primaryRole = "entertainer";
       } else if (roles.includes("booking_manager")) {
         primaryRole = "booking_manager";
-      } else if (roles.includes("artist")) {
-        primaryRole = "artist";
+      } else if (roles.includes("admin")) {
+        primaryRole = "admin";
       } else if (roles.includes("super_admin")) {
         primaryRole = "super_admin";
       } else {

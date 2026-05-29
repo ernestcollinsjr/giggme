@@ -45,7 +45,7 @@ const BottomNav = () => {
 
       // Fetch associated members based on role
       let memberIds: string[] = [];
-      if (role === "band_leader") {
+      if (role === "booking_manager") {
         const { data: bands } = await supabase
           .from("bands")
           .select("id")
@@ -112,7 +112,7 @@ const BottomNav = () => {
   const fetchUnreadCount = async (uid: string, role: string | null, memberIds: string[]) => {
     try {
       // For band_leader/booking_manager: ONLY count messages from their assigned members
-      const isRestrictedRole = role === "band_leader" || role === "booking_manager";
+      const isRestrictedRole = role === "booking_manager" || role === "booking_manager";
       
       // Only fetch messages relevant to this user (group messages OR messages where user is sender/recipient)
       const { data, error } = await supabase

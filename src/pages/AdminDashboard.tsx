@@ -37,7 +37,7 @@ import {
 } from "lucide-react";
 import { TopNav } from "@/components/TopNav";
 
-type AppRole = "band_leader" | "band_member" | "booking_manager" | "artist" | "tour_manager" | "venue_owner" | "super_admin";
+type AppRole = "booking_manager" | "entertainer" | "booking_manager" | "artist" | "entertainer" | "booking_manager" | "super_admin";
 
 interface UserWithRole {
   id: string;
@@ -501,8 +501,8 @@ const AdminDashboard = () => {
   const entertainers = users.filter(
     (u) =>
       u.role === "artist" ||
-      u.role === "band_member" ||
-      u.role === "band_leader" ||
+      u.role === "entertainer" ||
+      u.role === "booking_manager" ||
       (u.entertainer_categories && u.entertainer_categories.length > 0) ||
       !!u.subscription_status ||
       !!u.performer_category
@@ -720,12 +720,12 @@ const AdminDashboard = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="super_admin">Super Admin</SelectItem>
-                  <SelectItem value="band_leader">Band Leader</SelectItem>
-                  <SelectItem value="band_member">Band Member</SelectItem>
+                  <SelectItem value="booking_manager">Band Leader</SelectItem>
+                  <SelectItem value="entertainer">Band Member</SelectItem>
                   <SelectItem value="booking_manager">Booking Manager</SelectItem>
                   <SelectItem value="artist">Artist</SelectItem>
-                  <SelectItem value="tour_manager">Tour Manager</SelectItem>
-                  <SelectItem value="venue_owner">Venue Owner</SelectItem>
+                  <SelectItem value="entertainer">Tour Manager</SelectItem>
+                  <SelectItem value="booking_manager">Venue Owner</SelectItem>
                 </SelectContent>
               </Select>
             </div>

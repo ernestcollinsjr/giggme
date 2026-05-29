@@ -7,12 +7,12 @@ import BottomNav from "@/components/BottomNav";
 import { SentBookingRequests } from "@/components/SentBookingRequests";
 
 type UserRole =
-  | "band_leader"
-  | "band_member"
+  | "booking_manager"
+  | "entertainer"
   | "booking_manager"
   | "artist"
-  | "tour_manager"
-  | "venue_owner"
+  | "entertainer"
+  | "booking_manager"
   | "super_admin"
   | null;
 
@@ -36,7 +36,7 @@ const BookingRequestsPage = () => {
       const primary =
         (roles.includes("super_admin") && "super_admin") ||
         (roles.includes("booking_manager") && "booking_manager") ||
-        (roles.includes("band_leader") && "band_leader") ||
+        (roles.includes("booking_manager") && "booking_manager") ||
         (roles[0] as UserRole) ||
         null;
       setUserRole(primary as UserRole);

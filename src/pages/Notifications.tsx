@@ -34,7 +34,7 @@ interface Notification {
   created_at: string;
 }
 
-type UserRole = "band_leader" | "band_member" | "booking_manager" | "artist" | "tour_manager" | "venue_owner" | "super_admin" | null;
+type UserRole = "booking_manager" | "entertainer" | "booking_manager" | "artist" | "entertainer" | "booking_manager" | "super_admin" | null;
 type FilterType = "all" | "unread" | "read";
 
 const Notifications = () => {

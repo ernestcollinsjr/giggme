@@ -204,7 +204,7 @@ const Bookings = () => {
 
   // Real-time updates for gig member responses
   useEffect(() => {
-    if (userRole !== "band_leader") return;
+    if (userRole !== "booking_manager") return;
 
     const channel = supabase
       .channel('gig-members-bookings')
@@ -289,7 +289,7 @@ const Bookings = () => {
     // Fetch managed artists (for quick-book from calendar) — booking managers & band leaders
     if (
       roleData?.role === "booking_manager" ||
-      roleData?.role === "band_leader" ||
+      roleData?.role === "booking_manager" ||
       roleData?.role === "super_admin"
     ) {
       const { data: links } = await supabase
@@ -311,7 +311,7 @@ const Bookings = () => {
     }
 
     // Fetch bands for band leaders
-    if (roleData?.role === "band_leader" || roleData?.role === "super_admin") {
+    if (roleData?.role === "booking_manager" || roleData?.role === "super_admin") {
       const { data: bandsData } = await supabase
         .from("bands")
         .select("id, name")
@@ -386,7 +386,7 @@ const Bookings = () => {
     }
     
     // Fetch band members if a band is selected
-    if (selectedBandId && (roleData?.role === "band_leader" || roleData?.role === "super_admin")) {
+    if (selectedBandId && (roleData?.role === "booking_manager" || roleData?.role === "super_admin")) {
       const { data: membersData } = await supabase
         .from("profiles")
         .select("id, name, email, instrument")
@@ -974,7 +974,7 @@ const Bookings = () => {
     );
   }
 
-  const isBandLeader = userRole === "band_leader" || userRole === "super_admin";
+  const isBandLeader = userRole === "booking_manager" || userRole === "super_admin";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/10 pb-20">
@@ -1967,7 +1967,7 @@ const Bookings = () => {
                 </CardTitle>
                 <CardDescription>Upcoming performances and bookings</CardDescription>
               </div>
-              {userRole === "band_leader" && (
+              {userRole === "booking_manager" && (
                 <div className="flex items-center gap-2">
                   <Filter className="h-4 w-4 text-muted-foreground" />
                   <Label htmlFor="pending-filter" className="text-sm text-muted-foreground cursor-pointer">

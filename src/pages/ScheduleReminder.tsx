@@ -119,7 +119,7 @@ export default function ScheduleReminder() {
       if (roleData) {
         setUserRole(roleData.role);
         
-        if (roleData.role === "band_leader") {
+        if (roleData.role === "booking_manager") {
           await fetchBands(user.id);
         } else if (roleData.role === "booking_manager") {
           await fetchManagedArtists(user.id);
@@ -311,7 +311,7 @@ export default function ScheduleReminder() {
 
   return (
     <div className="min-h-screen bg-background">
-      <TopNav userRole={(userRole as "band_leader" | "booking_manager") || "band_leader"} />
+      <TopNav userRole={(userRole as "booking_manager" | "booking_manager") || "booking_manager"} />
       <div className="p-4 md:p-6 max-w-4xl mx-auto">
         <div className="flex items-center gap-4 mb-6">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
@@ -342,7 +342,7 @@ export default function ScheduleReminder() {
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Band Selector for Band Leaders */}
-              {userRole === "band_leader" && bands.length > 1 && (
+              {userRole === "booking_manager" && bands.length > 1 && (
                 <div className="flex flex-wrap gap-2 mb-4">
                   {bands.map(band => (
                     <Badge

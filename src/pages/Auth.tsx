@@ -62,7 +62,7 @@ const Auth = () => {
   const postAuthPath = safeRedirect || "/dashboard";
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [role, setRole] = useState<"band_leader" | "band_member" | "booking_manager" | "artist" | "venue_owner">(entertainerPlan ? "artist" : "band_leader");
+  const [role, setRole] = useState<"booking_manager" | "entertainer" | "booking_manager" | "artist" | "booking_manager">(entertainerPlan ? "artist" : "booking_manager");
   const [venuePricingType, setVenuePricingType] = useState<"subscription" | "one_time">("subscription");
   
   const [loginEmail, setLoginEmail] = useState("");
@@ -167,7 +167,7 @@ const Auth = () => {
           data: {
             name: validatedData.name,
             role: role,
-            venue_pricing_type: role === "venue_owner" ? venuePricingType : undefined,
+            venue_pricing_type: role === "booking_manager" ? venuePricingType : undefined,
           },
           emailRedirectTo: `${window.location.origin}/`,
         },
@@ -209,7 +209,7 @@ const Auth = () => {
       }
 
       // For venue owners, redirect to checkout
-      if (role === "venue_owner" && signUpData.session) {
+      if (role === "booking_manager" && signUpData.session) {
         const priceId = venuePricingType === "subscription" 
           ? "price_1Sj4nrEPiAZgF8MeCOUpkIfg" // $26/mo subscription
           : "price_1Sj4o1EPiAZgF8MeVAfYLZ1h"; // $49 one-time
@@ -568,21 +568,21 @@ const Auth = () => {
                   <div className="grid grid-cols-1 gap-3">
                     {/* Band Manager Card */}
                     <div
-                      onClick={() => setRole("band_leader")}
+                      onClick={() => setRole("booking_manager")}
                       className={`relative cursor-pointer rounded-xl border-2 p-4 transition-all hover:shadow-lg ${
-                        role === "band_leader"
+                        role === "booking_manager"
                           ? "border-primary bg-primary/5 shadow-md"
                           : "border-border hover:border-primary/50"
                       }`}
                     >
-                      {role === "band_leader" && (
+                      {role === "booking_manager" && (
                         <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
                           <Check className="h-4 w-4 text-primary-foreground" />
                         </div>
                       )}
                       <div className="flex items-start gap-3">
                         <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                          role === "band_leader" ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
+                          role === "booking_manager" ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
                         }`}>
                           <Users className="h-6 w-6" />
                         </div>
@@ -685,21 +685,21 @@ const Auth = () => {
 
                     {/* Venue Owner Card */}
                     <div
-                      onClick={() => setRole("venue_owner")}
+                      onClick={() => setRole("booking_manager")}
                       className={`relative cursor-pointer rounded-xl border-2 p-4 transition-all hover:shadow-lg ${
-                        role === "venue_owner"
+                        role === "booking_manager"
                           ? "border-primary bg-primary/5 shadow-md"
                           : "border-border hover:border-primary/50"
                       }`}
                     >
-                      {role === "venue_owner" && (
+                      {role === "booking_manager" && (
                         <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
                           <Check className="h-4 w-4 text-primary-foreground" />
                         </div>
                       )}
                       <div className="flex items-start gap-3">
                         <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                          role === "venue_owner" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                          role === "booking_manager" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
                         }`}>
                           <Building2 className="h-6 w-6" />
                         </div>
@@ -722,7 +722,7 @@ const Auth = () => {
                           </p>
                           
                           {/* Pricing Toggle */}
-                          {role === "venue_owner" && (
+                          {role === "booking_manager" && (
                             <div className="mt-3 p-2 bg-muted/50 rounded-lg" onClick={(e) => e.stopPropagation()}>
                               <div className="flex gap-2">
                                 <button
@@ -757,7 +757,7 @@ const Auth = () => {
                             </div>
                           )}
                           
-                          {role !== "venue_owner" && (
+                          {role !== "booking_manager" && (
                             <div className="mt-2 flex flex-wrap gap-2">
                               <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
                                 14-day free trial

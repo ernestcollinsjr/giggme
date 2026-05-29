@@ -207,14 +207,14 @@ const Setlist = () => {
               Setlists
             </h1>
             <p className="text-muted-foreground mt-1">
-              {userRole === "band_leader" 
+              {userRole === "booking_manager" 
                 ? "Manage and upload setlists for your band" 
                 : "View and play songs from your band's setlists"}
             </p>
           </div>
         </div>
 
-        {userRole === "band_leader" ? (
+        {userRole === "booking_manager" ? (
           <Card className="border-border/20 shadow-lg">
             <CardContent className="pt-6">
               <SetlistManager />

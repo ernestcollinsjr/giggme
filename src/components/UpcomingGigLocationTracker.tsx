@@ -107,7 +107,7 @@ interface UpcomingGig {
 
 interface UpcomingGigLocationTrackerProps {
   userId: string;
-  userRole: "band_member" | "band_leader" | "artist" | "booking_manager" | "tour_manager" | "super_admin";
+  userRole: "entertainer" | "booking_manager" | "artist" | "booking_manager" | "entertainer" | "super_admin";
 }
 
 export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLocationTrackerProps) => {
@@ -343,7 +343,7 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
     try {
       const now = new Date();
       const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000);
-      if (userRole === "band_member" || userRole === "artist") {
+      if (userRole === "entertainer" || userRole === "artist") {
         // Performer: tracking window starts 90 min (1.5 hr) before earliest time
         const { data: gigMembers, error } = await supabase
           .from("gig_members")
@@ -406,7 +406,7 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
         }));
 
         setUpcomingGigs(gigsWithinWindow);
-      } else if (userRole === "band_leader" || userRole === "booking_manager" || userRole === "tour_manager" || userRole === "super_admin") {
+      } else if (userRole === "booking_manager" || userRole === "booking_manager" || userRole === "entertainer" || userRole === "super_admin") {
         // Manager: visibility starts 1 hr before driver leaves = 150 min before event
         // Collect owner IDs: the manager themselves + any managed artists/bands
         const ownerIds = new Set<string>([userId]);
@@ -552,7 +552,7 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
     return null;
   }
 
-  const isMember = userRole === "band_member" || userRole === "artist";
+  const isMember = userRole === "entertainer" || userRole === "artist";
 
   return (
     <div className="space-y-3">

@@ -152,13 +152,13 @@ const SongLyrics = () => {
                 <Music className="h-5 w-5" />
                 Lyrics
               </CardTitle>
-              {userRole === "band_leader" && !isEditing && (
+              {userRole === "booking_manager" && !isEditing && (
                 <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
                   <Edit className="h-4 w-4 mr-2" />
                   Import Lyrics
                 </Button>
               )}
-              {userRole === "band_leader" && isEditing && (
+              {userRole === "booking_manager" && isEditing && (
                 <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" onClick={handleCancelEdit} disabled={saving}>
                     <X className="h-4 w-4 mr-2" />
@@ -196,7 +196,7 @@ const SongLyrics = () => {
                   <div className="text-center py-12">
                     <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <p className="text-muted-foreground">
-                      No lyrics available yet. {userRole === "band_leader" ? "Click 'Import Lyrics' to add them." : "Your band leader can add them."}
+                      No lyrics available yet. {userRole === "booking_manager" ? "Click 'Import Lyrics' to add them." : "Your band leader can add them."}
                     </p>
                   </div>
                 )}

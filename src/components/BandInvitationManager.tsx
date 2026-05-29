@@ -42,7 +42,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
   const [allBands, setAllBands] = useState<Band[]>([]);
   const [showBandSelectDialog, setShowBandSelectDialog] = useState(false);
   const [selectedBandForMember, setSelectedBandForMember] = useState<string>("");
-  const [selectedRoleForMember, setSelectedRoleForMember] = useState<"band_leader" | "band_member" | "booking_manager" | "artist" | "tour_manager" | "venue_owner">("band_member");
+  const [selectedRoleForMember, setSelectedRoleForMember] = useState<"booking_manager" | "entertainer" | "booking_manager" | "artist" | "entertainer" | "booking_manager">("entertainer");
   const [selectedInvitation, setSelectedInvitation] = useState<Invitation | null>(null);
   const [addingToBand, setAddingToBand] = useState(false);
   const [highlightedInvitationId, setHighlightedInvitationId] = useState<string | null>(null);
@@ -288,7 +288,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
   const openBandSelectDialog = (invitation: Invitation) => {
     setSelectedInvitation(invitation);
     setSelectedBandForMember(bandId); // Default to current band
-    setSelectedRoleForMember("band_member"); // Default role
+    setSelectedRoleForMember("entertainer"); // Default role
     setShowBandSelectDialog(true);
   };
 
@@ -369,7 +369,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
       setShowBandSelectDialog(false);
       setSelectedInvitation(null);
       setSelectedBandForMember("");
-      setSelectedRoleForMember("band_member");
+      setSelectedRoleForMember("entertainer");
     } catch (error: any) {
       console.error("Error adding member:", error);
       toast({
@@ -744,16 +744,16 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
               <Label>Assign Role</Label>
               <Select 
                 value={selectedRoleForMember} 
-                onValueChange={(value: "band_leader" | "band_member" | "booking_manager" | "artist" | "tour_manager" | "venue_owner") => setSelectedRoleForMember(value)}
+                onValueChange={(value: "booking_manager" | "entertainer" | "booking_manager" | "artist" | "entertainer" | "booking_manager") => setSelectedRoleForMember(value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Choose a role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="band_member">Band Member</SelectItem>
-                  <SelectItem value="band_leader">Band Leader</SelectItem>
+                  <SelectItem value="entertainer">Band Member</SelectItem>
+                  <SelectItem value="booking_manager">Band Leader</SelectItem>
                   <SelectItem value="artist">Entertainer</SelectItem>
-                  <SelectItem value="tour_manager">Tour Manager</SelectItem>
+                  <SelectItem value="entertainer">Tour Manager</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">

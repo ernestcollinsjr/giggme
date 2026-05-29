@@ -405,7 +405,7 @@ const Messages = () => {
         setUserRole(roleData.role);
         
         // Fetch associated members based on role
-        if (roleData.role === "band_leader") {
+        if (roleData.role === "booking_manager") {
           // Get bands the user leads
           const { data: bands } = await supabase
             .from("bands")
@@ -635,7 +635,7 @@ const Messages = () => {
       setProfiles(profileObj);
       // Filter profiles list based on allowed members for role-based messaging
       // For band_leader/booking_manager: ONLY show their assigned members
-      const isRestrictedRole = userRole === "band_leader";
+      const isRestrictedRole = userRole === "booking_manager";
       const filteredProfiles = data.filter((p) => {
         if (p.id === userId) return false;
         if (isRestrictedRole) return allowedMemberIds.includes(p.id);
@@ -681,7 +681,7 @@ const Messages = () => {
     
     const conversationMap = new Map<string, Conversation>();
     // Always filter for band_leader and booking_manager roles
-    const isRestrictedRole = userRole === "band_leader";
+    const isRestrictedRole = userRole === "booking_manager";
     
     // Group chat - only show if user has a role that uses group chat
     // For band_leader/booking_manager, group chat is within their own group
@@ -1111,10 +1111,10 @@ const Messages = () => {
                 <div>
                   <h1 className="text-xl font-semibold flex items-center gap-2">
                     <MessageCircle className="h-5 w-5 text-primary" />
-                    {userRole === "band_leader" ? "Band Messages" : userRole === "booking_manager" ? "Artist Messages" : "Messages"}
+                    {userRole === "booking_manager" ? "Band Messages" : userRole === "booking_manager" ? "Artist Messages" : "Messages"}
                   </h1>
                   <p className="text-xs text-muted-foreground">
-                    {userRole === "band_leader" ? "Messages with your band members" : userRole === "booking_manager" ? "Messages with your managed artists" : "Direct & group messages"}
+                    {userRole === "booking_manager" ? "Messages with your band members" : userRole === "booking_manager" ? "Messages with your managed artists" : "Direct & group messages"}
                   </p>
                 </div>
               </div>

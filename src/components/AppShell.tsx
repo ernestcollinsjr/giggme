@@ -12,12 +12,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 
 type UserRole =
-  | "band_leader"
-  | "band_member"
+  | "booking_manager"
+  | "entertainer"
   | "booking_manager"
   | "artist"
-  | "tour_manager"
-  | "venue_owner"
+  | "entertainer"
+  | "booking_manager"
   | "super_admin"
   | null;
 
@@ -40,9 +40,9 @@ export function AppShell({ userRole, children }: AppShellProps) {
       ? "Admin"
       : userRole === "booking_manager"
       ? "Booking Mgr"
-      : userRole === "band_leader"
+      : userRole === "booking_manager"
       ? "Band Leader"
-      : userRole === "venue_owner"
+      : userRole === "booking_manager"
       ? "Venue"
       : userRole === "artist"
       ? "Artist"

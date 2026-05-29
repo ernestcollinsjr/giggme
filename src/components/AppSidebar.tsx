@@ -34,12 +34,12 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
 type UserRole =
-  | "band_leader"
-  | "band_member"
+  | "booking_manager"
+  | "entertainer"
   | "booking_manager"
   | "artist"
-  | "tour_manager"
-  | "venue_owner"
+  | "entertainer"
+  | "booking_manager"
   | "super_admin"
   | null;
 
@@ -56,7 +56,7 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
   const dashboardPath =
     userRole === "booking_manager"
       ? "/booking-manager"
-      : userRole === "venue_owner"
+      : userRole === "booking_manager"
       ? "/venue-dashboard"
       : userRole === "artist"
       ? "/entertainer-dashboard"
@@ -73,11 +73,11 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
     roleItems.push({ title: "Booking Requests", url: "/booking-requests", icon: Inbox });
     roleItems.push({ title: "Performers", url: "/artists", icon: Users });
   }
-  if (userRole === "band_leader" || userRole === "super_admin") {
+  if (userRole === "booking_manager" || userRole === "super_admin") {
     roleItems.push({ title: "Setlists", url: "/setlist", icon: ListMusic });
     roleItems.push({ title: "Tours", url: "/tours", icon: MapPin });
   }
-  if (userRole === "venue_owner") {
+  if (userRole === "booking_manager") {
     roleItems.push({ title: "Find Talent", url: "/entertainers", icon: Search });
   }
   if (userRole === "super_admin") {

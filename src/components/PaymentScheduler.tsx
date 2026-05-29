@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { CalendarIcon, CheckCircle2, Clock, DollarSign, Wallet } from "lucide-react";
 import { format } from "date-fns";
 
-type Mode = "manager" | "band_leader";
+type Mode = "manager" | "booking_manager";
 
 interface Performer {
   id: string;

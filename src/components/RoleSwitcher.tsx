@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-type UserRole = "band_leader" | "band_member" | "booking_manager" | "artist" | "tour_manager" | "super_admin";
+type UserRole = "booking_manager" | "entertainer" | "booking_manager" | "artist" | "entertainer" | "super_admin";
 
 interface RoleSwitcherProps {
   currentRole: UserRole | null;
@@ -29,7 +29,7 @@ const RoleSwitcher = ({ currentRole, onRoleChange }: RoleSwitcherProps) => {
   const navigate = useNavigate();
   
   // Band members cannot change their own role - only Band Leaders and Booking Managers can assign roles
-  const canSwitchRole = currentRole !== "band_member";
+  const canSwitchRole = currentRole !== "entertainer";
 
   const roles = [
     {
@@ -42,7 +42,7 @@ const RoleSwitcher = ({ currentRole, onRoleChange }: RoleSwitcherProps) => {
       badge: { icon: Star, text: "Admin Role", color: "text-red-600" }
     },
     {
-      value: "band_leader" as UserRole, 
+      value: "booking_manager" as UserRole, 
       label: "Band Leaders", 
       description: "Lead your band, manage your group, and connect with booking managers to secure gigs",
       icon: Crown,
@@ -60,7 +60,7 @@ const RoleSwitcher = ({ currentRole, onRoleChange }: RoleSwitcherProps) => {
       badge: { icon: Star, text: "Premium Role", color: "text-accent" }
     },
     { 
-      value: "tour_manager" as UserRole, 
+      value: "entertainer" as UserRole, 
       label: "Tour/Road Managers", 
       description: "Manage tours and coordinate with tour crew members efficiently",
       icon: Calendar,

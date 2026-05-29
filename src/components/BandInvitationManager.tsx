@@ -490,7 +490,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Invite Band Members</CardTitle>
+        <CardTitle>Invite Group Member</CardTitle>
         <CardDescription>
           Send email invitations to new band members
         </CardDescription>

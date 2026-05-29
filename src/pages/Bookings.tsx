@@ -1119,27 +1119,43 @@ const Bookings = () => {
                         <p className="text-xs text-muted-foreground mt-1">Budget: {br.budget}</p>
                       )}
                     </div>
-                    {canEditBookings && (
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-9 w-9 shrink-0 border border-border/60 bg-background/80 text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingRequest(br);
-                          setEditForm({
-                            venue: br.venue || "",
-                            dates_text: br.dates_text || "",
-                            time_text: br.time_text || "",
-                            budget: br.budget || "",
-                            note: br.note || "",
-                          });
-                        }}
-                        aria-label="Edit booking request"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                    )}
+                    <div className="flex items-center gap-1 shrink-0">
+                      {canEditBookings && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-9 w-9 border border-border/60 bg-background/80 text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingRequest(br);
+                            setEditForm({
+                              venue: br.venue || "",
+                              dates_text: br.dates_text || "",
+                              time_text: br.time_text || "",
+                              budget: br.budget || "",
+                              note: br.note || "",
+                            });
+                          }}
+                          aria-label="Edit booking request"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {canEditBookings && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-9 w-9"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteBookingRequest(br.id);
+                          }}
+                          aria-label="Delete booking request"
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -1160,20 +1176,36 @@ const Bookings = () => {
                           {gi.gigs?.date && format(new Date(gi.gigs.date), "PPP p")}
                         </p>
                       </div>
-                      {canEditBookings && fullGig && (
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8 shrink-0"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openEditGigDialog(fullGig);
-                          }}
-                          aria-label="Edit gig"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                      )}
+                      <div className="flex items-center gap-1 shrink-0">
+                        {canEditBookings && fullGig && (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openEditGigDialog(fullGig);
+                            }}
+                            aria-label="Edit gig"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {canEditBookings && (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteGigInvitation(gi.id);
+                            }}
+                            aria-label="Delete gig invitation"
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );

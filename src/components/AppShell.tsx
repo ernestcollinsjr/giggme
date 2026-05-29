@@ -10,13 +10,9 @@ import { NotificationBell } from "@/components/NotificationBell";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
+import type { AppRole } from "@/lib/roles";
 
-type UserRole =
-  | "super_admin"
-  | "booking_manager"
-  | "admin"
-  | "entertainer"
-  | null;
+type UserRole = AppRole | null;
 
 interface AppShellProps {
   userRole: UserRole;

@@ -62,24 +62,24 @@ interface BandWithMembers {
   memberCount: number;
 }
 
-const roleLabels: Record<AppRole, string> = {
+const roleLabels: Partial<Record<AppRole, string>> = {
   super_admin: "Super Admin",
-  band_leader: "Manager",
-  band_member: "Member",
-  booking_manager: "Agent",
+  booking_manager: "Booking Manager",
+  admin: "Admin",
+  entertainer: "Entertainer",
+  // legacy fallbacks (data may still hold these in audit/history)
+  band_leader: "Booking Manager",
+  band_member: "Entertainer",
   artist: "Entertainer",
-  tour_manager: "Tour Manager",
-  venue_owner: "Venue",
+  tour_manager: "Entertainer",
+  venue_owner: "Booking Manager",
 };
 
-const roleDescriptions: Record<AppRole, string> = {
+const roleDescriptions: Partial<Record<AppRole, string>> = {
   super_admin: "Full control over the entire site and all users",
-  band_leader: "Paid subscriber — can invite members to their group and edit their admin members",
-  band_member: "Belongs to a group; managed by their Manager",
-  booking_manager: "Paid subscriber — can invite members to their group and edit their admin members",
-  artist: "Paid subscriber — creative profile privileges only",
-  tour_manager: "Paid subscriber — can invite members to their group and edit their admin members",
-  venue_owner: "Venue owner account",
+  booking_manager: "Manages a roster of entertainers, books gigs, runs the workspace",
+  admin: "Granted by a Booking Manager to assist with their roster — can edit, cannot delete the manager's account",
+  entertainer: "Subscription-based performer profile — can edit only their own page",
 };
 
 const AdminDashboard = () => {

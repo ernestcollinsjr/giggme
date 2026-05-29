@@ -117,6 +117,7 @@ export const TopNav = ({ userRole }: TopNavProps) => {
       case "admin":
         return bookingManagerLinks;
       case "entertainer":
+      case "member":
         return artistLinks;
       default:
         return [];

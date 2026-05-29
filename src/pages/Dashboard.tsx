@@ -326,7 +326,7 @@ const Dashboard = () => {
       }
       
       // Fetch pending gig invites for band members only
-      if (primaryRole === "entertainer") {
+      if (primaryRole === "entertainer" || primaryRole === "member") {
         const { data: inviteData } = await supabase
           .from("gig_members")
           .select(`
@@ -1610,8 +1610,18 @@ const Dashboard = () => {
           </div>
         )}
 
+        {userRole === "member" && (
+          <div className="space-y-4">
+            <AcceptedGigsCard userId={user?.id || ""} />
+            <AutoLocationTracker
+              userId={user?.id || ""}
+              isEnabled={activeGigsWithSharing.length > 0}
+            />
+          </div>
+        )}
 
         {userRole === "entertainer" && (
+
           <Tabs defaultValue="overview" className="space-y-4">
             <TabsList className="bg-transparent border-0 p-0 h-auto gap-2">
               <TabsTrigger value="overview" className="border-2 border-border shadow-sm">

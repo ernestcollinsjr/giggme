@@ -1165,6 +1165,16 @@ const ProfileSetup = () => {
     );
   }
 
+  // Members and entertainers (and any user with a known role) must never see
+  // the Choose Your Role chooser — only brand-new signups with no role/profile.
+  if (!hasRole && (role === "member" || role === "entertainer")) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-primary/10">
+        <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
   if (!hasRole) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-primary/10">

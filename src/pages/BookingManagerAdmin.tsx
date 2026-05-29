@@ -230,6 +230,45 @@ export default function BookingManagerAdmin() {
     }
   };
 
+  const fetchMyBand = async (uid: string) => {
+    const { data } = await supabase
+      .from("bands")
+      .select("id, name")
+      .eq("band_leader_id", uid)
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    if (data) setMyBand(data);
+  };
+
+  const ensureBandAndOpenInvite = async () => {
+    if (!userId) return;
+    if (myBand) { setInviteOpen(true); return; }
+    setEnsuringBand(true);
+    try {
+      // Use profile's band/org name if set
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("band_name, name")
+        .eq("id", userId)
+        .maybeSingle();
+      const name = (profile?.band_name && profile.band_name.trim()) ||
+                   (profile?.name ? `${profile.name}'s Group` : "My Group");
+      const { data: band, error } = await supabase
+        .from("bands")
+        .insert({ name, band_leader_id: userId })
+        .select("id, name")
+        .single();
+      if (error) throw error;
+      setMyBand(band);
+      setInviteOpen(true);
+    } catch (e: any) {
+      toast({ variant: "destructive", title: "Couldn't open invite", description: e.message });
+    } finally {
+      setEnsuringBand(false);
+    }
+  };
+
   const fetchManagedArtists = async (uid: string) => {
     const { data, error } = await supabase
       .from("booking_manager_artists")

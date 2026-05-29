@@ -228,7 +228,6 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
           bandName: bandName,
           inviteToken: invitation.token,
           bandLeaderName: profile?.name || "Group Leader",
-          siteOrigin: window.location.origin,
         },
       });
 
@@ -426,7 +425,6 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
           bandName: bandName,
           inviteToken: newInvitation.token,
           bandLeaderName: profile?.name || "Group Leader",
-          siteOrigin: window.location.origin,
         },
       });
 

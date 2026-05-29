@@ -113,6 +113,17 @@ const ProfileSetup = () => {
   const [recipientName, setRecipientName] = useState("");
   const [sendingEmail, setSendingEmail] = useState(false);
 
+  const normalizePhotoSlots = (urls: string[] = []) =>
+    Array.from({ length: 4 }, (_, index) => urls[index] || "");
+
+  const trimEmptyTrailingPhotoSlots = (urls: string[]) => {
+    const next = normalizePhotoSlots(urls);
+    while (next.length > 0 && !next[next.length - 1]) {
+      next.pop();
+    }
+    return next;
+  };
+
   useEffect(() => {
     const getUser = async () => {
       const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
@@ -173,7 +184,7 @@ const ProfileSetup = () => {
           setTimezone(profile.timezone || browserTimezone || "America/Chicago");
           const urls = profile.photo_urls || [];
           setPhotoUrls(urls);
-          setPhotoPreviews(urls.length > 0 ? [...urls, "", "", "", ""].slice(0, 4) : ["", "", "", ""]);
+          setPhotoPreviews(normalizePhotoSlots(urls));
           
           // Load social links and youtube links
           setSocialLinks((profile.social_links as SocialLinks) || {});
@@ -293,16 +304,20 @@ const ProfileSetup = () => {
       // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
-        const newPreviews = [...photoPreviews];
-        newPreviews[index] = reader.result as string;
-        setPhotoPreviews(newPreviews);
+        setPhotoPreviews((currentPreviews) => {
+          const newPreviews = normalizePhotoSlots(currentPreviews);
+          newPreviews[index] = reader.result as string;
+          return newPreviews;
+        });
       };
       reader.readAsDataURL(processedBlob);
 
       // Store the processed file
-      const newFiles = [...photoFiles];
-      newFiles[index] = new File([processedBlob], `photo-${index}.jpg`, { type: 'image/jpeg' });
-      setPhotoFiles(newFiles);
+      setPhotoFiles((currentFiles) => {
+        const newFiles = [...currentFiles];
+        newFiles[index] = new File([processedBlob], `photo-${index}.jpg`, { type: 'image/jpeg' });
+        return newFiles;
+      });
 
       toast({
         title: "Photo uploaded!",
@@ -316,6 +331,7 @@ const ProfileSetup = () => {
         description: "Could not process the photo. Please try another image.",
       });
     } finally {
+      e.currentTarget.value = "";
       setProcessingPhoto(null);
     }
   };
@@ -333,7 +349,7 @@ const ProfileSetup = () => {
   const uploadPhotos = async (): Promise<string[]> => {
     if (!user) return photoUrls;
 
-    const uploadedUrls = [...photoUrls];
+    const uploadedUrls = normalizePhotoSlots(photoUrls);
 
     for (let i = 0; i < photoFiles.length; i++) {
       const file = photoFiles[i];
@@ -365,7 +381,7 @@ const ProfileSetup = () => {
       }
     }
 
-    return uploadedUrls.filter(url => url !== "");
+    return trimEmptyTrailingPhotoSlots(uploadedUrls);
   };
 
   const handleLogout = async () => {

@@ -62,14 +62,14 @@ const BottomNav = () => {
             memberIds = members.map(m => m.member_id);
           }
         }
-      } else if (role === "booking_manager") {
+
         const { data: managedArtists } = await supabase
           .from("booking_manager_artists")
           .select("artist_id")
           .eq("booking_manager_id", user.id);
 
         if (managedArtists) {
-          memberIds = managedArtists.map(a => a.artist_id);
+          memberIds = [...memberIds, ...managedArtists.map(a => a.artist_id)];
         }
       }
       if (cancelled) return;

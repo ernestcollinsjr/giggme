@@ -131,8 +131,10 @@ export default function BookingManagerAdmin() {
   const [broadcastVenue, setBroadcastVenue] = useState("");
   const [broadcastSending, setBroadcastSending] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
-  const [myBand, setMyBand] = useState<{ id: string; name: string } | null>(null);
-  const [ensuringBand, setEnsuringBand] = useState(false);
+  const [myBands, setMyBands] = useState<Array<{ id: string; name: string }>>([]);
+  const [activeBand, setActiveBand] = useState<{ id: string; name: string } | null>(null);
+  const [newGroupName, setNewGroupName] = useState("");
+  const [creatingGroup, setCreatingGroup] = useState(false);
 
   const paymentKey = (gig: { source: string; id: string; artist_id: string }) =>
     `${gig.source}:${gig.id}:${gig.artist_id}`;
@@ -235,39 +237,30 @@ export default function BookingManagerAdmin() {
       .from("bands")
       .select("id, name")
       .eq("band_leader_id", uid)
-      .order("created_at", { ascending: true })
-      .limit(1)
-      .maybeSingle();
-    if (data) setMyBand(data);
+      .order("created_at", { ascending: true });
+    setMyBands(data || []);
   };
 
-  const ensureBandAndOpenInvite = async () => {
-    if (!userId) return;
-    if (myBand) { setInviteOpen(true); return; }
-    setEnsuringBand(true);
+  const createGroupAndContinue = async () => {
+    if (!userId || !newGroupName.trim()) return;
+    setCreatingGroup(true);
     try {
-      // Use profile's band/org name if set
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("band_name, name")
-        .eq("id", userId)
-        .maybeSingle();
-      const name = (profile?.band_name && profile.band_name.trim()) ||
-                   (profile?.name ? `${profile.name}'s Group` : "My Group");
       const { data: band, error } = await supabase
         .from("bands")
-        .insert({ name, band_leader_id: userId })
+        .insert({ name: newGroupName.trim(), band_leader_id: userId })
         .select("id, name")
         .single();
       if (error) throw error;
-      setMyBand(band);
-      setInviteOpen(true);
+      setMyBands((prev) => [...prev, band]);
+      setActiveBand(band);
+      setNewGroupName("");
     } catch (e: any) {
-      toast({ variant: "destructive", title: "Couldn't open invite", description: e.message });
+      toast({ variant: "destructive", title: "Couldn't create group", description: e.message });
     } finally {
-      setEnsuringBand(false);
+      setCreatingGroup(false);
     }
   };
+
 
   const fetchManagedArtists = async (uid: string) => {
     const { data, error } = await supabase
@@ -736,10 +729,9 @@ export default function BookingManagerAdmin() {
               <span className="hidden sm:inline">Schedule</span> Reminder
             </Button>
             <Button
-              onClick={ensureBandAndOpenInvite}
+              onClick={() => { setActiveBand(null); setInviteOpen(true); }}
               size="sm"
               variant="outline"
-              disabled={ensuringBand}
               className="gap-1 text-xs sm:text-sm"
             >
               <UserPlus className="h-4 w-4" />
@@ -1397,10 +1389,66 @@ export default function BookingManagerAdmin() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-black/60 backdrop-blur-sm">
           <DialogHeader>
             <DialogTitle>Invite Group Member</DialogTitle>
-            <DialogDescription>Send an invite to add someone to your group.</DialogDescription>
+            <DialogDescription>
+              {activeBand
+                ? `Sending invites for "${activeBand.name}".`
+                : "Choose an existing group or create a new one to invite members to."}
+            </DialogDescription>
           </DialogHeader>
-          {myBand && (
-            <BandInvitationManager bandId={myBand.id} bandName={myBand.name} />
+
+          {!activeBand ? (
+            <div className="space-y-5">
+              {myBands.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Use an existing group</Label>
+                  <div className="grid gap-2">
+                    {myBands.map((b) => (
+                      <Button
+                        key={b.id}
+                        variant="outline"
+                        className="justify-between"
+                        onClick={() => setActiveBand(b)}
+                      >
+                        <span className="truncate">{b.name}</span>
+                        <span className="text-xs text-muted-foreground">Select</span>
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="space-y-2">
+                <Label htmlFor="new-group-name">
+                  {myBands.length > 0 ? "Or create a new group" : "Name your group"}
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="new-group-name"
+                    placeholder="e.g. Saturday Night Band"
+                    value={newGroupName}
+                    onChange={(e) => setNewGroupName(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") createGroupAndContinue(); }}
+                  />
+                  <Button
+                    onClick={createGroupAndContinue}
+                    disabled={!newGroupName.trim() || creatingGroup}
+                  >
+                    Create
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1 -ml-2"
+                onClick={() => setActiveBand(null)}
+              >
+                ← Change group
+              </Button>
+              <BandInvitationManager bandId={activeBand.id} bandName={activeBand.name} />
+            </div>
           )}
         </DialogContent>
       </Dialog>

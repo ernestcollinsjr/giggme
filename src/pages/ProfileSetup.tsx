@@ -1293,7 +1293,7 @@ const ProfileSetup = () => {
             </TabsList>
           
             {/* Profile Completeness Indicator */}
-            {(role === "booking_manager" || role === "entertainer" || role === "artist") && (
+            {(role === "entertainer" || role === "artist") && (
               <div className="mb-6 p-4 bg-muted/50 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
                   <Label className="text-sm font-medium">Profile Completeness</Label>
@@ -1380,31 +1380,34 @@ const ProfileSetup = () => {
                     required
                     className="text-xl font-semibold h-auto py-1 px-2"
                   />
-                  {(role === "entertainer" || role === "booking_manager") && (
+                  {(role === "entertainer" || role === "booking_manager" || role === "super_admin") && (
                     <Input
                       id="band_name"
                       type="text"
-                      placeholder="Group Name"
+                      placeholder={role === "entertainer" ? "Group Name" : "Organization Name"}
                       value={bandName}
                       onChange={(e) => setBandName(e.target.value)}
                       className="text-sm"
                     />
                   )}
-                  <Select value={performerCategory} onValueChange={setPerformerCategory}>
-                    <SelectTrigger className="text-sm text-muted-foreground h-auto py-1">
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Solo">Solo</SelectItem>
-                      <SelectItem value="Duo">Duo</SelectItem>
-                      <SelectItem value="Band">Band</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  {role === "entertainer" && (
+                    <Select value={performerCategory} onValueChange={setPerformerCategory}>
+                      <SelectTrigger className="text-sm text-muted-foreground h-auto py-1">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Solo">Solo</SelectItem>
+                        <SelectItem value="Duo">Duo</SelectItem>
+                        <SelectItem value="Band">Band</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
                   {memberSince && (
                     <p className="text-xs text-muted-foreground">
                       Member since {memberSince}
                     </p>
                   )}
+
                 </div>
 
                 <div className="flex-1">
@@ -1426,7 +1429,9 @@ const ProfileSetup = () => {
               </div>
             </div>
 
+            {(role === "entertainer" || role === "member" || role === "artist") && (
             <div className="space-y-2">
+
               <Label>Additional Photos (Optional, 3 max)</Label>
               <div className="grid grid-cols-3 gap-4">
                 {[1, 2, 3].map((index) => (
@@ -1480,8 +1485,10 @@ const ProfileSetup = () => {
                 ))}
               </div>
             </div>
+            )}
 
 
+            {(role === "entertainer" || role === "member" || role === "artist") && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="bio">Bio</Label>
@@ -1492,19 +1499,17 @@ const ProfileSetup = () => {
               <Textarea
                 id="bio"
                 placeholder={
-                  role === "booking_manager"
-                    ? "Tell us about your band, music style, experience, and what makes you unique..."
-                    : role === "entertainer"
+                  role === "entertainer"
                     ? "Tell us about your music style, experience, and what makes you unique..."
-                    : "Tell us about your experience managing bands and artists..."
+                    : "Tell us a bit about yourself..."
                 }
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 maxLength={350}
                 rows={4}
-                required
               />
             </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
@@ -1578,7 +1583,7 @@ const ProfileSetup = () => {
               </p>
             </div>
             
-            {(role === "booking_manager" || role === "entertainer") && (
+            {role === "entertainer" && (
               <div className="space-y-2">
                 <Label htmlFor="instrument">Primary Instrument</Label>
                 <Select value={instrument} onValueChange={setInstrument} required>
@@ -1600,7 +1605,7 @@ const ProfileSetup = () => {
             )}
 
             {/* Social Media Links */}
-            {(role === "booking_manager" || role === "entertainer" || role === "artist") && (
+            {(role === "entertainer" || role === "artist") && (
               <div className="space-y-4 pt-4 border-t">
                 <div>
                   <Label className="flex items-center gap-2">
@@ -1630,7 +1635,7 @@ const ProfileSetup = () => {
             )}
 
             {/* YouTube Links */}
-            {(role === "booking_manager" || role === "entertainer" || role === "artist") && (
+            {(role === "entertainer" || role === "artist") && (
               <div className="space-y-4 pt-4 border-t">
                 <div>
                   <Label className="flex items-center gap-2">
@@ -1729,7 +1734,7 @@ const ProfileSetup = () => {
             )}
 
             {/* Equipment List */}
-            {(role === "booking_manager" || role === "entertainer" || role === "artist") && (
+            {(role === "entertainer" || role === "artist") && (
               <div className="space-y-4 pt-4 border-t">
                 <div>
                   <Label className="flex items-center gap-2">
@@ -1773,7 +1778,7 @@ const ProfileSetup = () => {
             )}
 
             {/* Skills & Abilities */}
-            {(role === "booking_manager" || role === "entertainer" || role === "artist") && (
+            {(role === "entertainer" || role === "artist") && (
               <div className="space-y-4 pt-4 border-t">
                 <div>
                   <Label className="flex items-center gap-2">
@@ -1817,7 +1822,7 @@ const ProfileSetup = () => {
             )}
 
             {/* Genres */}
-            {(role === "booking_manager" || role === "entertainer" || role === "artist") && (
+            {(role === "entertainer" || role === "artist") && (
               <div className="space-y-4 pt-4 border-t">
                 <div>
                   <Label className="flex items-center gap-2">
@@ -1861,7 +1866,7 @@ const ProfileSetup = () => {
               )}
 
               {/* Entertainer Categories (multi-select) */}
-              {(role === "booking_manager" || role === "entertainer" || role === "artist") && (
+              {(role === "entertainer" || role === "artist") && (
                 <div className="space-y-3 pt-4 border-t">
                   <div>
                     <Label className="flex items-center gap-2">
@@ -1948,7 +1953,7 @@ const ProfileSetup = () => {
 
               {/* Availability Tab */}
               <TabsContent value="availability" className="mt-0 space-y-6">
-            {(role === "booking_manager" || role === "entertainer" || role === "artist") && (
+            {(role === "entertainer" || role === "artist") && (
               <div className="space-y-4 pt-4 border-t">
                 <Label className="flex items-center gap-2">
                   <Briefcase className="h-4 w-4" />

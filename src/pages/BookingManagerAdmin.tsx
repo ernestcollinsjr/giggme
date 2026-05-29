@@ -1389,10 +1389,66 @@ export default function BookingManagerAdmin() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-black/60 backdrop-blur-sm">
           <DialogHeader>
             <DialogTitle>Invite Group Member</DialogTitle>
-            <DialogDescription>Send an invite to add someone to your group.</DialogDescription>
+            <DialogDescription>
+              {activeBand
+                ? `Sending invites for "${activeBand.name}".`
+                : "Choose an existing group or create a new one to invite members to."}
+            </DialogDescription>
           </DialogHeader>
-          {myBand && (
-            <BandInvitationManager bandId={myBand.id} bandName={myBand.name} />
+
+          {!activeBand ? (
+            <div className="space-y-5">
+              {myBands.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Use an existing group</Label>
+                  <div className="grid gap-2">
+                    {myBands.map((b) => (
+                      <Button
+                        key={b.id}
+                        variant="outline"
+                        className="justify-between"
+                        onClick={() => setActiveBand(b)}
+                      >
+                        <span className="truncate">{b.name}</span>
+                        <span className="text-xs text-muted-foreground">Select</span>
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="space-y-2">
+                <Label htmlFor="new-group-name">
+                  {myBands.length > 0 ? "Or create a new group" : "Name your group"}
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="new-group-name"
+                    placeholder="e.g. Saturday Night Band"
+                    value={newGroupName}
+                    onChange={(e) => setNewGroupName(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") createGroupAndContinue(); }}
+                  />
+                  <Button
+                    onClick={createGroupAndContinue}
+                    disabled={!newGroupName.trim() || creatingGroup}
+                  >
+                    Create
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1 -ml-2"
+                onClick={() => setActiveBand(null)}
+              >
+                ← Change group
+              </Button>
+              <BandInvitationManager bandId={activeBand.id} bandName={activeBand.name} />
+            </div>
           )}
         </DialogContent>
       </Dialog>

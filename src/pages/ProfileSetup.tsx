@@ -1425,7 +1425,7 @@ const ProfileSetup = () => {
               </div>
             </div>
 
-            {(role === "entertainer" || role === "member" || role === "artist") && (
+            {(role === "entertainer" || role === "member" || role === "artist" || role === "booking_manager" || role === "super_admin" || role === "admin") && (
             <div className="space-y-2">
 
               <Label>Additional Photos (Optional, 3 max)</Label>
@@ -1484,7 +1484,7 @@ const ProfileSetup = () => {
             )}
 
 
-            {(role === "entertainer" || role === "member" || role === "artist") && (
+            {(role === "entertainer" || role === "member" || role === "artist" || role === "booking_manager" || role === "super_admin" || role === "admin") && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="bio">Bio</Label>

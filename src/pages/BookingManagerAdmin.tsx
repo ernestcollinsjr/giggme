@@ -46,6 +46,7 @@ import { UpcomingGigLocationTracker } from "@/components/UpcomingGigLocationTrac
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { AdminsManager } from "@/components/AdminsManager";
+import { BandInvitationManager } from "@/components/BandInvitationManager";
 
 const CATEGORIES = ["Soloist", "Duo", "Band"] as const;
 type Category = typeof CATEGORIES[number];
@@ -129,6 +130,9 @@ export default function BookingManagerAdmin() {
   const [broadcastText, setBroadcastText] = useState("");
   const [broadcastVenue, setBroadcastVenue] = useState("");
   const [broadcastSending, setBroadcastSending] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [myBand, setMyBand] = useState<{ id: string; name: string } | null>(null);
+  const [ensuringBand, setEnsuringBand] = useState(false);
 
   const paymentKey = (gig: { source: string; id: string; artist_id: string }) =>
     `${gig.source}:${gig.id}:${gig.artist_id}`;
@@ -218,11 +222,50 @@ export default function BookingManagerAdmin() {
         return;
       }
 
-      await Promise.all([fetchManagedArtists(user.id), fetchUpcomingGigs(user.id), fetchPaymentStatuses(user.id), fetchArtistVenues(user.id)]);
+      await Promise.all([fetchManagedArtists(user.id), fetchUpcomingGigs(user.id), fetchPaymentStatuses(user.id), fetchArtistVenues(user.id), fetchMyBand(user.id)]);
     } catch (error: any) {
       toast({ variant: "destructive", title: "Error", description: error.message });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchMyBand = async (uid: string) => {
+    const { data } = await supabase
+      .from("bands")
+      .select("id, name")
+      .eq("band_leader_id", uid)
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    if (data) setMyBand(data);
+  };
+
+  const ensureBandAndOpenInvite = async () => {
+    if (!userId) return;
+    if (myBand) { setInviteOpen(true); return; }
+    setEnsuringBand(true);
+    try {
+      // Use profile's band/org name if set
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("band_name, name")
+        .eq("id", userId)
+        .maybeSingle();
+      const name = (profile?.band_name && profile.band_name.trim()) ||
+                   (profile?.name ? `${profile.name}'s Group` : "My Group");
+      const { data: band, error } = await supabase
+        .from("bands")
+        .insert({ name, band_leader_id: userId })
+        .select("id, name")
+        .single();
+      if (error) throw error;
+      setMyBand(band);
+      setInviteOpen(true);
+    } catch (e: any) {
+      toast({ variant: "destructive", title: "Couldn't open invite", description: e.message });
+    } finally {
+      setEnsuringBand(false);
     }
   };
 
@@ -691,6 +734,16 @@ export default function BookingManagerAdmin() {
             >
               <Bell className="h-4 w-4" />
               <span className="hidden sm:inline">Schedule</span> Reminder
+            </Button>
+            <Button
+              onClick={ensureBandAndOpenInvite}
+              size="sm"
+              variant="outline"
+              disabled={ensuringBand}
+              className="gap-1 text-xs sm:text-sm"
+            >
+              <UserPlus className="h-4 w-4" />
+              Invite Group Member
             </Button>
             <Button
               onClick={() => navigate("/admin")}
@@ -1340,6 +1393,17 @@ export default function BookingManagerAdmin() {
           </div>
         )}
       </main>
+      <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-black/60 backdrop-blur-sm">
+          <DialogHeader>
+            <DialogTitle>Invite Group Member</DialogTitle>
+            <DialogDescription>Send an invite to add someone to your group.</DialogDescription>
+          </DialogHeader>
+          {myBand && (
+            <BandInvitationManager bandId={myBand.id} bandName={myBand.name} />
+          )}
+        </DialogContent>
+      </Dialog>
       <BottomNav />
     </div>
     </AppShell>

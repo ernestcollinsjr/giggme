@@ -246,7 +246,7 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
       host === "localhost";
     const publicOrigin = isPreview ? "https://giggme.com" : window.location.origin;
     const link = `${publicOrigin}/dashboard?gig=${gig.id}`;
-    const body = `Heads up for ${venueLabel} — tap Navigate on your gig card so we can track your route: ${link}`;
+    const body = `Heads up for ${venueLabel} — tap Start tracking on your gig card so we can track your route: ${link}`;
 
     // Figure out who to notify: gig owner + accepted gig members (not the manager)
     const recipientIds = new Set<string>();
@@ -298,7 +298,7 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
       const notifRows = ids.map((rid) => ({
         user_id: rid,
         title: "Time to head out",
-        message: `Tap Navigate on your ${venueLabel} gig card so we can track your route.`,
+          message: `Tap Start tracking on your ${venueLabel} gig card so we can track your route.`,
         type: "gig_tracking_request",
         related_id: gig.id,
       }));
@@ -311,7 +311,7 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
             body: {
               user_id: rid,
               title: "🚗 Time to head out",
-              body: `Tap Navigate for your ${venueLabel} gig so your team can track you.`,
+              body: `Tap Start tracking for your ${venueLabel} gig so your team can track you.`,
               url: link,
               data: { type: "gig_tracking_request", gig_id: gig.id },
             },
@@ -632,6 +632,7 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
                 {(() => {
                   const myRow = (travelByGig[gig.id] || []).find((r) => r.user_id === userId);
                   const myStatus: TravelStatus = myRow?.status || "not_started";
+                  const travelActionLabel = myStatus === "in_transit" ? "Re-open Maps" : "Start tracking";
                   return (
                     <div className="flex flex-col gap-1.5 flex-shrink-0">
                       <Button
@@ -645,12 +646,10 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
                             setNeedsPermission((p) => ({ ...p, [gig.id]: !granted }));
                           }
                         }}
-                        className="gap-1.5"
+                        className="gap-1.5 whitespace-nowrap"
                       >
                         <ExternalLink className="h-4 w-4" />
-                        <span className="hidden sm:inline">
-                          {myStatus === "in_transit" ? "Re-open Maps" : "Navigate"}
-                        </span>
+                        <span>{travelActionLabel}</span>
                       </Button>
                       {myStatus === "in_transit" && (
                         <Button

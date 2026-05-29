@@ -257,7 +257,7 @@ const AdminDashboard = () => {
 
       setBands(bandsWithMembers);
     } catch (error: any) {
-      console.error("Error fetching bands:", error);
+      console.error("Error fetching groups:", error);
       toast({
         variant: "destructive",
         title: "Error fetching groups",
@@ -602,7 +602,7 @@ const AdminDashboard = () => {
                           <SelectItem value="Solo">Solo</SelectItem>
                           <SelectItem value="Duo">Duo</SelectItem>
                           <SelectItem value="Trio">Trio</SelectItem>
-                          <SelectItem value="Band">Band</SelectItem>
+                          <SelectItem value="Band">Group</SelectItem>
                         </SelectContent>
                       </Select>
                     </TableCell>
@@ -622,7 +622,7 @@ const AdminDashboard = () => {
                           <SelectItem value="__cat_Solo__">Solo</SelectItem>
                           <SelectItem value="__cat_Duo__">Duo</SelectItem>
                           <SelectItem value="__cat_Trio__">Trio</SelectItem>
-                          <SelectItem value="__cat_Band__">Band</SelectItem>
+                          <SelectItem value="__cat_Band__">Group</SelectItem>
                           {bands.map((b) => (
                             <SelectItem key={b.id} value={b.id}>
                               {b.name}

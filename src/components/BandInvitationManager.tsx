@@ -119,7 +119,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
       if (error) throw error;
       setAllBands(data || []);
     } catch (error: any) {
-      console.error("Error fetching bands:", error);
+      console.error("Error fetching groups:", error);
     }
   };
 
@@ -168,7 +168,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
 
     const normalizedEmail = email.toLowerCase().trim();
 
-    // Check if there's already an invitation for this email in this band
+    // Check if there's already an invitation for this email in this group
     const existingInvite = invitations.find(inv => inv.email.toLowerCase() === normalizedEmail);
     
     if (existingInvite) {
@@ -221,13 +221,13 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
       }
 
       // Send email via edge function
-      const { error: emailError } = await supabase.functions.invoke("send-band-invite", {
+      const { error: emailError } = await supabase.functions.invoke("send-group-invite", {
         body: {
           recipientEmail: normalizedEmail,
           recipientName: recipientName.trim(),
           bandName: bandName,
           inviteToken: invitation.token,
-          bandLeaderName: profile?.name || "Band Leader",
+          bandLeaderName: profile?.name || "Group Leader",
         },
       });
 
@@ -299,7 +299,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Please select a band.",
+        description: "Please select a group.",
       });
       return;
     }
@@ -365,7 +365,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
       const selectedBand = allBands.find(b => b.id === selectedBandForMember);
       toast({
         title: "Member added!",
-        description: `${selectedInvitation.email} has been added to ${selectedBand?.name || 'the band'}.`,
+        description: `${selectedInvitation.email} has been added to ${selectedBand?.name || 'the group'}.`,
       });
 
       setShowBandSelectDialog(false);
@@ -494,7 +494,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
       <CardHeader>
         <CardTitle>Invite Group Member</CardTitle>
         <CardDescription>
-          Send email invitations to new band members
+          Send email invitations to new group members
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -596,7 +596,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
               <div className="space-y-2">
                 <h4 className="font-semibold text-sm">Accepted Invitations</h4>
                 <p className="text-xs text-muted-foreground mb-2">
-                  Add these members to your band
+                  Add these members to your group
                 </p>
                 {acceptedInvitations.map((invite) => (
                   <div
@@ -613,7 +613,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
                         <p className="text-xs text-muted-foreground">{invite.email}</p>
                       )}
                       <p className="text-xs text-muted-foreground">
-                        Accepted • Waiting to be added to band
+                        Accepted • Waiting to be added to group
                       </p>
                     </div>
                     <div className="flex gap-2">
@@ -622,7 +622,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
                         onClick={() => openBandSelectDialog(invite)}
                       >
                         <UserPlus className="h-4 w-4 mr-1" />
-                        Add to Band
+                        Add to Group
                       </Button>
                       <Button
                         size="sm"
@@ -737,20 +737,20 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
       <Dialog open={showBandSelectDialog} onOpenChange={setShowBandSelectDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Member to Band</DialogTitle>
+            <DialogTitle>Add Member to Group</DialogTitle>
             <DialogDescription>
               Choose which band and role for {selectedInvitation?.recipient_name || selectedInvitation?.email}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div className="space-y-2">
-              <Label>Select Band</Label>
+              <Label>Select Group</Label>
               <Select 
                 value={selectedBandForMember} 
                 onValueChange={setSelectedBandForMember}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose a band" />
+                  <SelectValue placeholder="Choose a group" />
                 </SelectTrigger>
                 <SelectContent>
                   {allBands.map((band) => (
@@ -771,8 +771,8 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
                   <SelectValue placeholder="Choose a role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="entertainer">Band Member</SelectItem>
-                  <SelectItem value="booking_manager">Band Leader</SelectItem>
+                  <SelectItem value="entertainer">Group Member</SelectItem>
+                  <SelectItem value="booking_manager">Group Leader</SelectItem>
                   <SelectItem value="artist">Entertainer</SelectItem>
                   <SelectItem value="entertainer">Tour Manager</SelectItem>
                 </SelectContent>

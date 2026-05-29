@@ -208,8 +208,8 @@ const Setlist = () => {
             </h1>
             <p className="text-muted-foreground mt-1">
               {userRole === "booking_manager" 
-                ? "Manage and upload setlists for your band" 
-                : "View and play songs from your band's setlists"}
+                ? "Manage and upload setlists for your group" 
+                : "View and play songs from your group's setlists"}
             </p>
           </div>
         </div>
@@ -228,7 +228,7 @@ const Setlist = () => {
                   <div className="text-center py-12">
                     <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <p className="text-muted-foreground">
-                      No setlists available yet. Your band leader will upload them soon!
+                      No setlists available yet. Your group leader will upload them soon!
                     </p>
                   </div>
                 </CardContent>

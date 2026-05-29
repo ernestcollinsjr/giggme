@@ -29,7 +29,7 @@ export const BandAssistant = () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error("Not authenticated");
 
-    const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/band-assistant`;
+    const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/group-assistant`;
 
     const resp = await fetch(CHAT_URL, {
       method: "POST",
@@ -138,7 +138,7 @@ export const BandAssistant = () => {
       <CardHeader className="border-b py-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <Bot className="h-4 w-4 text-primary" />
-          Band Assistant
+          Group Assistant
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col p-0">

@@ -27,7 +27,7 @@ const features = [
     icon: Bell,
     title: "Push Notifications",
     description: "Never miss an update",
-    narration: "Stay informed with instant push notifications for gig updates and band messages.",
+    narration: "Stay informed with instant push notifications for gig updates and group messages.",
     color: "from-green-500 to-green-600",
     bgColor: "bg-green-500",
   },
@@ -42,7 +42,7 @@ const features = [
   {
     icon: MapPin,
     title: "Location Tracking",
-    description: "Find your bandmates",
+    description: "Find your groupmates",
     narration: "Know where your performers are before the gig to assure timely arrivals.",
     color: "from-red-500 to-red-600",
     bgColor: "bg-red-500",
@@ -50,7 +50,7 @@ const features = [
   {
     icon: Users,
     title: "Team Management",
-    description: "Coordinate your band",
+    description: "Coordinate your group",
     narration: "Manage your entire team in one place. Assign roles, track availability, and collaborate.",
     color: "from-cyan-500 to-cyan-600",
     bgColor: "bg-cyan-500",
@@ -65,9 +65,9 @@ const features = [
   },
   {
     icon: MessageSquare,
-    title: "Band Chat",
+    title: "Group Chat",
     description: "Stay connected",
-    narration: "Keep your band connected with real-time messaging and group conversations.",
+    narration: "Keep your group connected with real-time messaging and group conversations.",
     color: "from-indigo-500 to-indigo-600",
     bgColor: "bg-indigo-500",
   },

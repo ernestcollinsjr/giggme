@@ -73,7 +73,7 @@ const Index = () => {
     {
       icon: Music,
       title: "Musical Acts",
-      desc: "Bands, DJs, Ensembles, Singers & more",
+      desc: "Groups, DJs, Ensembles, Singers & more",
       iconBg: "bg-purple-500/15 text-purple-400",
       tile: "bg-purple-500",
       accent: "text-purple-400",
@@ -395,7 +395,7 @@ const Index = () => {
           <Zap className="absolute top-6 right-6 h-10 w-10 text-white/30" />
           <h2 className="text-3xl sm:text-4xl font-bold text-white">Ready to transform your gig management?</h2>
           <p className="mt-3 text-white/85 max-w-2xl mx-auto">
-            Join GiggMe today and experience seamless connections between band leaders, members, artists, and booking managers.
+            Join GiggMe today and experience seamless connections between group leaders, members, artists, and booking managers.
           </p>
           <button
             onClick={() => navigate("/auth")}

@@ -245,7 +245,7 @@ export function PaymentScheduler({ mode }: { mode: Mode }) {
           <p className="text-sm text-muted-foreground">
             {mode === "manager"
               ? "Add managed performers to start scheduling payouts."
-              : "Add band members and assign them to gigs to schedule payouts."}
+              : "Add group members and assign them to gigs to schedule payouts."}
           </p>
         ) : (
           <>

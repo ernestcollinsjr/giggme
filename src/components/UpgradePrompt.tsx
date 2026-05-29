@@ -46,11 +46,11 @@ export const UpgradePrompt = ({ open, onOpenChange, feature }: UpgradePromptProp
             </li>
             <li className="flex items-center gap-2">
               <Crown className="h-4 w-4 text-primary" />
-              AI band assistant
+              AI group assistant
             </li>
             <li className="flex items-center gap-2">
               <Crown className="h-4 w-4 text-primary" />
-              Unlimited band members
+              Unlimited group members
             </li>
           </ul>
         </div>

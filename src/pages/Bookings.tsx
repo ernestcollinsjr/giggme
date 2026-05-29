@@ -432,8 +432,8 @@ const Bookings = () => {
       if (!selectedBandId) {
         toast({
           variant: "destructive",
-          title: "No band selected",
-          description: "Please select a band from the dashboard first.",
+          title: "No group selected",
+          description: "Please select a group from the dashboard first.",
         });
         return;
       }
@@ -597,7 +597,7 @@ const Bookings = () => {
       toast({
         variant: "destructive",
         title: "No members selected",
-        description: "Please select at least one band member to invite.",
+        description: "Please select at least one group member to invite.",
       });
       return;
     }
@@ -985,7 +985,7 @@ const Bookings = () => {
               Gigs & Bookings
             </h1>
             <p className="text-muted-foreground mt-1">
-              {isBandLeader ? "Manage your band's performance schedule" : "View upcoming gigs"}
+              {isBandLeader ? "Manage your group's performance schedule" : "View upcoming gigs"}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -1003,12 +1003,12 @@ const Bookings = () => {
           <Card className="border-border/50 shadow-sm">
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
-                <Label htmlFor="band-select" className="text-sm font-medium whitespace-nowrap">
-                  Current Band:
+                <Label htmlFor="group-select" className="text-sm font-medium whitespace-nowrap">
+                  Current Group:
                 </Label>
                 <Select value={selectedBandId || undefined} onValueChange={setSelectedBandId}>
-                  <SelectTrigger id="band-select" className="w-full max-w-sm">
-                    <SelectValue placeholder="Select a band" />
+                  <SelectTrigger id="group-select" className="w-full max-w-sm">
+                    <SelectValue placeholder="Select a group" />
                   </SelectTrigger>
                   <SelectContent>
                     {bands.map((band) => (
@@ -1027,12 +1027,12 @@ const Bookings = () => {
           <Card className="border-border/50 shadow-lg bg-gradient-to-br from-destructive/5 to-destructive/10">
             <CardContent className="pt-6 text-center">
               <Music className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="font-semibold mb-2">No Bands Created</h3>
+              <h3 className="font-semibold mb-2">No Groups Created</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                You need to create a band first before you can add gigs.
+                You need to create a group first before you can add gigs.
               </p>
               <Button onClick={() => navigate("/dashboard")}>
-                Go to Dashboard to Create Band
+                Go to Dashboard to Create Group
               </Button>
             </CardContent>
           </Card>
@@ -1256,7 +1256,7 @@ const Bookings = () => {
                 <Label htmlFor="attire">Attire (Optional)</Label>
                 <Input
                   id="attire"
-                  placeholder="e.g., Black tie, Casual, Band uniform..."
+                  placeholder="e.g., Black tie, Casual, Group uniform..."
                   value={attire}
                   onChange={(e) => setAttire(e.target.value)}
                 />
@@ -1448,7 +1448,7 @@ const Bookings = () => {
                   </p>
                 </div>
                 {bandMembers.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">No band members available to invite</p>
+                  <p className="text-xs text-muted-foreground">No group members available to invite</p>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2 border rounded-md">
                     {bandMembers.map((member) => (
@@ -1945,7 +1945,7 @@ const Bookings = () => {
                     <Badge variant={gi.status === 'accepted' ? 'default' : gi.status === 'pending' ? 'secondary' : 'outline'}>
                       {gi.status}
                     </Badge>
-                    <Badge variant="outline">Band Gig</Badge>
+                    <Badge variant="outline">Group Gig</Badge>
                   </div>
                   <p className="font-semibold truncate">{gi.gigs?.venue_name || gi.gigs?.venue}</p>
                   <p className="text-sm text-muted-foreground">
@@ -2302,7 +2302,7 @@ const Bookings = () => {
                                   if (uninvitedMembers.length === 0 && currentGigInvitedMembers.length === 0) {
                                     return (
                                       <p className="text-sm text-muted-foreground text-center py-4">
-                                        No other band members found. Members need to sign up first.
+                                        No other group members found. Members need to sign up first.
                                       </p>
                                     );
                                   }

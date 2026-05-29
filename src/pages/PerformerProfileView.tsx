@@ -417,7 +417,7 @@ const PerformerProfileView = () => {
                     {profile.performer_category || "Solo"}
                   </p>
                   {profile.band_name && (
-                    <p className="text-sm"><span className="text-muted-foreground">Band:</span> {profile.band_name}</p>
+                    <p className="text-sm"><span className="text-muted-foreground">Group:</span> {profile.band_name}</p>
                   )}
                   {memberSince && (
                     <p className="text-xs text-muted-foreground">Member since {memberSince}</p>

@@ -109,7 +109,7 @@ export const BookingManagerClientLocations = () => {
         const band = managedBands.find((mb: any) => mb.band_id === gig.band_id);
         return {
           ...gig,
-          band_name: band?.bands?.name || "Unknown Band",
+          band_name: band?.bands?.name || "Unknown Group",
         };
       }) || [];
 
@@ -120,7 +120,7 @@ export const BookingManagerClientLocations = () => {
         setSelectedGigId(gigsWithBands[0].id);
       }
     } catch (error) {
-      console.error("Error fetching managed bands gigs:", error);
+      console.error("Error fetching managed groups gigs:", error);
     } finally {
       setLoading(false);
     }
@@ -192,7 +192,7 @@ export const BookingManagerClientLocations = () => {
         <CardHeader>
           <CardTitle>Client Locations</CardTitle>
           <CardDescription>
-            No active gigs found for your managed bands. Add bands to your roster to see their gig locations.
+            No active gigs found for your managed groups. Add groups to your roster to see their gig locations.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -260,7 +260,7 @@ export const BookingManagerClientLocations = () => {
               </h3>
               {locations.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-6">
-                  No band members are currently sharing their location for this gig.
+                  No group members are currently sharing their location for this gig.
                 </p>
               ) : (
                 <div className="space-y-2">

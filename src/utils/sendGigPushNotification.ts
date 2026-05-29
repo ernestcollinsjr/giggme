@@ -44,8 +44,8 @@ export async function sendGigPushNotifications({
     .in('id', memberIds);
 
   // Get band name and leader name
-  let bandName = 'Your Band';
-  let bandLeaderName = 'Band Leader';
+  let bandName = 'Your Group';
+  let bandLeaderName = 'Group Leader';
   
   if (bandId) {
     const { data: band } = await supabase

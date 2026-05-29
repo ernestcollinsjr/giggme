@@ -696,7 +696,7 @@ const Dashboard = () => {
             body: {
               gig_id: invite.gig_id,
               member_id: user?.id,
-              member_name: profile?.name || "A band member",
+              member_name: profile?.name || "A group member",
               status: newStatus,
             },
           });
@@ -733,7 +733,7 @@ const Dashboard = () => {
 
   const fetchSetlists = async (userId: string) => {
     try {
-      // Get bands that the user is a member of
+      // Get groups that the user is a member of
       const { data: memberBands } = await supabase
         .from("gig_members")
         .select("gig_id, gigs!inner(band_id)")
@@ -1309,25 +1309,25 @@ const Dashboard = () => {
         {userRole === "booking_manager" && (
           <div className="space-y-4">
             <div className="space-y-3">
-              <h2 className="text-xl font-semibold">My Bands</h2>
+              <h2 className="text-xl font-semibold">My Groups</h2>
               <div className="flex gap-2">
                 <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                   <DialogTrigger asChild>
                     <Button size="sm" variant="outline" className="gap-1.5">
                       <Plus className="h-4 w-4" />
-                      New Band
+                      New Group
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Create New Band</DialogTitle>
+                      <DialogTitle>Create New Group</DialogTitle>
                       <DialogDescription>
-                        Add a new band to manage separately
+                        Add a new group to manage separately
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="band-name">Band Name</Label>
+                        <Label htmlFor="band-name">Group Name</Label>
                         <Input
                           id="band-name"
                           value={newBandName}
@@ -1362,9 +1362,9 @@ const Dashboard = () => {
               <Card className="border-border/50 shadow-lg bg-gradient-to-br from-primary/5 to-accent/5">
                 <CardContent className="pt-6 text-center">
                   <Music className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="font-semibold mb-2">No Bands Yet</h3>
+                  <h3 className="font-semibold mb-2">No Groups Yet</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Create your first band to start managing rehearsals, gigs, and setlists
+                    Create your first group to start managing rehearsals, gigs, and setlists
                   </p>
                 </CardContent>
               </Card>
@@ -1428,7 +1428,7 @@ const Dashboard = () => {
                               <div className="p-4 rounded-lg bg-muted/30 border">
                                 <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
                                   <Music className="h-4 w-4 text-primary" />
-                                  Band Info
+                                  Group Info
                                 </h4>
                                 <p className="text-sm text-muted-foreground">
                                   {band.description || "No description set. Edit your band profile to add one."}
@@ -1709,7 +1709,7 @@ const Dashboard = () => {
                     <div className="text-center py-12">
                       <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                       <p className="text-muted-foreground">
-                        No setlists available yet. Your band leader will upload them soon!
+                        No setlists available yet. Your group leader will upload them soon!
                       </p>
                     </div>
                   </CardContent>
@@ -1948,7 +1948,7 @@ const Dashboard = () => {
                   </Button>
                 </div>
                 <p className="text-sm text-muted-foreground text-center mt-4">
-                  Add bands to your roster, browse artists, and track locations during gigs!
+                  Add groups to your roster, browse artists, and track locations during gigs!
                 </p>
               </CardContent>
             </Card>
@@ -1959,16 +1959,16 @@ const Dashboard = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <CalendarIcon className="h-5 w-5 text-primary" />
-                    Band Availability Management
+                    Group Availability Management
                   </CardTitle>
                   <CardDescription>
-                    Request and view availability from band members
+                    Request and view availability from group members
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {managedBands.length > 1 && (
                     <div className="flex items-center gap-4">
-                      <label className="text-sm font-medium">Select Band:</label>
+                      <label className="text-sm font-medium">Select Group:</label>
                       <select
                         value={selectedManagedBandId}
                         onChange={(e) => {
@@ -2150,7 +2150,7 @@ const Dashboard = () => {
                 Upgrade to Premium
               </CardTitle>
               <CardDescription>
-                Unlock advanced features for your band
+                Unlock advanced features for your group
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -2190,7 +2190,7 @@ const Dashboard = () => {
                 </label>
               </div>
               <p className="text-xs text-muted-foreground">
-                This helps the band leader know when everyone is arriving at the venue.
+                This helps the group leader know when everyone is arriving at the venue.
               </p>
             </div>
             <DialogFooter>

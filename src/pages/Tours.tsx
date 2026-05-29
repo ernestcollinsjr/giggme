@@ -567,7 +567,7 @@ export default function Tours() {
                         if (typeMembers.length === 0) return null;
                         
                         const typeLabels: Record<string, string> = {
-                          band_members: 'Band Members',
+                          band_members: 'Group Members',
                           singer: 'Singer',
                           sound_crew: 'Sound Crew',
                           lighting_crew: 'Lighting Crew'

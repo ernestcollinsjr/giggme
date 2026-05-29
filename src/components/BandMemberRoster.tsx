@@ -112,10 +112,10 @@ export const BandMemberRoster = ({ bandId }: BandMemberRosterProps) => {
 
         setMembers(membersWithStatus);
       } catch (error: any) {
-        console.error("Error fetching band members:", error);
+        console.error("Error fetching group members:", error);
         toast({
           variant: "destructive",
-          title: "Failed to load band members",
+          title: "Failed to load group members",
           description: error.message,
         });
       } finally {
@@ -141,7 +141,7 @@ export const BandMemberRoster = ({ bandId }: BandMemberRosterProps) => {
       {members.length === 0 ? (
         <div className="text-center py-4 text-muted-foreground">
           <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
-          <p className="text-xs">Invite band members to gigs to build your roster</p>
+          <p className="text-xs">Invite group members to gigs to build your roster</p>
         </div>
       ) : (
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">

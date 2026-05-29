@@ -125,8 +125,8 @@ const Rehearsals = () => {
       if (!selectedBandId) {
         toast({
           variant: "destructive",
-          title: "No band selected",
-          description: "Please select a band from the dashboard first.",
+          title: "No group selected",
+          description: "Please select a group from the dashboard first.",
         });
         return;
       }
@@ -284,7 +284,7 @@ const Rehearsals = () => {
               Rehearsals
             </h1>
             <p className="text-muted-foreground mt-1">
-              {isBandLeader ? "Manage your band's rehearsal schedule" : "View upcoming rehearsals"}
+              {isBandLeader ? "Manage your group's rehearsal schedule" : "View upcoming rehearsals"}
             </p>
           </div>
           <Button variant="outline" onClick={() => navigate("/dashboard")}>

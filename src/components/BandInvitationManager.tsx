@@ -365,7 +365,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
       const selectedBand = allBands.find(b => b.id === selectedBandForMember);
       toast({
         title: "Member added!",
-        description: `${selectedInvitation.email} has been added to ${selectedBand?.name || 'the band'}.`,
+        description: `${selectedInvitation.email} has been added to ${selectedBand?.name || 'the group'}.`,
       });
 
       setShowBandSelectDialog(false);

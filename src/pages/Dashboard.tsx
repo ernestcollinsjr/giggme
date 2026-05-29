@@ -121,7 +121,7 @@ interface Setlist {
   songs: SetlistSong[];
 }
 
-type UserRole = "booking_manager" | "entertainer" | "booking_manager" | "artist" | "entertainer" | "super_admin";
+type UserRole = "super_admin" | "booking_manager" | "admin" | "entertainer";
 
 const Dashboard = () => {
   const navigate = useNavigate();

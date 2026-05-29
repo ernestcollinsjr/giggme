@@ -23,6 +23,7 @@ import { GigTemplateSelector } from "@/components/GigTemplateSelector";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { sendGigPushNotifications } from "@/utils/sendGigPushNotification";
+import { normalizeRole } from "@/lib/roles";
 
 interface Gig {
   id: string;
@@ -283,20 +284,32 @@ const Bookings = () => {
     }
 
     // Get user role
-    const { data: roleData } = await supabase
+    const { data: roleRows } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", user.id)
-      .single();
+      .order("role", { ascending: true });
+    const roles = (roleRows || []).map((row: any) => normalizeRole(row.role)).filter(Boolean);
+    const userActiveRole = roles.includes("super_admin")
+      ? "super_admin"
+      : roles.includes("booking_manager")
+        ? "booking_manager"
+        : roles.includes("admin")
+          ? "admin"
+          : roles.includes("entertainer")
+            ? "entertainer"
+            : roles.includes("member")
+              ? "member"
+              : null;
 
-    setUserRole(roleData?.role || null);
+    setUserRole(userActiveRole);
     setCurrentUserId(user.id);
 
     // Fetch managed artists (for quick-book from calendar) — booking managers & band leaders
     if (
-      roleData?.role === "booking_manager" ||
-      roleData?.role === "admin" ||
-      roleData?.role === "super_admin"
+      userActiveRole === "booking_manager" ||
+      userActiveRole === "admin" ||
+      userActiveRole === "super_admin"
     ) {
       const { data: links } = await supabase
         .from("booking_manager_artists")
@@ -324,7 +337,7 @@ const Bookings = () => {
     }
 
     // Fetch bands for band leaders
-    if (roleData?.role === "booking_manager" || roleData?.role === "super_admin") {
+    if (userActiveRole === "booking_manager" || userActiveRole === "super_admin") {
       const { data: bandsData } = await supabase
         .from("bands")
         .select("id, name")
@@ -399,7 +412,7 @@ const Bookings = () => {
     }
     
     // Fetch band members if a band is selected
-    if (selectedBandId && (roleData?.role === "booking_manager" || roleData?.role === "super_admin")) {
+    if (selectedBandId && (userActiveRole === "booking_manager" || userActiveRole === "super_admin")) {
       const { data: membersData } = await supabase
         .from("profiles")
         .select("id, name, email, instrument")
@@ -999,6 +1012,7 @@ const Bookings = () => {
     );
   }
 
+  const canEditBookings = userRole === "booking_manager" || userRole === "admin" || userRole === "super_admin";
   const isBandLeader = userRole === "booking_manager" || userRole === "super_admin";
 
   return (
@@ -1645,20 +1659,33 @@ const Bookings = () => {
                     <>
                       {dayConfirmed.map((g) => (
                         <div key={`g-${g.id}`} className="rounded-lg border border-border/50 p-3 space-y-1 relative">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute top-2 right-2 h-7 w-7"
-                            onClick={() => handleDeleteGig(g.id)}
-                            aria-label="Delete booking"
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
+                          <div className="absolute top-2 right-2 flex items-center gap-1">
+                            {canEditBookings && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 border border-border/60 bg-background/80 text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground"
+                                onClick={() => openEditGigDialog(g)}
+                                aria-label="Edit booking"
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={() => handleDeleteGig(g.id)}
+                              aria-label="Delete booking"
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
                           <div className="flex items-center gap-2">
                             <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
                             <Badge variant="secondary">Confirmed gig</Badge>
                           </div>
-                          <div className="font-semibold pr-8">{g.venue_name || g.venue}</div>
+                          <div className="font-semibold pr-16">{g.venue_name || g.venue}</div>
                           {g.venue_name && <div className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{g.venue}</div>}
                         </div>
                       ))}
@@ -1684,15 +1711,37 @@ const Bookings = () => {
                       ))}
                       {dayRequests.map((br: any) => (
                         <div key={`r-${br.id}`} className="rounded-lg border border-border/50 p-3 space-y-1 relative">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute top-2 right-2 h-7 w-7"
-                            onClick={() => handleDeleteBookingRequest(br.id)}
-                            aria-label="Delete booking request"
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
+                          <div className="absolute top-2 right-2 flex items-center gap-1">
+                            {canEditBookings && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 border border-border/60 bg-background/80 text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground"
+                                onClick={() => {
+                                  setEditingRequest(br);
+                                  setEditForm({
+                                    venue: br.venue || "",
+                                    dates_text: br.dates_text || "",
+                                    time_text: br.time_text || "",
+                                    budget: br.budget || "",
+                                    note: br.note || "",
+                                  });
+                                }}
+                                aria-label="Edit booking request"
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={() => handleDeleteBookingRequest(br.id)}
+                              aria-label="Delete booking request"
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
                           <div className="flex items-center gap-2">
                             <span className={cn(
                               "h-2.5 w-2.5 rounded-full",
@@ -1700,7 +1749,7 @@ const Bookings = () => {
                             )} />
                             <Badge variant="secondary">Booking request</Badge>
                           </div>
-                          <div className="font-semibold pr-8">{br.venue}</div>
+                          <div className="font-semibold pr-16">{br.venue}</div>
                           {br.performer_name && <div className="text-xs text-muted-foreground">Performer: {br.performer_name}</div>}
                           <div className="text-xs text-muted-foreground">Status: {br.status}</div>
                         </div>
@@ -1961,7 +2010,7 @@ const Bookings = () => {
                         <p className="text-xs text-muted-foreground mt-1">Budget: {br.budget}</p>
                       )}
                     </div>
-                    {(userRole === "booking_manager" || userRole === "admin" || userRole === "super_admin") && (
+                    {canEditBookings && (
                       <Button
                         size="icon"
                         variant="ghost"
@@ -2002,7 +2051,7 @@ const Bookings = () => {
                           {gi.gigs?.date && format(new Date(gi.gigs.date), "PPP p")}
                         </p>
                       </div>
-                      {(userRole === "booking_manager" || userRole === "admin" || userRole === "super_admin") && fullGig && (
+                      {canEditBookings && fullGig && (
                         <Button
                           size="icon"
                           variant="ghost"

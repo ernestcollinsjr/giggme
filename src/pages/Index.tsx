@@ -94,11 +94,11 @@ const Index = () => {
 
   const plans = [
     {
-      name: "Artist / Musician",
-      price: "$10.99",
+      name: "Entertainer",
+      price: "$8.99",
       tagline: "Showcase your talent and get discovered",
       features: [
-        "Professional artist profile",
+        "Professional entertainer profile",
         "Upload performance videos",
         "Photo gallery",
         "Availability calendar",
@@ -107,22 +107,22 @@ const Index = () => {
       featured: false,
     },
     {
-      name: "Group Leaders",
-      price: "$19.99",
-      tagline: "Everything you need to run your band",
+      name: "Featured Entertainer",
+      price: "$13.99",
+      tagline: "Stand out and get booked faster",
       features: [
-        "Real-time location sharing",
-        "SMS/Push notifications",
-        "Auto location tracking",
-        "Unlimited group members",
-        "AI group assistant",
+        "Everything in Entertainer +",
+        "Priority placement in search",
+        "Featured badge on profile",
+        "Top of booking manager lists",
+        "Boosted visibility",
         "Priority support",
       ],
       featured: true,
     },
     {
       name: "Booking Manager",
-      price: "$39.99",
+      price: "$49.99",
       tagline: "Manage up to 5 groups",
       features: [
         "Multi-group management",

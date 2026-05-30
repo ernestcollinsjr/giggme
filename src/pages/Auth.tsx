@@ -7,9 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Music, Briefcase, Users, Eye, EyeOff, Star, Check, Building2 } from "lucide-react";
+import { Music, Briefcase, Users, Eye, EyeOff, Star, Check, Building2, Crown, Search, Calendar, DollarSign, ShieldCheck, MessageCircle, Quote } from "lucide-react";
 import { Link } from "react-router-dom";
 import logo from "@/assets/logo.png";
+import heroVocalist from "@/assets/hero-performer-vocalist.jpg";
 import { z } from "zod";
 
 const loginSchema = z.object({

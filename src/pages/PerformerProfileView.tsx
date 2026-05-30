@@ -13,7 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, CalendarCheck, CalendarIcon, X, Loader2, Navigation, MessageCircle, Mail, Phone, Music, Briefcase, Wrench, Tag, MapPin, Users, DollarSign, Youtube, Facebook, Instagram, Twitter, Globe, Clock, Play, Check, HelpCircle, Crown, Bell, Shield, FileText, Lock } from "lucide-react";
+import { ArrowLeft, CalendarCheck, CalendarIcon, X, Loader2, Navigation, MessageCircle, Mail, Phone, Music, Briefcase, Wrench, Tag, MapPin, Users, DollarSign, Youtube, Facebook, Instagram, Twitter, Globe, Clock, Play, Check, HelpCircle, Crown, Bell, Shield, FileText, Lock, ArrowDown } from "lucide-react";
 import { TopNav } from "@/components/TopNav";
 import { PlaceAutocomplete } from "@/components/PlaceAutocomplete";
 import { PerformerRatingsDisplay } from "@/components/PerformerRatingsDisplay";
@@ -338,10 +338,16 @@ const PerformerProfileView = () => {
                   <CardTitle className="text-2xl">Performer Profile</CardTitle>
                   <CardDescription>View this performer's details and book them</CardDescription>
                 </div>
-                <Button onClick={() => setBookingOpen(true)} className="flex items-center gap-2">
-                  <CalendarCheck className="h-4 w-4" />
-                  Book Talent
-                </Button>
+                <div className="relative">
+                  <ArrowDown
+                    className="absolute -top-7 left-1/2 -translate-x-1/2 h-6 w-6 text-brand-gold animate-bounce drop-shadow-[0_0_8px_hsl(var(--brand-gold))]"
+                    aria-hidden="true"
+                  />
+                  <Button onClick={() => setBookingOpen(true)} className="flex items-center gap-2 animate-pulse">
+                    <CalendarCheck className="h-4 w-4" />
+                    Book Talent
+                  </Button>
+                </div>
               </div>
             </CardHeader>
 

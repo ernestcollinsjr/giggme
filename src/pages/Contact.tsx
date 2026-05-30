@@ -35,6 +35,12 @@ import {
   HelpCircle,
   Users,
   ShieldCheck as ShieldIcon,
+  Rocket,
+  Smartphone,
+  RefreshCw,
+  Bell,
+  CreditCard,
+  Star,
 } from "lucide-react";
 import logo from "@/assets/giggme-logo.png";
 import heroBand from "@/assets/hero-band.jpg";

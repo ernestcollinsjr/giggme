@@ -59,7 +59,7 @@ const FEATURES = [
   "24/7 account support",
 ];
 
-const TRUSTED_BY = ["Hard Rock Cafe", "Four Seasons", "The Ritz-Carlton", "Yamaha", "Marriott"];
+const TRUSTED_BY = ["Hard Rock Cafe", "Four Seasons", "The Ritz-Carlton", "Fleming's", "Marriott"];
 
 const FindEntertainers = () => {
   const navigate = useNavigate();

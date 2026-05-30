@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "next-themes";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -14,8 +15,29 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { ArrowLeft, Mail, CheckCircle2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Mail,
+  CheckCircle2,
+  Headphones,
+  Zap,
+  Heart,
+  Phone,
+  MapPin,
+  Calendar,
+  ShieldCheck,
+  Send,
+  ArrowRight,
+  ChevronRight,
+  DollarSign,
+  X,
+  Video,
+  HelpCircle,
+  Users,
+  ShieldCheck as ShieldIcon,
+} from "lucide-react";
 import logo from "@/assets/giggme-logo.png";
+import heroBand from "@/assets/hero-band.jpg";
 
 const schema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100),
@@ -24,8 +46,59 @@ const schema = z.object({
   message: z.string().trim().min(5, "Message is too short").max(2000),
 });
 
+const faqs = [
+  {
+    icon: DollarSign,
+    color: "text-violet-400",
+    bg: "bg-violet-500/15",
+    q: "How much does GiggMe cost?",
+    a: "Performers: $8/month | Featured Performers: $14/month\nManagers: Start with a free 14-day trial.",
+  },
+  {
+    icon: Users,
+    color: "text-pink-400",
+    bg: "bg-pink-500/15",
+    q: "Can booking managers contact me directly?",
+    a: "Yes, managers can find you, view your profile, and send you booking requests.",
+  },
+  {
+    icon: X,
+    color: "text-emerald-400",
+    bg: "bg-emerald-500/15",
+    q: "Can I cancel anytime?",
+    a: "Yes! You can cancel your subscription at any time.\nNo contracts. No hidden fees.",
+  },
+  {
+    icon: ShieldIcon,
+    color: "text-blue-400",
+    bg: "bg-blue-500/15",
+    q: "Is my information secure?",
+    a: "We take security seriously. Your data is encrypted and never shared with third parties.",
+  },
+  {
+    icon: Video,
+    color: "text-orange-400",
+    bg: "bg-orange-500/15",
+    q: "Can I upload videos and performance clips?",
+    a: "Absolutely! Showcase your talent with unlimited videos, photos, and audio clips.",
+  },
+  {
+    icon: HelpCircle,
+    color: "text-violet-400",
+    bg: "bg-violet-500/15",
+    q: "Need more help?",
+    a: "Contact our support team and we'll be happy to assist you.",
+  },
+];
+
 const Contact = () => {
   const navigate = useNavigate();
+  const { setTheme, resolvedTheme } = useTheme();
+
+  useEffect(() => {
+    if (resolvedTheme !== "dark") setTheme("dark");
+  }, [resolvedTheme, setTheme]);
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [category, setCategory] = useState<"sales" | "tech_support" | "other">("sales");
@@ -57,71 +130,211 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      {/* Top nav */}
       <header className="border-b border-white/5">
-        <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-          <button onClick={() => navigate("/")} className="flex items-center gap-2 text-sm text-white/70 hover:text-white">
-            <ArrowLeft className="h-4 w-4" /> Back
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          <button onClick={() => navigate("/")} className="flex items-center gap-2">
+            <img src={logo} alt="GiggMe" className="h-8 w-auto object-contain" />
           </button>
-          <img src={logo} alt="GiggMe" className="h-8 w-auto object-contain" />
-          <div className="w-16" />
+          <button
+            onClick={() => navigate("/")}
+            className="flex items-center gap-2 text-sm text-white/70 hover:text-white"
+          >
+            <ArrowLeft className="h-4 w-4" /> Back to home
+          </button>
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-12">
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 text-primary mb-4">
-            <Mail className="h-6 w-6" />
+      {/* Hero */}
+      <section className="relative overflow-hidden">
+        <div
+          className="absolute inset-0 opacity-[0.08] pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(ellipse at 70% 30%, hsl(var(--primary) / 0.4), transparent 60%), radial-gradient(ellipse at 20% 80%, hsl(25 95% 53% / 0.25), transparent 60%)",
+          }}
+        />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-12 pb-10 grid md:grid-cols-2 gap-8 items-center relative">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-300 text-xs font-medium mb-6">
+              <Headphones className="h-3.5 w-3.5" /> WE'RE HERE TO HELP
+            </div>
+            <h1 className="text-5xl md:text-6xl font-bold tracking-tight leading-[1.05] mb-5">
+              How Can We{" "}
+              <span className="bg-gradient-to-r from-violet-400 via-pink-400 to-orange-400 bg-clip-text text-transparent">
+                Help?
+              </span>
+            </h1>
+            <p className="text-white/60 text-lg max-w-lg mb-8">
+              Whether you're an entertainer, manager, booking agent, or event planner, our team is here to help you succeed on GiggMe.
+            </p>
+            <div className="flex flex-wrap gap-x-6 gap-y-3">
+              <Stat icon={Zap} iconBg="bg-violet-500/15" iconColor="text-violet-400" label="Average response time" value="Under 4 hours" valueColor="text-violet-300" />
+              <Stat icon={CheckCircle2} iconBg="bg-emerald-500/15" iconColor="text-emerald-400" label="We typically respond" value="within 24 hours" valueColor="text-emerald-300" />
+              <Stat icon={Heart} iconBg="bg-pink-500/15" iconColor="text-pink-400" label="100% real people" value="ready to help" valueColor="text-pink-300" />
+            </div>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold mb-3">Contact Us</h1>
-          <p className="text-white/60">
-            Questions, feedback, or need help? Pick a category and we'll route your message to the right team.
-          </p>
+          <div className="relative hidden md:block">
+            <div className="aspect-[4/3] rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
+              <img src={heroBand} alt="Live performance" className="w-full h-full object-cover" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Form + side cards */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8 grid lg:grid-cols-3 gap-6">
+        {/* Form */}
+        <div className="lg:col-span-2 rounded-3xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+          {sent ? (
+            <div className="text-center py-10">
+              <CheckCircle2 className="h-12 w-12 text-emerald-400 mx-auto mb-4" />
+              <h2 className="text-2xl font-semibold mb-2">Message sent</h2>
+              <p className="text-white/60 mb-6">
+                Thanks, {name}! We've sent a copy to your inbox and our team will get back to you shortly.
+              </p>
+              <Button onClick={() => navigate("/")}>Back to home</Button>
+            </div>
+          ) : (
+            <>
+              <h2 className="text-2xl md:text-3xl font-bold mb-2">Send Us a Message</h2>
+              <p className="text-white/60 mb-6">Fill out the form below and we'll get back to you as soon as possible.</p>
+              <form onSubmit={submit} className="space-y-5">
+                <div>
+                  <Label htmlFor="category">What's this about?</Label>
+                  <Select value={category} onValueChange={(v) => setCategory(v as any)}>
+                    <SelectTrigger id="category" className="mt-1.5 h-11 bg-background/40 border-white/10">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sales">Sales</SelectItem>
+                      <SelectItem value="tech_support">Tech Support</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-5">
+                  <div>
+                    <Label htmlFor="name">Your name</Label>
+                    <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter your full name" className="mt-1.5 h-11 bg-background/40 border-white/10" maxLength={100} required />
+                  </div>
+                  <div>
+                    <Label htmlFor="email">Email</Label>
+                    <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email address" className="mt-1.5 h-11 bg-background/40 border-white/10" maxLength={255} required />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="message">Message</Label>
+                  <Textarea id="message" value={message} onChange={(e) => setMessage(e.target.value)} placeholder="How can we help you?" className="mt-1.5 min-h-[160px] bg-background/40 border-white/10" maxLength={2000} required />
+                </div>
+                <Button
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full h-12 text-base bg-gradient-to-r from-violet-500 via-pink-500 to-orange-500 hover:opacity-95 border-0"
+                >
+                  {submitting ? "Sending..." : (<><span>Get Support</span><Send className="ml-2 h-4 w-4" /></>)}
+                </Button>
+                <div className="flex items-center justify-center gap-2 text-xs text-white/50">
+                  <ShieldCheck className="h-3.5 w-3.5" /> Your information is safe and secure.
+                </div>
+              </form>
+            </>
+          )}
         </div>
 
-        {sent ? (
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-8 text-center">
-            <CheckCircle2 className="h-10 w-10 text-primary mx-auto mb-3" />
-            <h2 className="text-xl font-semibold mb-2">Message sent</h2>
-            <p className="text-white/60 mb-6">
-              Thanks, {name}! We've sent a copy to your inbox and our team will get back to you shortly.
-            </p>
-            <Button onClick={() => navigate("/")}>Back to home</Button>
+        {/* Side */}
+        <div className="space-y-6">
+          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+            <h3 className="text-xl font-bold mb-5">Other Ways to Reach Us</h3>
+            <div className="space-y-5">
+              <ContactRow icon={Mail} bg="bg-violet-500/15" color="text-violet-400" title="Email Support" lines={["management@giggme.com", "We reply within 24 hours"]} />
+              <ContactRow icon={MapPin} bg="bg-emerald-500/15" color="text-emerald-400" title="Headquarters" lines={["Tampa, Florida", "United States"]} />
+            </div>
           </div>
-        ) : (
-          <form onSubmit={submit} className="space-y-5 rounded-2xl border border-white/10 bg-white/5 p-6 md:p-8">
-            <div>
-              <Label htmlFor="category">What's this about?</Label>
-              <Select value={category} onValueChange={(v) => setCategory(v as any)}>
-                <SelectTrigger id="category" className="mt-1.5">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="sales">Sales</SelectItem>
-                  <SelectItem value="tech_support">Tech Support</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
+
+          <div className="relative rounded-3xl p-6 border border-orange-500/30 bg-gradient-to-br from-violet-500/10 via-pink-500/10 to-orange-500/10">
+            <div className="flex flex-col items-center text-center">
+              <div className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-3">
+                <Calendar className="h-5 w-5 text-pink-300" />
+              </div>
+              <p className="text-white/70 text-sm">Want to see GiggMe in action?</p>
+              <h4 className="text-xl font-bold mt-1 mb-2">
+                Book a{" "}
+                <span className="bg-gradient-to-r from-pink-400 to-orange-400 bg-clip-text text-transparent">Live Demo</span>
+              </h4>
+              <p className="text-white/60 text-sm mb-5">
+                See how GiggMe can help you manage your crew, automate tasks, and get more gigs.
+              </p>
+              <Button
+                variant="outline"
+                onClick={() => navigate("/schedule-demo")}
+                className="border-orange-500/40 hover:bg-orange-500/10 text-white"
+              >
+                Schedule a Demo <ArrowRight className="ml-2 h-4 w-4 text-orange-400" />
+              </Button>
             </div>
-            <div>
-              <Label htmlFor="name">Your name</Label>
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="mt-1.5" maxLength={100} required />
-            </div>
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1.5" maxLength={255} required />
-            </div>
-            <div>
-              <Label htmlFor="message">Message</Label>
-              <Textarea id="message" value={message} onChange={(e) => setMessage(e.target.value)} className="mt-1.5 min-h-[140px]" maxLength={2000} required />
-            </div>
-            <Button type="submit" disabled={submitting} className="w-full">
-              {submitting ? "Sending..." : "Send message"}
-            </Button>
-          </form>
-        )}
-      </main>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQs */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+        <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+          <h2 className="text-2xl md:text-3xl font-bold mb-6">Frequently Asked Questions</h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            {faqs.map((f, i) => (
+              <div key={i} className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 flex gap-4 items-start hover:bg-white/[0.04] transition">
+                <div className={`h-10 w-10 rounded-full ${f.bg} flex items-center justify-center shrink-0`}>
+                  <f.icon className={`h-5 w-5 ${f.color}`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold mb-1">{f.q}</div>
+                  <div className="text-sm text-white/60 whitespace-pre-line">{f.a}</div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-white/30 mt-1" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <footer className="border-t border-white/5 mt-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 text-center text-xs text-white/40">
+          © {new Date().getFullYear()} GiggMe. All rights reserved.
+        </div>
+      </footer>
     </div>
   );
 };
+
+const Stat = ({
+  icon: Icon, iconBg, iconColor, label, value, valueColor,
+}: { icon: any; iconBg: string; iconColor: string; label: string; value: string; valueColor: string }) => (
+  <div className="flex items-center gap-3">
+    <div className={`h-9 w-9 rounded-full ${iconBg} flex items-center justify-center`}>
+      <Icon className={`h-4 w-4 ${iconColor}`} />
+    </div>
+    <div className="text-sm leading-tight">
+      <div className="text-white/60">{label}</div>
+      <div className={`font-semibold ${valueColor}`}>{value}</div>
+    </div>
+  </div>
+);
+
+const ContactRow = ({
+  icon: Icon, bg, color, title, lines,
+}: { icon: any; bg: string; color: string; title: string; lines: string[] }) => (
+  <div className="flex gap-4 items-start">
+    <div className={`h-11 w-11 rounded-full ${bg} flex items-center justify-center shrink-0`}>
+      <Icon className={`h-5 w-5 ${color}`} />
+    </div>
+    <div className="text-sm">
+      <div className="font-semibold">{title}</div>
+      {lines.map((l, i) => (
+        <div key={i} className="text-white/60">{l}</div>
+      ))}
+    </div>
+  </div>
+);
 
 export default Contact;

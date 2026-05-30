@@ -41,6 +41,8 @@ import PaymentSchedulerPage from "./pages/PaymentSchedulerPage";
 import BookingRequestsPage from "./pages/BookingRequestsPage";
 import ScheduleDemo from "./pages/ScheduleDemo";
 import Contact from "./pages/Contact";
+import SubscriptionSuccess from "./pages/SubscriptionSuccess";
+
 
 const queryClient = new QueryClient();
 

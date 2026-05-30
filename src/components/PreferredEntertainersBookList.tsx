@@ -5,9 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Calendar, Music, Users } from "lucide-react";
-import { CreateBookingDialog } from "@/components/venue/CreateBookingDialog";
 
-interface PreferredEntertainer {
+interface Entertainer {
   user_id: string;
   name: string | null;
   stage_name: string | null;
@@ -19,61 +18,23 @@ export const PreferredEntertainersBookList = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
-  const [venueId, setVenueId] = useState<string | null>(null);
-  const [entertainers, setEntertainers] = useState<PreferredEntertainer[]>([]);
-  const [showDialog, setShowDialog] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [entertainers, setEntertainers] = useState<Entertainer[]>([]);
 
   useEffect(() => {
     (async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        const user = session?.user;
-        if (!user) return;
-
-        const { data: venue } = await supabase
-          .from("venues")
-          .select("id")
-          .eq("owner_id", user.id)
-          .maybeSingle();
-
-        if (!venue) {
-          setLoading(false);
-          return;
-        }
-        setVenueId(venue.id);
-
-        const { data: prefs } = await supabase
-          .from("venue_preferred_entertainers")
-          .select("entertainer_id")
-          .eq("venue_id", venue.id);
-
-        const ids = (prefs || []).map((p) => p.entertainer_id);
-        if (ids.length === 0) {
-          setEntertainers([]);
-          setLoading(false);
-          return;
-        }
-
-        const [{ data: profiles }, { data: artists }] = await Promise.all([
-          supabase.from("profiles").select("id, name, photo_urls").in("id", ids),
-          supabase.from("artist_profiles").select("user_id, stage_name, genre").in("user_id", ids),
-        ]);
-
-        const artistMap = new Map((artists || []).map((a) => [a.user_id, a]));
-        const merged: PreferredEntertainer[] = (profiles || []).map((p) => {
-          const a = artistMap.get(p.id);
-          return {
-            user_id: p.id,
-            name: p.name,
-            photo_urls: p.photo_urls,
-            stage_name: a?.stage_name ?? null,
-            genre: a?.genre ?? null,
-          };
-        });
-        setEntertainers(merged);
+        const { data, error } = await supabase.rpc("get_public_performers");
+        if (error) throw error;
+        const rows: Entertainer[] = (data || []).map((r: any) => ({
+          user_id: r.user_id,
+          name: r.name,
+          stage_name: r.stage_name,
+          genre: r.genre,
+          photo_urls: r.photo_urls,
+        }));
+        setEntertainers(rows);
       } catch (e: any) {
-        toast({ variant: "destructive", title: "Error", description: e.message });
+        toast({ variant: "destructive", title: "Error loading entertainers", description: e.message });
       } finally {
         setLoading(false);
       }
@@ -81,22 +42,11 @@ export const PreferredEntertainersBookList = () => {
   }, [toast]);
 
   const handleBook = (id: string) => {
-    setSelectedId(id);
-    setShowDialog(true);
+    navigate(`/artist-profile/${id}?book=1`);
   };
 
   if (loading) {
-    return <div className="text-sm text-muted-foreground">Loading your preferred entertainers...</div>;
-  }
-
-  if (!venueId) {
-    return (
-      <Card className="border-dashed">
-        <CardContent className="py-6 text-center text-sm text-muted-foreground">
-          Set up your venue to start booking entertainers.
-        </CardContent>
-      </Card>
-    );
+    return <div className="text-sm text-muted-foreground">Loading entertainers...</div>;
   }
 
   return (
@@ -104,7 +54,7 @@ export const PreferredEntertainersBookList = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Users className="h-4 w-4 text-muted-foreground" />
-          <h2 className="text-lg font-semibold">Your Preferred Entertainers</h2>
+          <h2 className="text-lg font-semibold">Book Entertainers</h2>
         </div>
         <Button variant="outline" size="sm" onClick={() => navigate("/entertainers")}>
           Browse all
@@ -115,12 +65,7 @@ export const PreferredEntertainersBookList = () => {
         <Card className="border-dashed">
           <CardContent className="py-8 text-center space-y-3">
             <Music className="h-10 w-10 mx-auto text-muted-foreground/40" />
-            <p className="text-sm text-muted-foreground">
-              You haven't added any preferred entertainers yet.
-            </p>
-            <Button size="sm" onClick={() => navigate("/entertainers")}>
-              Find Entertainment
-            </Button>
+            <p className="text-sm text-muted-foreground">No entertainers available yet.</p>
           </CardContent>
         </Card>
       ) : (
@@ -159,22 +104,6 @@ export const PreferredEntertainersBookList = () => {
             </Card>
           ))}
         </div>
-      )}
-
-      {venueId && (
-        <CreateBookingDialog
-          open={showDialog}
-          onOpenChange={setShowDialog}
-          venueId={venueId}
-          preSelectedEntertainerId={selectedId}
-          onSuccess={() => {
-            setShowDialog(false);
-            toast({
-              title: "Booking Request Sent",
-              description: "The entertainer will be notified and can accept or decline.",
-            });
-          }}
-        />
       )}
     </div>
   );

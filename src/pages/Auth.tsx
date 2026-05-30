@@ -47,7 +47,7 @@ const ENTERTAINER_PLANS: Record<string, { priceId: string; label: string; price:
   entertainer_featured: {
     priceId: "price_1TcATsEPiAZgF8MeuJY76UlD",
     label: "Featured Entertainer",
-    price: "$14",
+    price: "$13.99",
     description: "Prime placement at the front of the site, featured badge, and priority in search results.",
     trial: "7-day free trial",
   },

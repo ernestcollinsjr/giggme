@@ -53,6 +53,47 @@ const ENTERTAINER_PLANS: Record<string, { priceId: string; label: string; price:
   },
 };
 
+type SignupPlanKey = "entertainer" | "featured" | "manager";
+
+const SIGNUP_PLANS: Record<SignupPlanKey, {
+  priceId: string;
+  label: string;
+  price: string;
+  description: string;
+  trial: string;
+  role: "artist" | "booking_manager";
+  icon: "music" | "crown" | "users";
+}> = {
+  entertainer: {
+    priceId: "price_1TcATOEPiAZgF8Me2TkOBbG0",
+    label: "Entertainer",
+    price: "$8.99",
+    description: "Showcase your talent, get booked for gigs, and grow your career.",
+    trial: "14-day free trial",
+    role: "artist",
+    icon: "music",
+  },
+  featured: {
+    priceId: "price_1TcATsEPiAZgF8MeuJY76UlD",
+    label: "Featured Entertainer",
+    price: "$13.99",
+    description: "Priority placement in search, featured badge, and boosted visibility.",
+    trial: "14-day free trial",
+    role: "artist",
+    icon: "crown",
+  },
+  manager: {
+    priceId: "price_1SLNgmEPiAZgF8MeOXGfKYvX",
+    label: "Booking Manager",
+    price: "$49.99",
+    description: "Manage your group, schedule gigs, coordinate with venues, and keep your team organized.",
+    trial: "14-day free trial",
+    role: "booking_manager",
+    icon: "users",
+  },
+};
+
+
 const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();

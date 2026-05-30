@@ -75,7 +75,7 @@ const Index = () => {
     { icon: MapPin, title: "Arrival Tracking", desc: "See live ETAs and get notified when they arrive.", color: "text-violet-400", bg: "bg-violet-500/10" },
     { icon: Bell, title: "Automated Reminders", desc: "Never send another text. GiggMe does it for you.", color: "text-emerald-400", bg: "bg-emerald-500/10" },
     { icon: MessageSquare, title: "Team Messaging", desc: "Communicate with your entire team in one place.", color: "text-blue-400", bg: "bg-blue-500/10" },
-    { icon: DollarIcon, title: "Payment Tracking", desc: "Track payments, balances, and payment history.", color: "text-amber-400", bg: "bg-amber-500/10" },
+    { icon: DollarIcon, title: "Payment Tracking", desc: "Track payments, balances, and payment history.", color: "text-orange-400", bg: "bg-amber-500/10" },
   ];
 
   const steps = [
@@ -246,7 +246,7 @@ const Index = () => {
           {/* Left */}
           <div className="relative z-10">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
-              <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
+              <Star className="h-3.5 w-3.5 text-orange-400 fill-orange-400" />
               <span className="text-xs font-medium text-white/80">The #1 Platform for Entertainment Managers</span>
             </div>
 
@@ -283,7 +283,7 @@ const Index = () => {
               <div>
                 <div className="flex gap-0.5">
                   {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} className="h-4 w-4 text-amber-400 fill-amber-400" />
+                    <Star key={i} className="h-4 w-4 text-orange-400 fill-orange-400" />
                   ))}
                 </div>
                 <p className="text-xs text-white/60 mt-1">Trusted by 2,000+ entertainment professionals</p>
@@ -450,7 +450,7 @@ const Index = () => {
             <div key={t.name} className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
               <div className="flex gap-0.5 mb-3">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="h-4 w-4 text-amber-400 fill-amber-400" />
+                  <Star key={i} className="h-4 w-4 text-orange-400 fill-orange-400" />
                 ))}
               </div>
               <p className="text-white/80 text-sm leading-relaxed mb-5">"{t.quote}"</p>

@@ -205,14 +205,15 @@ const Auth = () => {
         name: signupName,
       });
 
+      const effectiveRole = entertainerPlan ? "artist" : selectedPlan.role;
+
       const { data: signUpData, error } = await supabase.auth.signUp({
         email: validatedData.email,
         password: validatedData.password,
         options: {
           data: {
             name: validatedData.name,
-            role: role,
-            venue_pricing_type: role === "booking_manager" ? venuePricingType : undefined,
+            role: effectiveRole,
           },
           emailRedirectTo: `${window.location.origin}/`,
         },
@@ -234,7 +235,6 @@ const Auth = () => {
       if (entertainerPlan) {
         let session = signUpData.session;
         if (!session) {
-          // Try to sign in immediately (works when auto-confirm is on)
           const { data: signInData } = await supabase.auth.signInWithPassword({
             email: validatedData.email,
             password: validatedData.password,
@@ -253,30 +253,31 @@ const Auth = () => {
         }
       }
 
-      // For venue owners, redirect to checkout
-      if (role === "booking_manager" && signUpData.session) {
-        const priceId = venuePricingType === "subscription" 
-          ? "price_1Sj4nrEPiAZgF8MeCOUpkIfg" // $26/mo subscription
-          : "price_1Sj4o1EPiAZgF8MeVAfYLZ1h"; // $49 one-time
-        
+      // Route every signup to checkout for the selected plan
+      let session = signUpData.session;
+      if (!session) {
+        const { data: signInData } = await supabase.auth.signInWithPassword({
+          email: validatedData.email,
+          password: validatedData.password,
+        });
+        session = signInData?.session ?? null;
+      }
+
+      if (session) {
         try {
           const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke("create-checkout", {
-            body: { priceId },
+            body: { priceId: selectedPlan.priceId },
           });
 
           if (checkoutError) throw checkoutError;
 
           if (checkoutData?.url) {
-            toast({
-              title: "Account created!",
-              description: "Redirecting to checkout...",
-            });
+            toast({ title: "Account created!", description: "Redirecting to checkout..." });
             window.location.href = checkoutData.url;
             return;
           }
         } catch (checkoutErr) {
           console.error("Checkout error:", checkoutErr);
-          // If checkout fails, still navigate to profile setup
           toast({
             title: "Account created!",
             description: "Welcome to GiggMe. You can complete payment later.",
@@ -284,14 +285,16 @@ const Auth = () => {
           navigate("/profile-setup");
           return;
         }
+      } else {
+        toast({
+          title: "Check your email",
+          description: "Confirm your email, then sign in to complete payment.",
+        });
+        return;
       }
 
-      toast({
-        title: "Account created!",
-        description: "Welcome to GiggMe. Complete your profile to get started.",
-      });
-      
       navigate("/profile-setup");
+
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         toast({

@@ -78,6 +78,10 @@ serve(async (req) => {
     );
     const hasActiveSub = !!relevant;
     let productId: string | null = null;
+    let priceId: string | null = null;
+    let amount: number | null = null;
+    let currency: string | null = null;
+    let interval: string | null = null;
     let subscriptionEnd: string | null = null;
     let status: string | null = null;
     let trialEnd: string | null = null;
@@ -88,8 +92,13 @@ serve(async (req) => {
       status = relevant.status;
       trialEnd = relevant.trial_end ? new Date(relevant.trial_end * 1000).toISOString() : null;
       cancelAtPeriodEnd = relevant.cancel_at_period_end;
-      productId = relevant.items.data[0].price.product as string;
-      logStep("Subscription found", { id: relevant.id, status, trialEnd, subscriptionEnd });
+      const item = relevant.items.data[0];
+      productId = item.price.product as string;
+      priceId = item.price.id;
+      amount = item.price.unit_amount;
+      currency = item.price.currency;
+      interval = item.price.recurring?.interval ?? null;
+      logStep("Subscription found", { id: relevant.id, status, priceId, trialEnd, subscriptionEnd });
     } else {
       logStep("No active/trialing subscription found");
     }
@@ -97,6 +106,10 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
       product_id: productId,
+      price_id: priceId,
+      amount,
+      currency,
+      interval,
       subscription_end: subscriptionEnd,
       status,
       trial_end: trialEnd,
@@ -106,6 +119,7 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
+
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);

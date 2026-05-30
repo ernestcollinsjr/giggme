@@ -947,9 +947,9 @@ const Auth = () => {
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
-                            <h3 className="font-semibold">Musicians / Entertainers</h3>
+                            <h3 className="font-semibold">Entertainer</h3>
                             <div className="text-right">
-                              <span className="font-bold text-primary">$10.99</span>
+                              <span className="font-bold text-primary">$8.99</span>
                               <span className="text-xs text-muted-foreground">/mo</span>
                             </div>
                           </div>

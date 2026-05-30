@@ -44,10 +44,14 @@ const BookingRequestsPage = () => {
           <div>
             <h1 className="text-2xl lg:text-3xl font-bold">Booking Requests</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Review requests you've sent and their responses.
+              Book entertainers from your preferred list and track responses.
             </p>
           </div>
-          <SentBookingRequests />
+          <PreferredEntertainersBookList />
+          <div className="pt-2">
+            <h2 className="text-lg font-semibold mb-3">Sent Requests & Responses</h2>
+            <SentBookingRequests />
+          </div>
         </div>
       </div>
       <BottomNav />

@@ -526,7 +526,7 @@ const Index = () => {
               Start Your Free Trial <ArrowRight className="h-4 w-4" />
             </button>
             <button
-              onClick={() => navigate("/auth")}
+              onClick={() => navigate("/schedule-demo")}
               className="inline-flex whitespace-nowrap items-center justify-center gap-2 h-12 px-5 rounded-xl text-sm font-medium text-white border border-white/15 hover:bg-white/5"
             >
               <Calendar className="h-4 w-4" /> Schedule a Demo

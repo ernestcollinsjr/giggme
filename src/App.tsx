@@ -39,6 +39,7 @@ import BookingResponse from "./pages/BookingResponse";
 import FindEntertainers from "./pages/FindEntertainers";
 import PaymentSchedulerPage from "./pages/PaymentSchedulerPage";
 import BookingRequestsPage from "./pages/BookingRequestsPage";
+import ScheduleDemo from "./pages/ScheduleDemo";
 
 const queryClient = new QueryClient();
 
@@ -86,6 +87,7 @@ const App = () => (
             <Route path="/find-entertainers" element={<FindEntertainers />} />
             <Route path="/payment-scheduler" element={<PaymentSchedulerPage />} />
             <Route path="/booking-requests" element={<BookingRequestsPage />} />
+            <Route path="/schedule-demo" element={<ScheduleDemo />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

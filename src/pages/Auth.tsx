@@ -53,6 +53,47 @@ const ENTERTAINER_PLANS: Record<string, { priceId: string; label: string; price:
   },
 };
 
+type SignupPlanKey = "entertainer" | "featured" | "manager";
+
+const SIGNUP_PLANS: Record<SignupPlanKey, {
+  priceId: string;
+  label: string;
+  price: string;
+  description: string;
+  trial: string;
+  role: "artist" | "booking_manager";
+  icon: "music" | "crown" | "users";
+}> = {
+  entertainer: {
+    priceId: "price_1TcATOEPiAZgF8Me2TkOBbG0",
+    label: "Entertainer",
+    price: "$8.99",
+    description: "Showcase your talent, get booked for gigs, and grow your career.",
+    trial: "14-day free trial",
+    role: "artist",
+    icon: "music",
+  },
+  featured: {
+    priceId: "price_1TcATsEPiAZgF8MeuJY76UlD",
+    label: "Featured Entertainer",
+    price: "$13.99",
+    description: "Priority placement in search, featured badge, and boosted visibility.",
+    trial: "14-day free trial",
+    role: "artist",
+    icon: "crown",
+  },
+  manager: {
+    priceId: "price_1SLNgmEPiAZgF8MeOXGfKYvX",
+    label: "Booking Manager",
+    price: "$49.99",
+    description: "Manage your group, schedule gigs, coordinate with venues, and keep your team organized.",
+    trial: "14-day free trial",
+    role: "booking_manager",
+    icon: "users",
+  },
+};
+
+
 const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -65,6 +106,9 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [role, setRole] = useState<"booking_manager" | "entertainer" | "booking_manager" | "artist" | "booking_manager">(entertainerPlan ? "artist" : "booking_manager");
   const [venuePricingType, setVenuePricingType] = useState<"subscription" | "one_time">("subscription");
+  const [selectedPlanKey, setSelectedPlanKey] = useState<SignupPlanKey>("manager");
+  const selectedPlan = SIGNUP_PLANS[selectedPlanKey];
+
   
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -161,14 +205,15 @@ const Auth = () => {
         name: signupName,
       });
 
+      const effectiveRole = entertainerPlan ? "artist" : selectedPlan.role;
+
       const { data: signUpData, error } = await supabase.auth.signUp({
         email: validatedData.email,
         password: validatedData.password,
         options: {
           data: {
             name: validatedData.name,
-            role: role,
-            venue_pricing_type: role === "booking_manager" ? venuePricingType : undefined,
+            role: effectiveRole,
           },
           emailRedirectTo: `${window.location.origin}/`,
         },
@@ -190,7 +235,6 @@ const Auth = () => {
       if (entertainerPlan) {
         let session = signUpData.session;
         if (!session) {
-          // Try to sign in immediately (works when auto-confirm is on)
           const { data: signInData } = await supabase.auth.signInWithPassword({
             email: validatedData.email,
             password: validatedData.password,
@@ -209,30 +253,31 @@ const Auth = () => {
         }
       }
 
-      // For venue owners, redirect to checkout
-      if (role === "booking_manager" && signUpData.session) {
-        const priceId = venuePricingType === "subscription" 
-          ? "price_1Sj4nrEPiAZgF8MeCOUpkIfg" // $26/mo subscription
-          : "price_1Sj4o1EPiAZgF8MeVAfYLZ1h"; // $49 one-time
-        
+      // Route every signup to checkout for the selected plan
+      let session = signUpData.session;
+      if (!session) {
+        const { data: signInData } = await supabase.auth.signInWithPassword({
+          email: validatedData.email,
+          password: validatedData.password,
+        });
+        session = signInData?.session ?? null;
+      }
+
+      if (session) {
         try {
           const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke("create-checkout", {
-            body: { priceId },
+            body: { priceId: selectedPlan.priceId },
           });
 
           if (checkoutError) throw checkoutError;
 
           if (checkoutData?.url) {
-            toast({
-              title: "Account created!",
-              description: "Redirecting to checkout...",
-            });
+            toast({ title: "Account created!", description: "Redirecting to checkout..." });
             window.location.href = checkoutData.url;
             return;
           }
         } catch (checkoutErr) {
           console.error("Checkout error:", checkoutErr);
-          // If checkout fails, still navigate to profile setup
           toast({
             title: "Account created!",
             description: "Welcome to GiggMe. You can complete payment later.",
@@ -240,14 +285,16 @@ const Auth = () => {
           navigate("/profile-setup");
           return;
         }
+      } else {
+        toast({
+          title: "Check your email",
+          description: "Confirm your email, then sign in to complete payment.",
+        });
+        return;
       }
 
-      toast({
-        title: "Account created!",
-        description: "Welcome to GiggMe. Complete your profile to get started.",
-      });
-      
       navigate("/profile-setup");
+
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         toast({
@@ -846,213 +893,55 @@ const Auth = () => {
                     </div>
                   ) : (
                   <div className="grid grid-cols-1 gap-3">
-                    {/* Band Manager Card */}
-                    <div
-                      onClick={() => setRole("booking_manager")}
-                      className={`relative cursor-pointer rounded-xl border-2 p-4 transition-all hover:shadow-lg ${
-                        role === "booking_manager"
-                          ? "border-primary bg-primary/5 shadow-md"
-                          : "border-border hover:border-primary/50"
-                      }`}
-                    >
-                      {role === "booking_manager" && (
-                        <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
-                          <Check className="h-4 w-4 text-primary-foreground" />
-                        </div>
-                      )}
-                      <div className="flex items-start gap-3">
-                        <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                          role === "booking_manager" ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
-                        }`}>
-                          <Users className="h-6 w-6" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold">Booking Manager</h3>
-                              <Star className="h-4 w-4 text-brand-gold fill-brand-gold" />
+                    {(Object.keys(SIGNUP_PLANS) as SignupPlanKey[]).map((key) => {
+                      const plan = SIGNUP_PLANS[key];
+                      const isSelected = selectedPlanKey === key;
+                      const Icon = plan.icon === "music" ? Music : plan.icon === "crown" ? Crown : Users;
+                      return (
+                        <div
+                          key={key}
+                          onClick={() => setSelectedPlanKey(key)}
+                          className={`relative cursor-pointer rounded-xl border-2 p-4 transition-all hover:shadow-lg ${
+                            isSelected
+                              ? "border-primary bg-primary/5 shadow-md"
+                              : "border-border hover:border-primary/50"
+                          }`}
+                        >
+                          {isSelected && (
+                            <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                              <Check className="h-4 w-4 text-primary-foreground" />
                             </div>
-                            <div className="text-right">
-                              <span className="font-bold text-primary">$49.99</span>
-                              <span className="text-xs text-muted-foreground">/mo</span>
+                          )}
+                          <div className="flex items-start gap-3">
+                            <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                              isSelected ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
+                            }`}>
+                              <Icon className="h-6 w-6" />
                             </div>
-                          </div>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Manage your group, schedule gigs, coordinate with venues, and keep your team organized.
-                          </p>
-                          <div className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                            7-day free trial
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Booking Agent Card */}
-                    <div
-                      onClick={() => setRole("booking_manager")}
-                      className={`relative cursor-pointer rounded-xl border-2 p-4 transition-all hover:shadow-lg ${
-                        role === "booking_manager"
-                          ? "border-primary bg-primary/5 shadow-md"
-                          : "border-border hover:border-primary/50"
-                      }`}
-                    >
-                      {role === "booking_manager" && (
-                        <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
-                          <Check className="h-4 w-4 text-primary-foreground" />
-                        </div>
-                      )}
-                      <div className="flex items-start gap-3">
-                        <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                          role === "booking_manager" ? "bg-primary text-primary-foreground" : "bg-secondary/50 text-secondary-foreground"
-                        }`}>
-                          <Briefcase className="h-6 w-6" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <h3 className="font-semibold">Booking Agent</h3>
-                            <div className="text-right">
-                              <span className="font-bold text-primary">$26</span>
-                              <span className="text-xs text-muted-foreground">/mo</span>
-                            </div>
-                          </div>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Book entertainers, manage rosters, check availability, and handle client requests.
-                          </p>
-                          <div className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                            7-day free trial
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Musicians/Entertainers Card */}
-                    <div
-                      onClick={() => setRole("artist")}
-                      className={`relative cursor-pointer rounded-xl border-2 p-4 transition-all hover:shadow-lg ${
-                        role === "artist"
-                          ? "border-primary bg-primary/5 shadow-md"
-                          : "border-border hover:border-primary/50"
-                      }`}
-                    >
-                      {role === "artist" && (
-                        <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
-                          <Check className="h-4 w-4 text-primary-foreground" />
-                        </div>
-                      )}
-                      <div className="flex items-start gap-3">
-                        <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                          role === "artist" ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground"
-                        }`}>
-                          <Music className="h-6 w-6" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <h3 className="font-semibold">Entertainer</h3>
-                            <div className="text-right">
-                              <span className="font-bold text-primary">$8.99</span>
-                              <span className="text-xs text-muted-foreground">/mo</span>
-                            </div>
-                          </div>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Showcase your talent, get booked for gigs, manage your schedule, and grow your career.
-                          </p>
-                          <div className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                            14-day free trial
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Venue Owner Card */}
-                    <div
-                      onClick={() => setRole("booking_manager")}
-                      className={`relative cursor-pointer rounded-xl border-2 p-4 transition-all hover:shadow-lg ${
-                        role === "booking_manager"
-                          ? "border-primary bg-primary/5 shadow-md"
-                          : "border-border hover:border-primary/50"
-                      }`}
-                    >
-                      {role === "booking_manager" && (
-                        <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
-                          <Check className="h-4 w-4 text-primary-foreground" />
-                        </div>
-                      )}
-                      <div className="flex items-start gap-3">
-                        <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                          role === "booking_manager" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                        }`}>
-                          <Building2 className="h-6 w-6" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <h3 className="font-semibold">Venue Owner</h3>
-                            <div className="text-right">
-                              {venuePricingType === "subscription" ? (
-                                <>
-                                  <span className="font-bold text-primary">$26</span>
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <h3 className="font-semibold">{plan.label}</h3>
+                                  {key === "featured" && <Star className="h-4 w-4 text-brand-gold fill-brand-gold" />}
+                                </div>
+                                <div className="text-right">
+                                  <span className="font-bold text-primary">{plan.price}</span>
                                   <span className="text-xs text-muted-foreground">/mo</span>
-                                </>
-                              ) : (
-                                <span className="font-bold text-primary">$49</span>
-                              )}
-                            </div>
-                          </div>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Manage your venue, book entertainers, schedule events, and streamline bookings.
-                          </p>
-                          
-                          {/* Pricing Toggle */}
-                          {role === "booking_manager" && (
-                            <div className="mt-3 p-2 bg-muted/50 rounded-lg" onClick={(e) => e.stopPropagation()}>
-                              <div className="flex gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => setVenuePricingType("subscription")}
-                                  className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all ${
-                                    venuePricingType === "subscription"
-                                      ? "bg-primary text-primary-foreground shadow-sm"
-                                      : "bg-background text-muted-foreground hover:text-foreground"
-                                  }`}
-                                >
-                                  <div className="flex flex-col items-center">
-                                    <span>$26/mo</span>
-                                    <span className="text-xs opacity-75">14-day trial</span>
-                                  </div>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setVenuePricingType("one_time")}
-                                  className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all ${
-                                    venuePricingType === "one_time"
-                                      ? "bg-primary text-primary-foreground shadow-sm"
-                                      : "bg-background text-muted-foreground hover:text-foreground"
-                                  }`}
-                                >
-                                  <div className="flex flex-col items-center">
-                                    <span>$49</span>
-                                    <span className="text-xs opacity-75">One-time</span>
-                                  </div>
-                                </button>
+                                </div>
+                              </div>
+                              <p className="text-sm text-muted-foreground mt-1">{plan.description}</p>
+                              <div className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                                {plan.trial}
                               </div>
                             </div>
-                          )}
-                          
-                          {role !== "booking_manager" && (
-                            <div className="mt-2 flex flex-wrap gap-2">
-                              <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                                14-day free trial
-                              </span>
-                              <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-                                or $49 one-time
-                              </span>
-                            </div>
-                          )}
+                          </div>
                         </div>
-                      </div>
-                    </div>
+                      );
+                    })}
                   </div>
                   )}
                 </div>
+
                 
                 <div className="space-y-2">
                   <Label htmlFor="signup-name">Name</Label>

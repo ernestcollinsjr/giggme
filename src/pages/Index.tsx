@@ -252,7 +252,7 @@ const Index = () => {
 
             <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.05]">
               Stop managing gigs through{" "}
-              <span className="text-orange-400">text messages.</span>
+              <span className="bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent">text messages.</span>
             </h1>
 
             <p className="mt-6 text-lg text-white/65 max-w-xl leading-relaxed">

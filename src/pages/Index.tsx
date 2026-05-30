@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import logo from "@/assets/logo.png";
 import { useNavigate } from "react-router-dom";
+
 import { useTheme } from "next-themes";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";

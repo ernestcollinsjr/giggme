@@ -135,7 +135,7 @@ export default function SubscriptionSuccess() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-lg">
         <CardHeader className="text-center">
           {loading ? (
             <>

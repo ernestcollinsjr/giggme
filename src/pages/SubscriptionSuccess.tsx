@@ -194,6 +194,21 @@ export default function SubscriptionSuccess() {
         )}
 
         <CardContent className="pt-0 space-y-2">
+          {!loading && data?.subscribed && (
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={openCustomerPortal}
+              disabled={portalLoading}
+            >
+              {portalLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Settings className="mr-2 h-4 w-4" />
+              )}
+              Manage subscription
+            </Button>
+          )}
           <Button className="w-full" onClick={() => navigate("/dashboard")}>
             Go to dashboard
           </Button>
@@ -203,6 +218,7 @@ export default function SubscriptionSuccess() {
             </Button>
           )}
         </CardContent>
+
       </Card>
     </div>
   );

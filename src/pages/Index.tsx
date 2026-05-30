@@ -545,6 +545,7 @@ const Index = () => {
           <img src={logo} alt="GiggMe" className="h-10 w-auto object-contain" />
           <div className="flex items-center gap-6 text-sm text-white/60">
             <button onClick={() => navigate("/pricing")} className="hover:text-white transition-colors">Pricing</button>
+            <button onClick={() => navigate("/contact")} className="hover:text-white transition-colors">Contact</button>
             <button onClick={() => navigate("/auth")} className="hover:text-white transition-colors">Sign In</button>
           </div>
           <p className="text-sm text-white/40">© 2026 GiggMe. All rights reserved.</p>

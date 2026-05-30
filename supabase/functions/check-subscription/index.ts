@@ -69,31 +69,44 @@ serve(async (req) => {
 
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
-      status: "active",
-      limit: 1,
+      status: "all",
+      limit: 10,
     });
-    const hasActiveSub = subscriptions.data.length > 0;
-    let productId = null;
-    let subscriptionEnd = null;
+    // Prefer trialing/active subscriptions
+    const relevant = subscriptions.data.find((s) =>
+      ["trialing", "active", "past_due"].includes(s.status)
+    );
+    const hasActiveSub = !!relevant;
+    let productId: string | null = null;
+    let subscriptionEnd: string | null = null;
+    let status: string | null = null;
+    let trialEnd: string | null = null;
+    let cancelAtPeriodEnd = false;
 
-    if (hasActiveSub) {
-      const subscription = subscriptions.data[0];
-      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-      logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
-      productId = subscription.items.data[0].price.product as string;
-      logStep("Determined subscription product", { productId });
+    if (relevant) {
+      subscriptionEnd = new Date(relevant.current_period_end * 1000).toISOString();
+      status = relevant.status;
+      trialEnd = relevant.trial_end ? new Date(relevant.trial_end * 1000).toISOString() : null;
+      cancelAtPeriodEnd = relevant.cancel_at_period_end;
+      productId = relevant.items.data[0].price.product as string;
+      logStep("Subscription found", { id: relevant.id, status, trialEnd, subscriptionEnd });
     } else {
-      logStep("No active subscription found");
+      logStep("No active/trialing subscription found");
     }
 
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
       product_id: productId,
-      subscription_end: subscriptionEnd
+      subscription_end: subscriptionEnd,
+      status,
+      trial_end: trialEnd,
+      is_trial: status === "trialing",
+      cancel_at_period_end: cancelAtPeriodEnd,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
+
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR in check-subscription", { message: errorMessage });

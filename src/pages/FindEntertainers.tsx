@@ -303,7 +303,7 @@ const FindEntertainers = () => {
                 </span>
                 <h3 className="mt-2 text-lg font-bold text-white">Basic Profile</h3>
                 <div className="mt-4 flex items-baseline justify-center gap-1">
-                  <span className="text-5xl font-bold text-white">$8</span>
+                  <span className="text-5xl font-bold text-white">$8.99</span>
                   <span className="text-white/60 text-base">/mo</span>
                 </div>
                 <p className="mt-1 text-xs text-white/55">Cancel anytime</p>

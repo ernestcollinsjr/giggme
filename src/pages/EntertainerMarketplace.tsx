@@ -13,7 +13,8 @@ import {
   Music, 
   Heart,
   Calendar,
-  Filter
+  Filter,
+  ArrowLeft
 } from "lucide-react";
 import {
   Select,
@@ -204,6 +205,10 @@ const EntertainerMarketplace = () => {
       <main className="container mx-auto px-4 py-6 max-w-6xl">
         {/* Header */}
         <div className="mb-6">
+          <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-3 -ml-2">
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Back
+          </Button>
           <h1 className="text-2xl font-bold mb-2">Find Entertainment</h1>
           <p className="text-muted-foreground">
             Browse talented performers and add them to your venue's preferred list

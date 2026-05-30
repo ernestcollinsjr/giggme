@@ -13,7 +13,8 @@ import {
   Music, 
   Heart,
   Calendar,
-  Filter
+  Filter,
+  ArrowLeft
 } from "lucide-react";
 import {
   Select,

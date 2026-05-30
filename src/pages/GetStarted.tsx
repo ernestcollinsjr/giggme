@@ -465,12 +465,12 @@ const GetStarted = () => {
           <div className="my-6 h-px bg-border/60" />
           <div className="grid sm:grid-cols-3 gap-6">
             {[
-              { i: Shield, c: "violet", t: "Secure & Private", d: "Your data is encrypted and never shared." },
-              { i: Headphones, c: "cyan", t: "24/7 Support", d: "We're here to help you every step of the way." },
-              { i: Check, c: "emerald", t: "Cancel Anytime", d: "No commitments. Cancel at any time." },
+              { i: Shield, c: "bg-violet-500/15 text-violet-400", t: "Secure & Private", d: "Your data is encrypted and never shared." },
+              { i: Headphones, c: "bg-cyan-500/15 text-cyan-400", t: "24/7 Support", d: "We're here to help you every step of the way." },
+              { i: Check, c: "bg-emerald-500/15 text-emerald-400", t: "Cancel Anytime", d: "No commitments. Cancel at any time." },
             ].map((f) => (
               <div key={f.t} className="flex gap-4">
-                <div className={`h-10 w-10 rounded-full flex items-center justify-center bg-${f.c}-500/15 text-${f.c}-400 shrink-0`}>
+                <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${f.c}`}>
                   <f.i className="h-5 w-5" />
                 </div>
                 <div>

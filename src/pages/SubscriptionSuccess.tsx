@@ -54,6 +54,9 @@ export default function SubscriptionSuccess() {
   const [loading, setLoading] = useState(true);
   const [portalLoading, setPortalLoading] = useState(false);
   const [data, setData] = useState<SubStatus | null>(null);
+  const [invoices, setInvoices] = useState<Invoice[] | null>(null);
+  const [invoicesLoading, setInvoicesLoading] = useState(true);
+
 
   const openCustomerPortal = async () => {
     setPortalLoading(true);

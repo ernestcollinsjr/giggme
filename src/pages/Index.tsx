@@ -123,7 +123,7 @@ const Index = () => {
     {
       name: "Booking Manager",
       price: "$49.99",
-      tagline: "Manage up to 5 groups",
+      tagline: "Everything you need to book talent",
       features: [
         "Multi-group management",
         "Artist discovery",

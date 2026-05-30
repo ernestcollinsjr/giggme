@@ -520,7 +520,7 @@ const Index = () => {
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold text-white">
               The Operating System for{" "}
-              <span className="text-brand-gold">Entertainment Managers</span>
+              <span className="bg-gradient-to-r from-[hsl(33_92%_60%)] to-[hsl(45_95%_60%)] bg-clip-text text-transparent">Entertainment Managers</span>
             </h2>
             <p className="mt-2 text-sm text-white/60">Stop chasing performers. Start running professional, stress-free events.</p>
           </div>

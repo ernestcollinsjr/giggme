@@ -14,7 +14,6 @@ import {
 import {
   Music,
   Mic,
-  Speaker,
   Calendar,
   Search,
   Moon,
@@ -25,22 +24,32 @@ import {
   Sparkles,
   Clock,
   ShieldCheck,
-  Headphones,
-  Heart,
-  Zap,
-  Settings2,
   ChevronDown,
   LogIn,
   UserPlus,
   DollarSign,
   HelpCircle,
+  Users,
+  MapPin,
+  Bell,
+  MessageSquare,
+  DollarSign as DollarIcon,
+  BarChart3,
+  Settings as SettingsIcon,
+  LayoutDashboard,
+  UserPlus2,
+  Send,
+  CheckCircle2,
+  Star,
+  Check,
+  ChevronRight,
 } from "lucide-react";
 
-import heroVirtualAssistant from "@/assets/hero-virtual-assistant.jpg";
-import { TutorialSimulators } from "@/components/TutorialSimulators";
+import logo from "@/assets/logo.png";
 import avatar1 from "@/assets/avatar-1.jpg";
 import avatar2 from "@/assets/avatar-2.jpg";
 import avatar3 from "@/assets/avatar-3.jpg";
+
 
 const Index = () => {
   const navigate = useNavigate();

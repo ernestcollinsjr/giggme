@@ -250,173 +250,308 @@ const Index = () => {
       </header>
 
       {/* Hero */}
-      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 lg:pt-20 pb-16">
-        <div className="grid lg:grid-cols-2 gap-10 lg:gap-8 items-center">
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 lg:pt-16 pb-16">
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 items-center">
           {/* Left */}
           <div className="relative z-10">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
-              <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-              <span className="text-xs font-medium text-white/80">Your personal booking assistant</span>
+              <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
+              <span className="text-xs font-medium text-white/80">The #1 Platform for Entertainment Managers</span>
             </div>
 
-            <h1 className="mt-6 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-[1.1]">
-              Let us manage your{" "}
-              <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-500 bg-clip-text text-transparent">
-                entertainment
-              </span>
-              <Sparkles className="inline-block h-6 w-6 ml-2 text-violet-400" />
+            <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.05]">
+              Stop managing gigs through{" "}
+              <span className="text-orange-400">text messages.</span>
             </h1>
 
-            <p className="mt-6 text-lg text-white/60 max-w-xl leading-relaxed">
-              Our agents will handle everything — secure talent, scheduling, and managing your recurring bookings.
+            <p className="mt-6 text-lg text-white/65 max-w-xl leading-relaxed">
+              Schedule performers, automate reminders, track arrivals, manage payments, and keep every gig organized from one dashboard.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-4">
               <button
                 onClick={() => navigate("/auth")}
-                className="inline-flex items-center gap-2 h-12 px-6 rounded-full font-semibold text-white bg-gradient-to-r from-blue-500 to-violet-600 hover:from-blue-400 hover:to-violet-500 shadow-xl shadow-violet-600/30 transition-all hover:scale-[1.02]"
+                className="inline-flex items-center gap-2 h-12 px-6 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-500 to-violet-600 hover:from-blue-400 hover:to-violet-500 shadow-xl shadow-violet-600/30 transition-all"
               >
-                Get Started Free <ArrowRight className="h-4 w-4" />
+                Start Free Trial <ArrowRight className="h-4 w-4" />
               </button>
               <button
-                onClick={() => document.getElementById("see-in-action")?.scrollIntoView({ behavior: "smooth", block: "start" })}
-                className="inline-flex items-center gap-2 h-12 px-2 pr-5 rounded-full text-white/90 hover:text-white font-medium group"
+                onClick={() => navigate("/auth")}
+                className="inline-flex items-center gap-2 h-12 px-6 rounded-xl font-medium text-white border border-white/15 hover:bg-white/5 transition-all"
               >
-                <span className="h-10 w-10 rounded-full border border-white/20 flex items-center justify-center group-hover:border-white/40 group-hover:bg-white/5 transition-all">
-                  <Play className="h-4 w-4 fill-current ml-0.5" />
-                </span>
-                Watch Demo
+                <Play className="h-4 w-4 fill-current" /> Watch 2-Minute Demo
               </button>
             </div>
 
-            {/* Trust strip */}
-            <div className="mt-12 grid grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="flex flex-col items-center text-center gap-2">
-                <div className="flex -space-x-2">
-                  <img src={avatar1} alt="Event planner" loading="lazy" width={64} height={64} className="h-8 w-8 rounded-full object-cover border-2 border-[hsl(230_35%_7%)]" />
-                  <img src={avatar2} alt="Event planner" loading="lazy" width={64} height={64} className="h-8 w-8 rounded-full object-cover border-2 border-[hsl(230_35%_7%)]" />
-                  <img src={avatar3} alt="Event planner" loading="lazy" width={64} height={64} className="h-8 w-8 rounded-full object-cover border-2 border-[hsl(230_35%_7%)]" />
+            <div className="mt-10 flex items-center gap-4">
+              <div className="flex -space-x-2">
+                <img src={avatar1} alt="" className="h-9 w-9 rounded-full object-cover border-2 border-[hsl(230_35%_7%)]" />
+                <img src={avatar2} alt="" className="h-9 w-9 rounded-full object-cover border-2 border-[hsl(230_35%_7%)]" />
+                <img src={avatar3} alt="" className="h-9 w-9 rounded-full object-cover border-2 border-[hsl(230_35%_7%)]" />
+              </div>
+              <div>
+                <div className="flex gap-0.5">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star key={i} className="h-4 w-4 text-amber-400 fill-amber-400" />
+                  ))}
                 </div>
-                <div>
-                  <p className="text-sm font-semibold text-white leading-tight">Loved by 2,000+</p>
-                  <p className="text-xs text-white/50 leading-tight mt-0.5">event planners</p>
+                <p className="text-xs text-white/60 mt-1">Trusted by 2,000+ entertainment professionals</p>
+              </div>
+            </div>
+
+            <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-3 text-white/35 text-sm font-serif italic">
+              <span>Hard Rock</span>
+              <span>Four Seasons</span>
+              <span>The Ritz-Carlton</span>
+              <span>YAMAHA</span>
+              <span>Marriott</span>
+            </div>
+          </div>
+
+          {/* Right - Dashboard mockup */}
+          <div className="relative">
+            <div className="absolute -inset-6 bg-gradient-to-tr from-violet-600/20 via-fuchsia-500/10 to-cyan-500/20 rounded-[3rem] blur-3xl" />
+            <div className="relative rounded-2xl border border-white/10 bg-[hsl(230_30%_11%)] shadow-2xl overflow-hidden">
+              {/* Mock browser bar */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-[hsl(230_30%_9%)]">
+                <div className="flex items-center gap-2">
+                  <img src={logo} alt="" className="h-6 w-auto" />
+                </div>
+                <div className="flex items-center gap-3 text-white/50">
+                  <Search className="h-4 w-4" />
+                  <Bell className="h-4 w-4" />
+                  <img src={avatar1} alt="" className="h-6 w-6 rounded-full object-cover" />
                 </div>
               </div>
-              {[
-                { icon: Clock, title: "Save Time", sub: "Automate bookings", color: "text-blue-400" },
-                { icon: ShieldCheck, title: "Verified Talent", sub: "Trusted professionals", color: "text-violet-400" },
-                { icon: Headphones, title: "24/7 Support", sub: "We're here to help", color: "text-cyan-400" },
-              ].map((t) => (
-                <div key={t.title} className="flex flex-col items-center text-center gap-2">
-                  <t.icon className={`h-7 w-7 ${t.color}`} />
+              <div className="flex">
+                {/* Sidebar */}
+                <div className="hidden sm:flex w-36 flex-col gap-1 p-3 border-r border-white/5 text-xs">
+                  {[
+                    { i: LayoutDashboard, l: "Dashboard", active: true },
+                    { i: Music, l: "Gigs" },
+                    { i: Users, l: "Performers" },
+                    { i: Calendar, l: "Schedule" },
+                    { i: MessageSquare, l: "Messages", badge: 3 },
+                    { i: DollarIcon, l: "Payments" },
+                    { i: BarChart3, l: "Reports" },
+                    { i: SettingsIcon, l: "Settings" },
+                  ].map((it) => (
+                    <div key={it.l} className={`flex items-center gap-2 px-2 py-1.5 rounded-md ${it.active ? "bg-blue-500/15 text-blue-300" : "text-white/60"}`}>
+                      <it.i className="h-3.5 w-3.5" />
+                      <span className="flex-1 truncate">{it.l}</span>
+                      {it.badge && <span className="text-[10px] bg-orange-500 text-white rounded-full px-1.5">{it.badge}</span>}
+                    </div>
+                  ))}
+                </div>
+                {/* Main */}
+                <div className="flex-1 p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-white">Upcoming Gigs</h3>
+                    <span className="text-[10px] text-white/50 border border-white/10 rounded-md px-2 py-1">View Calendar</span>
+                  </div>
+                  <div className="rounded-lg overflow-hidden border border-white/5">
+                    <div className="h-20 bg-gradient-to-br from-violet-600/60 to-blue-600/60 relative">
+                      <div className="absolute bottom-1 left-2 text-[10px] text-white/80 uppercase tracking-wider">Sat, May 25</div>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-[hsl(230_30%_9%)]">
+                      <div>
+                        <p className="text-xs font-semibold text-white">Saturday Jazz Night</p>
+                        <p className="text-[10px] text-white/50">The Blue Note · Tampa, FL · 8:00 PM</p>
+                      </div>
+                      <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-md">Confirmed</span>
+                    </div>
+                  </div>
+
                   <div>
-                    <p className="text-sm font-semibold text-white leading-tight">{t.title}</p>
-                    <p className="text-xs text-white/50 leading-tight mt-0.5">{t.sub}</p>
+                    <div className="grid grid-cols-[1fr_auto_auto] text-[10px] text-white/40 uppercase tracking-wider px-1 mb-1">
+                      <span>Performers</span><span className="pr-3">Status</span><span>ETA</span>
+                    </div>
+                    {[
+                      { name: "Sarah Williams", role: "Vocalist", status: "Confirmed", statusColor: "text-emerald-400", eta: "12 min away", avatar: avatar2 },
+                      { name: "Marcus Jones", role: "Drummer", status: "Arrived", statusColor: "text-blue-400", eta: "On site", avatar: avatar1 },
+                      { name: "James Carter", role: "Bassist", status: "Not Responded", statusColor: "text-orange-400", eta: "25 min away", avatar: avatar3 },
+                    ].map((p) => (
+                      <div key={p.name} className="grid grid-cols-[1fr_auto_auto] items-center gap-2 py-1.5 border-t border-white/5 text-[11px]">
+                        <div className="flex items-center gap-2">
+                          <img src={p.avatar} alt="" className="h-6 w-6 rounded-full object-cover" />
+                          <div>
+                            <p className="text-white font-medium leading-tight">{p.name}</p>
+                            <p className="text-[9px] text-white/40 leading-tight">{p.role}</p>
+                          </div>
+                        </div>
+                        <span className={`${p.statusColor} pr-3`}>{p.status}</span>
+                        <span className="text-white/60">{p.eta}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 pt-2">
+                    <div className="rounded-lg border border-white/5 bg-[hsl(230_30%_9%)] p-2">
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-[10px] font-semibold text-white">Arrival Tracking</p>
+                        <span className="text-[8px] text-emerald-400">● Live</span>
+                      </div>
+                      <div className="h-16 rounded bg-gradient-to-br from-blue-500/20 to-violet-500/20 flex items-center justify-center">
+                        <MapPin className="h-6 w-6 text-blue-400" />
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-white/5 bg-[hsl(230_30%_9%)] p-2">
+                      <p className="text-[10px] font-semibold text-white mb-1">Payment Status</p>
+                      <p className="text-[9px] text-white/50">3 of 4 Paid</p>
+                      <div className="h-1.5 bg-white/10 rounded-full mt-1 overflow-hidden">
+                        <div className="h-full w-3/4 bg-emerald-400" />
+                      </div>
+                      <p className="text-[9px] text-white/60 mt-1">$2,550 / $3,400</p>
+                    </div>
                   </div>
                 </div>
-              ))}
+              </div>
             </div>
-          </div>
-
-          {/* Right - Image */}
-          <div className="relative">
-            <div className="absolute -inset-4 bg-gradient-to-tr from-violet-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-[3rem] blur-2xl" />
-            <div className="relative aspect-[5/4] rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl">
-              <img
-                src={heroVirtualAssistant}
-                alt="Virtual booking assistant managing entertainment"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-tr from-violet-900/40 via-transparent to-transparent" />
-            </div>
-            <Sparkles className="absolute -top-2 -right-2 h-8 w-8 text-violet-300 animate-pulse" />
           </div>
         </div>
-
-        {/* Search panel */}
-        <form
-          onSubmit={handleSearch}
-          className="mt-14 relative rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-6 sm:p-8"
-        >
-          <h2 className="text-center text-lg font-semibold text-white mb-5">
-            Search for a particular performer for your event
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-            <div className="md:col-span-1 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
-              <p className="text-[11px] uppercase tracking-wide text-white/50">Entertainers</p>
-              <p className="text-sm text-white mt-0.5">Any type</p>
-            </div>
-            <div className="md:col-span-1 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
-              <p className="text-[11px] uppercase tracking-wide text-white/50">Location</p>
-              <p className="text-sm text-white mt-0.5">All locations</p>
-            </div>
-            <div className="md:col-span-1 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
-              <p className="text-[11px] uppercase tracking-wide text-white/50">Date</p>
-              <p className="text-sm text-white mt-0.5">Select date</p>
-            </div>
-            <div className="md:col-span-1 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
-              <p className="text-[11px] uppercase tracking-wide text-white/50">Event Type</p>
-              <p className="text-sm text-white mt-0.5">All events</p>
-            </div>
-            <button
-              type="submit"
-              className="md:col-span-1 h-auto rounded-xl px-5 py-3 font-semibold text-white bg-gradient-to-r from-blue-500 to-violet-600 hover:from-blue-400 hover:to-violet-500 shadow-lg shadow-violet-600/25 inline-flex items-center justify-center gap-2"
-            >
-              Search <Search className="h-4 w-4" />
-            </button>
-          </div>
-          <div className="mt-4 relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by name, genre, or instrument…"
-              className="pl-11 bg-white/[0.03] border-white/10 text-white placeholder:text-white/40 h-11"
-            />
-          </div>
-        </form>
       </section>
 
-      {/* Feature simulators */}
-      <TutorialSimulators />
-
-
-      {/* How it works */}
-      <section id="how-it-works" className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 scroll-mt-20">
-        <div className="text-center mb-14">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white">Main Features</h2>
-          <p className="mt-3 text-white/60">Book the best. Exceptional talent is just a few clicks away.</p>
-        </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[
-            { n: "01", t: "Search Roster", d: "Type in the search bar for your performers and see who's booked or available." },
-            { n: "02", t: "Book securely", d: "GiggMe ensures secure connections, fast service, and smooth and efficient coordination." },
-            { n: "03", t: "Accountability", d: "Track your performers to ensure safe and on-time arrivals." },
-            { n: "04", t: "Push Notifications", d: "Never send another text message — let the system automatically send communications for gig reminders." },
-          ].map((s) => (
-            <div key={s.n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-7">
-              <div className="text-sm font-mono text-violet-400">{s.n}</div>
-              <h3 className="mt-3 text-xl font-semibold text-white">{s.t}</h3>
-              <p className="mt-2 text-white/55 leading-relaxed">{s.d}</p>
+      {/* Features */}
+      <section id="features" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 scroll-mt-20">
+        <h2 className="text-center text-3xl sm:text-4xl font-bold text-white mb-12">
+          Everything You Need to Run Entertainment Teams
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          {features.map((f) => (
+            <div key={f.title} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-center">
+              <div className={`mx-auto h-12 w-12 rounded-full ${f.bg} flex items-center justify-center mb-3`}>
+                <f.icon className={`h-5 w-5 ${f.color}`} />
+              </div>
+              <h3 className="text-sm font-semibold text-white mb-1">{f.title}</h3>
+              <p className="text-xs text-white/55 leading-relaxed">{f.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-        <div className="relative overflow-hidden rounded-3xl p-10 sm:p-14 text-center bg-gradient-to-br from-blue-600 via-violet-600 to-fuchsia-600">
-          <Zap className="absolute top-6 right-6 h-10 w-10 text-white/30" />
-          <h2 className="text-3xl sm:text-4xl font-bold text-white">Ready to transform your gig management?</h2>
-          <p className="mt-3 text-white/85 max-w-2xl mx-auto">
-            Join GiggMe today and experience seamless connections between group leaders, members, artists, and booking managers.
-          </p>
-          <button
-            onClick={() => navigate("/auth")}
-            className="mt-7 inline-flex items-center gap-2 h-12 px-7 rounded-full font-semibold text-violet-700 bg-white hover:bg-white/90 shadow-xl transition-all"
-          >
-            Sign Up Now <ArrowRight className="h-4 w-4" />
-          </button>
+      {/* How GiggMe Works */}
+      <section id="how-it-works" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 scroll-mt-20">
+        <h2 className="text-center text-3xl sm:text-4xl font-bold text-white mb-14">How GiggMe Works</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 lg:gap-3 items-start">
+          {steps.map((s, i) => (
+            <div key={s.n} className="relative flex flex-col items-center text-center px-2">
+              <div className="relative">
+                <div className="absolute -top-1 -left-1 h-6 w-6 rounded-full bg-blue-500 text-white text-xs font-bold flex items-center justify-center z-10">{s.n}</div>
+                <div className={`h-16 w-16 rounded-full border-2 ${s.n === 5 ? "border-emerald-500 bg-emerald-500/10" : "border-white/15 bg-white/5"} flex items-center justify-center`}>
+                  <s.icon className={`h-6 w-6 ${s.n === 5 ? "text-emerald-400" : "text-white/80"}`} />
+                </div>
+              </div>
+              <h3 className="mt-4 text-sm font-semibold text-white">{s.title}</h3>
+              <p className="mt-2 text-xs text-white/55 leading-relaxed">{s.desc}</p>
+              {i < steps.length - 1 && (
+                <ChevronRight className="hidden lg:block absolute top-7 -right-3 h-5 w-5 text-white/25" />
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <h2 className="text-center text-3xl sm:text-4xl font-bold text-white mb-12">Loved by Entertainment Professionals</h2>
+        <div className="grid md:grid-cols-3 gap-6">
+          {testimonials.map((t) => (
+            <div key={t.name} className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+              <div className="flex gap-0.5 mb-3">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star key={i} className="h-4 w-4 text-amber-400 fill-amber-400" />
+                ))}
+              </div>
+              <p className="text-white/80 text-sm leading-relaxed mb-5">"{t.quote}"</p>
+              <div className="flex items-center gap-3">
+                <img src={t.avatar} alt="" className="h-10 w-10 rounded-full object-cover" />
+                <div>
+                  <p className="text-sm font-semibold text-white">{t.name}</p>
+                  <p className="text-xs text-white/50">{t.role}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section id="pricing" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 scroll-mt-20">
+        <h2 className="text-center text-3xl sm:text-4xl font-bold text-white mb-12">Simple, Transparent Pricing</h2>
+        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          {plans.map((p) => (
+            <div
+              key={p.name}
+              className={`relative rounded-2xl p-6 ${
+                p.featured
+                  ? "border-2 border-blue-500 bg-gradient-to-b from-blue-500/10 to-transparent"
+                  : "border border-white/10 bg-white/[0.03]"
+              }`}
+            >
+              {p.featured && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-md bg-blue-500 text-white text-xs font-semibold">
+                  Most Popular
+                </div>
+              )}
+              <h3 className="text-center text-lg font-semibold text-white">{p.name}</h3>
+              <div className="text-center mt-4">
+                <span className="text-4xl font-bold text-white">{p.price}</span>
+                {p.price !== "Free" && <span className="text-white/50 text-sm">/month</span>}
+              </div>
+              <p className="text-center text-xs text-white/55 mt-2 mb-5">{p.tagline}</p>
+              <ul className="space-y-2.5 mb-6">
+                {p.features.map((f) => (
+                  <li key={f} className="flex items-start gap-2 text-sm text-white/75">
+                    <Check className="h-4 w-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <button
+                onClick={() => navigate("/pricing")}
+                className={`w-full h-11 rounded-xl font-semibold text-sm transition-all ${
+                  p.featured
+                    ? "bg-gradient-to-r from-blue-500 to-violet-600 text-white shadow-lg shadow-violet-600/25 hover:from-blue-400 hover:to-violet-500"
+                    : "border border-blue-500/60 text-blue-400 hover:bg-blue-500/10"
+                }`}
+              >
+                Start Free Trial
+              </button>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Final CTA banner */}
+      <section className="relative overflow-hidden border-t border-white/5">
+        <div className="absolute inset-0 bg-gradient-to-r from-violet-900/30 via-fuchsia-900/20 to-blue-900/30" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-white">
+              The Operating System for{" "}
+              <span className="text-orange-400">Entertainment Managers</span>
+            </h2>
+            <p className="mt-2 text-sm text-white/60">Stop chasing performers. Start running professional, stress-free events.</p>
+          </div>
+          <div className="flex flex-col sm:flex-row items-stretch gap-3">
+            <button
+              onClick={() => navigate("/auth")}
+              className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-500 to-violet-600 hover:from-blue-400 hover:to-violet-500 shadow-xl shadow-violet-600/30"
+            >
+              Start Your Free Trial <ArrowRight className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => navigate("/auth")}
+              className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl font-medium text-white border border-white/15 hover:bg-white/5"
+            >
+              <Calendar className="h-4 w-4" /> Schedule a Demo
+            </button>
+          </div>
+        </div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 flex flex-wrap items-center gap-x-8 gap-y-3 text-xs text-white/55">
+          <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> 14-Day Free Trial</span>
+          <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> No Credit Card Required</span>
+          <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Cancel Anytime</span>
         </div>
       </section>
 
@@ -430,6 +565,7 @@ const Index = () => {
           <p className="text-sm text-white/40">© 2026 GiggMe. All rights reserved.</p>
         </div>
       </footer>
+
     </div>
   );
 };

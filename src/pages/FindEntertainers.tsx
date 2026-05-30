@@ -182,14 +182,14 @@ const FindEntertainers = () => {
                 </div>
               ) : (
                 <Button
-                  onClick={handleSubscribe}
+                  onClick={() => handleSubscribe(BASIC_PRICE_ID)}
                   disabled={subscribing}
                   className="h-14 px-8 text-base font-semibold rounded-xl bg-gradient-to-r from-violet-600 via-fuchsia-500 to-pink-500 hover:opacity-95 shadow-[0_10px_40px_-10px_rgba(168,85,247,0.6)]"
                 >
                   {subscribing ? (
                     <Loader2 className="h-5 w-5 animate-spin mr-2" />
                   ) : null}
-                  Join for Only $9/mo
+                  Join for Only $8/mo
                   <ArrowRight className="h-5 w-5 ml-2" />
                 </Button>
               )}

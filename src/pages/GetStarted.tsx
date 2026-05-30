@@ -161,7 +161,7 @@ const GetStarted = () => {
             </p>
 
             <div className="mt-5 inline-flex items-center gap-3 rounded-full border border-border/60 bg-background/60 px-4 py-2 text-sm">
-              <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
+              <Star className="h-4 w-4 text-orange-400 fill-orange-400" />
               <span className="font-medium">14-Day Free Trial</span>
               <span className="text-muted-foreground">·</span>
               <span className="text-muted-foreground">No credit card required</span>

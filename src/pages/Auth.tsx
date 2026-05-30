@@ -590,7 +590,7 @@ const Auth = () => {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <h3 className="font-semibold">Group Manager</h3>
-                              <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+                              <Star className="h-4 w-4 text-orange-500 fill-orange-500" />
                             </div>
                             <div className="text-right">
                               <span className="font-bold text-primary">$14</span>

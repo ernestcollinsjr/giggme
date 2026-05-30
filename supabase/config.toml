@@ -94,3 +94,6 @@ verify_jwt = false
 verify_jwt = false
 [functions.send-demo-request]
 verify_jwt = false
+
+[functions.send-contact-message]
+verify_jwt = false

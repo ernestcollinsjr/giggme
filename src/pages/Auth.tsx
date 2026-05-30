@@ -475,7 +475,7 @@ const Auth = () => {
                   </div>
                   <p className="mt-3 font-semibold text-white">Basic Profile</p>
                   <div className="mt-1 flex items-baseline gap-1">
-                    <span className="text-3xl font-bold text-white">$8</span>
+                    <span className="text-3xl font-bold text-white">$8.99</span>
                     <span className="text-sm text-white/60">/mo</span>
                   </div>
                   <span className="mt-2 inline-block px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider bg-violet-500/30 text-violet-100">

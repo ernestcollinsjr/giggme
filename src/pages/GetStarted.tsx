@@ -161,7 +161,7 @@ const GetStarted = () => {
             </p>
 
             <div className="mt-5 inline-flex items-center gap-3 rounded-full border border-border/60 bg-background/60 px-4 py-2 text-sm">
-              <Star className="h-4 w-4 text-orange-400 fill-orange-400" />
+              <Star className="h-4 w-4 text-brand-gold fill-brand-gold" />
               <span className="font-medium">14-Day Free Trial</span>
               <span className="text-muted-foreground">·</span>
               <span className="text-muted-foreground">No credit card required</span>
@@ -380,7 +380,7 @@ const GetStarted = () => {
                             <div className="text-muted-foreground text-[10px]">{p.r}</div>
                           </div>
                         </div>
-                        <span className={`text-[10px] ${p.sc === "emerald" ? "text-emerald-400" : "text-orange-400"}`}>
+                        <span className={`text-[10px] ${p.sc === "emerald" ? "text-emerald-400" : "text-brand-gold"}`}>
                           {p.s}
                         </span>
                         <span className="text-muted-foreground text-[10px]">{p.e}</span>
@@ -412,7 +412,7 @@ const GetStarted = () => {
                         ].map(([n, s, c]) => (
                           <div key={n} className="flex justify-between">
                             <span>{n}</span>
-                            <span className={c === "emerald" ? "text-emerald-400" : "text-orange-400"}>{s}</span>
+                            <span className={c === "emerald" ? "text-emerald-400" : "text-brand-gold"}>{s}</span>
                           </div>
                         ))}
                       </div>
@@ -426,7 +426,7 @@ const GetStarted = () => {
               {[
                 { i: Clock, c: "bg-violet-500/15 text-violet-400", t: "Save Hours Every Week", d: "Automate reminders, confirmations, and updates." },
                 { i: MapPin, c: "bg-emerald-500/15 text-emerald-400", t: "Know Exactly What's Happening", d: "Live tracking and real-time updates keep you in control." },
-                { i: DollarSign, c: "bg-orange-500/15 text-orange-400", t: "Get Paid on Time", d: "Track payments and never miss a detail." },
+                { i: DollarSign, c: "bg-orange-500/15 text-brand-gold", t: "Get Paid on Time", d: "Track payments and never miss a detail." },
                 { i: Users, c: "bg-fuchsia-500/15 text-fuchsia-400", t: "Built for Entertainment Professionals", d: "Trusted by managers, band leaders, and booking agents." },
               ].map((f) => (
                 <div key={f.t} className="flex gap-4">

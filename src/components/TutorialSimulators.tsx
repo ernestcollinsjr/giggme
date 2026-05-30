@@ -154,7 +154,7 @@ const NotificationsScreen = () => (
   <div className="flex h-full flex-col gap-2 px-3 pb-3">
     <div className="text-center text-[11px] font-semibold text-white/80">Smart Reminders</div>
     {[
-      { t: "Gig starts in 60 minutes", s: "The Blue Note • Tonight", d: "0.2s", c: "from-orange-500 to-orange-600", i: Bell },
+      { t: "Gig starts in 60 minutes", s: "The Blue Note • Tonight", d: "0.2s", c: "from-[hsl(33_92%_55%)] to-[hsl(28_90%_50%)]", i: Bell },
       { t: "Sarah confirmed availability", s: "Saturday Jazz Night", d: "1.0s", c: "from-emerald-500 to-emerald-600", i: Check },
       { t: "Setlist updated", s: "Marco added 2 new songs", d: "1.8s", c: "from-violet-500 to-fuchsia-500", i: Sparkles },
       { t: "Payment received", s: "$850 from The Blue Note", d: "2.6s", c: "from-blue-500 to-cyan-500", i: CalendarCheck },
@@ -207,8 +207,8 @@ const sims: Sim[] = [
   {
     title: "Smart Notifications",
     subtitle: "Proximity alerts, confirmations, and payment updates — automatically.",
-    accent: "from-orange-500 to-orange-600",
-    ring: "text-orange-400",
+    accent: "from-[hsl(33_92%_55%)] to-[hsl(28_90%_50%)]",
+    ring: "text-brand-gold",
     icon: Bell,
     screen: <NotificationsScreen />,
   },

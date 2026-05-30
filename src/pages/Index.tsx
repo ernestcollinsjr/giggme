@@ -197,7 +197,7 @@ const Index = () => {
               Sign In
             </button>
             <button
-              onClick={() => navigate("/auth")}
+              onClick={() => navigate("/get-started")}
               className="inline-flex h-9 items-center gap-1.5 px-4 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-violet-600 hover:from-blue-400 hover:to-violet-500 shadow-lg shadow-violet-600/25 transition-all"
             >
               Get Started <ArrowRight className="h-4 w-4" />
@@ -231,7 +231,7 @@ const Index = () => {
                 <DropdownMenuItem onClick={() => navigate("/auth")}>
                   <LogIn className="mr-2 h-4 w-4" /> Sign In
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/auth")}>
+                <DropdownMenuItem onClick={() => navigate("/get-started")}>
                   <UserPlus className="mr-2 h-4 w-4" /> Get Started
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -261,7 +261,7 @@ const Index = () => {
 
             <div className="mt-8 flex flex-wrap items-center gap-4">
               <button
-                onClick={() => navigate("/auth")}
+                onClick={() => navigate("/get-started")}
                 className="inline-flex items-center gap-2 h-12 px-6 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-500 to-violet-600 hover:from-blue-400 hover:to-violet-500 shadow-xl shadow-violet-600/30 transition-all"
               >
                 Start Free Trial <ArrowRight className="h-4 w-4" />
@@ -526,7 +526,7 @@ const Index = () => {
           </div>
           <div className="flex flex-col sm:flex-row items-stretch gap-3">
             <button
-              onClick={() => navigate("/auth")}
+              onClick={() => navigate("/get-started")}
               className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-500 to-violet-600 hover:from-blue-400 hover:to-violet-500 shadow-xl shadow-violet-600/30"
             >
               Start Your Free Trial <ArrowRight className="h-4 w-4" />

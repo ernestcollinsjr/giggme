@@ -869,11 +869,11 @@ const Auth = () => {
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <h3 className="font-semibold">Group Manager</h3>
+                              <h3 className="font-semibold">Booking Manager</h3>
                               <Star className="h-4 w-4 text-brand-gold fill-brand-gold" />
                             </div>
                             <div className="text-right">
-                              <span className="font-bold text-primary">$14</span>
+                              <span className="font-bold text-primary">$49.99</span>
                               <span className="text-xs text-muted-foreground">/mo</span>
                             </div>
                           </div>

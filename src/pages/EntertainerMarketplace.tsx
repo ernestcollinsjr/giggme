@@ -175,8 +175,7 @@ const EntertainerMarketplace = () => {
   };
 
   const handleBook = (entertainerId: string) => {
-    setSelectedEntertainerId(entertainerId);
-    setShowBookingDialog(true);
+    navigate(`/artist-profile/${entertainerId}?book=1`);
   };
 
   const filteredEntertainers = entertainers.filter(e => {

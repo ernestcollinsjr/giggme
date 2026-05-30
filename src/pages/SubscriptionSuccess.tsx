@@ -23,6 +23,20 @@ interface SubStatus {
   cancel_at_period_end: boolean;
 }
 
+interface Invoice {
+  id: string;
+  number: string | null;
+  amount_paid: number;
+  amount_due: number;
+  currency: string;
+  status: string | null;
+  created: string;
+  paid_at: string | null;
+  hosted_invoice_url: string | null;
+  invoice_pdf: string | null;
+}
+
+
 const PLAN_NAMES: Record<string, string> = {
   price_1TcATOEPiAZgF8Me2TkOBbG0: "Entertainer",
   price_1TcATsEPiAZgF8MeuJY76UlD: "Featured Entertainer",

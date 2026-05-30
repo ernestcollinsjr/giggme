@@ -288,7 +288,7 @@ const Index = () => {
               <span>Hard Rock</span>
               <span>Four Seasons</span>
               <span>The Ritz-Carlton</span>
-              <span>YAMAHA</span>
+              <span>FLEMING'S</span>
               <span>Marriott</span>
             </div>
           </div>

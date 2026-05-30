@@ -54,7 +54,6 @@ import avatar3 from "@/assets/avatar-3.jpg";
 const Index = () => {
   const navigate = useNavigate();
   const { theme, setTheme, resolvedTheme } = useTheme();
-  const [searchQuery, setSearchQuery] = useState("");
 
   // Force dark theme on landing for the modern look
   useEffect(() => {
@@ -69,14 +68,6 @@ const Index = () => {
     checkAuth();
   }, [navigate]);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/artists?search=${encodeURIComponent(searchQuery.trim())}`);
-    } else {
-      navigate("/artists");
-    }
-  };
 
   const features = [
     { icon: Calendar, title: "Gig Scheduling", desc: "Create gigs and assign performers in seconds.", color: "text-blue-400", bg: "bg-blue-500/10" },

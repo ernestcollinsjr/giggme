@@ -20,6 +20,7 @@ import performer2 from "@/assets/hero-performer-vocalist.jpg";
 import performer5 from "@/assets/hero-performer-guitar.jpg";
 
 const BASIC_PRICE_ID = "price_1TcATOEPiAZgF8Me2TkOBbG0";
+const FEATURED_PRICE_ID = "price_1TcATsEPiAZgF8MeuJY76UlD";
 
 const STEPS = [
   {

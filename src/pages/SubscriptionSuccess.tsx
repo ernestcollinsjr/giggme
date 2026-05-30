@@ -98,6 +98,21 @@ export default function SubscriptionSuccess() {
     setLoading(false);
   };
 
+  const fetchInvoices = async () => {
+    setInvoicesLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const { data, error } = await supabase.functions.invoke("list-invoices", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (!error) setInvoices((data?.invoices as Invoice[]) ?? []);
+    } finally {
+      setInvoicesLoading(false);
+    }
+  };
+
+
   useEffect(() => {
     // Stripe needs a moment to provision the subscription
     const timer = setTimeout(fetchStatus, 1500);

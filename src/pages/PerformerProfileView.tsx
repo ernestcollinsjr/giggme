@@ -338,10 +338,16 @@ const PerformerProfileView = () => {
                   <CardTitle className="text-2xl">Performer Profile</CardTitle>
                   <CardDescription>View this performer's details and book them</CardDescription>
                 </div>
-                <Button onClick={() => setBookingOpen(true)} className="flex items-center gap-2">
-                  <CalendarCheck className="h-4 w-4" />
-                  Book Talent
-                </Button>
+                <div className="relative">
+                  <ArrowDown
+                    className="absolute -top-7 left-1/2 -translate-x-1/2 h-6 w-6 text-brand-gold animate-bounce drop-shadow-[0_0_8px_hsl(var(--brand-gold))]"
+                    aria-hidden="true"
+                  />
+                  <Button onClick={() => setBookingOpen(true)} className="flex items-center gap-2 animate-pulse">
+                    <CalendarCheck className="h-4 w-4" />
+                    Book Talent
+                  </Button>
+                </div>
               </div>
             </CardHeader>
 

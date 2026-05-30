@@ -20,6 +20,7 @@ import performer2 from "@/assets/hero-performer-vocalist.jpg";
 import performer5 from "@/assets/hero-performer-guitar.jpg";
 
 const BASIC_PRICE_ID = "price_1TcATOEPiAZgF8Me2TkOBbG0";
+const FEATURED_PRICE_ID = "price_1TcATsEPiAZgF8MeuJY76UlD";
 
 const STEPS = [
   {
@@ -89,16 +90,17 @@ const FindEntertainers = () => {
     if (sub && (sub as any).status === "active") setIsSubscribed(true);
   };
 
-  const handleSubscribe = async () => {
+  const handleSubscribe = async (priceId: string = BASIC_PRICE_ID) => {
+    const plan = priceId === FEATURED_PRICE_ID ? "entertainer_featured" : "entertainer_basic";
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) {
-      navigate(`/auth?mode=signup&plan=entertainer_basic`);
+      navigate(`/auth?mode=signup&plan=${plan}`);
       return;
     }
     setSubscribing(true);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { priceId: BASIC_PRICE_ID },
+        body: { priceId },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       if (error) throw error;
@@ -180,14 +182,14 @@ const FindEntertainers = () => {
                 </div>
               ) : (
                 <Button
-                  onClick={handleSubscribe}
+                  onClick={() => handleSubscribe(BASIC_PRICE_ID)}
                   disabled={subscribing}
                   className="h-14 px-8 text-base font-semibold rounded-xl bg-gradient-to-r from-violet-600 via-fuchsia-500 to-pink-500 hover:opacity-95 shadow-[0_10px_40px_-10px_rgba(168,85,247,0.6)]"
                 >
                   {subscribing ? (
                     <Loader2 className="h-5 w-5 animate-spin mr-2" />
                   ) : null}
-                  Join for Only $9/mo
+                  Join for Only $8/mo
                   <ArrowRight className="h-5 w-5 ml-2" />
                 </Button>
               )}
@@ -292,31 +294,52 @@ const FindEntertainers = () => {
               </ul>
             </div>
 
-            {/* Plan card */}
-            <div className="relative rounded-2xl border border-violet-400/40 bg-gradient-to-br from-violet-600/15 via-fuchsia-600/10 to-pink-500/10 p-6 sm:p-8 text-center">
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[11px] font-bold tracking-wider bg-gradient-to-r from-pink-500 to-orange-400 text-white shadow-md">
-                MOST POPULAR
-              </span>
-              <h3 className="mt-2 text-xl font-bold bg-gradient-to-r from-fuchsia-300 to-violet-300 bg-clip-text text-transparent">
-                Performer Plan
-              </h3>
-              <div className="mt-5 flex items-baseline justify-center gap-1">
-                <span className="text-6xl font-bold text-white">$9</span>
-                <span className="text-white/60 text-lg">/mo</span>
+            {/* Plan cards */}
+            <div className="grid sm:grid-cols-2 gap-5">
+              {/* Basic */}
+              <div className="relative rounded-2xl border border-white/15 bg-white/[0.03] p-6 text-center flex flex-col">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider bg-emerald-500/90 text-white shadow-md">
+                  7-DAY FREE TRIAL
+                </span>
+                <h3 className="mt-2 text-lg font-bold text-white">Basic Profile</h3>
+                <div className="mt-4 flex items-baseline justify-center gap-1">
+                  <span className="text-5xl font-bold text-white">$8</span>
+                  <span className="text-white/60 text-base">/mo</span>
+                </div>
+                <p className="mt-1 text-xs text-white/55">Cancel anytime</p>
+                <Button
+                  onClick={() => handleSubscribe(BASIC_PRICE_ID)}
+                  disabled={subscribing || isSubscribed}
+                  variant="outline"
+                  className="mt-6 w-full h-11 font-semibold rounded-xl border-white/20 text-white hover:bg-white/5"
+                >
+                  {subscribing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  {isSubscribed ? "Subscribed" : "Start Free Trial"}
+                </Button>
               </div>
-              <p className="mt-1 text-sm text-white/55">Cancel anytime</p>
 
-              <Button
-                onClick={handleSubscribe}
-                disabled={subscribing || isSubscribed}
-                className="mt-6 w-full h-12 text-base font-semibold rounded-xl bg-gradient-to-r from-violet-600 via-fuchsia-500 to-pink-500 hover:opacity-95 shadow-[0_10px_30px_-10px_rgba(236,72,153,0.6)]"
-              >
-                {subscribing ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}
-                {isSubscribed ? "You're subscribed" : "Start Your 7-Day Free Trial"}
-              </Button>
-              <p className="mt-3 text-xs text-white/50">
-                Join thousands of performers already getting hired.
-              </p>
+              {/* Featured */}
+              <div className="relative rounded-2xl border border-violet-400/40 bg-gradient-to-br from-violet-600/15 via-fuchsia-600/10 to-pink-500/10 p-6 text-center flex flex-col">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider bg-gradient-to-r from-pink-500 to-orange-400 text-white shadow-md whitespace-nowrap">
+                  MOST POPULAR
+                </span>
+                <h3 className="mt-2 text-lg font-bold bg-gradient-to-r from-fuchsia-300 to-violet-300 bg-clip-text text-transparent">
+                  Featured Performer
+                </h3>
+                <div className="mt-4 flex items-baseline justify-center gap-1">
+                  <span className="text-5xl font-bold text-white">$14</span>
+                  <span className="text-white/60 text-base">/mo</span>
+                </div>
+                <p className="mt-1 text-xs text-violet-200/80">Prime placement + featured badge</p>
+                <Button
+                  onClick={() => handleSubscribe(FEATURED_PRICE_ID)}
+                  disabled={subscribing || isSubscribed}
+                  className="mt-6 w-full h-11 font-semibold rounded-xl bg-gradient-to-r from-violet-600 via-fuchsia-500 to-pink-500 hover:opacity-95 shadow-[0_10px_30px_-10px_rgba(236,72,153,0.6)]"
+                >
+                  {subscribing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
+                  {isSubscribed ? "Subscribed" : "Start 7-Day Free Trial"}
+                </Button>
+              </div>
             </div>
           </div>
         </div>

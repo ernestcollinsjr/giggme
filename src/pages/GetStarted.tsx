@@ -308,8 +308,7 @@ const GetStarted = () => {
             <div className="rounded-2xl border border-border/50 bg-card/40 backdrop-blur p-4 md:p-5">
               <div className="flex items-center justify-between pb-3 border-b border-border/40">
                 <div className="flex items-center gap-2">
-                  <img src={logo} alt="" className="h-6 w-auto" />
-                  <span className="font-semibold">GiggMe</span>
+                  <img src={logo} alt="GiggMe" className="h-6 w-auto" />
                 </div>
                 <Search className="h-4 w-4 text-muted-foreground" />
               </div>

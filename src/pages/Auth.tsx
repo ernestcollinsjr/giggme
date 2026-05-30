@@ -353,9 +353,9 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-primary/10">
       <Link 
         to="/" 
-        className="absolute top-4 left-4 flex items-center hover:opacity-80 transition-opacity"
+        className="absolute top-4 left-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
-        <img src={logo} alt="GiggMe" className="h-24 w-auto object-contain" />
+        ← Back
       </Link>
       <Card className="w-full max-w-md border-border/50 shadow-xl">
         <CardHeader className="space-y-2 text-center">

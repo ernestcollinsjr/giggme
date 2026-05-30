@@ -15,9 +15,9 @@ import {
   Star,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
-import performer1 from "@/assets/performer-1.jpg";
-import performer2 from "@/assets/performer-2.jpg";
-import performer5 from "@/assets/performer-5.jpg";
+import performer1 from "@/assets/hero-performer-sax.jpg";
+import performer2 from "@/assets/hero-performer-vocalist.jpg";
+import performer5 from "@/assets/hero-performer-guitar.jpg";
 
 const BASIC_PRICE_ID = "price_1TcATOEPiAZgF8Me2TkOBbG0";
 

@@ -280,17 +280,34 @@ export default function SubscriptionSuccess() {
                             >
                               {inv.status ?? "—"}
                             </Badge>
-                            {inv.hosted_invoice_url && (
-                              <a
-                                href={inv.hosted_invoice_url}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-muted-foreground hover:text-foreground transition-colors"
-                                aria-label="View invoice"
-                              >
-                                <ExternalLink className="h-3.5 w-3.5" />
-                              </a>
-                            )}
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              {inv.invoice_pdf && (
+                                <a
+                                  href={inv.invoice_pdf}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  download
+                                  className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                                  aria-label="Download invoice PDF"
+                                  title="Download PDF"
+                                >
+                                  <Download className="h-3.5 w-3.5" />
+                                </a>
+                              )}
+                              {inv.hosted_invoice_url && (
+                                <a
+                                  href={inv.hosted_invoice_url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                                  aria-label="View invoice"
+                                  title="View invoice"
+                                >
+                                  <ExternalLink className="h-3.5 w-3.5" />
+                                </a>
+                              )}
+                            </div>
+
                           </li>
                         );
                       })}

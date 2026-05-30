@@ -42,7 +42,7 @@ export const PreferredEntertainersBookList = () => {
   }, [toast]);
 
   const handleBook = (id: string) => {
-    navigate(`/artist-profile/${id}?book=1`);
+    navigate(`/artist-profile/${id}`);
   };
 
   if (loading) {

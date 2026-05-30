@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle2, Clock, Loader2, Sparkles, Settings, ExternalLink, Receipt } from "lucide-react";
+import { CheckCircle2, Clock, Loader2, Sparkles, Settings, ExternalLink, Receipt, Download } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

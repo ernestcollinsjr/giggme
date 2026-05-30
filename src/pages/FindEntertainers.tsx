@@ -90,16 +90,17 @@ const FindEntertainers = () => {
     if (sub && (sub as any).status === "active") setIsSubscribed(true);
   };
 
-  const handleSubscribe = async () => {
+  const handleSubscribe = async (priceId: string = BASIC_PRICE_ID) => {
+    const plan = priceId === FEATURED_PRICE_ID ? "entertainer_featured" : "entertainer_basic";
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) {
-      navigate(`/auth?mode=signup&plan=entertainer_basic`);
+      navigate(`/auth?mode=signup&plan=${plan}`);
       return;
     }
     setSubscribing(true);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { priceId: BASIC_PRICE_ID },
+        body: { priceId },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       if (error) throw error;

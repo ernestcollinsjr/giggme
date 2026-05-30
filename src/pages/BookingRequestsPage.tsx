@@ -5,6 +5,7 @@ import { AppShell } from "@/components/AppShell";
 import { TopNav } from "@/components/TopNav";
 import BottomNav from "@/components/BottomNav";
 import { SentBookingRequests } from "@/components/SentBookingRequests";
+import { PreferredEntertainersBookList } from "@/components/PreferredEntertainersBookList";
 
 type UserRole = "super_admin" | "booking_manager" | "admin" | "entertainer" | "member" | null;
 

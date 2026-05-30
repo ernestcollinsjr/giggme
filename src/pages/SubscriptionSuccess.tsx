@@ -115,10 +115,14 @@ export default function SubscriptionSuccess() {
 
   useEffect(() => {
     // Stripe needs a moment to provision the subscription
-    const timer = setTimeout(fetchStatus, 1500);
+    const timer = setTimeout(() => {
+      fetchStatus();
+      fetchInvoices();
+    }, 1500);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
 
   const formatDate = (iso: string | null) =>
     iso ? new Date(iso).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" }) : "—";

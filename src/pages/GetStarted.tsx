@@ -428,13 +428,13 @@ const GetStarted = () => {
 
             <div className="space-y-4">
               {[
-                { i: Clock, c: "violet", t: "Save Hours Every Week", d: "Automate reminders, confirmations, and updates." },
-                { i: MapPin, c: "emerald", t: "Know Exactly What's Happening", d: "Live tracking and real-time updates keep you in control." },
-                { i: DollarSign, c: "orange", t: "Get Paid on Time", d: "Track payments and never miss a detail." },
-                { i: Users, c: "fuchsia", t: "Built for Entertainment Professionals", d: "Trusted by managers, band leaders, and booking agents." },
+                { i: Clock, c: "bg-violet-500/15 text-violet-400", t: "Save Hours Every Week", d: "Automate reminders, confirmations, and updates." },
+                { i: MapPin, c: "bg-emerald-500/15 text-emerald-400", t: "Know Exactly What's Happening", d: "Live tracking and real-time updates keep you in control." },
+                { i: DollarSign, c: "bg-orange-500/15 text-orange-400", t: "Get Paid on Time", d: "Track payments and never miss a detail." },
+                { i: Users, c: "bg-fuchsia-500/15 text-fuchsia-400", t: "Built for Entertainment Professionals", d: "Trusted by managers, band leaders, and booking agents." },
               ].map((f) => (
                 <div key={f.t} className="flex gap-4">
-                  <div className={`h-10 w-10 rounded-full flex items-center justify-center bg-${f.c}-500/15 text-${f.c}-400 shrink-0`}>
+                  <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${f.c}`}>
                     <f.i className="h-5 w-5" />
                   </div>
                   <div>

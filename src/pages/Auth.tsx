@@ -40,14 +40,14 @@ const ENTERTAINER_PLANS: Record<string, { priceId: string; label: string; price:
   entertainer_basic: {
     priceId: "price_1TcATOEPiAZgF8Me2TkOBbG0",
     label: "Basic Profile",
-    price: "$8",
+    price: "$8.99",
     description: "Upload your profile, get listed in the entertainer directory, and receive booking inquiries.",
     trial: "7-day free trial",
   },
   entertainer_featured: {
     priceId: "price_1TcATsEPiAZgF8MeuJY76UlD",
     label: "Featured Entertainer",
-    price: "$14",
+    price: "$13.99",
     description: "Prime placement at the front of the site, featured badge, and priority in search results.",
     trial: "7-day free trial",
   },
@@ -475,7 +475,7 @@ const Auth = () => {
                   </div>
                   <p className="mt-3 font-semibold text-white">Basic Profile</p>
                   <div className="mt-1 flex items-baseline gap-1">
-                    <span className="text-3xl font-bold text-white">$8</span>
+                    <span className="text-3xl font-bold text-white">$8.99</span>
                     <span className="text-sm text-white/60">/mo</span>
                   </div>
                   <span className="mt-2 inline-block px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider bg-violet-500/30 text-violet-100">
@@ -514,7 +514,7 @@ const Auth = () => {
                   </div>
                   <p className="mt-3 font-semibold text-white">Featured Performer</p>
                   <div className="mt-1 flex items-baseline gap-1">
-                    <span className="text-3xl font-bold text-white">$14</span>
+                    <span className="text-3xl font-bold text-white">$13.99</span>
                     <span className="text-sm text-white/60">/mo</span>
                   </div>
                   <span className="mt-2 inline-block px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider bg-amber-500/30 text-amber-100">
@@ -869,11 +869,11 @@ const Auth = () => {
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <h3 className="font-semibold">Group Manager</h3>
+                              <h3 className="font-semibold">Booking Manager</h3>
                               <Star className="h-4 w-4 text-brand-gold fill-brand-gold" />
                             </div>
                             <div className="text-right">
-                              <span className="font-bold text-primary">$14</span>
+                              <span className="font-bold text-primary">$49.99</span>
                               <span className="text-xs text-muted-foreground">/mo</span>
                             </div>
                           </div>
@@ -947,9 +947,9 @@ const Auth = () => {
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
-                            <h3 className="font-semibold">Musicians / Entertainers</h3>
+                            <h3 className="font-semibold">Entertainer</h3>
                             <div className="text-right">
-                              <span className="font-bold text-primary">$10.99</span>
+                              <span className="font-bold text-primary">$8.99</span>
                               <span className="text-xs text-muted-foreground">/mo</span>
                             </div>
                           </div>

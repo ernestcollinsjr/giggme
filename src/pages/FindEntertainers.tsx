@@ -189,7 +189,7 @@ const FindEntertainers = () => {
                   {subscribing ? (
                     <Loader2 className="h-5 w-5 animate-spin mr-2" />
                   ) : null}
-                  Join for Only $8/mo
+                  Join for Only $8.99/mo
                   <ArrowRight className="h-5 w-5 ml-2" />
                 </Button>
               )}
@@ -303,7 +303,7 @@ const FindEntertainers = () => {
                 </span>
                 <h3 className="mt-2 text-lg font-bold text-white">Basic Profile</h3>
                 <div className="mt-4 flex items-baseline justify-center gap-1">
-                  <span className="text-5xl font-bold text-white">$8</span>
+                  <span className="text-5xl font-bold text-white">$8.99</span>
                   <span className="text-white/60 text-base">/mo</span>
                 </div>
                 <p className="mt-1 text-xs text-white/55">Cancel anytime</p>
@@ -327,7 +327,7 @@ const FindEntertainers = () => {
                   Featured Performer
                 </h3>
                 <div className="mt-4 flex items-baseline justify-center gap-1">
-                  <span className="text-5xl font-bold text-white">$14</span>
+                  <span className="text-5xl font-bold text-white">$13.99</span>
                   <span className="text-white/60 text-base">/mo</span>
                 </div>
                 <p className="mt-1 text-xs text-violet-200/80">Prime placement + featured badge</p>

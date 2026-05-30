@@ -35,8 +35,37 @@ const PLAN_NAMES: Record<string, string> = {
 
 export default function SubscriptionSuccess() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
+  const [portalLoading, setPortalLoading] = useState(false);
   const [data, setData] = useState<SubStatus | null>(null);
+
+  const openCustomerPortal = async () => {
+    setPortalLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { navigate("/auth"); return; }
+      const { data, error } = await supabase.functions.invoke("customer-portal", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      } else {
+        throw new Error("No portal URL returned");
+      }
+    } catch (e: any) {
+      toast({
+        title: "Couldn't open billing portal",
+        description: e?.message ?? "Please try again in a moment.",
+        variant: "destructive",
+      });
+    } finally {
+      setPortalLoading(false);
+    }
+  };
+
+
 
   const fetchStatus = async () => {
     const { data: { session } } = await supabase.auth.getSession();

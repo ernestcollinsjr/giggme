@@ -40,7 +40,7 @@ const ENTERTAINER_PLANS: Record<string, { priceId: string; label: string; price:
   entertainer_basic: {
     priceId: "price_1TcATOEPiAZgF8Me2TkOBbG0",
     label: "Basic Profile",
-    price: "$8",
+    price: "$8.99",
     description: "Upload your profile, get listed in the entertainer directory, and receive booking inquiries.",
     trial: "7-day free trial",
   },

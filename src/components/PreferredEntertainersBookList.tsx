@@ -56,7 +56,7 @@ export const PreferredEntertainersBookList = () => {
           <Users className="h-4 w-4 text-muted-foreground" />
           <h2 className="text-lg font-semibold">Book Entertainers</h2>
         </div>
-        <Button variant="outline" size="sm" onClick={() => navigate("/entertainers")}>
+        <Button variant="outline" size="sm" onClick={() => navigate("/dashboard")}>
           Browse all
         </Button>
       </div>

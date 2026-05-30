@@ -198,7 +198,7 @@ const Index = () => {
             </button>
             <button
               onClick={() => navigate("/get-started")}
-              className="inline-flex h-9 items-center gap-1.5 px-4 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-violet-600 hover:from-blue-400 hover:to-violet-500 shadow-lg shadow-violet-600/25 transition-all"
+              className="hidden sm:inline-flex h-9 items-center gap-1.5 px-4 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-violet-600 hover:from-blue-400 hover:to-violet-500 shadow-lg shadow-violet-600/25 transition-all"
             >
               Get Started <ArrowRight className="h-4 w-4" />
             </button>

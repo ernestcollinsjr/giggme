@@ -69,7 +69,7 @@ serve(async (req) => {
       ],
       mode: isOneTime ? "payment" : "subscription",
       subscription_data: !isOneTime && trialDays ? { trial_period_days: trialDays } : undefined,
-      success_url: `${req.headers.get("origin")}/dashboard?checkout=success`,
+      success_url: `${req.headers.get("origin")}/subscription-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get("origin")}/pricing?checkout=canceled`,
     });
 

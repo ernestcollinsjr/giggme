@@ -350,6 +350,285 @@ const Auth = () => {
     }
   };
 
+  const isSignupMode = searchParams.get("mode") === "signup";
+  if (entertainerPlan && isSignupMode && !isResettingPassword) {
+    const selectedKey = planParam as "entertainer_basic" | "entertainer_featured";
+    const setPlan = (key: "entertainer_basic" | "entertainer_featured") => {
+      const params = new URLSearchParams(searchParams);
+      params.set("plan", key);
+      params.set("mode", "signup");
+      navigate(`/auth?${params.toString()}`, { replace: true });
+    };
+
+    return (
+      <div className="min-h-screen bg-[hsl(230_35%_7%)] text-white overflow-x-hidden">
+        <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+          <div className="absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-violet-600/20 blur-[120px]" />
+          <div className="absolute top-1/3 -right-40 h-[600px] w-[600px] rounded-full bg-fuchsia-500/20 blur-[140px]" />
+        </div>
+
+        {/* Header */}
+        <header className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 flex items-center justify-between">
+          <Link to="/" className="flex items-center">
+            <img src={logo} alt="GiggMe" className="h-16 sm:h-20 w-auto object-contain" />
+          </Link>
+          <p className="text-sm text-white/70">
+            Already have an account?{" "}
+            <Link to="/auth" className="text-fuchsia-400 hover:text-fuchsia-300 font-semibold">
+              Log in
+            </Link>
+          </p>
+        </header>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid lg:grid-cols-2 gap-10">
+          {/* LEFT: Marketing */}
+          <div>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-violet-500/15 to-fuchsia-500/10 border border-violet-400/30">
+              <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
+              <span className="text-xs font-semibold tracking-wide text-white/90">
+                FOR PERFORMERS & ENTERTAINERS
+              </span>
+            </div>
+            <h1 className="mt-6 text-4xl sm:text-5xl font-bold leading-[1.05] tracking-tight">
+              Get Discovered.
+              <br />
+              Get Hired.
+              <br />
+              Do What You{" "}
+              <span className="bg-gradient-to-r from-fuchsia-400 via-pink-400 to-orange-400 bg-clip-text text-transparent">
+                Love.
+              </span>
+            </h1>
+            <p className="mt-5 text-white/65 text-base max-w-md leading-relaxed">
+              Join thousands of performers who are getting booked for concerts, restaurants, private events, and more.
+            </p>
+
+            <div className="mt-8 space-y-5">
+              {[
+                { icon: Search, color: "bg-violet-500/15 text-violet-300 border-violet-400/30", title: "Get Discovered", desc: "Be seen by booking managers and event planners." },
+                { icon: Calendar, color: "bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-400/30", title: "Get Booked", desc: "Receive booking inquiries for events near you." },
+                { icon: DollarSign, color: "bg-amber-500/15 text-amber-300 border-amber-400/30", title: "Get Paid", desc: "Do what you love and get paid for it." },
+              ].map((b) => {
+                const I = b.icon;
+                return (
+                  <div key={b.title} className="flex items-start gap-4">
+                    <div className={`h-11 w-11 rounded-xl border flex items-center justify-center ${b.color}`}>
+                      <I className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-white">{b.title}</p>
+                      <p className="text-sm text-white/60">{b.desc}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Testimonial */}
+            <div className="mt-10 relative rounded-2xl overflow-hidden border border-white/10 max-w-md">
+              <img src={heroVocalist} alt="" className="w-full h-72 object-cover" />
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-5">
+                <Quote className="h-5 w-5 text-fuchsia-400 mb-1" />
+                <div className="flex items-center gap-0.5 text-amber-400 mb-2">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="h-4 w-4 fill-current" />
+                  ))}
+                </div>
+                <p className="text-sm text-white/90 italic">
+                  "GiggMe helped me get booked 3 shows in my first week. Highly recommend!"
+                </p>
+                <p className="mt-2 text-xs font-semibold text-white">Sophia Vale <span className="text-white/50 font-normal">· Vocalist</span></p>
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT: Signup card */}
+          <div className="rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-6 sm:p-8">
+            <h2 className="text-3xl font-bold text-white">Create Your Account</h2>
+            <p className="mt-1 text-sm text-white/60">Start your 7-day free trial. Cancel anytime.</p>
+
+            {/* Step 1: Plans */}
+            <div className="mt-7">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="h-6 w-6 rounded-full bg-violet-500/20 border border-violet-400/40 text-violet-200 text-xs font-bold flex items-center justify-center">1</span>
+                <span className="text-xs font-bold tracking-wider text-violet-300">CHOOSE YOUR PLAN</span>
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-3">
+                {/* Basic */}
+                <button
+                  type="button"
+                  onClick={() => setPlan("entertainer_basic")}
+                  className={`relative text-left rounded-2xl border p-4 transition-all ${
+                    selectedKey === "entertainer_basic"
+                      ? "border-violet-400 bg-violet-500/10 shadow-[0_0_0_2px_hsl(270_90%_60%/0.25)]"
+                      : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                  }`}
+                >
+                  {selectedKey === "entertainer_basic" && (
+                    <div className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-violet-500 flex items-center justify-center">
+                      <Check className="h-3.5 w-3.5 text-white" />
+                    </div>
+                  )}
+                  <div className="h-11 w-11 rounded-xl bg-violet-500/20 border border-violet-400/30 flex items-center justify-center">
+                    <Music className="h-5 w-5 text-violet-300" />
+                  </div>
+                  <p className="mt-3 font-semibold text-white">Basic Profile</p>
+                  <div className="mt-1 flex items-baseline gap-1">
+                    <span className="text-3xl font-bold text-white">$8</span>
+                    <span className="text-sm text-white/60">/mo</span>
+                  </div>
+                  <span className="mt-2 inline-block px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider bg-violet-500/30 text-violet-100">
+                    7-DAY FREE TRIAL
+                  </span>
+                  <p className="mt-3 text-xs text-white/65 leading-relaxed">
+                    Upload your profile, get listed in the entertainer directory, and receive booking inquiries.
+                  </p>
+                  <ul className="mt-3 space-y-1.5 text-xs text-white/75">
+                    {["Create your profile", "Upload photos & videos", "List your genres & skills", "Get discovered by agents", "Receive booking inquiries"].map((f) => (
+                      <li key={f} className="flex items-center gap-2">
+                        <Check className="h-3.5 w-3.5 text-violet-300 shrink-0" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                </button>
+
+                {/* Featured */}
+                <button
+                  type="button"
+                  onClick={() => setPlan("entertainer_featured")}
+                  className={`relative text-left rounded-2xl border p-4 transition-all ${
+                    selectedKey === "entertainer_featured"
+                      ? "border-amber-400 bg-amber-500/10 shadow-[0_0_0_2px_hsl(45_90%_60%/0.25)]"
+                      : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                  }`}
+                >
+                  {selectedKey === "entertainer_featured" && (
+                    <div className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-amber-500 flex items-center justify-center">
+                      <Check className="h-3.5 w-3.5 text-white" />
+                    </div>
+                  )}
+                  <div className="h-11 w-11 rounded-xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center">
+                    <Crown className="h-5 w-5 text-amber-300" />
+                  </div>
+                  <p className="mt-3 font-semibold text-white">Featured Performer</p>
+                  <div className="mt-1 flex items-baseline gap-1">
+                    <span className="text-3xl font-bold text-white">$14</span>
+                    <span className="text-sm text-white/60">/mo</span>
+                  </div>
+                  <span className="mt-2 inline-block px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider bg-amber-500/30 text-amber-100">
+                    7-DAY FREE TRIAL
+                  </span>
+                  <p className="mt-3 text-xs text-white/65 leading-relaxed">
+                    Everything in Basic, plus priority placement and more ways to get booked.
+                  </p>
+                  <ul className="mt-3 space-y-1.5 text-xs text-white/75">
+                    {["Everything in Basic", "Priority placement in search", "Featured badge on profile", "Pushed to the front for prime opportunities", "Direct message with managers", "24/7 account support"].map((f) => (
+                      <li key={f} className="flex items-center gap-2">
+                        <Check className="h-3.5 w-3.5 text-amber-300 shrink-0" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                </button>
+              </div>
+            </div>
+
+            {/* Step 2: Account */}
+            <div className="mt-8">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="h-6 w-6 rounded-full bg-violet-500/20 border border-violet-400/40 text-violet-200 text-xs font-bold flex items-center justify-center">2</span>
+                <span className="text-xs font-bold tracking-wider text-violet-300">CREATE YOUR ACCOUNT</span>
+              </div>
+
+              <form onSubmit={handleSignup} className="space-y-3">
+                <Input
+                  type="text"
+                  placeholder="Full Name"
+                  value={signupName}
+                  onChange={(e) => setSignupName(e.target.value)}
+                  required
+                  className="h-12 bg-white/[0.04] border-white/10 text-white placeholder:text-white/40 focus-visible:ring-violet-500"
+                />
+                <Input
+                  type="email"
+                  placeholder="Email Address"
+                  value={signupEmail}
+                  onChange={(e) => setSignupEmail(e.target.value)}
+                  required
+                  className="h-12 bg-white/[0.04] border-white/10 text-white placeholder:text-white/40 focus-visible:ring-violet-500"
+                />
+                <div className="relative">
+                  <Input
+                    type={showSignupPassword ? "text" : "password"}
+                    placeholder="Password"
+                    value={signupPassword}
+                    onChange={(e) => setSignupPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    className="h-12 pr-10 bg-white/[0.04] border-white/10 text-white placeholder:text-white/40 focus-visible:ring-violet-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowSignupPassword(!showSignupPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white"
+                  >
+                    {showSignupPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="mt-2 w-full h-13 py-3.5 text-base font-semibold rounded-xl bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-400 hover:opacity-95 shadow-[0_10px_40px_-10px_rgba(236,72,153,0.6)]"
+                >
+                  {loading ? "Creating account..." : "Start My 7-Day Free Trial"}
+                </Button>
+
+                <p className="flex items-center justify-center gap-2 text-xs text-white/55">
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  Secure payments. Cancel anytime.
+                </p>
+              </form>
+
+              <p className="mt-6 text-center text-xs text-white/50">
+                By creating an account, you agree to our{" "}
+                <a href="#" className="text-violet-300 hover:underline">Terms of Service</a> and{" "}
+                <a href="#" className="text-violet-300 hover:underline">Privacy Policy</a>.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom trust strip */}
+        <div className="border-t border-white/5 mt-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-2 md:grid-cols-4 gap-6">
+            {[
+              { icon: ShieldCheck, color: "text-violet-300 bg-violet-500/15 border-violet-400/30", title: "Secure & Safe", desc: "Your data is protected with industry-leading security." },
+              { icon: Star, color: "text-pink-300 bg-pink-500/15 border-pink-400/30", title: "No Long-Term Contracts", desc: "Cancel anytime. No hidden fees." },
+              { icon: Users, color: "text-amber-300 bg-amber-500/15 border-amber-400/30", title: "Trusted by Pros", desc: "Used by thousands of performers and entertainers." },
+              { icon: MessageCircle, color: "text-cyan-300 bg-cyan-500/15 border-cyan-400/30", title: "24/7 Support", desc: "We're here to help you succeed." },
+            ].map((b) => {
+              const I = b.icon;
+              return (
+                <div key={b.title} className="flex items-start gap-3">
+                  <div className={`h-10 w-10 rounded-xl border flex items-center justify-center ${b.color}`}>
+                    <I className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-white">{b.title}</p>
+                    <p className="text-xs text-white/55">{b.desc}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-primary/10">
       <Link 

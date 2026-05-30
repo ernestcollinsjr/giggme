@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle2, Clock, Loader2, Sparkles } from "lucide-react";
+import { CheckCircle2, Clock, Loader2, Sparkles, Settings } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
 
 interface SubStatus {
   subscribed: boolean;
@@ -33,8 +35,37 @@ const PLAN_NAMES: Record<string, string> = {
 
 export default function SubscriptionSuccess() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
+  const [portalLoading, setPortalLoading] = useState(false);
   const [data, setData] = useState<SubStatus | null>(null);
+
+  const openCustomerPortal = async () => {
+    setPortalLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { navigate("/auth"); return; }
+      const { data, error } = await supabase.functions.invoke("customer-portal", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      } else {
+        throw new Error("No portal URL returned");
+      }
+    } catch (e: any) {
+      toast({
+        title: "Couldn't open billing portal",
+        description: e?.message ?? "Please try again in a moment.",
+        variant: "destructive",
+      });
+    } finally {
+      setPortalLoading(false);
+    }
+  };
+
+
 
   const fetchStatus = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -163,6 +194,21 @@ export default function SubscriptionSuccess() {
         )}
 
         <CardContent className="pt-0 space-y-2">
+          {!loading && data?.subscribed && (
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={openCustomerPortal}
+              disabled={portalLoading}
+            >
+              {portalLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Settings className="mr-2 h-4 w-4" />
+              )}
+              Manage subscription
+            </Button>
+          )}
           <Button className="w-full" onClick={() => navigate("/dashboard")}>
             Go to dashboard
           </Button>
@@ -172,6 +218,7 @@ export default function SubscriptionSuccess() {
             </Button>
           )}
         </CardContent>
+
       </Card>
     </div>
   );

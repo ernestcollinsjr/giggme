@@ -236,7 +236,7 @@ const EntertainerMarketplace = () => {
         </div>
 
         {/* Entertainers Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
           {filteredEntertainers.length === 0 ? (
             <Card className="col-span-full border-dashed">
               <CardContent className="py-12 text-center">
@@ -250,7 +250,7 @@ const EntertainerMarketplace = () => {
           ) : (
             filteredEntertainers.map((entertainer) => (
               <Card key={entertainer.id} className="border-border/50 overflow-hidden hover:border-primary/30 transition-colors">
-                <div className="relative h-48 bg-gradient-to-br from-primary/20 to-secondary/20">
+                <div className="relative aspect-square bg-gradient-to-br from-primary/20 to-secondary/20">
                   {entertainer.profile?.photo_urls?.[0] ? (
                     <img 
                       src={entertainer.profile.photo_urls[0]}
@@ -259,64 +259,41 @@ const EntertainerMarketplace = () => {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <Music className="h-16 w-16 text-muted-foreground/30" />
+                      <Music className="h-10 w-10 text-muted-foreground/30" />
                     </div>
                   )}
                   <button
                     onClick={() => togglePreferred(entertainer.user_id)}
-                    className="absolute top-3 right-3 p-2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors"
+                    className="absolute top-2 right-2 p-1.5 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors"
                   >
                     {preferredIds.has(entertainer.user_id) ? (
-                      <Heart className="h-5 w-5 text-red-500 fill-red-500" />
+                      <Heart className="h-4 w-4 text-red-500 fill-red-500" />
                     ) : (
-                      <Heart className="h-5 w-5 text-muted-foreground" />
+                      <Heart className="h-4 w-4 text-muted-foreground" />
                     )}
                   </button>
                 </div>
-                <CardContent className="p-4">
-                  <div className="mb-3">
-                    <h3 className="font-semibold text-lg">
-                      {entertainer.stage_name || entertainer.profile?.name || "Unknown"}
-                    </h3>
-                    {entertainer.stage_name && entertainer.profile?.name && (
-                      <p className="text-sm text-muted-foreground">{entertainer.profile.name}</p>
-                    )}
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {entertainer.genre && (
-                      <Badge variant="secondary">{entertainer.genre}</Badge>
-                    )}
-                    {entertainer.years_experience && (
-                      <Badge variant="outline">{entertainer.years_experience} years</Badge>
-                    )}
-                  </div>
-                  
-                  {entertainer.profile?.bio && (
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                      {entertainer.profile.bio}
-                    </p>
+                <CardContent className="p-3">
+                  <h3 className="font-semibold text-sm truncate">
+                    {entertainer.stage_name || entertainer.profile?.name || "Unknown"}
+                  </h3>
+                  {entertainer.genre && (
+                    <p className="text-xs text-muted-foreground truncate mb-2">{entertainer.genre}</p>
                   )}
-                  
-                  <div className="flex items-center justify-between">
-                    {entertainer.rate_range && (
-                      <span className="text-sm font-medium text-green-600">
-                        {entertainer.rate_range}
-                      </span>
-                    )}
-                    <Button 
-                      size="sm"
-                      onClick={() => handleBook(entertainer.user_id)}
-                    >
-                      <Calendar className="h-4 w-4 mr-2" />
-                      Book Now
-                    </Button>
-                  </div>
+                  <Button 
+                    size="sm"
+                    className="w-full h-7 text-xs"
+                    onClick={() => handleBook(entertainer.user_id)}
+                  >
+                    <Calendar className="h-3 w-3 mr-1" />
+                    Book
+                  </Button>
                 </CardContent>
               </Card>
             ))
           )}
         </div>
+
       </main>
 
       {venueId && (

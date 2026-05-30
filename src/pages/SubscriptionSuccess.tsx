@@ -227,8 +227,82 @@ export default function SubscriptionSuccess() {
                 You can cancel anytime before {formatDate(data.trial_end)} and you won't be charged.
               </p>
             )}
+
+            {data.subscribed && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-medium flex items-center gap-2">
+                    <Receipt className="h-4 w-4 text-muted-foreground" />
+                    Billing history
+                  </h3>
+                  {!invoicesLoading && invoices && invoices.length > 0 && (
+                    <span className="text-xs text-muted-foreground">
+                      Last {invoices.length}
+                    </span>
+                  )}
+                </div>
+                <div className="rounded-lg border border-border/60 overflow-hidden">
+                  {invoicesLoading ? (
+                    <div className="flex items-center justify-center py-6">
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : !invoices || invoices.length === 0 ? (
+                    <p className="text-xs text-muted-foreground text-center py-6 px-4">
+                      No invoices yet. Your first charge will appear here.
+                    </p>
+                  ) : (
+                    <ul className="divide-y divide-border/60">
+                      {invoices.map((inv) => {
+                        const dateIso = inv.paid_at ?? inv.created;
+                        const amount = (inv.amount_paid || inv.amount_due) / 100;
+                        return (
+                          <li
+                            key={inv.id}
+                            className="flex items-center justify-between gap-3 px-3 py-2.5 hover:bg-muted/40 transition-colors"
+                          >
+                            <div className="min-w-0 flex-1">
+                              <div className="text-sm font-medium truncate">
+                                {new Intl.NumberFormat(undefined, {
+                                  style: "currency",
+                                  currency: inv.currency.toUpperCase(),
+                                }).format(amount)}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {formatDate(dateIso)}
+                                {inv.number && (
+                                  <span className="ml-1.5 opacity-60">· {inv.number}</span>
+                                )}
+                              </div>
+                            </div>
+                            <Badge
+                              variant={inv.status === "paid" ? "default" : "secondary"}
+                              className="capitalize text-[10px] h-5"
+                            >
+                              {inv.status ?? "—"}
+                            </Badge>
+                            {inv.hosted_invoice_url && (
+                              <a
+                                href={inv.hosted_invoice_url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-muted-foreground hover:text-foreground transition-colors"
+                                aria-label="View invoice"
+                              >
+                                <ExternalLink className="h-3.5 w-3.5" />
+                              </a>
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            )}
           </CardContent>
         )}
+
+
 
         <CardContent className="pt-0 space-y-2">
           {!loading && data?.subscribed && (

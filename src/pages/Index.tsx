@@ -521,13 +521,13 @@ const Index = () => {
           <div className="flex flex-col sm:flex-row items-stretch gap-3">
             <button
               onClick={() => navigate("/get-started")}
-              className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-500 to-violet-600 hover:from-blue-400 hover:to-violet-500 shadow-xl shadow-violet-600/30"
+              className="inline-flex whitespace-nowrap items-center justify-center gap-2 h-12 px-5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-violet-600 hover:from-blue-400 hover:to-violet-500 shadow-xl shadow-violet-600/30"
             >
               Start Your Free Trial <ArrowRight className="h-4 w-4" />
             </button>
             <button
               onClick={() => navigate("/auth")}
-              className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl font-medium text-white border border-white/15 hover:bg-white/5"
+              className="inline-flex whitespace-nowrap items-center justify-center gap-2 h-12 px-5 rounded-xl text-sm font-medium text-white border border-white/15 hover:bg-white/5"
             >
               <Calendar className="h-4 w-4" /> Schedule a Demo
             </button>

@@ -82,7 +82,7 @@ const Pricing = () => {
     {
       name: "Booking Manager",
       price: "$49.99",
-      description: "For booking managers - manage up to 5 groups",
+      description: "Everything you need to book talent",
       icon: Briefcase,
       color: "text-accent",
       bgColor: "bg-accent/10",

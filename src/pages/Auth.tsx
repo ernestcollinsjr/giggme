@@ -106,6 +106,9 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [role, setRole] = useState<"booking_manager" | "entertainer" | "booking_manager" | "artist" | "booking_manager">(entertainerPlan ? "artist" : "booking_manager");
   const [venuePricingType, setVenuePricingType] = useState<"subscription" | "one_time">("subscription");
+  const [selectedPlanKey, setSelectedPlanKey] = useState<SignupPlanKey>("manager");
+  const selectedPlan = SIGNUP_PLANS[selectedPlanKey];
+
   
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");

@@ -327,7 +327,7 @@ const FindEntertainers = () => {
                   Featured Performer
                 </h3>
                 <div className="mt-4 flex items-baseline justify-center gap-1">
-                  <span className="text-5xl font-bold text-white">$14</span>
+                  <span className="text-5xl font-bold text-white">$13.99</span>
                   <span className="text-white/60 text-base">/mo</span>
                 </div>
                 <p className="mt-1 text-xs text-violet-200/80">Prime placement + featured badge</p>

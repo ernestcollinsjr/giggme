@@ -384,7 +384,7 @@ const FindEntertainers = () => {
                         src={photo}
                         alt={displayName}
                         loading="lazy"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
@@ -415,7 +415,7 @@ const FindEntertainers = () => {
                     loading="lazy"
                     width={1024}
                     height={1024}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                   />
                 </div>
                 <div className="p-3">

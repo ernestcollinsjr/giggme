@@ -13,7 +13,23 @@ interface SubStatus {
   trial_end: string | null;
   subscription_end: string | null;
   product_id: string | null;
+  price_id: string | null;
+  amount: number | null;
+  currency: string | null;
+  interval: string | null;
+  cancel_at_period_end: boolean;
 }
+
+const PLAN_NAMES: Record<string, string> = {
+  price_1TcATOEPiAZgF8Me2TkOBbG0: "Entertainer",
+  price_1TcATsEPiAZgF8MeuJY76UlD: "Featured Entertainer",
+  price_1SLNgmEPiAZgF8MeOXGfKYvX: "Booking Manager",
+  price_1SLNn8EPiAZgF8MeCFVMdvWR: "Entertainer",
+  price_1Sfl1yEPiAZgF8MerV2S8Hcf: "Band Manager",
+  price_1Sfl29EPiAZgF8Me7Z7r8ty8: "Booking Agent",
+  price_1Sj4nrEPiAZgF8MeCOUpkIfg: "Venue Owner",
+};
+
 
 export default function SubscriptionSuccess() {
   const navigate = useNavigate();
@@ -93,6 +109,24 @@ export default function SubscriptionSuccess() {
         {!loading && data && (
           <CardContent className="space-y-4">
             <div className="rounded-lg border border-border/60 divide-y divide-border/60">
+              <Row label="Plan">
+                <span className="text-sm font-medium">
+                  {(data.price_id && PLAN_NAMES[data.price_id]) || "Subscription"}
+                </span>
+              </Row>
+              {data.amount != null && data.currency && (
+                <Row label="Price">
+                  <span className="text-sm">
+                    {new Intl.NumberFormat(undefined, {
+                      style: "currency",
+                      currency: data.currency.toUpperCase(),
+                    }).format(data.amount / 100)}
+                    {data.interval && (
+                      <span className="text-muted-foreground">/{data.interval}</span>
+                    )}
+                  </span>
+                </Row>
+              )}
               <Row label="Status">
                 <Badge variant={data.is_trial ? "secondary" : "default"} className="capitalize">
                   {data.status?.replace("_", " ") ?? "unknown"}
@@ -107,11 +141,18 @@ export default function SubscriptionSuccess() {
                 </Row>
               )}
               {data.subscription_end && (
-                <Row label={data.is_trial ? "First charge" : "Renews"}>
+                <Row label={
+                  data.cancel_at_period_end
+                    ? "Ends"
+                    : data.is_trial
+                    ? "First charge"
+                    : "Renews"
+                }>
                   <span className="text-sm">{formatDate(data.subscription_end)}</span>
                 </Row>
               )}
             </div>
+
 
             {data.is_trial && (
               <p className="text-xs text-muted-foreground text-center">

@@ -92,3 +92,5 @@ verify_jwt = false
 
 [functions.expire-replacement-requests]
 verify_jwt = false
+[functions.send-demo-request]
+verify_jwt = false

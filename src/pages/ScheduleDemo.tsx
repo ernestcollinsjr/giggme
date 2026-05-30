@@ -112,6 +112,7 @@ export default function ScheduleDemo() {
 
   const submit = async () => {
     setSubmitting(true);
+    const scheduledFor = date ? `${format(date, "yyyy-MM-dd")} ${time}` : null;
     try {
       // Best-effort save; ignore failures so UX still completes
       await supabase.from("demo_requests" as any).insert({
@@ -122,10 +123,26 @@ export default function ScheduleDemo() {
         name,
         email,
         phone,
-        scheduled_for: date ? `${format(date, "yyyy-MM-dd")} ${time}` : null,
+        scheduled_for: scheduledFor,
       } as any);
     } catch {
       // noop
+    }
+    try {
+      await supabase.functions.invoke("send-demo-request", {
+        body: {
+          audience,
+          role,
+          teamSize: isManager ? teamSize : null,
+          challenges,
+          name,
+          email,
+          phone,
+          scheduledFor,
+        },
+      });
+    } catch (e) {
+      console.error("Demo email failed", e);
     } finally {
       setSubmitting(false);
       setStep(6);

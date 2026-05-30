@@ -122,8 +122,8 @@ const Index = () => {
     },
     {
       name: "Booking Manager",
-      price: "Free",
-      tagline: "Free for up to 5 groups",
+      price: "$39.99",
+      tagline: "Manage up to 5 groups",
       features: [
         "Multi-group management",
         "Artist discovery",

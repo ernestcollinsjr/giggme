@@ -266,12 +266,6 @@ const Index = () => {
               >
                 Start Free Trial <ArrowRight className="h-4 w-4" />
               </button>
-              <button
-                onClick={() => navigate("/auth")}
-                className="inline-flex items-center gap-2 h-12 px-6 rounded-xl font-medium text-white border border-white/15 hover:bg-white/5 transition-all"
-              >
-                <Play className="h-4 w-4 fill-current" /> Watch 2-Minute Demo
-              </button>
             </div>
 
             <div className="mt-10 flex items-center gap-4">

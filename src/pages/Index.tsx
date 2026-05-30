@@ -78,67 +78,72 @@ const Index = () => {
     }
   };
 
-  const categories = [
+  const features = [
+    { icon: Calendar, title: "Gig Scheduling", desc: "Create gigs and assign performers in seconds.", color: "text-blue-400", bg: "bg-blue-500/10" },
+    { icon: Users, title: "Performer Roster", desc: "Track availability, bookings, and performer details.", color: "text-orange-400", bg: "bg-orange-500/10" },
+    { icon: MapPin, title: "Arrival Tracking", desc: "See live ETAs and get notified when they arrive.", color: "text-violet-400", bg: "bg-violet-500/10" },
+    { icon: Bell, title: "Automated Reminders", desc: "Never send another text. GiggMe does it for you.", color: "text-emerald-400", bg: "bg-emerald-500/10" },
+    { icon: MessageSquare, title: "Team Messaging", desc: "Communicate with your entire team in one place.", color: "text-blue-400", bg: "bg-blue-500/10" },
+    { icon: DollarIcon, title: "Payment Tracking", desc: "Track payments, balances, and payment history.", color: "text-amber-400", bg: "bg-amber-500/10" },
+  ];
+
+  const steps = [
+    { n: 1, icon: UserPlus2, title: "Add Your Performers", desc: "Build your roster and manage availability." },
+    { n: 2, icon: Calendar, title: "Create a Gig", desc: "Add details, location, time, and pay." },
+    { n: 3, icon: Users, title: "Assign Your Team", desc: "Invite performers and confirm the gig." },
+    { n: 4, icon: Send, title: "Automate Communication", desc: "Reminders, updates, and changes sent automatically." },
+    { n: 5, icon: CheckCircle2, title: "Track the Event Live", desc: "Monitor arrivals, messages, and payments in real-time." },
+  ];
+
+  const testimonials = [
+    { quote: "GiggMe has completely changed how we manage our band. No more text chains and missed details.", name: "David R.", role: "Band Leader", avatar: avatar1 },
+    { quote: "The arrival tracking feature alone is worth every penny. I always know exactly when my performers arrive.", name: "Michelle T.", role: "Entertainment Manager", avatar: avatar2 },
+    { quote: "Our entire team stays on the same page now. It's a game changer for our production company.", name: "Jason L.", role: "Production Director", avatar: avatar3 },
+  ];
+
+  const plans = [
     {
-      icon: Music,
-      title: "Musical Acts",
-      desc: "Groups, DJs, Ensembles, Singers & more",
-      iconBg: "bg-purple-500/15 text-purple-400",
-      tile: "bg-purple-500",
-      accent: "text-purple-400",
+      name: "Artist / Musician",
+      price: "$10.99",
+      tagline: "Showcase your talent and get discovered",
+      features: [
+        "Professional artist profile",
+        "Upload performance videos",
+        "Photo gallery",
+        "Availability calendar",
+        "Connect with booking managers",
+      ],
+      featured: false,
     },
     {
-      icon: Mic,
-      title: "Artists & Performers",
-      desc: "Solo artists, Vocalists, Instrumentalists & more",
-      iconBg: "bg-orange-500/15 text-orange-400",
-      tile: "bg-orange-500",
-      accent: "text-orange-400",
+      name: "Group Leaders",
+      price: "$19.99",
+      tagline: "Everything you need to run your band",
+      features: [
+        "Real-time location sharing",
+        "SMS/Push notifications",
+        "Auto location tracking",
+        "Unlimited group members",
+        "AI group assistant",
+        "Priority support",
+      ],
+      featured: true,
     },
     {
-      icon: Speaker,
-      title: "Sound & Production",
-      desc: "Sound engineers, Lighting, AV crews & more",
-      iconBg: "bg-emerald-500/15 text-emerald-400",
-      tile: "bg-emerald-500",
-      accent: "text-emerald-400",
-    },
-    {
-      icon: Calendar,
-      title: "Event Services",
-      desc: "MCs, Hosts, Dancers, Photographers & more",
-      iconBg: "bg-blue-500/15 text-blue-400",
-      tile: "bg-blue-500",
-      accent: "text-blue-400",
+      name: "Booking Manager",
+      price: "Free",
+      tagline: "Free for up to 5 groups",
+      features: [
+        "Multi-group management",
+        "Artist discovery",
+        "Location tracking",
+        "Direct messaging",
+        "Booking calendar",
+      ],
+      featured: false,
     },
   ];
 
-  const features = [
-    {
-      icon: Heart,
-      title: "Smart Matching",
-      desc: "We find the best talent for your unique needs.",
-      color: "text-pink-400",
-    },
-    {
-      icon: Clock,
-      title: "Automated Scheduling",
-      desc: "Handles availability, contracts and recurring bookings.",
-      color: "text-purple-400",
-    },
-    {
-      icon: ShieldCheck,
-      title: "Secure & Reliable",
-      desc: "Verified talent and secure payments you can trust.",
-      color: "text-emerald-400",
-    },
-    {
-      icon: Settings2,
-      title: "Manage Everything",
-      desc: "All your bookings and communication in one place.",
-      color: "text-blue-400",
-    },
-  ];
 
   return (
     <div className="min-h-screen bg-[hsl(230_35%_7%)] text-foreground overflow-x-hidden">

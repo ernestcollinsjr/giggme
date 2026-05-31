@@ -79,9 +79,10 @@ function AppShellInner({ userRole, children }: AppShellProps) {
     .toUpperCase();
 
   return (
-    <>
+    <InsideAppShellContext.Provider value={true}>
       {/* Mobile: pass-through, BottomNav and TopNav inside children handle nav */}
       <div className="lg:hidden">{children}</div>
+
 
       {/* Desktop: sidebar + topbar shell */}
       <div className="hidden lg:block">

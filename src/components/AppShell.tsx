@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useState, createContext, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Bell, HelpCircle, ChevronDown } from "lucide-react";
 import {
@@ -19,6 +19,10 @@ interface AppShellProps {
   children: ReactNode;
 }
 
+// When AppShell is rendered by a parent layout, nested per-page AppShell calls
+// become passthrough so the persistent sidebar above them stays mounted.
+const InsideAppShellContext = createContext(false);
+
 /**
  * AppShell wraps dashboard pages with a desktop sidebar layout (lg+),
  * while preserving the existing mobile experience (TopNav + BottomNav).
@@ -27,6 +31,14 @@ interface AppShellProps {
  * TopNav/BottomNav (those nav components hide themselves at lg+).
  */
 export function AppShell({ userRole, children }: AppShellProps) {
+  const alreadyInside = useContext(InsideAppShellContext);
+  if (alreadyInside) {
+    return <>{children}</>;
+  }
+  return <AppShellInner userRole={userRole}>{children}</AppShellInner>;
+}
+
+function AppShellInner({ userRole, children }: AppShellProps) {
   const navigate = useNavigate();
   const roleLabel =
     userRole === "super_admin"
@@ -67,9 +79,10 @@ export function AppShell({ userRole, children }: AppShellProps) {
     .toUpperCase();
 
   return (
-    <>
+    <InsideAppShellContext.Provider value={true}>
       {/* Mobile: pass-through, BottomNav and TopNav inside children handle nav */}
       <div className="lg:hidden">{children}</div>
+
 
       {/* Desktop: sidebar + topbar shell */}
       <div className="hidden lg:block">
@@ -119,6 +132,7 @@ export function AppShell({ userRole, children }: AppShellProps) {
           </div>
         </SidebarProvider>
       </div>
-    </>
+    </InsideAppShellContext.Provider>
   );
+
 }

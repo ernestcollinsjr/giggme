@@ -42,6 +42,7 @@ import BookingRequestsPage from "./pages/BookingRequestsPage";
 import ScheduleDemo from "./pages/ScheduleDemo";
 import Contact from "./pages/Contact";
 import SubscriptionSuccess from "./pages/SubscriptionSuccess";
+import AppLayout from "./components/AppLayout";
 
 
 const queryClient = new QueryClient();
@@ -58,42 +59,45 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<Auth />} />
             <Route path="/get-started" element={<GetStarted />} />
-            <Route path="/profile-setup" element={<ProfileSetup />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/chat" element={<Chat />} />
-            <Route path="/messages" element={<Messages />} />
-            <Route path="/bookings" element={<Bookings />} />
-            <Route path="/rehearsals" element={<Rehearsals />} />
-            <Route path="/setlist" element={<Setlist />} />
-            <Route path="/setlist/lyrics/:songId" element={<SongLyrics />} />
+            <Route element={<AppLayout />}>
+              <Route path="/profile-setup" element={<ProfileSetup />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/chat" element={<Chat />} />
+              <Route path="/messages" element={<Messages />} />
+              <Route path="/bookings" element={<Bookings />} />
+              <Route path="/rehearsals" element={<Rehearsals />} />
+              <Route path="/setlist" element={<Setlist />} />
+              <Route path="/setlist/lyrics/:songId" element={<SongLyrics />} />
+              <Route path="/artist-profile" element={<ProfileSetup />} />
+              <Route path="/artist-profile/:userId" element={<PerformerProfileView />} />
+              <Route path="/artists" element={<ArtistsDiscovery />} />
+              <Route path="/tours" element={<Tours />} />
+              <Route path="/tours/:tourId" element={<TourDetail />} />
+              <Route path="/booking-manager" element={<BookingManagerAdmin />} />
+              <Route path="/venue-dashboard" element={<VenueDashboard />} />
+              <Route path="/entertainers" element={<EntertainerMarketplace />} />
+              <Route path="/entertainer-dashboard" element={<EntertainerDashboard />} />
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/booking-admin" element={<BookingManagerAdmin />} />
+              <Route path="/notifications" element={<Notifications />} />
+              <Route path="/schedule-reminder" element={<ScheduleReminder />} />
+              <Route path="/find-entertainers" element={<FindEntertainers />} />
+              <Route path="/payment-scheduler" element={<PaymentSchedulerPage />} />
+              <Route path="/booking-requests" element={<BookingRequestsPage />} />
+              <Route path="/subscription-success" element={<SubscriptionSuccess />} />
+            </Route>
+
             <Route path="/pricing" element={<Pricing />} />
-            <Route path="/artist-profile" element={<ProfileSetup />} />
-            <Route path="/artist-profile/:userId" element={<PerformerProfileView />} />
-            <Route path="/artists" element={<ArtistsDiscovery />} />
-            <Route path="/tours" element={<Tours />} />
-            <Route path="/tours/:tourId" element={<TourDetail />} />
             <Route path="/tour-invite/:token" element={<TourInvite />} />
             <Route path="/band-invite/:token" element={<BandInvite />} />
-            <Route path="/booking-manager" element={<BookingManagerAdmin />} />
-            
-            <Route path="/venue-dashboard" element={<VenueDashboard />} />
-            <Route path="/entertainers" element={<EntertainerMarketplace />} />
-            <Route path="/entertainer-dashboard" element={<EntertainerDashboard />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/booking-admin" element={<BookingManagerAdmin />} />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="/schedule-reminder" element={<ScheduleReminder />} />
             <Route path="/shared-setlist/:token" element={<SharedSetlist />} />
             <Route path="/rate/:artistId" element={<RatePerformer />} />
             <Route path="/open" element={<OpenExternal />} />
             <Route path="/booking-request/:id" element={<BookingRequestResponse />} />
             <Route path="/booking-response" element={<BookingResponse />} />
-            <Route path="/find-entertainers" element={<FindEntertainers />} />
-            <Route path="/payment-scheduler" element={<PaymentSchedulerPage />} />
-            <Route path="/booking-requests" element={<BookingRequestsPage />} />
             <Route path="/schedule-demo" element={<ScheduleDemo />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/subscription-success" element={<SubscriptionSuccess />} />
+
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

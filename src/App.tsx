@@ -42,6 +42,7 @@ import BookingRequestsPage from "./pages/BookingRequestsPage";
 import ScheduleDemo from "./pages/ScheduleDemo";
 import Contact from "./pages/Contact";
 import SubscriptionSuccess from "./pages/SubscriptionSuccess";
+import AppLayout from "./components/AppLayout";
 
 
 const queryClient = new QueryClient();

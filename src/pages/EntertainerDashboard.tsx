@@ -57,7 +57,7 @@ const EntertainerDashboard = () => {
 
   const setupRealtimeSubscription = () => {
     const channel = supabase
-      .channel("entertainer-bookings")
+      .channel(`entertainer-bookings-${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         {

@@ -39,7 +39,7 @@ export const BookingManagerClientLocations = () => {
 
       // Set up realtime subscription for the selected gig
       const channel = supabase
-        .channel(`booking-manager-gig-${selectedGigId}-locations`)
+        .channel(`booking-manager-gig-${selectedGigId}-locations-${Math.random().toString(36).slice(2)}`)
         .on(
           'postgres_changes',
           {

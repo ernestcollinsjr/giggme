@@ -457,7 +457,7 @@ const Dashboard = () => {
     if ((userRole !== "booking_manager" && userRole !== "super_admin") || !user) return;
 
     const channel = supabase
-      .channel('gig-members-dashboard')
+      .channel(`gig-members-dashboard-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         {

@@ -75,7 +75,7 @@ export function AvailabilityRequestManager({ bandId, onViewResponses }: Availabi
 
     // Subscribe to real-time updates for availability responses
     const channel = supabase
-      .channel('availability-responses-manager')
+      .channel(`availability-responses-manager-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         {

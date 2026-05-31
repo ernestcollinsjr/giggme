@@ -486,7 +486,7 @@ const Messages = () => {
 
     // Realtime subscription
     const channel = supabase
-      .channel("messages-page-realtime")
+      .channel(`messages-page-realtime-${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "messages" },

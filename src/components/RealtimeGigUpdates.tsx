@@ -35,7 +35,7 @@ export const RealtimeGigUpdates = ({ gigId }: { gigId: string }) => {
 
     // Subscribe to real-time updates
     const channel = supabase
-      .channel(`gig-${gigId}`)
+      .channel(`gig-${gigId}-${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         {

@@ -171,7 +171,7 @@ const Chat = () => {
 
       // Realtime subscription for new messages and updates (read receipts)
       const channel = supabase
-        .channel("messages-reactions-pins")
+        .channel(`messages-reactions-pins-${Math.random().toString(36).slice(2)}`)
         .on(
           "postgres_changes",
           { event: "INSERT", schema: "public", table: "messages" },

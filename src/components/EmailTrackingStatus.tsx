@@ -42,7 +42,7 @@ export function EmailTrackingStatus({ gigId, memberProfiles = [] }: EmailTrackin
 
     // Subscribe to realtime updates
     const channel = supabase
-      .channel(`email_tracking_${gigId}`)
+      .channel(`email_tracking_${gigId}-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         {

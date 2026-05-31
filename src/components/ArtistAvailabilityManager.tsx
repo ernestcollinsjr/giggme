@@ -72,7 +72,7 @@ export const ArtistAvailabilityManager = ({
 
     // Subscribe to real-time updates for availability responses
     const channel = supabase
-      .channel('availability-responses-artist-manager')
+      .channel(`availability-responses-artist-manager-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         {

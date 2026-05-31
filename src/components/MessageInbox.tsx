@@ -57,7 +57,7 @@ export const MessageInbox = ({ userId, onUnreadCountChange }: MessageInboxProps)
 
     // Realtime subscription
     const channel = supabase
-      .channel("inbox-messages")
+      .channel(`inbox-messages-${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "messages" },

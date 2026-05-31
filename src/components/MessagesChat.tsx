@@ -285,7 +285,7 @@ export const MessagesChat = ({
     fetchReactionsAndPins();
 
     const channel = supabase
-      .channel("messages-chat-realtime")
+      .channel(`messages-chat-realtime-${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "messages" },

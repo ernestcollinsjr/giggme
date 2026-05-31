@@ -226,7 +226,7 @@ const Bookings = () => {
     if (userRole !== "booking_manager") return;
 
     const channel = supabase
-      .channel('gig-members-bookings')
+      .channel(`gig-members-bookings-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         {

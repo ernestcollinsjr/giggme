@@ -67,7 +67,7 @@ const ArtistsDiscovery = () => {
   const fetchArtists = async () => {
     try {
       const [{ data, error }, { data: venuesData }] = await Promise.all([
-        (supabase as any).rpc("get_public_performers"),
+        (supabase as any).rpc("get_my_performers"),
         (supabase as any).rpc("get_performer_venues"),
       ]);
 

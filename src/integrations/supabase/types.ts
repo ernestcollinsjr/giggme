@@ -2320,6 +2320,26 @@ export type Database = {
           status: string
         }[]
       }
+      get_my_performers: {
+        Args: never
+        Returns: {
+          availability: string
+          bio: string
+          genre: string
+          genres: string[]
+          instrument: string
+          name: string
+          performer_category: string
+          photo_urls: string[]
+          preferred_pay: number
+          preferred_pay_hours: number
+          rate_range: string
+          stage_name: string
+          user_id: string
+          years_experience: number
+          youtube_videos: Json
+        }[]
+      }
       get_performer_venues: {
         Args: never
         Returns: {

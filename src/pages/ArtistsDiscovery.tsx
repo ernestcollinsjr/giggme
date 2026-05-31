@@ -195,6 +195,12 @@ const ArtistsDiscovery = () => {
                 onFocus={() => setShowSuggestions(true)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (suggestions.length > 0) {
+                      handleSelectArtist(suggestions[0]);
+                    } else if (filteredArtists.length > 0) {
+                      handleSelectArtist(filteredArtists[0]);
+                    }
                     setShowSuggestions(false);
                   }
                 }}

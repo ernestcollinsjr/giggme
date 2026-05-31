@@ -26,7 +26,7 @@ export const MemberLocationsMap = ({ gigId }: MemberLocationsMapProps) => {
 
     // Set up realtime subscription
     const channel = supabase
-      .channel(`gig-${gigId}-locations`)
+      .channel(`gig-${gigId}-locations-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         {

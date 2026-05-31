@@ -338,7 +338,7 @@ const Auth = () => {
       });
 
       const { error } = await supabase.auth.resetPasswordForEmail(validatedData.email, {
-        redirectTo: `${window.location.origin}/auth`,
+        redirectTo: `${window.location.origin}/reset-password`,
       });
 
       if (error) throw error;
@@ -385,13 +385,14 @@ const Auth = () => {
 
       toast({
         title: "Password updated!",
-        description: "Your password has been successfully changed.",
+        description: "Please log in with your new password.",
       });
-      
+
+      await supabase.auth.signOut();
       setIsResettingPassword(false);
       setNewPassword("");
       setConfirmPassword("");
-      navigate(postAuthPath);
+      navigate("/auth?passwordUpdated=1", { replace: true });
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         toast({

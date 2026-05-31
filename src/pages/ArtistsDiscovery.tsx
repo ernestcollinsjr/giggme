@@ -159,8 +159,8 @@ const ArtistsDiscovery = () => {
   }, [searchTerm, filteredArtists]);
 
   const handleSelectArtist = (artist: ArtistWithProfile) => {
-    setSearchTerm(artist.profile.name);
     setShowSuggestions(false);
+    navigate(`/artist-profile/${artist.user_id}`);
   };
 
   if (loading) {

@@ -134,7 +134,7 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
             <Button
               size="sm"
               className="mt-2 w-full bg-gradient-to-r from-blue-500 to-violet-600 hover:from-blue-400 hover:to-violet-500 text-white border-0 h-8 text-xs"
-              onClick={() => navigate("/messages")}
+              onClick={() => navigate("/contact")}
             >
               Contact Support
             </Button>

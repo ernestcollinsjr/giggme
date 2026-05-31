@@ -131,13 +131,27 @@ const Auth = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
-    // Check if user is coming from password reset email
-    supabase.auth.onAuthStateChange((event) => {
+    // Detect password recovery from URL hash (fires before auth listener can attach)
+    const hash = window.location.hash || "";
+    const search = window.location.search || "";
+    if (
+      hash.includes("type=recovery") ||
+      search.includes("type=recovery") ||
+      searchParams.get("type") === "recovery"
+    ) {
+      setIsResettingPassword(true);
+    }
+
+    // Also listen for the PASSWORD_RECOVERY event from Supabase
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") {
         setIsResettingPassword(true);
       }
     });
-  }, []);
+    return () => {
+      sub.subscription.unsubscribe();
+    };
+  }, [searchParams]);
 
   const redirectToEntertainerCheckout = async () => {
     try {

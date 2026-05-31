@@ -132,6 +132,7 @@ function AppShellInner({ userRole, children }: AppShellProps) {
           </div>
         </SidebarProvider>
       </div>
-    </>
+    </InsideAppShellContext.Provider>
   );
+
 }

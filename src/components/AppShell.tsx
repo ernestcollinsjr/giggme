@@ -108,7 +108,7 @@ function AppShellInner({ userRole, children }: AppShellProps) {
                     <NotificationBell />
                     <button
                       className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                      onClick={() => navigate("/messages")}
+                      onClick={() => navigate("/contact")}
                       aria-label="Help"
                     >
                       <HelpCircle className="h-5 w-5" />

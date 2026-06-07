@@ -189,7 +189,7 @@ const FindEntertainers = () => {
                   {subscribing ? (
                     <Loader2 className="h-5 w-5 animate-spin mr-2" />
                   ) : null}
-                  Join for Only $8.99/mo
+                  Start Free — Upgrade to Pro for $7.99/mo
                   <ArrowRight className="h-5 w-5 ml-2" />
                 </Button>
               )}

@@ -122,7 +122,7 @@ const Index = () => {
     {
       name: "BM Starter",
       price: "$29",
-      tagline: "For small booking managers getting started",
+      tagline: "For smaller roster booking managers",
       features: [
         "Up to 20 performers",
         "Scheduling",

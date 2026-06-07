@@ -127,8 +127,8 @@ const faqs = [
     icon: Star,
     color: "text-violet-400",
     bg: "bg-violet-500/15",
-    q: "What's a Featured Performer?",
-    a: "Featured Entertainers get priority placement in search results, an enhanced profile badge, and early access to new gig opportunities — for $13.99/month.",
+    q: "What's Performer Pro?",
+    a: "Performer Pro gets you unlimited videos, a featured profile, priority placement in search results, calendar availability, gig notifications, and booking history — for $7.99/month.",
   },
   {
     icon: HelpCircle,

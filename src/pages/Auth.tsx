@@ -38,17 +38,17 @@ const newPasswordSchema = z.object({
 
 const ENTERTAINER_PLANS: Record<string, { priceId: string; label: string; price: string; description: string; trial: string }> = {
   entertainer_basic: {
-    priceId: "price_1TcATOEPiAZgF8Me2TkOBbG0",
-    label: "Basic Profile",
-    price: "$8.99",
-    description: "Upload your profile, get listed in the entertainer directory, and receive booking inquiries.",
-    trial: "7-day free trial",
+    priceId: "",
+    label: "Free Plan",
+    price: "Free",
+    description: "Basic profile, one photo, one demo video, and basic contact information.",
+    trial: "Free forever",
   },
   entertainer_featured: {
     priceId: "price_1TcATsEPiAZgF8MeuJY76UlD",
-    label: "Featured Entertainer",
-    price: "$13.99",
-    description: "Prime placement at the front of the site, featured badge, and priority in search results.",
+    label: "Performer Pro",
+    price: "$7.99",
+    description: "Unlimited videos, featured profile, priority search, calendar, gig notifications, and booking history.",
     trial: "7-day free trial",
   },
 };
@@ -65,20 +65,20 @@ const SIGNUP_PLANS: Record<SignupPlanKey, {
   icon: "music" | "crown" | "users";
 }> = {
   entertainer: {
-    priceId: "price_1TcATOEPiAZgF8Me2TkOBbG0",
-    label: "Entertainer",
-    price: "$8.99",
-    description: "Showcase your talent, get booked for gigs, and grow your career.",
-    trial: "14-day free trial",
+    priceId: "",
+    label: "Free Plan",
+    price: "Free",
+    description: "Basic profile, one photo, one demo video, and basic contact information.",
+    trial: "Free forever",
     role: "artist",
     icon: "music",
   },
   featured: {
     priceId: "price_1TcATsEPiAZgF8MeuJY76UlD",
-    label: "Featured Entertainer",
-    price: "$13.99",
-    description: "Priority placement in search, featured badge, and boosted visibility.",
-    trial: "14-day free trial",
+    label: "Performer Pro",
+    price: "$7.99",
+    description: "Unlimited videos, featured profile, priority search, calendar, gig notifications, and booking history.",
+    trial: "7-day free trial",
     role: "artist",
     icon: "crown",
   },
@@ -535,19 +535,18 @@ const Auth = () => {
                   <div className="h-11 w-11 rounded-xl bg-violet-500/20 border border-violet-400/30 flex items-center justify-center">
                     <Music className="h-5 w-5 text-violet-300" />
                   </div>
-                  <p className="mt-3 font-semibold text-white">Basic Profile</p>
+                  <p className="mt-3 font-semibold text-white">Free Plan</p>
                   <div className="mt-1 flex items-baseline gap-1">
-                    <span className="text-3xl font-bold text-white">$8.99</span>
-                    <span className="text-sm text-white/60">/mo</span>
+                    <span className="text-3xl font-bold text-white">Free</span>
                   </div>
-                  <span className="mt-2 inline-block px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider bg-violet-500/30 text-violet-100">
-                    7-DAY FREE TRIAL
+                  <span className="mt-2 inline-block px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider bg-emerald-500/30 text-emerald-100">
+                    FREE FOREVER
                   </span>
                   <p className="mt-3 text-xs text-white/65 leading-relaxed">
-                    Upload your profile, get listed in the entertainer directory, and receive booking inquiries.
+                    Get listed quickly with the essentials — no credit card required.
                   </p>
                   <ul className="mt-3 space-y-1.5 text-xs text-white/75">
-                    {["Create your profile", "Upload photos & videos", "List your genres & skills", "Get discovered by agents", "Receive booking inquiries"].map((f) => (
+                    {["Basic profile", "One photo", "One demo video", "Basic contact information"].map((f) => (
                       <li key={f} className="flex items-center gap-2">
                         <Check className="h-3.5 w-3.5 text-violet-300 shrink-0" />
                         {f}
@@ -574,19 +573,19 @@ const Auth = () => {
                   <div className="h-11 w-11 rounded-xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center">
                     <Crown className="h-5 w-5 text-amber-300" />
                   </div>
-                  <p className="mt-3 font-semibold text-white">Featured Performer</p>
+                  <p className="mt-3 font-semibold text-white">Performer Pro</p>
                   <div className="mt-1 flex items-baseline gap-1">
-                    <span className="text-3xl font-bold text-white">$13.99</span>
+                    <span className="text-3xl font-bold text-white">$7.99</span>
                     <span className="text-sm text-white/60">/mo</span>
                   </div>
                   <span className="mt-2 inline-block px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider bg-amber-500/30 text-amber-100">
                     7-DAY FREE TRIAL
                   </span>
                   <p className="mt-3 text-xs text-white/65 leading-relaxed">
-                    Everything in Basic, plus priority placement and more ways to get booked.
+                    Everything you need to stand out and get booked faster.
                   </p>
                   <ul className="mt-3 space-y-1.5 text-xs text-white/75">
-                    {["Everything in Basic", "Priority placement in search", "Featured badge on profile", "Pushed to the front for prime opportunities", "Direct message with managers", "24/7 account support"].map((f) => (
+                    {["Unlimited videos", "Featured profile", "Priority in search results", "Calendar availability", "Gig notifications", "Booking history"].map((f) => (
                       <li key={f} className="flex items-center gap-2">
                         <Check className="h-3.5 w-3.5 text-amber-300 shrink-0" />
                         {f}

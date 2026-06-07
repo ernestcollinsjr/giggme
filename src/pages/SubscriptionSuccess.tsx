@@ -38,10 +38,10 @@ interface Invoice {
 
 
 const PLAN_NAMES: Record<string, string> = {
-  price_1TcATOEPiAZgF8Me2TkOBbG0: "Entertainer",
-  price_1TcATsEPiAZgF8MeuJY76UlD: "Featured Entertainer",
+  price_1TcATOEPiAZgF8Me2TkOBbG0: "Performer Pro",
+  price_1TcATsEPiAZgF8MeuJY76UlD: "Performer Pro",
   price_1SLNgmEPiAZgF8MeOXGfKYvX: "Booking Manager",
-  price_1SLNn8EPiAZgF8MeCFVMdvWR: "Entertainer",
+  price_1SLNn8EPiAZgF8MeCFVMdvWR: "Performer Pro",
   price_1Sfl1yEPiAZgF8MerV2S8Hcf: "Band Manager",
   price_1Sfl29EPiAZgF8Me7Z7r8ty8: "Booking Agent",
   price_1Sj4nrEPiAZgF8MeCOUpkIfg: "Venue Owner",

@@ -1299,7 +1299,7 @@ const ProfileSetup = () => {
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-foreground">Complete Your Subscription</h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Start your 14-day free trial at $8.99/mo to unlock all features.
+                    Start your 7-day free trial at $7.99/mo to unlock all Performer Pro features.
                   </p>
                   <Button 
                     onClick={handleSubscribe} 

@@ -65,7 +65,7 @@ const faqs = [
     color: "text-pink-400",
     bg: "bg-pink-500/15",
     q: "How much does GiggMe cost?",
-    a: "Entertainers: $8.99/month. Featured Entertainers: $13.99/month (priority placement in search).\nBooking Managers: $49.99/month with a free 14-day trial, no credit card required. Members invited by a manager are always free.",
+    a: "Performers: Free Plan (basic profile, one photo, one demo video, basic contact info). Performer Pro: $7.99/month (unlimited videos, featured profile, priority search, calendar, gig notifications, booking history).\nBooking Managers: $49.99/month with a free 14-day trial, no credit card required. Members invited by a manager are always free.",
   },
   {
     icon: CreditCard,
@@ -127,8 +127,8 @@ const faqs = [
     icon: Star,
     color: "text-violet-400",
     bg: "bg-violet-500/15",
-    q: "What's a Featured Performer?",
-    a: "Featured Entertainers get priority placement in search results, an enhanced profile badge, and early access to new gig opportunities — for $13.99/month.",
+    q: "What's Performer Pro?",
+    a: "Performer Pro gets you unlimited videos, a featured profile, priority placement in search results, calendar availability, gig notifications, and booking history — for $7.99/month.",
   },
   {
     icon: HelpCircle,

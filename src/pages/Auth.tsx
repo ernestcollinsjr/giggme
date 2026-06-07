@@ -535,19 +535,18 @@ const Auth = () => {
                   <div className="h-11 w-11 rounded-xl bg-violet-500/20 border border-violet-400/30 flex items-center justify-center">
                     <Music className="h-5 w-5 text-violet-300" />
                   </div>
-                  <p className="mt-3 font-semibold text-white">Basic Profile</p>
+                  <p className="mt-3 font-semibold text-white">Free Plan</p>
                   <div className="mt-1 flex items-baseline gap-1">
-                    <span className="text-3xl font-bold text-white">$8.99</span>
-                    <span className="text-sm text-white/60">/mo</span>
+                    <span className="text-3xl font-bold text-white">Free</span>
                   </div>
-                  <span className="mt-2 inline-block px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider bg-violet-500/30 text-violet-100">
-                    7-DAY FREE TRIAL
+                  <span className="mt-2 inline-block px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider bg-emerald-500/30 text-emerald-100">
+                    FREE FOREVER
                   </span>
                   <p className="mt-3 text-xs text-white/65 leading-relaxed">
-                    Upload your profile, get listed in the entertainer directory, and receive booking inquiries.
+                    Get listed quickly with the essentials — no credit card required.
                   </p>
                   <ul className="mt-3 space-y-1.5 text-xs text-white/75">
-                    {["Create your profile", "Upload photos & videos", "List your genres & skills", "Get discovered by agents", "Receive booking inquiries"].map((f) => (
+                    {["Basic profile", "One photo", "One demo video", "Basic contact information"].map((f) => (
                       <li key={f} className="flex items-center gap-2">
                         <Check className="h-3.5 w-3.5 text-violet-300 shrink-0" />
                         {f}

@@ -573,19 +573,19 @@ const Auth = () => {
                   <div className="h-11 w-11 rounded-xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center">
                     <Crown className="h-5 w-5 text-amber-300" />
                   </div>
-                  <p className="mt-3 font-semibold text-white">Featured Performer</p>
+                  <p className="mt-3 font-semibold text-white">Performer Pro</p>
                   <div className="mt-1 flex items-baseline gap-1">
-                    <span className="text-3xl font-bold text-white">$13.99</span>
+                    <span className="text-3xl font-bold text-white">$7.99</span>
                     <span className="text-sm text-white/60">/mo</span>
                   </div>
                   <span className="mt-2 inline-block px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider bg-amber-500/30 text-amber-100">
                     7-DAY FREE TRIAL
                   </span>
                   <p className="mt-3 text-xs text-white/65 leading-relaxed">
-                    Everything in Basic, plus priority placement and more ways to get booked.
+                    Everything you need to stand out and get booked faster.
                   </p>
                   <ul className="mt-3 space-y-1.5 text-xs text-white/75">
-                    {["Everything in Basic", "Priority placement in search", "Featured badge on profile", "Pushed to the front for prime opportunities", "Direct message with managers", "24/7 account support"].map((f) => (
+                    {["Unlimited videos", "Featured profile", "Priority in search results", "Calendar availability", "Gig notifications", "Booking history"].map((f) => (
                       <li key={f} className="flex items-center gap-2">
                         <Check className="h-3.5 w-3.5 text-amber-300 shrink-0" />
                         {f}

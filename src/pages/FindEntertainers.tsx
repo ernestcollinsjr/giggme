@@ -50,13 +50,13 @@ const STEPS = [
 ];
 
 const FEATURES = [
-  "Create a professional performer profile",
-  "Upload photos, videos & music clips",
-  "List your genres, instruments & skills",
+  "Unlimited performance videos",
+  "Featured profile placement",
+  "Priority in search results",
+  "Calendar availability management",
+  "Gig notifications in real time",
+  "Booking history & insights",
   "Get discovered by agents & booking managers",
-  "Receive booking inquiries & job offers",
-  "Priority placement in search results",
-  "24/7 account support",
 ];
 
 const TRUSTED_BY = ["Hard Rock Cafe", "Four Seasons", "The Ritz-Carlton", "Fleming's", "Marriott"];

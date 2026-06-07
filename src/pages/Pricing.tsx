@@ -80,7 +80,7 @@ const Pricing = () => {
     {
       name: "BM Starter",
       price: "$29",
-      description: "For small booking managers getting started",
+      description: "For smaller roster booking managers",
       icon: Briefcase,
       color: "text-accent",
       bgColor: "bg-accent/10",

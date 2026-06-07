@@ -296,48 +296,59 @@ const FindEntertainers = () => {
 
             {/* Plan cards */}
             <div className="grid sm:grid-cols-2 gap-5">
-              {/* Basic */}
+              {/* Free */}
               <div className="relative rounded-2xl border border-white/15 bg-white/[0.03] p-6 text-center flex flex-col">
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider bg-emerald-500/90 text-white shadow-md">
-                  7-DAY FREE TRIAL
+                  FREE FOREVER
                 </span>
-                <h3 className="mt-2 text-lg font-bold text-white">Basic Profile</h3>
+                <h3 className="mt-2 text-lg font-bold text-white">Free Plan</h3>
                 <div className="mt-4 flex items-baseline justify-center gap-1">
-                  <span className="text-5xl font-bold text-white">$8.99</span>
-                  <span className="text-white/60 text-base">/mo</span>
+                  <span className="text-5xl font-bold text-white">$0</span>
                 </div>
-                <p className="mt-1 text-xs text-white/55">Cancel anytime</p>
+                <p className="mt-1 text-xs text-white/55">No credit card required</p>
+                <ul className="mt-4 space-y-2 text-left text-xs text-white/70">
+                  <li className="flex gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-300 shrink-0 mt-0.5" /> Basic profile</li>
+                  <li className="flex gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-300 shrink-0 mt-0.5" /> One photo</li>
+                  <li className="flex gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-300 shrink-0 mt-0.5" /> One demo video</li>
+                  <li className="flex gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-300 shrink-0 mt-0.5" /> Basic contact information</li>
+                </ul>
                 <Button
-                  onClick={() => handleSubscribe(BASIC_PRICE_ID)}
-                  disabled={subscribing || isSubscribed}
+                  onClick={() => navigate(user ? "/artist-profile" : "/auth?mode=signup")}
                   variant="outline"
                   className="mt-6 w-full h-11 font-semibold rounded-xl border-white/20 text-white hover:bg-white/5"
                 >
-                  {subscribing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                  {isSubscribed ? "Subscribed" : "Start Free Trial"}
+                  Get Started Free
                 </Button>
               </div>
 
-              {/* Featured */}
+              {/* Performer Pro */}
               <div className="relative rounded-2xl border border-violet-400/40 bg-gradient-to-br from-violet-600/15 via-fuchsia-600/10 to-pink-500/10 p-6 text-center flex flex-col">
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider bg-gradient-to-r from-pink-500 to-orange-400 text-white shadow-md whitespace-nowrap">
                   MOST POPULAR
                 </span>
                 <h3 className="mt-2 text-lg font-bold bg-gradient-to-r from-fuchsia-300 to-violet-300 bg-clip-text text-transparent">
-                  Featured Performer
+                  Performer Pro
                 </h3>
                 <div className="mt-4 flex items-baseline justify-center gap-1">
-                  <span className="text-5xl font-bold text-white">$13.99</span>
+                  <span className="text-5xl font-bold text-white">$7.99</span>
                   <span className="text-white/60 text-base">/mo</span>
                 </div>
-                <p className="mt-1 text-xs text-violet-200/80">Prime placement + featured badge</p>
+                <p className="mt-1 text-xs text-violet-200/80">Everything you need to get booked</p>
+                <ul className="mt-4 space-y-2 text-left text-xs text-white/80">
+                  <li className="flex gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-violet-300 shrink-0 mt-0.5" /> Unlimited videos</li>
+                  <li className="flex gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-violet-300 shrink-0 mt-0.5" /> Featured profile</li>
+                  <li className="flex gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-violet-300 shrink-0 mt-0.5" /> Priority in search results</li>
+                  <li className="flex gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-violet-300 shrink-0 mt-0.5" /> Calendar availability</li>
+                  <li className="flex gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-violet-300 shrink-0 mt-0.5" /> Gig notifications</li>
+                  <li className="flex gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-violet-300 shrink-0 mt-0.5" /> Booking history</li>
+                </ul>
                 <Button
                   onClick={() => handleSubscribe(FEATURED_PRICE_ID)}
                   disabled={subscribing || isSubscribed}
                   className="mt-6 w-full h-11 font-semibold rounded-xl bg-gradient-to-r from-violet-600 via-fuchsia-500 to-pink-500 hover:opacity-95 shadow-[0_10px_30px_-10px_rgba(236,72,153,0.6)]"
                 >
                   {subscribing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                  {isSubscribed ? "Subscribed" : "Start 7-Day Free Trial"}
+                  {isSubscribed ? "Subscribed" : "Upgrade to Pro"}
                 </Button>
               </div>
             </div>

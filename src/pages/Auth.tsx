@@ -84,9 +84,9 @@ const SIGNUP_PLANS: Record<SignupPlanKey, {
   },
   manager: {
     priceId: "price_1SLNgmEPiAZgF8MeOXGfKYvX",
-    label: "Booking Manager",
-    price: "$49.99",
-    description: "Manage your group, schedule gigs, coordinate with venues, and keep your team organized.",
+    label: "Booking Manager — Starter",
+    price: "$29",
+    description: "Manage up to 20 performers with scheduling, messaging, and gig reminders. Professional ($79) and Agency ($199) tiers available after signup.",
     trial: "14-day free trial",
     role: "booking_manager",
     icon: "users",

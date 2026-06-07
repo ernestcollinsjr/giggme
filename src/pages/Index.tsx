@@ -120,15 +120,40 @@ const Index = () => {
       featured: true,
     },
     {
-      name: "Booking Manager",
-      price: "$49.99",
-      tagline: "Everything you need to book talent",
+      name: "BM Starter",
+      price: "$29",
+      tagline: "For small booking managers getting started",
       features: [
-        "Multi-group management",
-        "Artist discovery",
-        "Location tracking",
-        "Direct messaging",
-        "Booking calendar",
+        "Up to 20 performers",
+        "Scheduling",
+        "Messaging",
+        "Gig reminders",
+      ],
+      featured: false,
+    },
+    {
+      name: "BM Professional",
+      price: "$79",
+      tagline: "For growing booking operations",
+      features: [
+        "Up to 100 performers",
+        "Replacement management",
+        "Push notifications",
+        "Payment tracking",
+        "Reporting",
+      ],
+      featured: false,
+    },
+    {
+      name: "BM Agency",
+      price: "$199",
+      tagline: "For full-service agencies",
+      features: [
+        "Unlimited performers",
+        "Multiple booking managers",
+        "Stripe integration",
+        "Advanced reporting",
+        "White-label branding",
       ],
       featured: false,
     },
@@ -462,7 +487,7 @@ const Index = () => {
       {/* Pricing */}
       <section id="pricing" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 scroll-mt-20">
         <h2 className="text-center text-3xl sm:text-4xl font-bold text-white mb-12">Simple, Transparent Pricing</h2>
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 max-w-7xl mx-auto">
           {plans.map((p) => (
             <div
               key={p.name}

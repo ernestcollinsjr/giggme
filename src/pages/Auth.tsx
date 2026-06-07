@@ -38,17 +38,17 @@ const newPasswordSchema = z.object({
 
 const ENTERTAINER_PLANS: Record<string, { priceId: string; label: string; price: string; description: string; trial: string }> = {
   entertainer_basic: {
-    priceId: "price_1TcATOEPiAZgF8Me2TkOBbG0",
-    label: "Basic Profile",
-    price: "$8.99",
-    description: "Upload your profile, get listed in the entertainer directory, and receive booking inquiries.",
-    trial: "7-day free trial",
+    priceId: "",
+    label: "Free Plan",
+    price: "Free",
+    description: "Basic profile, one photo, one demo video, and basic contact information.",
+    trial: "Free forever",
   },
   entertainer_featured: {
     priceId: "price_1TcATsEPiAZgF8MeuJY76UlD",
-    label: "Featured Entertainer",
-    price: "$13.99",
-    description: "Prime placement at the front of the site, featured badge, and priority in search results.",
+    label: "Performer Pro",
+    price: "$7.99",
+    description: "Unlimited videos, featured profile, priority search, calendar, gig notifications, and booking history.",
     trial: "7-day free trial",
   },
 };

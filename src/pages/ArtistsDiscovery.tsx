@@ -97,6 +97,8 @@ const ArtistsDiscovery = () => {
         ),
         youtube_videos: performer.youtube_videos || [],
         venues: venuesMap.get(performer.user_id) || [],
+        is_pending: !!performer.is_pending,
+        email: performer.email || null,
         profile: {
           name: performer.name || "Unknown",
           bio: performer.bio || null,

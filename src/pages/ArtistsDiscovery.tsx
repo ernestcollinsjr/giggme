@@ -23,6 +23,8 @@ interface ArtistWithProfile {
   rate_range: string | null;
   youtube_videos: Array<{ url: string; title: string }>;
   venues?: string[];
+  is_pending?: boolean;
+  email?: string | null;
   profile: {
     name: string;
     bio: string | null;
@@ -95,6 +97,8 @@ const ArtistsDiscovery = () => {
         ),
         youtube_videos: performer.youtube_videos || [],
         venues: venuesMap.get(performer.user_id) || [],
+        is_pending: !!performer.is_pending,
+        email: performer.email || null,
         profile: {
           name: performer.name || "Unknown",
           bio: performer.bio || null,
@@ -268,7 +272,7 @@ const ArtistsDiscovery = () => {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
             {filteredArtists.map((artist) => (
-              <Card key={artist.id} className="hover:shadow-lg transition-shadow">
+              <Card key={artist.id} className={`hover:shadow-lg transition-shadow ${artist.is_pending ? "opacity-90 border-dashed" : ""}`}>
                 <CardHeader className="p-3 pb-2">
                   <div className="flex items-center gap-2 mb-1">
                     <Avatar className="h-9 w-9 flex-shrink-0">
@@ -277,17 +281,26 @@ const ArtistsDiscovery = () => {
                     </Avatar>
                     <div className="min-w-0 flex-1">
                       <CardTitle className="text-sm truncate">{artist.stage_name || artist.profile.name}</CardTitle>
-                      {artist.stage_name && (
+                      {artist.is_pending && artist.email ? (
+                        <p className="text-xs text-muted-foreground truncate">{artist.email}</p>
+                      ) : artist.stage_name ? (
                         <p className="text-xs text-muted-foreground truncate">{artist.profile.name}</p>
-                      )}
+                      ) : null}
                     </div>
                   </div>
-                  {artist.genre && (
-                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0 w-fit">
-                      <Music className="h-2.5 w-2.5 mr-0.5" />
-                      {artist.genre}
-                    </Badge>
-                  )}
+                  <div className="flex flex-wrap gap-1">
+                    {artist.is_pending && (
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 w-fit border-amber-500 text-amber-600">
+                        Invited
+                      </Badge>
+                    )}
+                    {artist.genre && (
+                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0 w-fit">
+                        <Music className="h-2.5 w-2.5 mr-0.5" />
+                        {artist.genre}
+                      </Badge>
+                    )}
+                  </div>
                 </CardHeader>
                 <CardContent className="p-3 pt-0 space-y-1">
                   {artist.years_experience && (
@@ -311,14 +324,20 @@ const ArtistsDiscovery = () => {
                     </div>
                   )}
 
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="w-full mt-2 text-xs h-7"
-                    onClick={() => navigate(`/artist-profile/${artist.user_id}`)}
-                  >
-                    View Profile
-                  </Button>
+                  {artist.is_pending ? (
+                    <p className="text-[11px] text-muted-foreground mt-2 italic">
+                      Awaiting invitation acceptance
+                    </p>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full mt-2 text-xs h-7"
+                      onClick={() => navigate(`/artist-profile/${artist.user_id}`)}
+                    >
+                      View Profile
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             ))}

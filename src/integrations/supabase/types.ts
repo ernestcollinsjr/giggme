@@ -2325,9 +2325,11 @@ export type Database = {
         Returns: {
           availability: string
           bio: string
+          email: string
           genre: string
           genres: string[]
           instrument: string
+          is_pending: boolean
           name: string
           performer_category: string
           photo_urls: string[]

@@ -23,6 +23,8 @@ interface ArtistWithProfile {
   rate_range: string | null;
   youtube_videos: Array<{ url: string; title: string }>;
   venues?: string[];
+  is_pending?: boolean;
+  email?: string | null;
   profile: {
     name: string;
     bio: string | null;

@@ -110,7 +110,7 @@ const TrackingScreen = () => (
 
 const BookingScreen = () => (
   <div className="flex h-full flex-col gap-2 px-3 pb-3">
-    <div className="text-center text-[11px] font-semibold text-white/80">New Booking Request</div>
+    <div className="text-center text-[11px] font-semibold text-white/80">New Book Performer</div>
     <div className="rounded-xl border border-white/10 bg-white/5 p-3">
       <div className="flex items-center gap-2">
         <div className="h-8 w-8 rounded-full bg-gradient-to-br from-fuchsia-500 to-violet-600" />

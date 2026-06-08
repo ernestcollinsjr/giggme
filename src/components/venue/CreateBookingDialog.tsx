@@ -141,14 +141,14 @@ export const CreateBookingDialog = ({
 
       await supabase.from("notifications").insert({
         user_id: formData.entertainer_id,
-        title: "New Booking Request",
+        title: "New Book Performer",
         message: `${venue?.name || "A venue"} wants to book you for ${format(new Date(formData.date), "EEEE, MMMM d")} at ${formData.start_time}`,
         type: "booking_request",
         related_id: booking.id,
       });
 
       toast({
-        title: "Booking Request Sent",
+        title: "Book Performer Sent",
         description: "The entertainer will be notified and can accept or decline.",
       });
 
@@ -184,7 +184,7 @@ export const CreateBookingDialog = ({
             Book Entertainment
           </DialogTitle>
           <DialogDescription>
-            Send a booking request to an entertainer
+            Book a performer
           </DialogDescription>
         </DialogHeader>
 

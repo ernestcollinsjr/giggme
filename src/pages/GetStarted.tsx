@@ -317,7 +317,7 @@ const GetStarted = () => {
                   {[
                     { i: LayoutDashboard, l: "Dashboard", active: true },
                     { i: Calendar, l: "Gigs" },
-                    { i: Users, l: "Performers" },
+                    { i: Users, l: "My Roster" },
                     { i: Clock, l: "Schedule" },
                     { i: MessageSquare, l: "Messages", badge: 3 },
                     { i: DollarSign, l: "Payments" },
@@ -363,7 +363,7 @@ const GetStarted = () => {
                   </div>
                   <div className="rounded-xl border border-border/50">
                     <div className="grid grid-cols-[1fr_auto_auto] gap-3 px-3 py-2 text-[10px] text-muted-foreground border-b border-border/40">
-                      <span>Performers</span>
+                      <span>My Roster</span>
                       <span>STATUS</span>
                       <span>ETA</span>
                     </div>

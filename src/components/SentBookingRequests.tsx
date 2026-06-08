@@ -231,7 +231,7 @@ export const SentBookingRequests = () => {
           <p className="text-sm text-muted-foreground text-center py-6">Loading...</p>
         ) : requests.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-6">
-            No booking requests sent yet.
+            No book performers sent yet.
           </p>
         ) : (
           <Tabs defaultValue="active" className="w-full">
@@ -245,7 +245,7 @@ export const SentBookingRequests = () => {
             <TabsContent value="active" className="mt-3">
               {active.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-6">
-                  No active booking requests.
+                  No active book performers.
                 </p>
               ) : (
                 <div className="space-y-2">{active.map((r) => renderRow(r, false))}</div>

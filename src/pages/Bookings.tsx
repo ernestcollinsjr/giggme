@@ -1639,7 +1639,7 @@ const Bookings = () => {
                               console.warn("Push notification failed", pushErr);
                             }
 
-                            toast({ title: "Booking request sent", description: `Sent to ${performer.name}.` });
+                            toast({ title: "Book performer sent", description: `Sent to ${performer.name}.` });
                             setQuickBookPerformerId("");
                             setQuickBookVenue("");
                             setQuickBookVenueLat(null);
@@ -1659,7 +1659,7 @@ const Bookings = () => {
                         }}
                       >
                         <Send className="h-4 w-4 mr-2" />
-                        {quickBookSubmitting ? "Sending..." : "Send Booking Request"}
+                        {quickBookSubmitting ? "Sending..." : "Book Performer"}
                       </Button>
                     </div>
                   )}
@@ -1672,8 +1672,8 @@ const Bookings = () => {
         <Dialog open={!!editingRequest} onOpenChange={(open) => !open && setEditingRequest(null)}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Edit Booking Request</DialogTitle>
-              <DialogDescription>Update the details for this booking request.</DialogDescription>
+              <DialogTitle>Edit Book Performer</DialogTitle>
+              <DialogDescription>Update the details for this book performer.</DialogDescription>
             </DialogHeader>
             <div className="space-y-3">
               <div>

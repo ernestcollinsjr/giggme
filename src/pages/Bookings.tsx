@@ -1720,7 +1720,7 @@ const Bookings = () => {
                     }
                     setBookingRequests((prev) => prev.map((b: any) => b.id === editingRequest.id ? { ...b, ...editForm, time_text: editForm.time_text || null, budget: editForm.budget || null, note: editForm.note || null } : b));
                     setEditingRequest(null);
-                    toast({ title: "Booking request updated" });
+                    toast({ title: "Book performer updated" });
                   }}
                 >
                   {savingEdit ? "Saving..." : "Save changes"}

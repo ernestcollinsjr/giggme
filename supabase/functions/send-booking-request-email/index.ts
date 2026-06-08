@@ -103,11 +103,11 @@ Deno.serve(async (req) => {
       <div style="max-width:560px;margin:24px auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;">
         <div style="padding:20px 24px;background:linear-gradient(135deg,#6d28d9,#2563eb);color:#fff;">
           <div style="font-size:13px;opacity:.85;">GigGme</div>
-          <div style="font-size:20px;font-weight:700;margin-top:4px;">New Booking Request</div>
+          <div style="font-size:20px;font-weight:700;margin-top:4px;">New Book Performer</div>
         </div>
         <div style="padding:20px 24px;">
           <p style="margin:0 0 12px;color:#111827;font-size:15px;">Hi${p.performerName ? ' ' + p.performerName : ''},</p>
-          <p style="margin:0 0 16px;color:#374151;font-size:14px;line-height:1.5;">You have received a new booking request${p.bookerName ? ' from <strong>' + p.bookerName + '</strong>' : ''}. Please respond within <strong>${expiresIn}</strong> or it will be automatically declined.</p>
+          <p style="margin:0 0 16px;color:#374151;font-size:14px;line-height:1.5;">You have received a new book performer${p.bookerName ? ' from <strong>' + p.bookerName + '</strong>' : ''}. Please respond within <strong>${expiresIn}</strong> or it will be automatically declined.</p>
           <div style="margin:0 0 20px;text-align:center;">
             <a href="${acceptUrl}" style="display:inline-block;background:#059669;color:#fff;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:600;font-size:16px;margin:0 6px 8px;">✓ Accept</a>
             <a href="${declineUrl}" style="display:inline-block;background:#dc2626;color:#fff;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:600;font-size:16px;margin:0 6px 8px;">✗ Decline</a>
@@ -137,7 +137,7 @@ Deno.serve(async (req) => {
         from: 'GigGme <bookings@giggme.com>',
         to: [p.performerEmail],
         reply_to: p.bookerEmail || user.email,
-        subject: `New booking request: ${p.venue} — ${p.dates}`,
+        subject: `New book performer: ${p.venue} — ${p.dates}`,
         html: performerHtml,
       }),
     });
@@ -151,10 +151,10 @@ Deno.serve(async (req) => {
         <div style="max-width:560px;margin:24px auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;">
           <div style="padding:20px 24px;background:linear-gradient(135deg,#6d28d9,#2563eb);color:#fff;">
             <div style="font-size:13px;opacity:.85;">GigGme</div>
-            <div style="font-size:20px;font-weight:700;margin-top:4px;">Booking Request Sent</div>
+            <div style="font-size:20px;font-weight:700;margin-top:4px;">Book Performer Sent</div>
           </div>
           <div style="padding:20px 24px;">
-            <p style="margin:0 0 16px;color:#374151;font-size:14px;line-height:1.5;">Your booking request to <strong>${p.performerName || 'the performer'}</strong> has been sent. They have <strong>${expiresIn}</strong> to respond. If they don't reply in time, we'll let you know so you can book someone else.</p>
+            <p style="margin:0 0 16px;color:#374151;font-size:14px;line-height:1.5;">Your book performer to <strong>${p.performerName || 'the performer'}</strong> has been sent. They have <strong>${expiresIn}</strong> to respond. If they don't reply in time, we'll let you know so you can book someone else.</p>
             <table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
               ${row('Date(s)', p.dates + (p.time ? ' ' + p.time : ''))}
               ${row('Venue', p.venue)}
@@ -170,7 +170,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           from: 'GigGme <bookings@giggme.com>',
           to: [bookerEmail],
-          subject: `Booking request sent to ${p.performerName || 'performer'}`,
+          subject: `Book performer sent to ${p.performerName || 'performer'}`,
           html: bookerHtml,
         }),
       }).catch((e) => console.error('Booker confirm email failed', e));

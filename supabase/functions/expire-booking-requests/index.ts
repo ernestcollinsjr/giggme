@@ -44,10 +44,10 @@ Deno.serve(async (req) => {
           <div style="max-width:560px;margin:24px auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;">
             <div style="padding:20px 24px;background:#b45309;color:#fff;">
               <div style="font-size:13px;opacity:.85;">GigGme</div>
-              <div style="font-size:20px;font-weight:700;margin-top:4px;">Booking Request Expired</div>
+              <div style="font-size:20px;font-weight:700;margin-top:4px;">Book Performer Expired</div>
             </div>
             <div style="padding:20px 24px;">
-              <p style="margin:0 0 16px;color:#374151;font-size:14px;line-height:1.5;">Your booking request to <strong>${br.performer_name || 'the performer'}</strong> for <strong>${br.venue}</strong> expired after 2 minutes with no response. We recommend booking another performer.</p>
+              <p style="margin:0 0 16px;color:#374151;font-size:14px;line-height:1.5;">Your book performer to <strong>${br.performer_name || 'the performer'}</strong> for <strong>${br.venue}</strong> expired after 2 minutes with no response. We recommend booking another performer.</p>
               <table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
                 <tr><td style="padding:8px 12px;color:#6b7280;font-size:13px;width:140px;">Date(s)</td><td style="padding:8px 12px;color:#111827;font-size:14px;">${br.dates_text}${br.time_text ? ' ' + br.time_text : ''}</td></tr>
                 <tr><td style="padding:8px 12px;color:#6b7280;font-size:13px;">Venue</td><td style="padding:8px 12px;color:#111827;font-size:14px;">${br.venue}</td></tr>
@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
           body: JSON.stringify({
             from: 'GigGme <bookings@giggme.com>',
             to: [br.booker_email],
-            subject: `Booking request expired: ${br.venue}`,
+            subject: `Book performer expired: ${br.venue}`,
             html,
           }),
         }).catch((e) => console.error('Resend expire email failed', e));

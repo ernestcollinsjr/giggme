@@ -23,13 +23,13 @@ const BookingResponse = () => {
     already: {
       icon: <AlertCircle className="h-16 w-16 text-gray-500" />,
       title: "Already Responded",
-      message: "This booking request has already been responded to.",
+      message: "This book performer has already been responded to.",
       accent: "bg-gray-50 border-gray-200",
     },
     expired: {
       icon: <AlertCircle className="h-16 w-16 text-amber-600" />,
       title: "Request Expired",
-      message: "This booking request has expired. Please ask the booker to send a new one.",
+      message: "This book performer has expired. Please ask the booker to send a new one.",
       accent: "bg-amber-50 border-amber-200",
     },
     invalid: {

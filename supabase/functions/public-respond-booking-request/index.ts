@@ -76,10 +76,10 @@ Deno.serve(async (req) => {
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
     if (RESEND_API_KEY && br.booker_email) {
       const accent = action === 'accept' ? '#059669' : '#dc2626';
-      const title = action === 'accept' ? 'Booking Request Accepted' : 'Booking Request Declined';
+      const title = action === 'accept' ? 'Book Performer Accepted' : 'Book Performer Declined';
       const body = action === 'accept'
-        ? `<strong>${br.performer_name || 'The performer'}</strong> accepted your booking request.`
-        : `<strong>${br.performer_name || 'The performer'}</strong> declined your booking request.`;
+        ? `<strong>${br.performer_name || 'The performer'}</strong> accepted your book performer.`
+        : `<strong>${br.performer_name || 'The performer'}</strong> declined your book performer.`;
       const emailHtml = `<!doctype html><html><body style="margin:0;padding:0;background:#f6f7f9;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;">
         <div style="max-width:560px;margin:24px auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;">
           <div style="padding:20px 24px;background:${accent};color:#fff;"><div style="font-size:13px;opacity:.85;">GigGme</div><div style="font-size:20px;font-weight:700;margin-top:4px;">${title}</div></div>

@@ -93,7 +93,7 @@ const faqs = [
     color: "text-violet-400",
     bg: "bg-violet-500/15",
     q: "How does booking work?",
-    a: "Managers send booking requests directly through GiggMe. You'll get a push notification, email, and in-app alert. Accept or decline with one tap — confirmed gigs land on your calendar automatically.",
+    a: "Managers book performers directly through GiggMe. You'll get a push notification, email, and in-app alert. Accept or decline with one tap — confirmed gigs land on your calendar automatically.",
   },
   {
     icon: Video,

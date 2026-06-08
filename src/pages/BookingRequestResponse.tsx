@@ -65,7 +65,7 @@ export default function BookingRequestResponse() {
         .eq("id", id!)
         .maybeSingle();
       if (error || !data) {
-        toast({ variant: "destructive", title: "Not found", description: "This booking request could not be loaded." });
+        toast({ variant: "destructive", title: "Not found", description: "This book performer could not be loaded." });
         setLoading(false);
         return;
       }
@@ -128,7 +128,7 @@ export default function BookingRequestResponse() {
         <Card className="max-w-md w-full">
           <CardHeader>
             <CardTitle>Request not found</CardTitle>
-            <CardDescription>This booking request doesn't exist or you don't have access to it.</CardDescription>
+            <CardDescription>This book performer doesn't exist or you don't have access to it.</CardDescription>
           </CardHeader>
           <CardContent>
             <Button onClick={() => navigate("/dashboard")} className="w-full">Go to dashboard</Button>
@@ -171,7 +171,7 @@ export default function BookingRequestResponse() {
           <CardHeader>
             <div className="flex items-start justify-between gap-3 flex-wrap">
               <div>
-                <CardTitle className="text-2xl">Booking Request</CardTitle>
+                <CardTitle className="text-2xl">Book Performer</CardTitle>
                 <CardDescription className="mt-1">
                   {request.booker_name ? `From ${request.booker_name}` : "From a booker"}
                   {request.booker_email && <> · <a href={`mailto:${request.booker_email}`} className="underline">{request.booker_email}</a></>}

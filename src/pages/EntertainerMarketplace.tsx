@@ -309,7 +309,7 @@ const EntertainerMarketplace = () => {
           onSuccess={() => {
             setShowBookingDialog(false);
             toast({
-              title: "Booking Request Sent",
+              title: "Book Performer Sent",
               description: "The entertainer will be notified and can accept or decline.",
             });
           }}

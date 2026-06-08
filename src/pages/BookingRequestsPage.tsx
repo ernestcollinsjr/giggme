@@ -42,7 +42,7 @@ const BookingRequestsPage = () => {
       <div className="min-h-screen bg-background pb-24 lg:pb-8">
         <div className="max-w-5xl mx-auto p-4 lg:p-8 space-y-4">
           <div>
-            <h1 className="text-2xl lg:text-3xl font-bold">Booking Requests</h1>
+            <h1 className="text-2xl lg:text-3xl font-bold">Book Performers</h1>
             <p className="text-sm text-muted-foreground mt-1">
               Book entertainers from your preferred list and track responses.
             </p>

@@ -45,10 +45,10 @@ Deno.serve(async (req) => {
     // Email booker
     if (br.booker_email) {
       const accent = action === 'accept' ? '#059669' : '#dc2626';
-      const title = action === 'accept' ? 'Booking Request Accepted' : 'Booking Request Declined';
+      const title = action === 'accept' ? 'Book Performer Accepted' : 'Book Performer Declined';
       const body = action === 'accept'
-        ? `<strong>${br.performer_name || 'The performer'}</strong> accepted your booking request. You can follow up directly via reply or in the app.`
-        : `<strong>${br.performer_name || 'The performer'}</strong> declined your booking request. You may want to reach out to another performer.`;
+        ? `<strong>${br.performer_name || 'The performer'}</strong> accepted your book performer. You can follow up directly via reply or in the app.`
+        : `<strong>${br.performer_name || 'The performer'}</strong> declined your book performer. You may want to reach out to another performer.`;
 
       const html = `<!doctype html><html><body style="margin:0;padding:0;background:#f6f7f9;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;">
         <div style="max-width:560px;margin:24px auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;">

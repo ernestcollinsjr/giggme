@@ -904,12 +904,12 @@ const Bookings = () => {
   };
 
   const handleDeleteBookingRequest = async (id: string) => {
-    if (!confirm("Delete this booking request? This cannot be undone.")) return;
+    if (!confirm("Delete this book performer? This cannot be undone.")) return;
     try {
       const { error } = await supabase.from("booking_requests").delete().eq("id", id);
       if (error) throw error;
       setBookingRequests((prev) => prev.filter((b: any) => b.id !== id));
-      toast({ title: "Booking request deleted" });
+      toast({ title: "Book performer deleted" });
     } catch (error: any) {
       toast({ variant: "destructive", title: "Failed to delete", description: error.message });
     }
@@ -1102,7 +1102,7 @@ const Bookings = () => {
                 <CalendarIcon className="h-5 w-5 text-primary" />
                 Current Bookings
               </CardTitle>
-              <CardDescription>Your booking requests and gig invitations</CardDescription>
+              <CardDescription>Your book performers and gig invitations</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {bookingRequests.map((br) => (
@@ -1117,7 +1117,7 @@ const Bookings = () => {
                         <Badge variant={br.status === 'accepted' ? 'default' : br.status === 'pending' ? 'secondary' : 'outline'}>
                           {br.status}
                         </Badge>
-                        <Badge variant="outline">Booking Request</Badge>
+                        <Badge variant="outline">Book Performer</Badge>
                       </div>
                       <p className="font-semibold truncate">{br.venue}</p>
                       <p className="text-sm text-muted-foreground">
@@ -1149,7 +1149,7 @@ const Bookings = () => {
                               note: br.note || "",
                             });
                           }}
-                          aria-label="Edit booking request"
+                          aria-label="Edit book performer"
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
@@ -1163,7 +1163,7 @@ const Bookings = () => {
                             e.stopPropagation();
                             handleDeleteBookingRequest(br.id);
                           }}
-                          aria-label="Delete booking request"
+                          aria-label="Delete book performer"
                         >
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
@@ -1426,7 +1426,7 @@ const Bookings = () => {
                                     note: br.note || "",
                                   });
                                 }}
-                                aria-label="Edit booking request"
+                                aria-label="Edit book performer"
                               >
                                 <Pencil className="h-4 w-4" />
                               </Button>
@@ -1436,7 +1436,7 @@ const Bookings = () => {
                               size="icon"
                               className="h-7 w-7"
                               onClick={() => handleDeleteBookingRequest(br.id)}
-                              aria-label="Delete booking request"
+                              aria-label="Delete book performer"
                             >
                               <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>
@@ -1446,7 +1446,7 @@ const Bookings = () => {
                               "h-2.5 w-2.5 rounded-full",
                               br.status === "declined" || br.status === "rejected" || br.status === "cancelled" || br.status === "expired" ? "bg-red-500" : "bg-blue-500"
                             )} />
-                            <Badge variant="secondary">Booking request</Badge>
+                            <Badge variant="secondary">Book performer</Badge>
                           </div>
                           <div className="font-semibold pr-16">{br.venue}</div>
                           {br.performer_name && <div className="text-xs text-muted-foreground">Performer: {br.performer_name}</div>}
@@ -1568,7 +1568,7 @@ const Bookings = () => {
                             const timeStr = `(${quickBookStart}${quickBookEnd ? ` – ${quickBookEnd}` : ""})`;
 
                             const lines = [
-                              `Booking request for ${performer.name}`,
+                              `Book performer for ${performer.name}`,
                               `Date: ${datesStr} ${timeStr}`,
                               `Venue: ${quickBookVenue.trim()}`,
                               quickBookVenuePhone.trim() ? `Venue Phone: ${quickBookVenuePhone.trim()}` : null,
@@ -1629,8 +1629,8 @@ const Bookings = () => {
                               await supabase.functions.invoke("send-push-notification", {
                                 body: {
                                   user_id: quickBookPerformerId,
-                                  title: "🎤 New Booking Request",
-                                  body: `${senderProfile?.name || "Someone"} sent you a booking request for ${datesStr} at ${quickBookVenue.trim()}`,
+                                  title: "🎤 New Book Performer",
+                                  body: `${senderProfile?.name || "Someone"} sent you a book performer for ${datesStr} at ${quickBookVenue.trim()}`,
                                   url: "/bookings",
                                   data: { type: "booking_request", performer_id: quickBookPerformerId },
                                 },
@@ -1639,7 +1639,7 @@ const Bookings = () => {
                               console.warn("Push notification failed", pushErr);
                             }
 
-                            toast({ title: "Booking request sent", description: `Sent to ${performer.name}.` });
+                            toast({ title: "Book performer sent", description: `Sent to ${performer.name}.` });
                             setQuickBookPerformerId("");
                             setQuickBookVenue("");
                             setQuickBookVenueLat(null);
@@ -1659,7 +1659,7 @@ const Bookings = () => {
                         }}
                       >
                         <Send className="h-4 w-4 mr-2" />
-                        {quickBookSubmitting ? "Sending..." : "Send Booking Request"}
+                        {quickBookSubmitting ? "Sending..." : "Book Performer"}
                       </Button>
                     </div>
                   )}
@@ -1672,8 +1672,8 @@ const Bookings = () => {
         <Dialog open={!!editingRequest} onOpenChange={(open) => !open && setEditingRequest(null)}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Edit Booking Request</DialogTitle>
-              <DialogDescription>Update the details for this booking request.</DialogDescription>
+              <DialogTitle>Edit Book Performer</DialogTitle>
+              <DialogDescription>Update the details for this book performer.</DialogDescription>
             </DialogHeader>
             <div className="space-y-3">
               <div>
@@ -1720,7 +1720,7 @@ const Bookings = () => {
                     }
                     setBookingRequests((prev) => prev.map((b: any) => b.id === editingRequest.id ? { ...b, ...editForm, time_text: editForm.time_text || null, budget: editForm.budget || null, note: editForm.note || null } : b));
                     setEditingRequest(null);
-                    toast({ title: "Booking request updated" });
+                    toast({ title: "Book performer updated" });
                   }}
                 >
                   {savingEdit ? "Saving..." : "Save changes"}

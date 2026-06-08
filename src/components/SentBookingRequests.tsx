@@ -81,14 +81,14 @@ export const SentBookingRequests = () => {
   const { toast } = useToast();
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this booking request?")) return;
+    if (!confirm("Delete this book performer?")) return;
     const { error } = await supabase.from("booking_requests").delete().eq("id", id);
     if (error) {
       toast({ title: "Failed to delete", description: error.message, variant: "destructive" });
       return;
     }
     setRequests((prev) => prev.filter((r) => r.id !== id));
-    toast({ title: "Booking request deleted" });
+    toast({ title: "Book performer deleted" });
   };
 
   const handleToggleReminders = async (id: string, disabled: boolean) => {
@@ -206,7 +206,7 @@ export const SentBookingRequests = () => {
             size="icon"
             className="h-8 w-8 text-muted-foreground hover:text-destructive"
             onClick={() => handleDelete(r.id)}
-            aria-label="Delete booking request"
+            aria-label="Delete book performer"
           >
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -220,10 +220,10 @@ export const SentBookingRequests = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Mail className="h-5 w-5" />
-          Sent Booking Requests
+          Sent Book Performers
         </CardTitle>
         <CardDescription>
-          Track booking requests you've sent to performers
+          Track book performers you've sent to performers
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -231,7 +231,7 @@ export const SentBookingRequests = () => {
           <p className="text-sm text-muted-foreground text-center py-6">Loading...</p>
         ) : requests.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-6">
-            No booking requests sent yet.
+            No book performers sent yet.
           </p>
         ) : (
           <Tabs defaultValue="active" className="w-full">
@@ -245,7 +245,7 @@ export const SentBookingRequests = () => {
             <TabsContent value="active" className="mt-3">
               {active.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-6">
-                  No active booking requests.
+                  No active book performers.
                 </p>
               ) : (
                 <div className="space-y-2">{active.map((r) => renderRow(r, false))}</div>

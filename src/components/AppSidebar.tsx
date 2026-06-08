@@ -92,7 +92,12 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-sidebar-border">
+    <Sidebar
+      collapsible="icon"
+      className="border-r border-sidebar-border"
+      role="navigation"
+      aria-label="Main navigation"
+    >
       <SidebarHeader className="px-3 py-4">
         <div className="flex items-center gap-2">
           <img src={logo} alt="GiggMe" className="h-9 w-auto object-contain" />
@@ -126,7 +131,7 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
       <SidebarFooter className="p-3 space-y-3">
         {!collapsed && (
           <div className="rounded-xl border border-sidebar-border bg-sidebar-accent/30 p-3 text-center">
-            <HelpCircle className="h-5 w-5 mx-auto mb-1 text-primary" />
+            <HelpCircle className="h-5 w-5 mx-auto mb-1 text-primary" aria-hidden="true" />
             <p className="text-xs font-semibold text-sidebar-foreground">Need Help?</p>
             <p className="text-[11px] text-sidebar-foreground/70 mt-0.5">
               We're here 24/7 to help you succeed.
@@ -144,6 +149,7 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
           variant="ghost"
           size="sm"
           onClick={handleLogout}
+          aria-label="Logout"
           className="w-full justify-start text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
         >
           <LogOut className="h-4 w-4" />

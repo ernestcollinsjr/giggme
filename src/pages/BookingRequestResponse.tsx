@@ -171,7 +171,7 @@ export default function BookingRequestResponse() {
           <CardHeader>
             <div className="flex items-start justify-between gap-3 flex-wrap">
               <div>
-                <CardTitle className="text-2xl">Booking Request</CardTitle>
+                <CardTitle className="text-2xl">Book Performer</CardTitle>
                 <CardDescription className="mt-1">
                   {request.booker_name ? `From ${request.booker_name}` : "From a booker"}
                   {request.booker_email && <> · <a href={`mailto:${request.booker_email}`} className="underline">{request.booker_email}</a></>}

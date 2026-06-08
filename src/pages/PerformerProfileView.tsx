@@ -212,7 +212,7 @@ const PerformerProfileView = () => {
         : "";
 
       const lines = [
-        `Booking request for ${profile?.name || "you"}`,
+        `Book performer for ${profile?.name || "you"}`,
         `Date${sortedDates.length > 1 ? "s" : ""}: ${datesStr}${timeStr}`,
         `Venue: ${bookingForm.venue.trim()}`,
         bookingForm.venuePhone.trim() ? `Venue Phone: ${bookingForm.venuePhone.trim()}` : null,
@@ -273,8 +273,8 @@ const PerformerProfileView = () => {
         await supabase.functions.invoke("send-push-notification", {
           body: {
             user_id: userId,
-            title: "🎤 New Booking Request",
-            body: `${(await supabase.from("profiles").select("name").eq("id", user.id).maybeSingle()).data?.name || "Someone"} sent you a booking request for ${datesStr}${bookingForm.venue.trim() ? " at " + bookingForm.venue.trim() : ""}`,
+            title: "🎤 New Book Performer",
+            body: `${(await supabase.from("profiles").select("name").eq("id", user.id).maybeSingle()).data?.name || "Someone"} sent you a book performer for ${datesStr}${bookingForm.venue.trim() ? " at " + bookingForm.venue.trim() : ""}`,
             url: "/bookings",
             data: { type: "booking_request", performer_id: userId },
           },
@@ -283,7 +283,7 @@ const PerformerProfileView = () => {
         console.warn("Push notification failed", pushErr);
       }
 
-      toast({ title: "Booking request sent", description: `Your request was sent to ${profile?.name || "the performer"}.` });
+      toast({ title: "Book performer sent", description: `Your request was sent to ${profile?.name || "the performer"}.` });
       setBookingOpen(false);
       setBookingForm({ dates: [], startTime: "", endTime: "", venue: "", venueLat: null, venueLng: null, venuePhone: "", budget: "", foodDiscounts: "", dressCode: "", contactPerson: "" });
     } catch (err: any) {
@@ -615,7 +615,7 @@ const PerformerProfileView = () => {
                   <div className="p-4 rounded-lg border bg-muted/30 flex items-start gap-3">
                     <Lock className="h-4 w-4 text-muted-foreground mt-0.5" />
                     <p className="text-sm text-muted-foreground">
-                      This performer's notification preferences are private. They will receive your booking request via their preferred channel (in-app, email, or SMS).
+                      This performer's notification preferences are private. They will receive your book performer via their preferred channel (in-app, email, or SMS).
                     </p>
                   </div>
 
@@ -718,7 +718,7 @@ const PerformerProfileView = () => {
                       <Clock className="h-5 w-5 text-primary" /> Bookings
                     </h3>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Full schedule view. Click a booked date to see details. Send a booking request to confirm a specific date.
+                      Full schedule view. Click a booked date to see details. Send a book performer to confirm a specific date.
                     </p>
 
                   </div>
@@ -800,7 +800,7 @@ const PerformerProfileView = () => {
           <DialogHeader>
             <DialogTitle>Book {profile?.name || "this performer"}</DialogTitle>
             <DialogDescription>
-              Send a booking request with the gig details. The performer will receive it as a direct message.
+              Send a book performer with the gig details. The performer will receive it as a direct message.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-2">
@@ -926,7 +926,7 @@ const PerformerProfileView = () => {
               {bookingSubmitting ? (
                 <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</>
               ) : (
-                <><CalendarCheck className="mr-2 h-4 w-4" /> Send Booking Request</>
+                <><CalendarCheck className="mr-2 h-4 w-4" /> Book Performer</>
               )}
             </Button>
           </div>

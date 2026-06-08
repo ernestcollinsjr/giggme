@@ -109,7 +109,7 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
                     asChild
                     isActive={isActive(item.url)}
                     tooltip={item.title}
-                    className="data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[active=true]:shadow-[inset_3px_0_0_0_hsl(var(--primary))]"
+                    className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-[inset_3px_0_0_0_hsl(var(--primary))] focus-visible:bg-sidebar-accent focus-visible:text-sidebar-accent-foreground focus-visible:shadow-[inset_3px_0_0_0_hsl(var(--primary))] data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[active=true]:shadow-[inset_3px_0_0_0_hsl(var(--primary))]"
                   >
                     <NavLink to={item.url} className="flex items-center gap-3">
                       <item.icon className="h-4 w-4" />

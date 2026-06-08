@@ -79,7 +79,7 @@ const Index = () => {
   ];
 
   const steps = [
-    { n: 1, icon: UserPlus2, title: "Add Your Performers", desc: "Build your roster and manage availability." },
+    { n: 1, icon: UserPlus2, title: "Add Your Roster", desc: "Build your roster and manage availability." },
     { n: 2, icon: Calendar, title: "Create a Gig", desc: "Add details, location, time, and pay." },
     { n: 3, icon: Users, title: "Assign Your Team", desc: "Invite performers and confirm the gig." },
     { n: 4, icon: Send, title: "Automate Communication", desc: "Reminders, updates, and changes sent automatically." },
@@ -338,7 +338,7 @@ const Index = () => {
                   {[
                     { i: LayoutDashboard, l: "Dashboard", active: true },
                     { i: Music, l: "Gigs" },
-                    { i: Users, l: "Performers" },
+                    { i: Users, l: "My Roster" },
                     { i: Calendar, l: "Schedule" },
                     { i: MessageSquare, l: "Messages", badge: 3 },
                     { i: DollarIcon, l: "Payments" },
@@ -373,7 +373,7 @@ const Index = () => {
 
                   <div>
                     <div className="grid grid-cols-[1fr_auto_auto] text-[10px] text-white/40 uppercase tracking-wider px-1 mb-1">
-                      <span>Performers</span><span className="pr-3">Status</span><span>ETA</span>
+                      <span>My Roster</span><span className="pr-3">Status</span><span>ETA</span>
                     </div>
                     {[
                       { name: "Sarah Williams", role: "Vocalist", status: "Confirmed", statusColor: "text-emerald-400", eta: "12 min away", avatar: avatar2 },

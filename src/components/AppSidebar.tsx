@@ -62,7 +62,7 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
   if (userRole === "booking_manager" || userRole === "super_admin") {
     roleItems.push({ title: "Payment Scheduler", url: "/payment-scheduler", icon: CreditCard });
     roleItems.push({ title: "Book Performers", url: "/booking-requests", icon: Inbox });
-    roleItems.push({ title: "Performers", url: "/artists", icon: Users });
+    roleItems.push({ title: "My Roster", url: "/artists", icon: Users });
   }
   if (userRole === "booking_manager" || userRole === "super_admin") {
     roleItems.push({ title: "Setlists", url: "/setlist", icon: ListMusic });

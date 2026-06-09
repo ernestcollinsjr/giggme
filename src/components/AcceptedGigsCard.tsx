@@ -27,6 +27,9 @@ interface AcceptedGig {
   isOwned: boolean;
   source: GigSource;
   location_sharing_enabled: boolean;
+  displayDateText?: string;
+  displayDateIndex?: number;
+  displayDateTotal?: number;
   gig: {
     id: string;
     date: string;
@@ -188,7 +191,7 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
           .split(';')
           .map((s: string) => s.trim())
           .filter(Boolean);
-        const dates: string[] = [];
+        const dateEntries: { iso: string; text?: string }[] = [];
         for (const p of parts) {
           const d = parseDateText(p);
           if (d) {
@@ -196,19 +199,24 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
               const [hh, mm] = timeMatch.split(':').map(Number);
               d.setHours(hh, mm, 0, 0);
             }
-            dates.push(d.toISOString());
+            dateEntries.push({ iso: d.toISOString(), text: p });
           }
         }
-        if (dates.length === 0 && b.event_date) dates.push(b.event_date);
+        if (dateEntries.length === 0 && b.event_date) {
+          dateEntries.push({ iso: b.event_date });
+        }
 
-        return dates.map((dateIso, idx) => ({
+        return dateEntries.map((entry, idx) => ({
           id: `br-${b.id}-${idx}`,
           isOwned: false,
           source: "booking_request" as GigSource,
           location_sharing_enabled: b.location_sharing_enabled ?? true,
+          displayDateText: entry.text,
+          displayDateIndex: idx + 1,
+          displayDateTotal: dateEntries.length,
           gig: {
             id: b.id,
-            date: dateIso,
+            date: entry.iso,
             venue: b.venue || b.booker_name || "Booking",
             notes: b.time_text || null,
             loading_time: null,

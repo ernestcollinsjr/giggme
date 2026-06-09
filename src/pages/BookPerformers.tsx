@@ -233,7 +233,7 @@ const BookPerformers = () => {
                     className="absolute top-2 right-2 z-10 rounded-full bg-background/80 backdrop-blur p-1.5 border border-border hover:bg-background transition-colors"
                   >
                     <Heart
-                      className={`h-3.5 w-3.5 ${favoriteIds.has(e.user_id) ? "fill-primary text-primary" : "text-muted-foreground"}`}
+                      className={`h-3.5 w-3.5 ${favoriteIds.has(e.user_id) ? "fill-red-500 text-red-500" : "text-muted-foreground"}`}
                     />
                   </button>
                   <CardHeader className="p-3 pb-2">

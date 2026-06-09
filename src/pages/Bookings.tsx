@@ -1256,6 +1256,70 @@ const Bookings = () => {
           </Card>
         )}
 
+        {/* Archived bookings */}
+        {(archivedBookingRequests.length > 0 || archivedGigInvitations.length > 0) && (
+          <Card className="border-border/50 shadow-lg mb-4 opacity-80">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-muted-foreground">
+                <CalendarIcon className="h-5 w-5" />
+                Archived Bookings
+              </CardTitle>
+              <CardDescription>Past book performers and gig invitations</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {archivedBookingRequests.map((br) => (
+                <div
+                  key={`br-archived-${br.id}`}
+                  className="p-4 border rounded-lg opacity-60 bg-muted/20"
+                >
+                  <div className="flex items-start justify-between gap-2 flex-wrap">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <Badge variant={br.status === 'accepted' ? 'default' : br.status === 'pending' ? 'secondary' : 'outline'}>
+                          {br.status}
+                        </Badge>
+                        <Badge variant="outline">Book Performer</Badge>
+                      </div>
+                      <p className="font-semibold truncate">{br.venue}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {br.booker_id === br.performer_id
+                          ? `${to12hText(br.dates_text)}`
+                          : br.performer_id && br.booker_name && br.performer_name
+                            ? `${br.booker_name} → ${br.performer_name} · ${to12hText(br.dates_text)}`
+                            : `From ${br.booker_name || 'a client'} · ${to12hText(br.dates_text)}`}
+                        {br.time_text && ` · ${to12hText(br.time_text)}`}
+                      </p>
+                      {br.budget && (
+                        <p className="text-xs text-muted-foreground mt-1">Budget: {br.budget}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {archivedGigInvitations.map((gi: any) => {
+                return (
+                  <div key={`gi-archived-${gi.id}`} className="p-4 border rounded-lg opacity-60 bg-muted/20">
+                    <div className="flex items-start justify-between gap-2 flex-wrap">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <Badge variant={gi.status === 'accepted' ? 'default' : gi.status === 'pending' ? 'secondary' : 'outline'}>
+                            {gi.status}
+                          </Badge>
+                          <Badge variant="outline">Group Gig</Badge>
+                        </div>
+                        <p className="font-semibold truncate">{gi.gigs?.venue_name || gi.gigs?.venue}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {gi.gigs?.date && format(new Date(gi.gigs.date), "PPP p")}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Calendar overview — highlights all booking dates */}
         {(() => {
           const requestDatesRaw: Date[] = [];

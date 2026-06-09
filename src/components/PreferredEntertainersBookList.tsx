@@ -51,6 +51,7 @@ export const PreferredEntertainersBookList = () => {
           instrument: r.instrument,
           instrument_custom: r.instrument_custom,
           is_singer: r.is_singer,
+          entertainer_categories: r.entertainer_categories,
         }));
         setEntertainers(rows);
       } catch (e: any) {

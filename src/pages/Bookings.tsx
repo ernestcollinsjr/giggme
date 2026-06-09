@@ -1037,6 +1037,15 @@ const Bookings = () => {
     }
   };
 
+  const currentBookingRequests = bookingRequests.filter((br) => !isBookingRequestPast(br));
+  const archivedBookingRequests = bookingRequests.filter((br) => isBookingRequestPast(br));
+
+  const currentGigInvitations = gigInvitations.filter((gi: any) => !isPastDate(gi.gigs?.date));
+  const archivedGigInvitations = gigInvitations.filter((gi: any) => isPastDate(gi.gigs?.date));
+
+  const currentGigs = gigs.filter((g) => !isPastDate(g.date));
+  const archivedGigs = gigs.filter((g) => isPastDate(g.date));
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">

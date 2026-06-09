@@ -726,17 +726,30 @@ const PerformerProfileView = () => {
 
 
                 <TabsContent value="availability" className="mt-0 space-y-4">
-                  <div>
-                    <h3 className="text-lg font-semibold flex items-center gap-2">
-                      <Clock className="h-5 w-5 text-primary" /> Bookings
-                    </h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Full schedule view. Click a booked date to see details. Send a book performer to confirm a specific date.
-                    </p>
-
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <Clock className="h-5 w-5 text-primary" /> Bookings
+                      </h3>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Full schedule view. Click a booked date to see details. Send a book performer to confirm a specific date.
+                      </p>
+                    </div>
+                    {userId && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="shrink-0"
+                        onClick={() => setCrewProfileOpen(true)}
+                      >
+                        <IdCard className="h-4 w-4 mr-1.5" /> Full Profile & Rider
+                      </Button>
+                    )}
                   </div>
                   {userId && <AvailabilityCalendar userId={userId} readOnly />}
                 </TabsContent>
+
 
 
                 <TabsContent value="rider" className="mt-0 space-y-4">

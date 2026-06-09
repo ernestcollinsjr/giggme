@@ -370,8 +370,14 @@ const ArtistsDiscovery = () => {
                 className={`relative hover:shadow-lg transition-shadow ${artist.is_pending ? "opacity-90 border-dashed" : ""} ${isSelectable ? "cursor-pointer" : ""} ${isSelected ? "ring-2 ring-primary" : ""}`}
               >
                 {selectionMode && !artist.is_pending && (
-                  <div className="absolute top-2 right-2 z-10 bg-background rounded p-0.5 shadow-sm">
-                    <Checkbox checked={isSelected} onCheckedChange={() => toggleSelected(artist.user_id)} />
+                  <div
+                    className="absolute top-2 right-2 z-10 bg-background rounded p-0.5 shadow-sm"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Checkbox
+                      checked={isSelected}
+                      onCheckedChange={() => toggleSelected(artist.user_id)}
+                    />
                   </div>
                 )}
                 <CardHeader className="p-3 pb-2">

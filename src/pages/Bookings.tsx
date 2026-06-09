@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { TimePicker12h } from "@/components/ui/time-picker-12h";
-import { Calendar as CalendarIcon, Clock, MapPin, Plus, Trash2, Music, Navigation, Users, Send, Pencil, Filter, Mail, MailCheck, MailOpen, MousePointerClick, AlertCircle } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, MapPin, Plus, Trash2, Music, Navigation, Users, Send, Pencil, Filter, Mail, MailCheck, MailOpen, MousePointerClick, AlertCircle, RefreshCw } from "lucide-react";
 import { EmailTrackingStatus } from "@/components/EmailTrackingStatus";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";

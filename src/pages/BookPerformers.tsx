@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Music, Search, Filter, Sparkles, UserPlus, Eye, Heart } from "lucide-react";
+import { Music, Search, Filter, Sparkles, UserPlus, Eye, Heart, Mic } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface FeaturedEntertainer {
@@ -19,6 +19,8 @@ interface FeaturedEntertainer {
   stage_name: string | null;
   genre: string | null;
   instrument: string | null;
+  instrument_custom: string | null;
+  is_singer: boolean | null;
   entertainer_categories: string[] | null;
 }
 

@@ -26,6 +26,7 @@ interface BookingRequest {
 }
 
 type DisplayStatus = BookingRequest["status"] | "completed";
+type BookingRequestCard = BookingRequest & { __displayKey: string; __displayDatesText: string };
 
 const statusVariant: Record<DisplayStatus, "default" | "secondary" | "destructive" | "outline"> = {
   pending: "secondary",
@@ -67,6 +68,23 @@ function parseBudget(b: string | null): number {
   if (!b) return 0;
   const n = parseFloat(b.replace(/[^0-9.]/g, ""));
   return isNaN(n) ? 0 : n;
+}
+
+function expandBookingRequestDateCards(r: BookingRequest): BookingRequestCard[] {
+  const parts = (r.dates_text || "")
+    .split(";")
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (parts.length <= 1) {
+    return [{ ...r, __displayKey: r.id, __displayDatesText: r.dates_text }];
+  }
+
+  return parts.map((part, index) => ({
+    ...r,
+    __displayKey: `${r.id}-${index}`,
+    __displayDatesText: part,
+  }));
 }
 
 export const SentBookingRequests = () => {
@@ -164,11 +182,14 @@ export const SentBookingRequests = () => {
     return { active, archive, totalArchiveBudget };
   }, [requests]);
 
-  const renderRow = (r: BookingRequest, archived: boolean) => {
+  const activeCards = useMemo(() => active.flatMap(expandBookingRequestDateCards), [active]);
+  const archiveCards = useMemo(() => archive.flatMap(expandBookingRequestDateCards), [archive]);
+
+  const renderRow = (r: BookingRequestCard, archived: boolean) => {
     const display = archived ? "completed" : r.status;
     return (
       <div
-        key={r.id}
+        key={r.__displayKey}
         className="p-3 border rounded-lg bg-background flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
       >
         <div className="min-w-0 flex-1">
@@ -188,7 +209,7 @@ export const SentBookingRequests = () => {
           <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5 flex-wrap">
             <span className="flex items-center gap-1">
               <Calendar className="h-3 w-3" />
-              {r.dates_text}
+              {r.__displayDatesText}
             </span>
             {r.time_text && <span>{formatTime12h(r.time_text)}</span>}
             {r.budget && (

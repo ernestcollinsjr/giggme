@@ -1268,7 +1268,7 @@ const Bookings = () => {
             <CardContent className="space-y-3">
               {currentBookingRequests.map((br) => (
                 <div
-                  key={`br-${br.id}`}
+                  key={`br-${br.__displayKey || br.id}`}
                   className="p-4 border rounded-lg cursor-pointer hover:bg-accent/40 transition-colors"
                   onClick={() => navigate(`/booking-request/${br.id}`)}
                 >
@@ -1283,10 +1283,10 @@ const Bookings = () => {
                       <p className="font-semibold truncate">{br.venue}</p>
                       <p className="text-sm text-muted-foreground">
                         {br.booker_id === br.performer_id
-                          ? `${to12hText(br.dates_text)}`
+                          ? `${to12hText(br.__displayDatesText || br.dates_text)}`
                           : br.performer_id && br.booker_name && br.performer_name
-                            ? `${br.booker_name} → ${br.performer_name} · ${to12hText(br.dates_text)}`
-                            : `From ${br.booker_name || 'a client'} · ${to12hText(br.dates_text)}`}
+                            ? `${br.booker_name} → ${br.performer_name} · ${to12hText(br.__displayDatesText || br.dates_text)}`
+                            : `From ${br.booker_name || 'a client'} · ${to12hText(br.__displayDatesText || br.dates_text)}`}
                         {br.time_text && ` · ${to12hText(br.time_text)}`}
                       </p>
                       {br.budget && (
@@ -1417,7 +1417,7 @@ const Bookings = () => {
             <CardContent className="space-y-3">
               {archivedBookingRequests.map((br) => (
                 <div
-                  key={`br-archived-${br.id}`}
+                  key={`br-archived-${br.__displayKey || br.id}`}
                   className="p-4 border rounded-lg opacity-60 bg-muted/20"
                 >
                   <div className="flex items-start justify-between gap-2 flex-wrap">
@@ -1431,10 +1431,10 @@ const Bookings = () => {
                       <p className="font-semibold truncate">{br.venue}</p>
                       <p className="text-sm text-muted-foreground">
                         {br.booker_id === br.performer_id
-                          ? `${to12hText(br.dates_text)}`
+                          ? `${to12hText(br.__displayDatesText || br.dates_text)}`
                           : br.performer_id && br.booker_name && br.performer_name
-                            ? `${br.booker_name} → ${br.performer_name} · ${to12hText(br.dates_text)}`
-                            : `From ${br.booker_name || 'a client'} · ${to12hText(br.dates_text)}`}
+                            ? `${br.booker_name} → ${br.performer_name} · ${to12hText(br.__displayDatesText || br.dates_text)}`
+                            : `From ${br.booker_name || 'a client'} · ${to12hText(br.__displayDatesText || br.dates_text)}`}
                         {br.time_text && ` · ${to12hText(br.time_text)}`}
                       </p>
                       {br.budget && (

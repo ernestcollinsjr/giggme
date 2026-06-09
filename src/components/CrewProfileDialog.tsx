@@ -127,6 +127,13 @@ export default function CrewProfileDialog({
             resume_url: data.resume_url || "",
             demo_video_urls: toCsv(data.demo_video_urls),
             photo_gallery: toCsv(data.photo_gallery),
+            technical_rider: (data as any).technical_rider || "",
+            hospitality_rider: (data as any).hospitality_rider || "",
+            stage_plot_url: (data as any).stage_plot_url || "",
+            input_list: (data as any).input_list || "",
+            monitor_mix_preferences: (data as any).monitor_mix_preferences || "",
+            backline_requirements: (data as any).backline_requirements || "",
+            rider_notes: (data as any).rider_notes || "",
           });
         } else {
           setForm(empty);

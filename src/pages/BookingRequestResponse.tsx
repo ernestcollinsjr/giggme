@@ -6,15 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { toast } from "@/hooks/use-toast";
 import { Loader2, Check, X, Clock, AlertCircle, CheckCircle2, XCircle } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
+import { formatTimeString } from "@/hooks/useTimeFormat";
 
 function formatTime12h(text: string): string {
-  return text.replace(/\b(\d{1,2}):(\d{2})\b/g, (_, hh, mm) => {
-    const h = parseInt(hh, 10);
-    if (isNaN(h) || h < 0 || h > 23) return `${hh}:${mm}`;
-    const period = h >= 12 ? "pm" : "am";
-    const h12 = h % 12 === 0 ? 12 : h % 12;
-    return mm === "00" ? `${h12}${period}` : `${h12}:${mm}${period}`;
-  });
+  return formatTimeString(text);
 }
 
 type Status = "pending" | "accepted" | "declined" | "expired";

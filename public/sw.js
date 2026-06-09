@@ -20,14 +20,23 @@ self.addEventListener('push', function(event) {
     data: {
       dateOfArrival: Date.now(),
       primaryKey: data.id || 1,
-      url: data.url || '/'
+      url: data.url || '/',
+      sound: data.sound || null
     },
     actions: data.actions || []
   };
 
-  event.waitUntil(
-    self.registration.showNotification(data.title, options)
-  );
+  event.waitUntil((async () => {
+    // Forward the chosen sound to any open app windows so they can play it
+    // through the WebAudio pipeline (matches in-app sound preference).
+    if (data.sound) {
+      const wins = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      for (const w of wins) {
+        w.postMessage({ type: 'PUSH_SOUND', sound: data.sound });
+      }
+    }
+    await self.registration.showNotification(data.title, options);
+  })());
 });
 
 self.addEventListener('notificationclick', function(event) {

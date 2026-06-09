@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { normalizeRole, type ActiveRole } from "@/lib/roles";
+import { usePushSoundListener } from "@/hooks/usePushSoundListener";
 
 /**
  * Persistent layout: renders the desktop sidebar/topbar shell once and keeps it
@@ -11,6 +12,7 @@ import { normalizeRole, type ActiveRole } from "@/lib/roles";
  */
 export default function AppLayout() {
   const [role, setRole] = useState<ActiveRole | null>(null);
+  usePushSoundListener();
 
   useEffect(() => {
     let active = true;

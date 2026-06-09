@@ -380,7 +380,7 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
           </AlertDialogHeader>
           <div className="space-y-2">
             <Label htmlFor="cancel-reason" className="text-sm">
-              Reason (optional)
+              Reason <span className="text-destructive">*</span>
             </Label>
             <Textarea
               id="cancel-reason"
@@ -388,6 +388,7 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
               disabled={cancelling}
+              required
             />
           </div>
           <AlertDialogFooter>

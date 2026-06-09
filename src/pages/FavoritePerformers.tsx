@@ -153,14 +153,14 @@ const FavoritePerformers = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="text-xs h-7 px-2"
+                        className="text-xs h-7 px-2 w-full justify-center"
                         onClick={() => navigate(`/artist-profile/${f.performer_id}`)}
                       >
                         <Eye className="h-3 w-3 mr-1" /> View
                       </Button>
                       <Button
                         size="sm"
-                        className="text-xs h-7 px-2"
+                        className="text-xs h-7 px-2 w-full justify-center"
                         onClick={() => navigate(`/messages?conversation=${f.performer_id}`)}
                       >
                         <MessageCircle className="h-3 w-3 mr-1" /> Message

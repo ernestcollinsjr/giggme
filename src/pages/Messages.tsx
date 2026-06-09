@@ -850,15 +850,26 @@ const Messages = () => {
     
     setSending(true);
     try {
-      const { error } = await supabase.from("messages").insert({
-        sender_id: userId,
-        recipient_id: activeConversation.isGroup ? null : activeConversation.participantId,
-        is_group_message: activeConversation.isGroup,
-        content: text.trim(),
-        reply_to_id: replyToMessage?.id || null,
-      });
+      const { data: sentMessage, error } = await supabase
+        .from("messages")
+        .insert({
+          sender_id: userId,
+          recipient_id: activeConversation.isGroup ? null : activeConversation.participantId,
+          is_group_message: activeConversation.isGroup,
+          content: text.trim(),
+          reply_to_id: replyToMessage?.id || null,
+        })
+        .select("*")
+        .single();
       
       if (error) throw error;
+      if (sentMessage) {
+        setAllMessages((prev) =>
+          prev.some((message) => message.id === sentMessage.id)
+            ? prev
+            : [...prev, sentMessage as Message]
+        );
+      }
       setText("");
       setReplyToMessage(null);
       broadcastTyping(false);

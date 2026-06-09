@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar, Music, Users, Heart, Mic, Sparkles } from "lucide-react";
+import { Calendar, Music, Users, Heart, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface Entertainer {
@@ -159,37 +159,16 @@ export const PreferredEntertainersBookList = () => {
                 {e.genre && (
                   <p className="text-xs text-muted-foreground truncate">{e.genre}</p>
                 )}
-                {(() => {
-                  const instr = (e.instrument_custom || e.instrument || "").toLowerCase();
-                  const dupes = new Set(
-                    [instr, e.genre, e.is_singer ? "vocal" : null, e.is_singer ? "vocals" : null, e.is_singer ? "singer" : null]
-                      .filter(Boolean)
-                      .map((s) => String(s).toLowerCase())
-                  );
-                  const cats = Array.from(new Set((e.entertainer_categories || []).filter((c) => c && !dupes.has(c.toLowerCase()))));
-                  return (
-                    <div className="flex flex-wrap gap-1 mt-1 mb-2">
-                      {cats.map((cat) => (
-                        <Badge key={cat} variant="secondary" className="text-[10px] px-1.5 py-0">
-                          <Sparkles className="h-2.5 w-2.5 mr-0.5" />
-                          {cat}
-                        </Badge>
-                      ))}
-                      {(e.instrument_custom || e.instrument) && (
-                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 capitalize">
-                          <Music className="h-2.5 w-2.5 mr-0.5" />
-                          {e.instrument_custom || e.instrument}
-                        </Badge>
-                      )}
-                      {e.is_singer && (
-                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                          <Mic className="h-2.5 w-2.5 mr-0.5" />
-                          Singer
-                        </Badge>
-                      )}
-                    </div>
-                  );
-                })()}
+                {e.entertainer_categories && e.entertainer_categories.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1 mb-2">
+                    {e.entertainer_categories.map((cat) => (
+                      <Badge key={cat} variant="secondary" className="text-[10px] px-1.5 py-0">
+                        <Sparkles className="h-2.5 w-2.5 mr-0.5" />
+                        {cat}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
 
                 <Button
                   size="sm"

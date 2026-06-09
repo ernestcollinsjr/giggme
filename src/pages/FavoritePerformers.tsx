@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Heart, Music, Eye, Star, MessageCircle, Mic } from "lucide-react";
+import { Heart, Eye, Star, MessageCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface FavRow {
@@ -138,42 +138,15 @@ const FavoritePerformers = () => {
                         )}
                       </div>
                     </div>
-                    {(() => {
-                      const instr = (p?.instrument_custom || p?.instrument || "").toLowerCase();
-                      const dupes = new Set(
-                        [p?.performer_category, instr, a?.genre, p?.is_singer ? "vocal" : null, p?.is_singer ? "vocals" : null, p?.is_singer ? "singer" : null]
-                          .filter(Boolean)
-                          .map((s) => String(s).toLowerCase())
-                      );
-                      const cats = Array.from(new Set((p?.entertainer_categories || []).filter((c) => c && !dupes.has(c.toLowerCase()))));
-                      return (
-                        <div className="flex flex-wrap gap-1">
-                          {p?.performer_category && (
-                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{p.performer_category}</Badge>
-                          )}
-                          {cats.map((cat) => (
-                            <Badge key={cat} variant="outline" className="text-[10px] px-1.5 py-0">
-                              {cat}
-                            </Badge>
-                          ))}
-                          {(p?.instrument_custom || p?.instrument) && (
-                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 capitalize">
-                              <Music className="h-2.5 w-2.5 mr-0.5" />
-                              {p?.instrument_custom || p?.instrument}
-                            </Badge>
-                          )}
-                          {p?.is_singer && (
-                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                              <Mic className="h-2.5 w-2.5 mr-0.5" />
-                              Singer
-                            </Badge>
-                          )}
-                          {a?.genre && (
-                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{a.genre}</Badge>
-                          )}
-                        </div>
-                      );
-                    })()}
+                    {p?.entertainer_categories && p.entertainer_categories.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {p.entertainer_categories.map((cat) => (
+                          <Badge key={cat} variant="outline" className="text-[10px] px-1.5 py-0">
+                            {cat}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
 
                   </CardHeader>
                   <CardContent className="p-3 pt-0 space-y-2">

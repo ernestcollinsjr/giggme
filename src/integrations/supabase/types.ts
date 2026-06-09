@@ -1320,6 +1320,8 @@ export type Database = {
           genres: string[] | null
           id: string
           instrument: Database["public"]["Enums"]["instrument_type"] | null
+          instrument_custom: string | null
+          is_singer: boolean
           location_lat: number | null
           location_lng: number | null
           name: string
@@ -1349,6 +1351,8 @@ export type Database = {
           genres?: string[] | null
           id: string
           instrument?: Database["public"]["Enums"]["instrument_type"] | null
+          instrument_custom?: string | null
+          is_singer?: boolean
           location_lat?: number | null
           location_lng?: number | null
           name: string
@@ -1378,6 +1382,8 @@ export type Database = {
           genres?: string[] | null
           id?: string
           instrument?: Database["public"]["Enums"]["instrument_type"] | null
+          instrument_custom?: string | null
+          is_singer?: boolean
           location_lat?: number | null
           location_lng?: number | null
           name?: string
@@ -2324,6 +2330,8 @@ export type Database = {
           entertainer_categories: string[]
           genre: string
           instrument: string
+          instrument_custom: string
+          is_singer: boolean
           name: string
           performer_category: string
           photo_urls: string[]
@@ -2354,7 +2362,9 @@ export type Database = {
           genre: string
           genres: string[]
           instrument: string
+          instrument_custom: string
           is_pending: boolean
+          is_singer: boolean
           name: string
           performer_category: string
           photo_urls: string[]
@@ -2382,6 +2392,8 @@ export type Database = {
           genre: string
           genres: string[]
           instrument: string
+          instrument_custom: string
+          is_singer: boolean
           name: string
           performer_category: string
           photo_urls: string[]

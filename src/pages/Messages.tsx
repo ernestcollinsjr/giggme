@@ -782,6 +782,18 @@ const Messages = () => {
     }).sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
   }, [allMessages, activeConversation, userId, userRole]);
 
+  // Latest own message that has been read by the other participant — used to render a "Seen at …" line
+  const lastSeenOwnMessageId = useMemo(() => {
+    if (!activeConversation || activeConversation.isGroup || !userId || !activeConversation.participantId) return null;
+    for (let i = conversationMessages.length - 1; i >= 0; i--) {
+      const m = conversationMessages[i];
+      if (m.sender_id === userId && m.read_by?.includes(activeConversation.participantId)) {
+        return m.id;
+      }
+    }
+    return null;
+  }, [conversationMessages, activeConversation, userId]);
+
   // Auto-scroll and mark as read
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });

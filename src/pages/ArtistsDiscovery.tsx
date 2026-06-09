@@ -453,7 +453,8 @@ const ArtistsDiscovery = () => {
                   )}
                 </CardContent>
               </Card>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -463,8 +464,61 @@ const ArtistsDiscovery = () => {
           </Button>
         </div>
       </div>
+
+      {selectionMode && selectedIds.size > 0 && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-40 bg-background border shadow-lg rounded-full px-4 py-2 flex items-center gap-3">
+          <span className="text-sm font-medium">{selectedIds.size} selected</span>
+          <Button size="sm" onClick={() => setDialogOpen(true)}>
+            <Send className="h-4 w-4 mr-2" /> Send Group Message
+          </Button>
+        </div>
+      )}
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-md bg-black/60 backdrop-blur-sm">
+          <DialogHeader>
+            <DialogTitle>Send Cover Request</DialogTitle>
+            <DialogDescription>
+              Group message to {selectedIds.size} performer(s). Each has 30 minutes to accept or decline.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <Label htmlFor="cover-venue">Venue (optional)</Label>
+              <Input id="cover-venue" value={coverVenue} onChange={(e) => setCoverVenue(e.target.value)} placeholder="e.g. The Blue Note" />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label htmlFor="cover-date">Date</Label>
+                <Input id="cover-date" type="date" value={coverDate} onChange={(e) => setCoverDate(e.target.value)} />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="cover-time">Time</Label>
+                <Input id="cover-time" type="time" value={coverTime} onChange={(e) => setCoverTime(e.target.value)} />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="cover-msg">Message *</Label>
+              <Textarea
+                id="cover-msg"
+                rows={4}
+                value={coverMessage}
+                onChange={(e) => setCoverMessage(e.target.value)}
+                placeholder="Performer cancelled — need a cover. Pay is $X. Reply ASAP."
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={sending}>Cancel</Button>
+            <Button onClick={handleSendGroupRequest} disabled={sending || !coverMessage.trim()}>
+              {sending ? "Sending..." : `Send to ${selectedIds.size}`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
+
 
 export default ArtistsDiscovery;

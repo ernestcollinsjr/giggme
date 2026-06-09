@@ -1687,6 +1687,26 @@ const Messages = () => {
                       );
                     })
                   )}
+                  {typingUsers.size > 0 && (
+                    <div className="flex items-end gap-2 mb-4 justify-start animate-in fade-in slide-in-from-bottom-2">
+                      <Avatar className="h-8 w-8">
+                        {activeConversation.participantId && profiles[activeConversation.participantId]?.photo_urls?.[0] ? (
+                          <AvatarImage src={profiles[activeConversation.participantId].photo_urls[0]} />
+                        ) : null}
+                        <AvatarFallback className="text-xs bg-muted border border-border">
+                          {getInitials(Array.from(typingUsers.values())[0] || "U")}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="relative px-4 py-3 rounded-2xl rounded-bl-none bg-muted">
+                        <div className="flex gap-1 items-center">
+                          <span className="w-2 h-2 bg-muted-foreground/70 rounded-full animate-bounce" />
+                          <span className="w-2 h-2 bg-muted-foreground/70 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                          <span className="w-2 h-2 bg-muted-foreground/70 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                        </div>
+                        <div className="absolute bottom-0 -left-2 w-4 h-4 bg-muted" style={{ clipPath: 'polygon(100% 0, 0% 100%, 100% 100%)' }} />
+                      </div>
+                    </div>
+                  )}
                 </div>
                 </TooltipProvider>
                 </ScrollArea>

@@ -307,6 +307,43 @@ const Bookings = () => {
     };
   }, [userRole, gigs, toast]);
 
+  // Real-time updates for booking_requests and gigs (so accept/decline reflects immediately)
+  useEffect(() => {
+    if (!currentUserId) return;
+
+    const suffix = Math.random().toString(36).slice(2);
+    const channel = supabase
+      .channel(`bookings-live-${suffix}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'booking_requests' },
+        (payload) => {
+          const row = (payload.new || payload.old) as any;
+          if (!row) return;
+          if (row.performer_id === currentUserId || row.booker_id === currentUserId) {
+            checkAuthAndFetchData();
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'gigs' },
+        (payload) => {
+          const row = (payload.new || payload.old) as any;
+          if (!row) return;
+          if (row.user_id === currentUserId) {
+            checkAuthAndFetchData();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentUserId]);
+
+
   const checkAuthAndFetchData = async () => {
     const { waitForUser } = await import("@/lib/requireAuth");
     const user = await waitForUser();

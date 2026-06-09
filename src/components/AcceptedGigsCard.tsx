@@ -80,12 +80,14 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
 
       const memberGigs: AcceptedGig[] = (membersRes.data || []).map((item: any) => ({
         id: item.id,
+        isOwned: false,
         location_sharing_enabled: item.location_sharing_enabled,
         gig: item.gigs,
       }));
 
       const ownedGigs: AcceptedGig[] = (ownedRes.data || []).map((g: any) => ({
         id: `owned-${g.id}`,
+        isOwned: true,
         location_sharing_enabled: false,
         gig: g,
       }));

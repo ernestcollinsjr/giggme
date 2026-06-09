@@ -38,37 +38,48 @@ Deno.serve(async (req) => {
       .eq('id', br.id);
     if (updErr) throw updErr;
 
-    // On accept, create a confirmed gig on the performer's calendar so it shows on their dashboard
-    if (action === 'accept' && br.performer_id) {
-      const gigDate = br.event_date || br.dates_text;
-      if (gigDate) {
-        const d = new Date(gigDate);
-        if (!isNaN(d.getTime())) {
-          // Avoid duplicates: check for existing gig for this performer/venue/date
-          const dayStart = new Date(d); dayStart.setUTCHours(0, 0, 0, 0);
-          const dayEnd = new Date(d); dayEnd.setUTCHours(23, 59, 59, 999);
-          const { data: existing } = await admin
-            .from('gigs')
-            .select('id')
-            .eq('user_id', br.performer_id)
-            .eq('venue', br.venue || '')
-            .gte('date', dayStart.toISOString())
-            .lte('date', dayEnd.toISOString())
-            .maybeSingle();
-          if (!existing) {
-            const { error: gigErr } = await admin.from('gigs').insert({
-              user_id: br.performer_id,
-              venue: br.venue || 'Booking',
-              venue_name: br.venue || null,
-              date: d.toISOString(),
-              status: 'confirmed',
-              notes: br.note || null,
-              venue_contact_person: br.contact_person || null,
-              attire: br.dress_code || null,
-            });
-            if (gigErr) console.error('Gig create error', gigErr);
+    // On accept, create one confirmed gig per date in dates_text
+    if (action === 'accept' && br.performer_id && (br.dates_text || br.event_date)) {
+      const startTime = (br.time_text || '').match(/\d{1,2}:\d{2}/)?.[0] || null;
+      const parts = (br.dates_text || '').split(';').map((s: string) => s.trim()).filter(Boolean);
+      const candidates: Date[] = [];
+      for (const p of parts) {
+        const base = new Date(p);
+        if (!isNaN(base.getTime())) {
+          if (startTime) {
+            const [hh, mm] = startTime.split(':').map(Number);
+            base.setHours(hh, mm, 0, 0);
           }
+          candidates.push(base);
         }
+      }
+      if (candidates.length === 0 && br.event_date) {
+        const d = new Date(br.event_date);
+        if (!isNaN(d.getTime())) candidates.push(d);
+      }
+      for (const d of candidates) {
+        const dayStart = new Date(d); dayStart.setUTCHours(0, 0, 0, 0);
+        const dayEnd = new Date(d); dayEnd.setUTCHours(23, 59, 59, 999);
+        const { data: existing } = await admin
+          .from('gigs')
+          .select('id')
+          .eq('user_id', br.performer_id)
+          .eq('venue', br.venue || '')
+          .gte('date', dayStart.toISOString())
+          .lte('date', dayEnd.toISOString())
+          .maybeSingle();
+        if (existing) continue;
+        const { error: gigErr } = await admin.from('gigs').insert({
+          user_id: br.performer_id,
+          venue: br.venue || 'Booking',
+          venue_name: br.venue || null,
+          date: d.toISOString(),
+          status: 'confirmed',
+          notes: br.note || null,
+          venue_contact_person: br.contact_person || null,
+          attire: br.dress_code || null,
+        });
+        if (gigErr) console.error('Gig create error', gigErr);
       }
     }
 

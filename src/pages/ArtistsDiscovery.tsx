@@ -461,13 +461,31 @@ const ArtistsDiscovery = () => {
                       )}
                     </div>
                   ) : (
+                    <div className="grid grid-cols-2 gap-1.5 mt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs h-7 px-2 w-full justify-center"
+                        onClick={(e) => { e.stopPropagation(); navigate(`/artist-profile/${artist.user_id}`); }}
+                      >
+                        <Eye className="h-3 w-3 mr-1" /> View
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs h-7 px-2 w-full inline-flex items-center justify-center gap-1"
+                        onClick={(e) => { e.stopPropagation(); navigate(`/messages?conversation=${artist.user_id}`); }}
+                      >
+                        <MessageCircle className="h-3 w-3 shrink-0" />
+                        <span>Msg</span>
+                      </Button>
+                    </div>
                     <Button
-                      variant="outline"
                       size="sm"
-                      className="w-full mt-2 text-xs h-7"
+                      className="text-xs h-7 px-2 w-full justify-center"
                       onClick={(e) => { e.stopPropagation(); navigate(`/artist-profile/${artist.user_id}`); }}
                     >
-                      View Profile
+                      <Calendar className="h-3 w-3 mr-1" /> Book
                     </Button>
                   )}
 

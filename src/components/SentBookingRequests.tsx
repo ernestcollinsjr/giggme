@@ -99,6 +99,28 @@ export const SentBookingRequests = () => {
     toast({ title: disabled ? "Auto reminders off" : "Auto reminders on" });
   };
 
+  const handleResend = async (id: string) => {
+    setResendingId(id);
+    try {
+      const { data, error } = await supabase.functions.invoke("resend-booking-request", {
+        body: { bookingRequestId: id },
+      });
+      if (error) throw error;
+      setRequests((prev) =>
+        prev.map((r) => (r.id === id ? { ...r, expires_at: data?.expiresAt || r.expires_at } : r))
+      );
+      toast({ title: "Booking email resent", description: "The performer will receive the email again." });
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: "Failed to resend",
+        description: err?.message || "Something went wrong.",
+      });
+    } finally {
+      setResendingId(null);
+    }
+  };
+
   const fetchRequests = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     const user = session?.user;

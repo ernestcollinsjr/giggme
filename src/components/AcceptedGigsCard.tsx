@@ -19,6 +19,16 @@ import {
 import { Calendar, MapPin, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+function formatTime12h(text: string): string {
+  return text.replace(/\b(\d{1,2}):(\d{2})\b/g, (_, hh, mm) => {
+    const h = parseInt(hh, 10);
+    if (isNaN(h) || h < 0 || h > 23) return `${hh}:${mm}`;
+    const period = h >= 12 ? "pm" : "am";
+    const h12 = h % 12 === 0 ? 12 : h % 12;
+    return mm === "00" ? `${h12}${period}` : `${h12}:${mm}${period}`;
+  });
+}
+
 type GigSource = "gig_member" | "owned_gig" | "booking_request";
 
 interface AcceptedGig {
@@ -308,7 +318,7 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
                   </div>
                   <h4 className="font-semibold">{gig.gig.venue}</h4>
                   {gig.gig.notes && (
-                    <p className="text-sm text-muted-foreground mt-1">{gig.gig.notes}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{formatTime12h(gig.gig.notes)}</p>
                   )}
                   {(gig.gig.loading_time || gig.gig.sound_check_time) && (
                     <div className="flex gap-2 mt-2">

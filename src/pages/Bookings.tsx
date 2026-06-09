@@ -2243,6 +2243,52 @@ const Bookings = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Archived Gigs */}
+        {archivedGigs.length > 0 && (
+          <Card className="border-border/50 shadow-lg opacity-80">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-muted-foreground">
+                <Music className="h-5 w-5" />
+                Archived Gigs
+              </CardTitle>
+              <CardDescription>Past performances and bookings</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {archivedGigs.map((gig) => (
+                  <div key={`gig-archived-${gig.id}`} className="p-4 border rounded-lg opacity-60 bg-muted/20">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2 flex-wrap">
+                          <Badge variant={gig.status === 'confirmed' ? 'default' : 'secondary'}>
+                            {gig.status}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                          <CalendarIcon className="h-4 w-4" />
+                          {format(new Date(gig.date), "PPP")}
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                          <Clock className="h-4 w-4" />
+                          {format(new Date(gig.date), "p")}
+                          {gig.end_time && ` - ${formatTime12Hour(gig.end_time)}`}
+                        </div>
+                        {gig.venue_name && (
+                          <h3 className="font-bold text-lg mb-2">{gig.venue_name}</h3>
+                        )}
+                        <div className="flex items-center gap-2 mb-2">
+                          <MapPin className="h-4 w-4 text-primary" />
+                          <h4 className="font-semibold">{gig.venue}</h4>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Edit Gig Dialog */}

@@ -86,6 +86,7 @@ const PerformerProfileView = () => {
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [bookingSubmitting, setBookingSubmitting] = useState(false);
+  const [crewProfileOpen, setCrewProfileOpen] = useState(false);
   const [bookingForm, setBookingForm] = useState({
     dates: [] as Date[],
     startTime: "",

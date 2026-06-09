@@ -318,7 +318,7 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
                   </div>
                   <h4 className="font-semibold">{gig.gig.venue}</h4>
                   {gig.gig.notes && (
-                    <p className="text-sm text-muted-foreground mt-1">{gig.gig.notes}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{formatTime12h(gig.gig.notes)}</p>
                   )}
                   {(gig.gig.loading_time || gig.gig.sound_check_time) && (
                     <div className="flex gap-2 mt-2">

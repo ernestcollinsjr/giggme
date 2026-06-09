@@ -378,6 +378,8 @@ const Chat = () => {
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
+      remoteTypingTimeoutsRef.current.forEach((timeout) => clearTimeout(timeout));
+      remoteTypingTimeoutsRef.current.clear();
     };
   }, []);
 

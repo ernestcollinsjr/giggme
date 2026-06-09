@@ -344,7 +344,7 @@ const Bookings = () => {
       await supabase
         .from("booking_requests")
         .delete()
-        .in("status", ["declined", "rejected", "cancelled", "expired"])
+        .in("status", ["declined", "rejected", "cancelled", "expired"] as any)
         .lt("updated_at", cutoff30Iso)
         .or(`performer_id.eq.${user.id},booker_id.eq.${user.id}`);
 

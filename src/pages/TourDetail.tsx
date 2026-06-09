@@ -1319,6 +1319,14 @@ export default function TourDetail() {
         onOpenChange={setDetailsDialogOpen}
         onUpdate={fetchTourData}
       />
+
+      <CrewProfileDialog
+        userId={profileUserId}
+        userName={profileUserName}
+        open={profileDialogOpen}
+        onOpenChange={setProfileDialogOpen}
+      />
+
     </div>
   );
 }

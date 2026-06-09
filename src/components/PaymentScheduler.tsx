@@ -82,6 +82,11 @@ export function PaymentScheduler({ mode }: { mode: Mode }) {
   };
 
   const loadManager = async (uid: string) => {
+    // Check if super admin — they manage everyone
+    const { data: roles } = await supabase
+      .from("user_roles").select("role").eq("user_id", uid);
+    const isSuperAdmin = (roles || []).some((r: any) => r.role === "super_admin");
+
     // Direct managed artists
     const { data: ma } = await supabase
       .from("booking_manager_artists")
@@ -110,13 +115,37 @@ export function PaymentScheduler({ mode }: { mode: Mode }) {
       leaderIds.push(...((lb || []).map((b: any) => b.band_leader_id).filter(Boolean)));
     }
 
-    const artistIds = Array.from(new Set([...directIds, ...memberIds, ...leaderIds])).filter(Boolean);
-    if (artistIds.length === 0) return;
+    // Performers from any booking request booked by this manager (any status)
+    const { data: brAll } = await supabase
+      .from("booking_requests")
+      .select("performer_id")
+      .eq("booker_id", uid);
+    const bookedIds = (brAll || []).map((r: any) => r.performer_id).filter(Boolean);
 
-    const { data: profs } = await supabase
-      .from("profiles")
-      .select("id, name, email, photo_urls")
-      .in("id", artistIds);
+    // Band invitations sent by this manager — match by email to profiles
+    const { data: invs } = await supabase
+      .from("band_invitations")
+      .select("email")
+      .eq("invited_by", uid);
+    const invitedEmails = Array.from(new Set((invs || []).map((r: any) => r.email).filter(Boolean)));
+    let invitedIds: string[] = [];
+    if (invitedEmails.length) {
+      const { data: invProfs } = await supabase
+        .from("profiles").select("id").in("email", invitedEmails);
+      invitedIds = (invProfs || []).map((p: any) => p.id);
+    }
+
+    const artistIds = Array.from(new Set([
+      ...directIds, ...memberIds, ...leaderIds, ...bookedIds, ...invitedIds,
+    ])).filter(Boolean);
+
+    // Super admin: include everyone
+    let profsQuery = supabase.from("profiles").select("id, name, email, photo_urls");
+    if (!isSuperAdmin) {
+      if (artistIds.length === 0) return;
+      profsQuery = profsQuery.in("id", artistIds);
+    }
+    const { data: profs } = await profsQuery;
     setPerformers((profs || []).map((p: any) => ({
       id: p.id, name: p.name, email: p.email, photo_url: p.photo_urls?.[0] ?? null,
     })).sort((a, b) => (a.name || "").localeCompare(b.name || "")));
@@ -125,8 +154,7 @@ export function PaymentScheduler({ mode }: { mode: Mode }) {
       .from("booking_requests")
       .select("id, performer_id, performer_name, event_date, venue, budget")
       .eq("booker_id", uid)
-      .eq("status", "accepted")
-      .in("performer_id", artistIds);
+      .eq("status", "accepted");
     setBookings(
       (brs || [])
         .filter((b: any) => b.event_date)

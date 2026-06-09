@@ -255,6 +255,11 @@ const BookPerformers = () => {
                       {e.performer_category && (
                         <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{e.performer_category}</Badge>
                       )}
+                      {(e.entertainer_categories || []).map((cat) => (
+                        <Badge key={cat} variant="outline" className="text-[10px] px-1.5 py-0">
+                          {cat}
+                        </Badge>
+                      ))}
                       {(e.instrument_custom || e.instrument) && (
                         <Badge variant="secondary" className="text-[10px] px-1.5 py-0 capitalize">
                           <Music className="h-2.5 w-2.5 mr-0.5" />

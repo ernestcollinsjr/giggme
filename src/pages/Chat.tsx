@@ -146,6 +146,9 @@ const Chat = () => {
     (async () => {
       const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) return;
+      if (session?.access_token) {
+        supabase.realtime.setAuth(session.access_token);
+      }
       setUserId(user.id);
 
       // Get user role

@@ -64,6 +64,15 @@ interface PinnedMessage {
   pinned_at: string;
 }
 
+interface TypingStatus {
+  conversation_key: string;
+  user_id: string;
+  recipient_id: string | null;
+  is_group: boolean;
+  is_typing: boolean;
+  updated_at: string;
+}
+
 const EMOJI_OPTIONS = ['👍', '❤️', '😂', '😮', '😢', '🎉'];
 
 const Chat = () => {
@@ -90,6 +99,8 @@ const Chat = () => {
   const profilesRef = useRef<typeof profiles>([]);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const remoteTypingTimeoutsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  const typingStatusPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lastTypingPersistRef = useRef<{ isTyping: boolean; sentAt: number }>({ isTyping: false, sentAt: 0 });
 
   // Handle URL parameters to open specific conversations
   useEffect(() => {

@@ -323,6 +323,73 @@ export default function CrewProfileDialog({
               </div>
             </TabsContent>
 
+            <TabsContent value="rider" className="space-y-4">
+              <p className="text-xs text-muted-foreground">
+                Performance rider for musicians and singers — shared with your tour manager.
+              </p>
+              <div>
+                <Label>Technical Rider (PA, mics, monitors, FOH needs)</Label>
+                <Textarea
+                  rows={4}
+                  value={form.technical_rider}
+                  onChange={(e) => set("technical_rider", e.target.value)}
+                  placeholder="e.g. 4x SM58, 2x DI boxes, IEMs preferred, 32-ch console…"
+                />
+              </div>
+              <div>
+                <Label>Input List / Channel List</Label>
+                <Textarea
+                  rows={3}
+                  value={form.input_list}
+                  onChange={(e) => set("input_list", e.target.value)}
+                  placeholder="1. Kick  2. Snare  3. Bass DI  4. Lead Vox…"
+                />
+              </div>
+              <div>
+                <Label>Monitor Mix Preferences</Label>
+                <Textarea
+                  rows={2}
+                  value={form.monitor_mix_preferences}
+                  onChange={(e) => set("monitor_mix_preferences", e.target.value)}
+                  placeholder="Mix 1: my vocal + kick/snare; light reverb on vox…"
+                />
+              </div>
+              <div>
+                <Label>Backline Requirements</Label>
+                <Textarea
+                  rows={3}
+                  value={form.backline_requirements}
+                  onChange={(e) => set("backline_requirements", e.target.value)}
+                  placeholder="Fender Twin Reverb, drum throne, 5-pc kit w/ hardware…"
+                />
+              </div>
+              <div>
+                <Label>Stage Plot URL</Label>
+                <Input
+                  value={form.stage_plot_url}
+                  onChange={(e) => set("stage_plot_url", e.target.value)}
+                  placeholder="https://…"
+                />
+              </div>
+              <div>
+                <Label>Hospitality Rider (green room, food, drinks)</Label>
+                <Textarea
+                  rows={4}
+                  value={form.hospitality_rider}
+                  onChange={(e) => set("hospitality_rider", e.target.value)}
+                  placeholder="Bottled water, hot tea w/ honey, fresh fruit, private dressing room…"
+                />
+              </div>
+              <div>
+                <Label>Additional Rider Notes</Label>
+                <Textarea
+                  rows={3}
+                  value={form.rider_notes}
+                  onChange={(e) => set("rider_notes", e.target.value)}
+                />
+              </div>
+            </TabsContent>
+
             <TabsContent value="travel" className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>

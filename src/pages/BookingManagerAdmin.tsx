@@ -736,7 +736,7 @@ export default function BookingManagerAdmin() {
               className="gap-1 text-xs sm:text-sm"
             >
               <UserPlus className="h-4 w-4" />
-              Invite Group Member
+              Add performer
             </Button>
             <Button
               onClick={() => navigate("/admin")}
@@ -1400,7 +1400,7 @@ export default function BookingManagerAdmin() {
       <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-black/60 backdrop-blur-sm">
           <DialogHeader>
-            <DialogTitle>Invite Group Member</DialogTitle>
+            <DialogTitle>Add performer</DialogTitle>
             <DialogDescription>
               {activeBand
                 ? `Sending invites for "${activeBand.name}".`

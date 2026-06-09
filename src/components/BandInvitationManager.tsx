@@ -510,7 +510,7 @@ export const BandInvitationManager = ({ bandId, bandName }: BandInvitationManage
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Invite Group Member</CardTitle>
+        <CardTitle>Add performer</CardTitle>
         <CardDescription>
           Send email invitations to new group members
         </CardDescription>

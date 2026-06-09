@@ -272,7 +272,7 @@ export default function TourDetail() {
 
       setDialogOpen(false);
       setInviteEmail("");
-      setInviteCrewType('band_members');
+      setInviteCrewType('band_member');
       fetchTourData();
     } catch (error) {
       console.error("Error sending invite:", error);

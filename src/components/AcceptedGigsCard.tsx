@@ -19,9 +19,12 @@ import {
 import { Calendar, MapPin, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+type GigSource = "gig_member" | "owned_gig" | "booking_request";
+
 interface AcceptedGig {
   id: string;
   isOwned: boolean;
+  source: GigSource;
   location_sharing_enabled: boolean;
   gig: {
     id: string;

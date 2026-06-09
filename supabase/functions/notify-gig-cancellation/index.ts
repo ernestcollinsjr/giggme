@@ -41,30 +41,53 @@ serve(async (req) => {
       .eq("id", performer_id)
       .single();
 
-    // Find booking manager(s)
-    const managerEmails: { email: string; name: string }[] = [];
+    // Find booking manager(s) — collect IDs from every possible relationship
+    const managerIds = new Set<string>();
+
+    // 1) Via the gig's band
     if (gig.band_id) {
       const { data: bmBands } = await supabase
         .from("booking_manager_bands")
         .select("booking_manager_id")
         .eq("band_id", gig.band_id);
-      const ids = (bmBands || []).map((r: any) => r.booking_manager_id);
-      if (ids.length) {
-        const { data: bms } = await supabase
-          .from("profiles")
-          .select("name, email")
-          .in("id", ids);
-        (bms || []).forEach((b: any) => b.email && managerEmails.push(b));
-      }
+      (bmBands || []).forEach((r: any) => r.booking_manager_id && managerIds.add(r.booking_manager_id));
     }
-    // Also notify the gig owner if different from performer
+
+    // 2) Via direct artist link (booking_manager_artists)
+    const { data: bmArtists } = await supabase
+      .from("booking_manager_artists")
+      .select("booking_manager_id")
+      .eq("artist_id", performer_id);
+    (bmArtists || []).forEach((r: any) => r.booking_manager_id && managerIds.add(r.booking_manager_id));
+
+    // 3) Via any band the performer is a member of
+    const { data: perfBands } = await supabase
+      .from("band_members")
+      .select("band_id")
+      .eq("member_id", performer_id);
+    const bandIds = (perfBands || []).map((r: any) => r.band_id).filter(Boolean);
+    if (bandIds.length) {
+      const { data: bmb2 } = await supabase
+        .from("booking_manager_bands")
+        .select("booking_manager_id")
+        .in("band_id", bandIds);
+      (bmb2 || []).forEach((r: any) => r.booking_manager_id && managerIds.add(r.booking_manager_id));
+    }
+
+    // 4) Gig owner if different from performer
     if (gig.user_id && gig.user_id !== performer_id) {
-      const { data: owner } = await supabase
+      managerIds.add(gig.user_id);
+    }
+
+    managerIds.delete(performer_id);
+
+    const managerEmails: { email: string; name: string }[] = [];
+    if (managerIds.size) {
+      const { data: bms } = await supabase
         .from("profiles")
         .select("name, email")
-        .eq("id", gig.user_id)
-        .single();
-      if (owner?.email) managerEmails.push(owner);
+        .in("id", Array.from(managerIds));
+      (bms || []).forEach((b: any) => b.email && managerEmails.push(b));
     }
 
     const venueDisplay = gig.venue_name || gig.venue;

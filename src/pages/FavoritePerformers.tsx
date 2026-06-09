@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Heart, Music, Eye, Star, MessageCircle } from "lucide-react";
+import { Heart, Music, Eye, Star, MessageCircle, Mic } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface FavRow {
@@ -13,9 +13,11 @@ interface FavRow {
   profile: {
     id: string;
     name: string | null;
-    bio: string | null;
     photo_urls: string[] | null;
     performer_category: string | null;
+    instrument: string | null;
+    instrument_custom: string | null;
+    is_singer: boolean | null;
   } | null;
   artist: { stage_name: string | null; genre: string | null } | null;
 }
@@ -49,7 +51,7 @@ const FavoritePerformers = () => {
       return;
     }
     const [{ data: profiles }, { data: artists }] = await Promise.all([
-      supabase.from("profiles").select("id,name,bio,photo_urls,performer_category").in("id", ids),
+      supabase.from("profiles").select("id,name,photo_urls,performer_category,instrument,instrument_custom,is_singer").in("id", ids),
       supabase.from("artist_profiles").select("user_id,stage_name,genre").in("user_id", ids),
     ]);
     const merged: FavRow[] = ids.map((id) => ({
@@ -139,16 +141,25 @@ const FavoritePerformers = () => {
                       {p?.performer_category && (
                         <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{p.performer_category}</Badge>
                       )}
-                      {a?.genre && (
-                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                      {(p?.instrument_custom || p?.instrument) && (
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 capitalize">
                           <Music className="h-2.5 w-2.5 mr-0.5" />
-                          {a.genre}
+                          {p?.instrument_custom || p?.instrument}
                         </Badge>
+                      )}
+                      {p?.is_singer && (
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                          <Mic className="h-2.5 w-2.5 mr-0.5" />
+                          Singer
+                        </Badge>
+                      )}
+                      {a?.genre && (
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{a.genre}</Badge>
                       )}
                     </div>
                   </CardHeader>
                   <CardContent className="p-3 pt-0 space-y-2">
-                    {p?.bio && <p className="text-xs text-muted-foreground line-clamp-2">{p.bio}</p>}
+
                     <div className="grid grid-cols-2 gap-1.5">
                       <Button
                         variant="outline"

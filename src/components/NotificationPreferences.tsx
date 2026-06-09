@@ -6,7 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Bell, Mail, MessageSquare, Smartphone, Loader2, Send, Volume2, VolumeX, Play, Volume1, Clock } from "lucide-react";
+import { Bell, Mail, MessageSquare, Smartphone, Loader2, Send, Volume2, VolumeX, Play, Volume1, Clock, RotateCcw } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useNativePushNotifications } from "@/hooks/useNativePushNotifications";
@@ -53,7 +53,7 @@ export const NotificationPreferences = () => {
   
   const { isSupported, isSubscribed, isLoading: pushLoading, supportMessage, subscribe, unsubscribe } = pushNotifications;
   const { playTestSound } = useSoundPreference();
-  const { format: timeFormat, setFormat: setTimeFormat } = useTimeFormat();
+  const { format: timeFormat, setFormat: setTimeFormat, resetFormat } = useTimeFormat();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [sendingTest, setSendingTest] = useState(false);
@@ -204,6 +204,17 @@ export const NotificationPreferences = () => {
               checked={timeFormat === "24h"}
               onCheckedChange={(checked) => setTimeFormat(checked ? "24h" : "12h")}
             />
+          </div>
+          <div className="flex justify-end">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={resetFormat}
+              className="h-8 text-muted-foreground hover:text-foreground"
+            >
+              <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+              Reset to default
+            </Button>
           </div>
         </div>
 

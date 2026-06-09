@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Mail, MapPin, Calendar, Clock, Trash2, BellOff, Archive, DollarSign, CheckCircle2 } from "lucide-react";
+import { formatTimeString } from "@/hooks/useTimeFormat";
 
 interface BookingRequest {
   id: string;

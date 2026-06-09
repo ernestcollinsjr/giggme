@@ -28,12 +28,30 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const { data: gig, error: gigErr } = await supabase
+    let { data: gig, error: gigErr } = await supabase
       .from("gigs")
       .select("id, venue, venue_name, date, band_id, user_id")
       .eq("id", gig_id)
-      .single();
-    if (gigErr || !gig) throw gigErr || new Error("Gig not found");
+      .maybeSingle();
+
+    let bookingRequest: any = null;
+    if (!gig) {
+      const { data: br, error: brErr } = await supabase
+        .from("booking_requests")
+        .select("id, venue, event_date, dates_text, time_text, booker_id, booker_name, performer_id")
+        .eq("id", gig_id)
+        .maybeSingle();
+      if (brErr || !br) throw brErr || gigErr || new Error("Gig not found");
+      bookingRequest = br;
+      gig = {
+        id: br.id,
+        venue: br.venue || br.booker_name || "Booking",
+        venue_name: null,
+        date: br.event_date,
+        band_id: null,
+        user_id: br.booker_id,
+      };
+    }
 
     const { data: performer } = await supabase
       .from("profiles")
@@ -78,6 +96,9 @@ serve(async (req) => {
     if (gig.user_id && gig.user_id !== performer_id) {
       managerIds.add(gig.user_id);
     }
+    if (bookingRequest?.booker_id && bookingRequest.booker_id !== performer_id) {
+      managerIds.add(bookingRequest.booker_id);
+    }
 
     managerIds.delete(performer_id);
 
@@ -91,14 +112,14 @@ serve(async (req) => {
     }
 
     const venueDisplay = gig.venue_name || gig.venue;
-    const gigDate = new Date(gig.date).toLocaleString("en-US", {
+    const gigDate = gig.date ? new Date(gig.date).toLocaleString("en-US", {
       weekday: "long",
       month: "long",
       day: "numeric",
       year: "numeric",
       hour: "numeric",
       minute: "2-digit",
-    });
+    }) : bookingRequest?.dates_text || "Date TBD";
     const performerName = performer?.name || "A performer";
     const reasonBlock = reason
       ? `<p style="margin:16px 0;padding:12px;background:#f4f4f5;border-radius:6px"><strong>Reason:</strong> ${reason}</p>`

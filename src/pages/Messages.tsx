@@ -870,11 +870,16 @@ const Messages = () => {
             ? prev
             : [...prev, sentMessage as Message]
         );
+        setJustSentId(sentMessage.id);
+        setTimeout(() => {
+          setJustSentId((curr) => (curr === sentMessage.id ? null : curr));
+        }, 2500);
       }
       setText("");
       setReplyToMessage(null);
       broadcastTyping(false);
-      
+      toast({ title: "Message sent", duration: 1500 });
+
       // Scroll to bottom after sending
       scrollToBottom();
     } catch (e: any) {

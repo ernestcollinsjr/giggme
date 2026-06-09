@@ -134,6 +134,42 @@ const BookPerformers = () => {
     setAddingId(null);
   };
 
+  const toggleFavorite = async (performerId: string) => {
+    if (!currentUserId) {
+      toast({ variant: "destructive", title: "Sign in required" });
+      return;
+    }
+    setTogglingFavId(performerId);
+    const isFav = favoriteIds.has(performerId);
+    if (isFav) {
+      const { error } = await supabase
+        .from("favorite_performers")
+        .delete()
+        .eq("user_id", currentUserId)
+        .eq("performer_id", performerId);
+      if (error) {
+        toast({ variant: "destructive", title: "Failed", description: error.message });
+      } else {
+        setFavoriteIds((prev) => {
+          const n = new Set(prev);
+          n.delete(performerId);
+          return n;
+        });
+      }
+    } else {
+      const { error } = await supabase
+        .from("favorite_performers")
+        .insert({ user_id: currentUserId, performer_id: performerId });
+      if (error && !error.message.includes("duplicate")) {
+        toast({ variant: "destructive", title: "Failed", description: error.message });
+      } else {
+        setFavoriteIds((prev) => new Set(prev).add(performerId));
+        toast({ title: "Added to favorites" });
+      }
+    }
+    setTogglingFavId(null);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/10 p-6">
       <div className="max-w-7xl mx-auto">

@@ -194,6 +194,7 @@ const Messages = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingChannelRef = useRef<RealtimeChannel | null>(null);
+  const profilesRef = useRef<Record<string, Profile>>({});
   const remoteTypingTimeoutsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const realtimeRefreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const realtimeFallbackIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);

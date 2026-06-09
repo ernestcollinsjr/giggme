@@ -680,8 +680,9 @@ const Messages = () => {
     if (!userId) return { direct: [], group: null as Conversation | null };
     
     const conversationMap = new Map<string, Conversation>();
-    // Always filter for band_leader and booking_manager roles
-    const isRestrictedRole = userRole === "booking_manager";
+    // Filter for booking_manager only when they actually manage members.
+    // Without this guard, a BM with no band hides ALL incoming direct messages.
+    const isRestrictedRole = userRole === "booking_manager" && allowedMemberIds.length > 0;
     
     // Group chat - only show if user has a role that uses group chat
     // For band_leader/booking_manager, group chat is within their own group

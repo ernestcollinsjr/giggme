@@ -565,6 +565,10 @@ const Messages = () => {
       )
       .subscribe((status) => {
         if (status === "SUBSCRIBED") {
+          if (realtimeFallbackIntervalRef.current) {
+            clearInterval(realtimeFallbackIntervalRef.current);
+            realtimeFallbackIntervalRef.current = null;
+          }
           refreshMessages();
         }
 

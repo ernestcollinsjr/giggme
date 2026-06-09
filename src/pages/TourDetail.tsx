@@ -341,7 +341,8 @@ export default function TourDetail() {
           tour_id: tourId,
           crew_member_id: selectedProfileId,
           crew_type: selectedCrewType,
-          status: "accepted"
+          status: "accepted",
+          payment_amount: memberPaymentAmount ? parseFloat(memberPaymentAmount) : null,
         });
 
       if (error) throw error;
@@ -353,7 +354,8 @@ export default function TourDetail() {
 
       setAddMemberDialogOpen(false);
       setSelectedProfileId("");
-      setSelectedCrewType('band_members');
+      setSelectedCrewType('band_member');
+      setMemberPaymentAmount("");
       fetchTourData();
     } catch (error) {
       console.error("Error adding crew member:", error);

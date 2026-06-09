@@ -110,6 +110,33 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
     fetchAcceptedGigs();
   }, [userId]);
 
+  useEffect(() => {
+    if (!userId) return;
+
+    const refreshAcceptedGigs = () => fetchAcceptedGigs();
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") refreshAcceptedGigs();
+    };
+
+    window.addEventListener("focus", refreshAcceptedGigs);
+    window.addEventListener("pageshow", refreshAcceptedGigs);
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+
+    const channel = supabase
+      .channel(`accepted-gigs-${userId}-${Math.random().toString(36).slice(2)}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "booking_requests" }, refreshAcceptedGigs)
+      .on("postgres_changes", { event: "*", schema: "public", table: "gig_members", filter: `member_id=eq.${userId}` }, refreshAcceptedGigs)
+      .on("postgres_changes", { event: "*", schema: "public", table: "gigs" }, refreshAcceptedGigs)
+      .subscribe();
+
+    return () => {
+      window.removeEventListener("focus", refreshAcceptedGigs);
+      window.removeEventListener("pageshow", refreshAcceptedGigs);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+      supabase.removeChannel(channel);
+    };
+  }, [userId]);
+
   const fetchAcceptedGigs = async () => {
     try {
       setErrorMessage(null);

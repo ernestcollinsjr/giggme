@@ -152,7 +152,7 @@ const FavoritePerformers = () => {
                   </CardHeader>
                   <CardContent className="p-3 pt-0 space-y-2">
 
-                    <div className="grid grid-cols-3 gap-1.5">
+                    <div className="grid grid-cols-2 gap-1.5">
                       <Button
                         variant="outline"
                         size="sm"
@@ -160,13 +160,6 @@ const FavoritePerformers = () => {
                         onClick={() => navigate(`/artist-profile/${f.performer_id}`)}
                       >
                         <Eye className="h-3 w-3 mr-1" /> View
-                      </Button>
-                      <Button
-                        size="sm"
-                        className="text-xs h-7 px-2 w-full justify-center"
-                        onClick={() => navigate(`/artist-profile/${f.performer_id}`)}
-                      >
-                        <Calendar className="h-3 w-3 mr-1" /> Book
                       </Button>
                       <Button
                         variant="outline"
@@ -178,6 +171,13 @@ const FavoritePerformers = () => {
                         <span>Msg</span>
                       </Button>
                     </div>
+                    <Button
+                      size="sm"
+                      className="text-xs h-7 px-2 w-full justify-center"
+                      onClick={() => navigate(`/artist-profile/${f.performer_id}`)}
+                    >
+                      <Calendar className="h-3 w-3 mr-1" /> Book
+                    </Button>
                   </CardContent>
                 </Card>
               );

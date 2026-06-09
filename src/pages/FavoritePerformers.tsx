@@ -5,9 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Heart, Eye, Star, MessageCircle, IdCard } from "lucide-react";
+import { Heart, Eye, Star, MessageCircle, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import CrewProfileDialog from "@/components/CrewProfileDialog";
 
 interface FavRow {
   performer_id: string;
@@ -29,7 +28,7 @@ const FavoritePerformers = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [favs, setFavs] = useState<FavRow[]>([]);
-  const [profileTarget, setProfileTarget] = useState<{ id: string; name: string } | null>(null);
+  
 
   const load = async () => {
     setLoading(true);
@@ -163,15 +162,14 @@ const FavoritePerformers = () => {
                         <Eye className="h-3 w-3 mr-1" /> View
                       </Button>
                       <Button
-                        variant="outline"
                         size="sm"
                         className="text-xs h-7 px-2 w-full justify-center"
-                        onClick={() => setProfileTarget({ id: f.performer_id, name: a?.stage_name || p?.name || "Performer" })}
-                        title="Open full profile & rider"
+                        onClick={() => navigate(`/artist-profile/${f.performer_id}`)}
                       >
-                        <IdCard className="h-3 w-3 mr-1" /> Profile
+                        <Calendar className="h-3 w-3 mr-1" /> Book
                       </Button>
                       <Button
+                        variant="outline"
                         size="sm"
                         className="text-xs h-7 px-2 w-full inline-flex items-center justify-center gap-1"
                         onClick={() => navigate(`/messages?conversation=${f.performer_id}`)}
@@ -187,12 +185,6 @@ const FavoritePerformers = () => {
           </div>
         )}
       </div>
-      <CrewProfileDialog
-        userId={profileTarget?.id ?? null}
-        userName={profileTarget?.name}
-        open={!!profileTarget}
-        onOpenChange={(o) => !o && setProfileTarget(null)}
-      />
     </div>
   );
 };

@@ -218,6 +218,18 @@ export const SentBookingRequests = () => {
               />
             </label>
           )}
+          {!archived && r.status === "pending" && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-primary"
+              onClick={() => handleResend(r.id)}
+              disabled={resendingId === r.id}
+              aria-label="Resend book performer email"
+            >
+              <RefreshCw className={`h-4 w-4 ${resendingId === r.id ? "animate-spin" : ""}`} />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"

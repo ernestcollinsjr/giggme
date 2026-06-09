@@ -555,6 +555,87 @@ export type Database = {
         }
         Relationships: []
       }
+      crew_profiles: {
+        Row: {
+          bio: string | null
+          certifications: string[] | null
+          console_experience: string | null
+          created_at: string
+          demo_video_urls: string[] | null
+          dietary_needs: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          gear_list: string | null
+          instruments: string[] | null
+          lighting_rig_experience: string | null
+          passport_expiry: string | null
+          passport_number: string | null
+          phone: string | null
+          photo_gallery: string[] | null
+          photo_url: string | null
+          resume_url: string | null
+          shirt_size: string | null
+          stage_name: string | null
+          tsa_precheck: string | null
+          updated_at: string
+          user_id: string
+          vocal_range: string | null
+          years_experience: number | null
+        }
+        Insert: {
+          bio?: string | null
+          certifications?: string[] | null
+          console_experience?: string | null
+          created_at?: string
+          demo_video_urls?: string[] | null
+          dietary_needs?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          gear_list?: string | null
+          instruments?: string[] | null
+          lighting_rig_experience?: string | null
+          passport_expiry?: string | null
+          passport_number?: string | null
+          phone?: string | null
+          photo_gallery?: string[] | null
+          photo_url?: string | null
+          resume_url?: string | null
+          shirt_size?: string | null
+          stage_name?: string | null
+          tsa_precheck?: string | null
+          updated_at?: string
+          user_id: string
+          vocal_range?: string | null
+          years_experience?: number | null
+        }
+        Update: {
+          bio?: string | null
+          certifications?: string[] | null
+          console_experience?: string | null
+          created_at?: string
+          demo_video_urls?: string[] | null
+          dietary_needs?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          gear_list?: string | null
+          instruments?: string[] | null
+          lighting_rig_experience?: string | null
+          passport_expiry?: string | null
+          passport_number?: string | null
+          phone?: string | null
+          photo_gallery?: string[] | null
+          photo_url?: string | null
+          resume_url?: string | null
+          shirt_size?: string | null
+          stage_name?: string | null
+          tsa_precheck?: string | null
+          updated_at?: string
+          user_id?: string
+          vocal_range?: string | null
+          years_experience?: number | null
+        }
+        Relationships: []
+      }
       email_tracking: {
         Row: {
           clicked_at: string | null
@@ -1912,6 +1993,7 @@ export type Database = {
           hotel_room_number: string | null
           id: string
           nearby_services: string | null
+          payment_amount: number | null
           per_diem_info: string | null
           role_title: string | null
           status: string
@@ -1931,6 +2013,7 @@ export type Database = {
           hotel_room_number?: string | null
           id?: string
           nearby_services?: string | null
+          payment_amount?: number | null
           per_diem_info?: string | null
           role_title?: string | null
           status?: string
@@ -1950,6 +2033,7 @@ export type Database = {
           hotel_room_number?: string | null
           id?: string
           nearby_services?: string | null
+          payment_amount?: number | null
           per_diem_info?: string | null
           role_title?: string | null
           status?: string
@@ -2491,7 +2575,16 @@ export type Database = {
         | "cancelled"
         | "callout"
         | "completed"
-      crew_type: "band_members" | "singer" | "sound_crew" | "lighting_crew"
+      crew_type:
+        | "band_members"
+        | "singer"
+        | "sound_crew"
+        | "lighting_crew"
+        | "sound_tech"
+        | "lighting_tech"
+        | "band_member"
+        | "load_handler"
+        | "rigger"
       gig_status: "pending" | "confirmed" | "completed" | "cancelled"
       instrument_type:
         | "guitar"
@@ -2650,7 +2743,17 @@ export const Constants = {
         "callout",
         "completed",
       ],
-      crew_type: ["band_members", "singer", "sound_crew", "lighting_crew"],
+      crew_type: [
+        "band_members",
+        "singer",
+        "sound_crew",
+        "lighting_crew",
+        "sound_tech",
+        "lighting_tech",
+        "band_member",
+        "load_handler",
+        "rigger",
+      ],
       gig_status: ["pending", "confirmed", "completed", "cancelled"],
       instrument_type: [
         "guitar",

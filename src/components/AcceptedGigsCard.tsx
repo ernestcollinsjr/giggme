@@ -4,11 +4,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Calendar, MapPin } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Calendar, MapPin, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface AcceptedGig {
   id: string;
+  isOwned: boolean;
   location_sharing_enabled: boolean;
   gig: {
     id: string;
@@ -28,7 +41,55 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
   const [acceptedGigs, setAcceptedGigs] = useState<AcceptedGig[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<AcceptedGig | null>(null);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelling, setCancelling] = useState(false);
   const { toast } = useToast();
+
+  const handleCancelGig = async () => {
+    if (!cancelTarget) return;
+    setCancelling(true);
+    try {
+      if (cancelTarget.isOwned) {
+        const { error } = await supabase
+          .from("gigs")
+          .update({ status: "cancelled" })
+          .eq("id", cancelTarget.gig.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("gig_members")
+          .update({ status: "declined" })
+          .eq("id", cancelTarget.id);
+        if (error) throw error;
+      }
+
+      const { error: fnError } = await supabase.functions.invoke("notify-gig-cancellation", {
+        body: {
+          gig_id: cancelTarget.gig.id,
+          performer_id: userId,
+          reason: cancelReason.trim() || undefined,
+        },
+      });
+      if (fnError) console.error("Email notification error:", fnError);
+
+      setAcceptedGigs((prev) => prev.filter((g) => g.id !== cancelTarget.id));
+      toast({
+        title: "Gig cancelled",
+        description: "Confirmation emails have been sent.",
+      });
+      setCancelTarget(null);
+      setCancelReason("");
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Failed to cancel gig",
+        description: error.message,
+      });
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   useEffect(() => {
     if (!userId) return;
@@ -67,13 +128,15 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
 
       const memberGigs: AcceptedGig[] = (membersRes.data || []).map((item: any) => ({
         id: item.id,
+        isOwned: false,
         location_sharing_enabled: item.location_sharing_enabled,
         gig: item.gigs,
       }));
 
       const ownedGigs: AcceptedGig[] = (ownedRes.data || []).map((g: any) => ({
         id: `owned-${g.id}`,
-        location_sharing_enabled: true,
+        isOwned: true,
+        location_sharing_enabled: false,
         gig: g,
       }));
 
@@ -228,10 +291,73 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
                   </Label>
                 </div>
               </div>
+              <div className="mt-3 flex justify-end">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setCancelTarget(gig)}
+                >
+                  <XCircle className="h-4 w-4" />
+                  Cancel Gig
+                </Button>
+              </div>
             </div>
           ))}
         </div>
       </CardContent>
+
+      <AlertDialog
+        open={!!cancelTarget}
+        onOpenChange={(open) => {
+          if (!open && !cancelling) {
+            setCancelTarget(null);
+            setCancelReason("");
+          }
+        }}
+      >
+        <AlertDialogContent className="backdrop-blur-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel this gig?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to cancel{" "}
+              <strong>{cancelTarget?.gig.venue}</strong> on{" "}
+              {cancelTarget &&
+                new Date(cancelTarget.gig.date).toLocaleDateString("en-US", {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              ? The booking manager will be notified by email.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="cancel-reason" className="text-sm">
+              Reason (optional)
+            </Label>
+            <Textarea
+              id="cancel-reason"
+              placeholder="Let the booking manager know why..."
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              disabled={cancelling}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={cancelling}>Keep Gig</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleCancelGig();
+              }}
+              disabled={cancelling}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {cancelling ? "Cancelling..." : "Yes, Cancel Gig"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 };

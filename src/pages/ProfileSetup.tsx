@@ -49,6 +49,8 @@ const ProfileSetup = () => {
   const [performerCategory, setPerformerCategory] = useState<string>("Solo");
   const [bio, setBio] = useState("");
   const [instrument, setInstrument] = useState("");
+  const [instrumentCustom, setInstrumentCustom] = useState("");
+  const [isSinger, setIsSinger] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
   const [riderNotes, setRiderNotes] = useState("");
@@ -176,6 +178,8 @@ const ProfileSetup = () => {
           setPerformerCategory((profile as any).performer_category || "Solo");
           setBio(profile.bio || "");
           setInstrument(profile.instrument || "");
+          setInstrumentCustom((profile as any).instrument_custom || "");
+          setIsSinger(!!(profile as any).is_singer);
           setPhoneNumber(profile.phone_number || "");
           setEmail(profile.email || "");
           setRiderNotes(profile.rider_notes || "");
@@ -481,6 +485,8 @@ const ProfileSetup = () => {
         bio,
         email,
         instrument: (role === "entertainer" || role === "member" || role === "artist" || role === "booking_manager" ? instrument : null) as any,
+        instrument_custom: instrumentCustom || null,
+        is_singer: isSinger,
         phone_number: phoneNumber || null,
         rider_notes: riderNotes,
         timezone,
@@ -1653,23 +1659,55 @@ const ProfileSetup = () => {
             </div>
             
             {usesEntertainerProfile && (
-              <div className="space-y-2">
-                <Label htmlFor="instrument">Primary Instrument</Label>
-                <Select value={instrument} onValueChange={setInstrument} required>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your instrument" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="guitar">Guitar</SelectItem>
-                    <SelectItem value="bass">Bass</SelectItem>
-                    <SelectItem value="drums">Drums</SelectItem>
-                    <SelectItem value="vocals">Vocals</SelectItem>
-                    <SelectItem value="keyboard">Keyboard</SelectItem>
-                    <SelectItem value="saxophone">Saxophone</SelectItem>
-                    <SelectItem value="trumpet">Trumpet</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="space-y-4 pt-4 border-t">
+                <div>
+                  <Label className="flex items-center gap-2">
+                    <Music className="h-4 w-4" /> Talent Description
+                  </Label>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Help booking managers quickly understand what you do.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="instrument">Primary Instrument</Label>
+                  <Select value={instrument} onValueChange={setInstrument} required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select your instrument" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="guitar">Guitar</SelectItem>
+                      <SelectItem value="bass">Bass</SelectItem>
+                      <SelectItem value="drums">Drums</SelectItem>
+                      <SelectItem value="vocals">Vocals</SelectItem>
+                      <SelectItem value="keyboard">Keyboard</SelectItem>
+                      <SelectItem value="saxophone">Saxophone</SelectItem>
+                      <SelectItem value="trumpet">Trumpet</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="instrument_custom">Instrument (your own words)</Label>
+                  <Input
+                    id="instrument_custom"
+                    placeholder="e.g. 12-string acoustic guitar, fiddle, DJ controller"
+                    value={instrumentCustom}
+                    onChange={(e) => setInstrumentCustom(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Shown on your performer card so managers see your exact talent.
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between rounded-md border p-3">
+                  <div>
+                    <Label htmlFor="is_singer" className="text-sm font-medium">Are you a singer?</Label>
+                    <p className="text-xs text-muted-foreground">Lets managers filter for vocalists at a glance.</p>
+                  </div>
+                  <Switch id="is_singer" checked={isSinger} onCheckedChange={setIsSinger} />
+                </div>
               </div>
             )}
 

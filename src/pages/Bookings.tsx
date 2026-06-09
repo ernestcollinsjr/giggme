@@ -1281,14 +1281,21 @@ const Bookings = () => {
                         <Badge variant="outline">Book Performer</Badge>
                       </div>
                       <p className="font-semibold truncate">{br.venue}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {br.booker_id === br.performer_id
-                          ? `${to12hText(br.__displayDatesText || br.dates_text)}`
-                          : br.performer_id && br.booker_name && br.performer_name
-                            ? `${br.booker_name} → ${br.performer_name} · ${to12hText(br.__displayDatesText || br.dates_text)}`
-                            : `From ${br.booker_name || 'a client'} · ${to12hText(br.__displayDatesText || br.dates_text)}`}
-                        {br.time_text && ` · ${to12hText(br.time_text)}`}
-                      </p>
+                      {br.booker_id !== br.performer_id && (
+                        <p className="text-xs text-muted-foreground">
+                          {br.performer_id && br.booker_name && br.performer_name
+                            ? `${br.booker_name} → ${br.performer_name}`
+                            : `From ${br.booker_name || 'a client'}`}
+                        </p>
+                      )}
+                      <div className="mt-2 flex items-start gap-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-sm text-foreground">
+                        <CalendarIcon className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                        <div className="min-w-0">
+                          <div className="text-xs font-medium uppercase tracking-normal text-primary">Date</div>
+                          <div className="font-semibold leading-snug">{to12hText(br.__displayDatesText || br.dates_text)}</div>
+                          {br.time_text && <div className="text-xs text-muted-foreground">{to12hText(br.time_text)}</div>}
+                        </div>
+                      </div>
                       {br.budget && (
                         <p className="text-xs text-muted-foreground mt-1">Budget: {br.budget}</p>
                       )}
@@ -1429,14 +1436,21 @@ const Bookings = () => {
                         <Badge variant="outline">Book Performer</Badge>
                       </div>
                       <p className="font-semibold truncate">{br.venue}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {br.booker_id === br.performer_id
-                          ? `${to12hText(br.__displayDatesText || br.dates_text)}`
-                          : br.performer_id && br.booker_name && br.performer_name
-                            ? `${br.booker_name} → ${br.performer_name} · ${to12hText(br.__displayDatesText || br.dates_text)}`
-                            : `From ${br.booker_name || 'a client'} · ${to12hText(br.__displayDatesText || br.dates_text)}`}
-                        {br.time_text && ` · ${to12hText(br.time_text)}`}
-                      </p>
+                      {br.booker_id !== br.performer_id && (
+                        <p className="text-xs text-muted-foreground">
+                          {br.performer_id && br.booker_name && br.performer_name
+                            ? `${br.booker_name} → ${br.performer_name}`
+                            : `From ${br.booker_name || 'a client'}`}
+                        </p>
+                      )}
+                      <div className="mt-2 flex items-start gap-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-sm text-foreground">
+                        <CalendarIcon className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                        <div className="min-w-0">
+                          <div className="text-xs font-medium uppercase tracking-normal text-primary">Date</div>
+                          <div className="font-semibold leading-snug">{to12hText(br.__displayDatesText || br.dates_text)}</div>
+                          {br.time_text && <div className="text-xs text-muted-foreground">{to12hText(br.time_text)}</div>}
+                        </div>
+                      </div>
                       {br.budget && (
                         <p className="text-xs text-muted-foreground mt-1">Budget: {br.budget}</p>
                       )}

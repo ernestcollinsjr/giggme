@@ -27,6 +27,9 @@ interface AcceptedGig {
   isOwned: boolean;
   source: GigSource;
   location_sharing_enabled: boolean;
+  displayDateText?: string;
+  displayDateIndex?: number;
+  displayDateTotal?: number;
   gig: {
     id: string;
     date: string;
@@ -188,7 +191,7 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
           .split(';')
           .map((s: string) => s.trim())
           .filter(Boolean);
-        const dates: string[] = [];
+        const dateEntries: { iso: string; text?: string }[] = [];
         for (const p of parts) {
           const d = parseDateText(p);
           if (d) {
@@ -196,19 +199,24 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
               const [hh, mm] = timeMatch.split(':').map(Number);
               d.setHours(hh, mm, 0, 0);
             }
-            dates.push(d.toISOString());
+            dateEntries.push({ iso: d.toISOString(), text: p });
           }
         }
-        if (dates.length === 0 && b.event_date) dates.push(b.event_date);
+        if (dateEntries.length === 0 && b.event_date) {
+          dateEntries.push({ iso: b.event_date });
+        }
 
-        return dates.map((dateIso, idx) => ({
+        return dateEntries.map((entry, idx) => ({
           id: `br-${b.id}-${idx}`,
           isOwned: false,
           source: "booking_request" as GigSource,
           location_sharing_enabled: b.location_sharing_enabled ?? true,
+          displayDateText: entry.text,
+          displayDateIndex: idx + 1,
+          displayDateTotal: dateEntries.length,
           gig: {
             id: b.id,
-            date: dateIso,
+            date: entry.iso,
             venue: b.venue || b.booker_name || "Booking",
             notes: b.time_text || null,
             loading_time: null,
@@ -330,18 +338,31 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
         <div className="space-y-4">
           {acceptedGigs.map((gig) => (
             <div key={gig.id} className="p-4 border rounded-lg bg-background">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                    <Calendar className="h-4 w-4" />
-                    {new Date(gig.gig.date).toLocaleDateString('en-US', {
-                      weekday: 'short',
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0 flex-1">
+                  <div className="mb-2 flex items-start gap-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-sm text-foreground">
+                    <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    <div className="min-w-0 space-y-0.5">
+                      {gig.displayDateTotal && gig.displayDateTotal > 1 && (
+                        <div className="text-xs font-medium uppercase tracking-normal text-primary">
+                          Date {gig.displayDateIndex} of {gig.displayDateTotal}
+                        </div>
+                      )}
+                      <div className="font-semibold leading-snug">
+                        {gig.displayDateText || new Date(gig.gig.date).toLocaleDateString('en-US', {
+                          weekday: 'short',
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        })}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(gig.gig.date).toLocaleTimeString('en-US', {
+                          hour: 'numeric',
+                          minute: '2-digit',
+                        })}
+                      </div>
+                    </div>
                   </div>
                   <h4 className="font-semibold">{gig.gig.venue}</h4>
                   {gig.gig.notes && (
@@ -362,7 +383,7 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
                     </div>
                   )}
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 sm:shrink-0">
                   <Switch
                     id={`location-${gig.id}`}
                     checked={gig.location_sharing_enabled}

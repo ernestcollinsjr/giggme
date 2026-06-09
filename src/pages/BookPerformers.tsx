@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Music, Search, Filter, Sparkles, UserPlus, Eye } from "lucide-react";
+import { Music, Search, Filter, Sparkles, UserPlus, Eye, Heart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface FeaturedEntertainer {
@@ -32,6 +32,9 @@ const BookPerformers = () => {
   const [myRosterIds, setMyRosterIds] = useState<Set<string>>(new Set());
   const [bmId, setBmId] = useState<string | null>(null);
   const [addingId, setAddingId] = useState<string | null>(null);
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [togglingFavId, setTogglingFavId] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -40,6 +43,12 @@ const BookPerformers = () => {
 
       // Resolve booking_manager id (self if BM, otherwise parent BM if admin).
       if (user) {
+        setCurrentUserId(user.id);
+        const { data: favRows } = await supabase
+          .from("favorite_performers")
+          .select("performer_id")
+          .eq("user_id", user.id);
+        setFavoriteIds(new Set((favRows || []).map((r: any) => r.performer_id)));
         const { data: roles } = await supabase
           .from("user_roles")
           .select("role")
@@ -125,6 +134,42 @@ const BookPerformers = () => {
     setAddingId(null);
   };
 
+  const toggleFavorite = async (performerId: string) => {
+    if (!currentUserId) {
+      toast({ variant: "destructive", title: "Sign in required" });
+      return;
+    }
+    setTogglingFavId(performerId);
+    const isFav = favoriteIds.has(performerId);
+    if (isFav) {
+      const { error } = await supabase
+        .from("favorite_performers")
+        .delete()
+        .eq("user_id", currentUserId)
+        .eq("performer_id", performerId);
+      if (error) {
+        toast({ variant: "destructive", title: "Failed", description: error.message });
+      } else {
+        setFavoriteIds((prev) => {
+          const n = new Set(prev);
+          n.delete(performerId);
+          return n;
+        });
+      }
+    } else {
+      const { error } = await supabase
+        .from("favorite_performers")
+        .insert({ user_id: currentUserId, performer_id: performerId });
+      if (error && !error.message.includes("duplicate")) {
+        toast({ variant: "destructive", title: "Failed", description: error.message });
+      } else {
+        setFavoriteIds((prev) => new Set(prev).add(performerId));
+        toast({ title: "Added to favorites" });
+      }
+    }
+    setTogglingFavId(null);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/10 p-6">
       <div className="max-w-7xl mx-auto">
@@ -181,6 +226,16 @@ const BookPerformers = () => {
               const inRoster = myRosterIds.has(e.user_id);
               return (
                 <Card key={e.user_id} className="relative hover:shadow-lg transition-shadow">
+                  <button
+                    onClick={() => toggleFavorite(e.user_id)}
+                    disabled={togglingFavId === e.user_id}
+                    aria-label={favoriteIds.has(e.user_id) ? "Remove from favorites" : "Add to favorites"}
+                    className="absolute top-2 right-2 z-10 rounded-full bg-background/80 backdrop-blur p-1.5 border border-border hover:bg-background transition-colors"
+                  >
+                    <Heart
+                      className={`h-3.5 w-3.5 ${favoriteIds.has(e.user_id) ? "fill-primary text-primary" : "text-muted-foreground"}`}
+                    />
+                  </button>
                   <CardHeader className="p-3 pb-2">
                     <div className="flex items-center gap-2 mb-1">
                       <Avatar className="h-9 w-9 flex-shrink-0">

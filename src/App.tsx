@@ -18,6 +18,7 @@ import Pricing from "./pages/Pricing";
 import PerformerProfileView from "./pages/PerformerProfileView";
 import ArtistsDiscovery from "./pages/ArtistsDiscovery";
 import BookPerformers from "./pages/BookPerformers";
+import FavoritePerformers from "./pages/FavoritePerformers";
 
 import NotFound from "./pages/NotFound";
 import OpenExternal from "./pages/OpenExternal";
@@ -73,6 +74,7 @@ const App = () => (
               <Route path="/artist-profile/:userId" element={<PerformerProfileView />} />
               <Route path="/artists" element={<ArtistsDiscovery />} />
               <Route path="/book-performers" element={<BookPerformers />} />
+              <Route path="/favorites" element={<FavoritePerformers />} />
               <Route path="/tours" element={<Tours />} />
               <Route path="/tours/:tourId" element={<TourDetail />} />
               <Route path="/booking-manager" element={<BookingManagerAdmin />} />

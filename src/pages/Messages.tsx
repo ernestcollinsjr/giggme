@@ -194,6 +194,8 @@ const Messages = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingChannelRef = useRef<RealtimeChannel | null>(null);
+  const realtimeRefreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const realtimeFallbackIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [justSentId, setJustSentId] = useState<string | null>(null);
 
@@ -253,6 +255,22 @@ const Messages = () => {
   }>({ messageId: null, startX: 0, currentX: 0, isOwn: false });
 
   const SWIPE_THRESHOLD = 80;
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session?.access_token) {
+        supabase.realtime.setAuth(data.session.access_token);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.access_token) {
+        supabase.realtime.setAuth(session.access_token);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Combined touch handlers for long press and swipe
   const handleTouchStart = useCallback((message: Message, e: React.TouchEvent, isOwn: boolean) => {
@@ -493,6 +511,14 @@ const Messages = () => {
     fetchMessages();
     fetchReactionsAndPins();
 
+    const refreshMessages = () => {
+      if (realtimeRefreshTimeoutRef.current) clearTimeout(realtimeRefreshTimeoutRef.current);
+      realtimeRefreshTimeoutRef.current = setTimeout(() => {
+        fetchMessages();
+        fetchReactionsAndPins();
+      }, 250);
+    };
+
     // Realtime subscription
     const channel = supabase
       .channel(`messages-page-realtime-${Math.random().toString(36).slice(2)}`)
@@ -501,7 +527,11 @@ const Messages = () => {
         { event: "*", schema: "public", table: "messages" },
         (payload) => {
           if (payload.eventType === "INSERT") {
-            setAllMessages((prev) => [...prev, payload.new as Message]);
+            setAllMessages((prev) =>
+              prev.some((message) => message.id === (payload.new as Message).id)
+                ? prev
+                : [...prev, payload.new as Message]
+            );
             // Auto-scroll to bottom when new message arrives
             setTimeout(() => {
               const allViewports = document.querySelectorAll('[data-radix-scroll-area-viewport]');
@@ -533,9 +563,32 @@ const Messages = () => {
         { event: "*", schema: "public", table: "read_receipts" },
         () => fetchReactionsAndPins()
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          if (realtimeFallbackIntervalRef.current) {
+            clearInterval(realtimeFallbackIntervalRef.current);
+            realtimeFallbackIntervalRef.current = null;
+          }
+          refreshMessages();
+        }
+
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+          refreshMessages();
+          if (!realtimeFallbackIntervalRef.current) {
+            realtimeFallbackIntervalRef.current = setInterval(refreshMessages, 5000);
+          }
+        }
+      });
 
     return () => {
+      if (realtimeRefreshTimeoutRef.current) {
+        clearTimeout(realtimeRefreshTimeoutRef.current);
+        realtimeRefreshTimeoutRef.current = null;
+      }
+      if (realtimeFallbackIntervalRef.current) {
+        clearInterval(realtimeFallbackIntervalRef.current);
+        realtimeFallbackIntervalRef.current = null;
+      }
       supabase.removeChannel(channel);
     };
   }, [userId]);

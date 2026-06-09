@@ -1599,6 +1599,20 @@ const Messages = () => {
                                 {formatMessageTime(m.created_at)}
                               </span>
                             </div>
+                            {isOwn && lastSeenOwnMessageId === m.id && activeConversation.participantId && (() => {
+                              const readTime = getReadTime(m.id, activeConversation.participantId);
+                              if (!readTime) return null;
+                              const seenAt = new Date(readTime).toLocaleString([], {
+                                month: 'short', day: 'numeric',
+                                hour: 'numeric', minute: '2-digit',
+                              });
+                              return (
+                                <div className="mt-0.5 px-1 flex items-center justify-end gap-1 text-[10px] text-primary/80 font-medium">
+                                  <CheckCheck className="h-3 w-3" />
+                                  <span>Seen at {seenAt}</span>
+                                </div>
+                              );
+                            })()}
 
                             {/* Actions - positioned on the bubble (desktop only) */}
                             <div className={cn(

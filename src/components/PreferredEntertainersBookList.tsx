@@ -99,7 +99,7 @@ export const PreferredEntertainersBookList = () => {
   };
 
   const handleBook = (id: string) => {
-    navigate(`/artist-profile/${id}`);
+    navigate(`/artist-profile/${id}?book=1`);
   };
 
   if (loading) {

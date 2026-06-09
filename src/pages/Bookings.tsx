@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { TimePicker12h } from "@/components/ui/time-picker-12h";
-import { Calendar as CalendarIcon, Clock, MapPin, Plus, Trash2, Music, Navigation, Users, Send, Pencil, Filter, Mail, MailCheck, MailOpen, MousePointerClick, AlertCircle } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, MapPin, Plus, Trash2, Music, Navigation, Users, Send, Pencil, Filter, Mail, MailCheck, MailOpen, MousePointerClick, AlertCircle, RefreshCw } from "lucide-react";
 import { EmailTrackingStatus } from "@/components/EmailTrackingStatus";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -160,6 +160,24 @@ const Bookings = () => {
   const [editingRequest, setEditingRequest] = useState<any | null>(null);
   const [editForm, setEditForm] = useState({ venue: "", dates_text: "", time_text: "", budget: "", note: "" });
   const [savingEdit, setSavingEdit] = useState(false);
+  const [resendingId, setResendingId] = useState<string | null>(null);
+
+  const handleResendBookingRequest = async (br: any) => {
+    if (!br?.id) return;
+    setResendingId(br.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("resend-booking-request", {
+        body: { bookingRequestId: br.id },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast({ title: "Email resent", description: "The booking request email has been resent." });
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Failed to resend", description: err?.message || "Please try again." });
+    } finally {
+      setResendingId(null);
+    }
+  };
   const [gigInvitations, setGigInvitations] = useState<any[]>([]);
   const [bands, setBands] = useState<{ id: string; name: string }[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -1250,6 +1268,22 @@ const Bookings = () => {
                       )}
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
+                      {canEditBookings && br.status === 'pending' && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-9 w-9 border border-border/60 bg-background/80 text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleResendBookingRequest(br);
+                          }}
+                          disabled={resendingId === br.id}
+                          aria-label="Resend booking email"
+                          title="Resend email"
+                        >
+                          <RefreshCw className={`h-4 w-4 ${resendingId === br.id ? 'animate-spin' : ''}`} />
+                        </Button>
+                      )}
                       {canEditBookings && (
                         <Button
                           size="icon"

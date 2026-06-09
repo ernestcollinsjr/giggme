@@ -360,8 +360,20 @@ const ArtistsDiscovery = () => {
           </Card>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-            {filteredArtists.map((artist) => (
-              <Card key={artist.id} className={`hover:shadow-lg transition-shadow ${artist.is_pending ? "opacity-90 border-dashed" : ""}`}>
+            {filteredArtists.map((artist) => {
+              const isSelectable = selectionMode && !artist.is_pending;
+              const isSelected = selectedIds.has(artist.user_id);
+              return (
+              <Card
+                key={artist.id}
+                onClick={isSelectable ? () => toggleSelected(artist.user_id) : undefined}
+                className={`relative hover:shadow-lg transition-shadow ${artist.is_pending ? "opacity-90 border-dashed" : ""} ${isSelectable ? "cursor-pointer" : ""} ${isSelected ? "ring-2 ring-primary" : ""}`}
+              >
+                {selectionMode && !artist.is_pending && (
+                  <div className="absolute top-2 right-2 z-10 bg-background rounded p-0.5 shadow-sm">
+                    <Checkbox checked={isSelected} onCheckedChange={() => toggleSelected(artist.user_id)} />
+                  </div>
+                )}
                 <CardHeader className="p-3 pb-2">
                   <div className="flex items-center gap-2 mb-1">
                     <Avatar className="h-9 w-9 flex-shrink-0">

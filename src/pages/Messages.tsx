@@ -195,6 +195,7 @@ const Messages = () => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingChannelRef = useRef<RealtimeChannel | null>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
+  const [justSentId, setJustSentId] = useState<string | null>(null);
 
   // Bubble color customization - per conversation
   const [conversationColors, setConversationColors] = useState<Record<string, string>>(() => {
@@ -869,11 +870,16 @@ const Messages = () => {
             ? prev
             : [...prev, sentMessage as Message]
         );
+        setJustSentId(sentMessage.id);
+        setTimeout(() => {
+          setJustSentId((curr) => (curr === sentMessage.id ? null : curr));
+        }, 2500);
       }
       setText("");
       setReplyToMessage(null);
       broadcastTyping(false);
-      
+      toast({ title: "Message sent", duration: 1500 });
+
       // Scroll to bottom after sending
       scrollToBottom();
     } catch (e: any) {
@@ -1572,6 +1578,11 @@ const Messages = () => {
                                 
                                 return <Check className="h-3 w-3 text-muted-foreground" />;
                               })()}
+                              {isOwn && justSentId === m.id && (
+                                <span className="text-[10px] font-medium text-primary animate-in fade-in slide-in-from-bottom-1">
+                                  Sent
+                                </span>
+                              )}
                               <span className="text-[10px] text-muted-foreground">
                                 {formatMessageTime(m.created_at)}
                               </span>
@@ -1675,6 +1686,26 @@ const Messages = () => {
                         </div>
                       );
                     })
+                  )}
+                  {typingUsers.size > 0 && (
+                    <div className="flex items-end gap-2 mb-4 justify-start animate-in fade-in slide-in-from-bottom-2">
+                      <Avatar className="h-8 w-8">
+                        {activeConversation.participantId && profiles[activeConversation.participantId]?.photo_urls?.[0] ? (
+                          <AvatarImage src={profiles[activeConversation.participantId].photo_urls[0]} />
+                        ) : null}
+                        <AvatarFallback className="text-xs bg-muted border border-border">
+                          {getInitials(Array.from(typingUsers.values())[0] || "U")}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="relative px-4 py-3 rounded-2xl rounded-bl-none bg-muted">
+                        <div className="flex gap-1 items-center">
+                          <span className="w-2 h-2 bg-muted-foreground/70 rounded-full animate-bounce" />
+                          <span className="w-2 h-2 bg-muted-foreground/70 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                          <span className="w-2 h-2 bg-muted-foreground/70 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                        </div>
+                        <div className="absolute bottom-0 -left-2 w-4 h-4 bg-muted" style={{ clipPath: 'polygon(100% 0, 0% 100%, 100% 100%)' }} />
+                      </div>
+                    </div>
                   )}
                 </div>
                 </TooltipProvider>

@@ -5,8 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Heart, Eye, Star, MessageCircle } from "lucide-react";
+import { Heart, Eye, Star, MessageCircle, IdCard } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import CrewProfileDialog from "@/components/CrewProfileDialog";
 
 interface FavRow {
   performer_id: string;

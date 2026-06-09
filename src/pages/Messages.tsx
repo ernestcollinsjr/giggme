@@ -769,12 +769,17 @@ const Messages = () => {
       );
     }
     
-    return allMessages.filter(m => 
-      !m.is_group_message && 
-      ((m.sender_id === userId && m.recipient_id === activeConversation.participantId) ||
-       (m.sender_id === activeConversation.participantId && m.recipient_id === userId))
-    ).sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-  }, [allMessages, activeConversation, userId]);
+    return allMessages.filter(m => {
+      if (m.is_group_message) return false;
+
+      if (userRole === "super_admin") {
+        return m.sender_id === activeConversation.participantId || m.recipient_id === activeConversation.participantId;
+      }
+
+      return (m.sender_id === userId && m.recipient_id === activeConversation.participantId) ||
+        (m.sender_id === activeConversation.participantId && m.recipient_id === userId);
+    }).sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+  }, [allMessages, activeConversation, userId, userRole]);
 
   // Auto-scroll and mark as read
   useEffect(() => {
@@ -820,6 +825,10 @@ const Messages = () => {
         if (conversation.isGroup) {
           return m.is_group_message && m.sender_id !== userId;
         }
+        if (userRole === "super_admin") {
+          return !m.is_group_message && m.sender_id === conversation.participantId;
+        }
+
         return !m.is_group_message && m.sender_id === conversation.participantId;
       });
 

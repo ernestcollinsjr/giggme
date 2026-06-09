@@ -1268,6 +1268,22 @@ const Bookings = () => {
                       )}
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
+                      {canEditBookings && br.status === 'pending' && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-9 w-9 border border-border/60 bg-background/80 text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleResendBookingRequest(br);
+                          }}
+                          disabled={resendingId === br.id}
+                          aria-label="Resend booking email"
+                          title="Resend email"
+                        >
+                          <RefreshCw className={`h-4 w-4 ${resendingId === br.id ? 'animate-spin' : ''}`} />
+                        </Button>
+                      )}
                       {canEditBookings && (
                         <Button
                           size="icon"

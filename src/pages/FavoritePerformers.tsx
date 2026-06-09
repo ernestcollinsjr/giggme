@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Heart, Music, Eye, Star } from "lucide-react";
+import { Heart, Music, Eye, Star, MessageCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface FavRow {
@@ -149,14 +149,23 @@ const FavoritePerformers = () => {
                   </CardHeader>
                   <CardContent className="p-3 pt-0 space-y-2">
                     {p?.bio && <p className="text-xs text-muted-foreground line-clamp-2">{p.bio}</p>}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full text-xs h-7"
-                      onClick={() => navigate(`/artist-profile/${f.performer_id}`)}
-                    >
-                      <Eye className="h-3 w-3 mr-1" /> View Profile
-                    </Button>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs h-7 px-2"
+                        onClick={() => navigate(`/artist-profile/${f.performer_id}`)}
+                      >
+                        <Eye className="h-3 w-3 mr-1" /> View
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="text-xs h-7 px-2"
+                        onClick={() => navigate(`/messages?conversation=${f.performer_id}`)}
+                      >
+                        <MessageCircle className="h-3 w-3 mr-1" /> Message
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               );

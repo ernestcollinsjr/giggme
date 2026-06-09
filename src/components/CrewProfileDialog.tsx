@@ -37,6 +37,13 @@ type ProfileForm = {
   resume_url: string;
   demo_video_urls: string;
   photo_gallery: string;
+  technical_rider: string;
+  hospitality_rider: string;
+  stage_plot_url: string;
+  input_list: string;
+  monitor_mix_preferences: string;
+  backline_requirements: string;
+  rider_notes: string;
 };
 
 const empty: ProfileForm = {
@@ -61,6 +68,13 @@ const empty: ProfileForm = {
   resume_url: "",
   demo_video_urls: "",
   photo_gallery: "",
+  technical_rider: "",
+  hospitality_rider: "",
+  stage_plot_url: "",
+  input_list: "",
+  monitor_mix_preferences: "",
+  backline_requirements: "",
+  rider_notes: "",
 };
 
 const toCsv = (arr: string[] | null | undefined) => (arr || []).join(", ");
@@ -113,6 +127,13 @@ export default function CrewProfileDialog({
             resume_url: data.resume_url || "",
             demo_video_urls: toCsv(data.demo_video_urls),
             photo_gallery: toCsv(data.photo_gallery),
+            technical_rider: (data as any).technical_rider || "",
+            hospitality_rider: (data as any).hospitality_rider || "",
+            stage_plot_url: (data as any).stage_plot_url || "",
+            input_list: (data as any).input_list || "",
+            monitor_mix_preferences: (data as any).monitor_mix_preferences || "",
+            backline_requirements: (data as any).backline_requirements || "",
+            rider_notes: (data as any).rider_notes || "",
           });
         } else {
           setForm(empty);
@@ -161,6 +182,13 @@ export default function CrewProfileDialog({
         resume_url: form.resume_url.trim() || null,
         demo_video_urls: fromCsv(form.demo_video_urls),
         photo_gallery: fromCsv(form.photo_gallery),
+        technical_rider: form.technical_rider.trim() || null,
+        hospitality_rider: form.hospitality_rider.trim() || null,
+        stage_plot_url: form.stage_plot_url.trim() || null,
+        input_list: form.input_list.trim() || null,
+        monitor_mix_preferences: form.monitor_mix_preferences.trim() || null,
+        backline_requirements: form.backline_requirements.trim() || null,
+        rider_notes: form.rider_notes.trim() || null,
       };
 
       const { error } = await supabase
@@ -197,9 +225,10 @@ export default function CrewProfileDialog({
           <div className="py-8 text-center text-muted-foreground text-sm">Loading…</div>
         ) : (
           <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="basic">Basic</TabsTrigger>
               <TabsTrigger value="skills">Skills</TabsTrigger>
+              <TabsTrigger value="rider">Rider</TabsTrigger>
               <TabsTrigger value="travel">Travel</TabsTrigger>
               <TabsTrigger value="media">Media</TabsTrigger>
             </TabsList>
@@ -291,6 +320,73 @@ export default function CrewProfileDialog({
                     placeholder="grandMA3, Hog 4…"
                   />
                 </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="rider" className="space-y-4">
+              <p className="text-xs text-muted-foreground">
+                Performance rider for musicians and singers — shared with your tour manager.
+              </p>
+              <div>
+                <Label>Technical Rider (PA, mics, monitors, FOH needs)</Label>
+                <Textarea
+                  rows={4}
+                  value={form.technical_rider}
+                  onChange={(e) => set("technical_rider", e.target.value)}
+                  placeholder="e.g. 4x SM58, 2x DI boxes, IEMs preferred, 32-ch console…"
+                />
+              </div>
+              <div>
+                <Label>Input List / Channel List</Label>
+                <Textarea
+                  rows={3}
+                  value={form.input_list}
+                  onChange={(e) => set("input_list", e.target.value)}
+                  placeholder="1. Kick  2. Snare  3. Bass DI  4. Lead Vox…"
+                />
+              </div>
+              <div>
+                <Label>Monitor Mix Preferences</Label>
+                <Textarea
+                  rows={2}
+                  value={form.monitor_mix_preferences}
+                  onChange={(e) => set("monitor_mix_preferences", e.target.value)}
+                  placeholder="Mix 1: my vocal + kick/snare; light reverb on vox…"
+                />
+              </div>
+              <div>
+                <Label>Backline Requirements</Label>
+                <Textarea
+                  rows={3}
+                  value={form.backline_requirements}
+                  onChange={(e) => set("backline_requirements", e.target.value)}
+                  placeholder="Fender Twin Reverb, drum throne, 5-pc kit w/ hardware…"
+                />
+              </div>
+              <div>
+                <Label>Stage Plot URL</Label>
+                <Input
+                  value={form.stage_plot_url}
+                  onChange={(e) => set("stage_plot_url", e.target.value)}
+                  placeholder="https://…"
+                />
+              </div>
+              <div>
+                <Label>Hospitality Rider (green room, food, drinks)</Label>
+                <Textarea
+                  rows={4}
+                  value={form.hospitality_rider}
+                  onChange={(e) => set("hospitality_rider", e.target.value)}
+                  placeholder="Bottled water, hot tea w/ honey, fresh fruit, private dressing room…"
+                />
+              </div>
+              <div>
+                <Label>Additional Rider Notes</Label>
+                <Textarea
+                  rows={3}
+                  value={form.rider_notes}
+                  onChange={(e) => set("rider_notes", e.target.value)}
+                />
               </div>
             </TabsContent>
 

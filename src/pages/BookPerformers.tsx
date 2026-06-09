@@ -134,10 +134,10 @@ const BookPerformers = () => {
             <Badge variant="secondary" className="uppercase tracking-wide text-[10px]">Featured Talent</Badge>
           </div>
           <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Search Performers
+            Book Performers
           </h1>
           <p className="text-muted-foreground mb-6">
-            Discover subscribed entertainers available for booking. Add them to your roster or view their full profile.
+            Book entertainers from your preferred list and track responses.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4">

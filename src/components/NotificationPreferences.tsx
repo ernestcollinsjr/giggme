@@ -53,6 +53,7 @@ export const NotificationPreferences = () => {
   
   const { isSupported, isSubscribed, isLoading: pushLoading, supportMessage, subscribe, unsubscribe } = pushNotifications;
   const { playTestSound } = useSoundPreference();
+  const { format: timeFormat, setFormat: setTimeFormat } = useTimeFormat();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [sendingTest, setSendingTest] = useState(false);

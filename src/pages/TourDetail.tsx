@@ -9,14 +9,16 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Mail, Users, Copy, Check, Edit, UserPlus, Calendar as CalendarIconLucide, MapPin, Plus, Trash } from "lucide-react";
+import { ArrowLeft, Mail, Users, Copy, Check, Edit, UserPlus, Calendar as CalendarIconLucide, MapPin, Plus, Trash, IdCard } from "lucide-react";
 import { format } from "date-fns";
 import CrewMemberDetailsDialog from "@/components/CrewMemberDetailsDialog";
+import CrewProfileDialog from "@/components/CrewProfileDialog";
 import { PlaceAutocomplete } from "@/components/PlaceAutocomplete";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { CREW_TYPES, CREW_TYPE_LABELS, CREW_TYPE_OPTIONS, type CrewType } from "@/lib/crewTypes";
 
 interface Tour {
   id: string;

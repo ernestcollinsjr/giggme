@@ -1196,6 +1196,36 @@ export type Database = {
           },
         ]
       }
+      message_typing_status: {
+        Row: {
+          conversation_key: string
+          id: string
+          is_group: boolean
+          is_typing: boolean
+          recipient_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          conversation_key: string
+          id?: string
+          is_group?: boolean
+          is_typing?: boolean
+          recipient_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          conversation_key?: string
+          id?: string
+          is_group?: boolean
+          is_typing?: boolean
+          recipient_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string

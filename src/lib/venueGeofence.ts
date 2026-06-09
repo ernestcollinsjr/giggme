@@ -96,9 +96,6 @@ export async function startVenueGeofencing(userId: string, venues: GeofenceVenue
   // Reset arrival set for the new set of venues
   arrived.clear();
 
-  const { BackgroundGeolocation } = await import(
-    "@capacitor-community/background-geolocation"
-  );
 
   watcherId = await BackgroundGeolocation.addWatcher(
     {

@@ -51,6 +51,23 @@ export const AutoLocationTracker = ({ userId, isEnabled, venues = [] }: AutoLoca
   useEffect(() => {
     if (!isEnabled || !navigator.geolocation) return;
 
+  useEffect(() => {
+    if (!isEnabled || !navigator.geolocation) return;
+
+    // On native (iOS/Android via Capacitor), hand off to the background
+    // geolocation watcher which keeps firing while the app is backgrounded
+    // and triggers a local notification on venue entry.
+    if (isNativeGeofenceSupported() && venues.length > 0) {
+      startVenueGeofencing(userId, venues).catch((e) =>
+        console.warn("[geofence] start failed", e),
+      );
+      setIsTracking(true);
+      return () => {
+        stopVenueGeofencing();
+        setIsTracking(false);
+      };
+    }
+
     let timerId: ReturnType<typeof setTimeout> | null = null;
     let cancelled = false;
     let lastNear = false;

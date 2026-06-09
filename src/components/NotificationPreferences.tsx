@@ -6,7 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Bell, Mail, MessageSquare, Smartphone, Loader2, Send, Volume2, VolumeX, Play, Volume1, Clock } from "lucide-react";
+import { Bell, Mail, MessageSquare, Smartphone, Loader2, Send, Volume2, VolumeX, Play, Volume1, Clock, RotateCcw } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useNativePushNotifications } from "@/hooks/useNativePushNotifications";

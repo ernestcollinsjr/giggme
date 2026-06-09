@@ -138,31 +138,43 @@ const FavoritePerformers = () => {
                         )}
                       </div>
                     </div>
-                    <div className="flex flex-wrap gap-1">
-                      {p?.performer_category && (
-                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{p.performer_category}</Badge>
-                      )}
-                      {(p?.entertainer_categories || []).map((cat) => (
-                        <Badge key={cat} variant="outline" className="text-[10px] px-1.5 py-0">
-                          {cat}
-                        </Badge>
-                      ))}
-                      {(p?.instrument_custom || p?.instrument) && (
-                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 capitalize">
-                          <Music className="h-2.5 w-2.5 mr-0.5" />
-                          {p?.instrument_custom || p?.instrument}
-                        </Badge>
-                      )}
-                      {p?.is_singer && (
-                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                          <Mic className="h-2.5 w-2.5 mr-0.5" />
-                          Singer
-                        </Badge>
-                      )}
-                      {a?.genre && (
-                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{a.genre}</Badge>
-                      )}
-                    </div>
+                    {(() => {
+                      const instr = (p?.instrument_custom || p?.instrument || "").toLowerCase();
+                      const dupes = new Set(
+                        [p?.performer_category, instr, a?.genre, p?.is_singer ? "vocal" : null, p?.is_singer ? "vocals" : null, p?.is_singer ? "singer" : null]
+                          .filter(Boolean)
+                          .map((s) => String(s).toLowerCase())
+                      );
+                      const cats = Array.from(new Set((p?.entertainer_categories || []).filter((c) => c && !dupes.has(c.toLowerCase()))));
+                      return (
+                        <div className="flex flex-wrap gap-1">
+                          {p?.performer_category && (
+                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{p.performer_category}</Badge>
+                          )}
+                          {cats.map((cat) => (
+                            <Badge key={cat} variant="outline" className="text-[10px] px-1.5 py-0">
+                              {cat}
+                            </Badge>
+                          ))}
+                          {(p?.instrument_custom || p?.instrument) && (
+                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 capitalize">
+                              <Music className="h-2.5 w-2.5 mr-0.5" />
+                              {p?.instrument_custom || p?.instrument}
+                            </Badge>
+                          )}
+                          {p?.is_singer && (
+                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                              <Mic className="h-2.5 w-2.5 mr-0.5" />
+                              Singer
+                            </Badge>
+                          )}
+                          {a?.genre && (
+                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{a.genre}</Badge>
+                          )}
+                        </div>
+                      );
+                    })()}
+
                   </CardHeader>
                   <CardContent className="p-3 pt-0 space-y-2">
 

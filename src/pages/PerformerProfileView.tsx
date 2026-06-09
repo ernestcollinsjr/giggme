@@ -972,9 +972,16 @@ const PerformerProfileView = () => {
           )}
         </DialogContent>
       </Dialog>
+      <CrewProfileDialog
+        userId={userId ?? null}
+        userName={profile?.name || undefined}
+        open={crewProfileOpen}
+        onOpenChange={setCrewProfileOpen}
+      />
     </div>
   );
 };
+
 
 const DetailRow = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) => (
   <div className="flex items-start gap-2">

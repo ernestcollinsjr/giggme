@@ -511,6 +511,14 @@ const Messages = () => {
     fetchMessages();
     fetchReactionsAndPins();
 
+    const refreshMessages = () => {
+      if (realtimeRefreshTimeoutRef.current) clearTimeout(realtimeRefreshTimeoutRef.current);
+      realtimeRefreshTimeoutRef.current = setTimeout(() => {
+        fetchMessages();
+        fetchReactionsAndPins();
+      }, 250);
+    };
+
     // Realtime subscription
     const channel = supabase
       .channel(`messages-page-realtime-${Math.random().toString(36).slice(2)}`)
@@ -519,7 +527,11 @@ const Messages = () => {
         { event: "*", schema: "public", table: "messages" },
         (payload) => {
           if (payload.eventType === "INSERT") {
-            setAllMessages((prev) => [...prev, payload.new as Message]);
+            setAllMessages((prev) =>
+              prev.some((message) => message.id === (payload.new as Message).id)
+                ? prev
+                : [...prev, payload.new as Message]
+            );
             // Auto-scroll to bottom when new message arrives
             setTimeout(() => {
               const allViewports = document.querySelectorAll('[data-radix-scroll-area-viewport]');
@@ -551,9 +563,28 @@ const Messages = () => {
         { event: "*", schema: "public", table: "read_receipts" },
         () => fetchReactionsAndPins()
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          refreshMessages();
+        }
+
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+          refreshMessages();
+          if (!realtimeFallbackIntervalRef.current) {
+            realtimeFallbackIntervalRef.current = setInterval(refreshMessages, 5000);
+          }
+        }
+      });
 
     return () => {
+      if (realtimeRefreshTimeoutRef.current) {
+        clearTimeout(realtimeRefreshTimeoutRef.current);
+        realtimeRefreshTimeoutRef.current = null;
+      }
+      if (realtimeFallbackIntervalRef.current) {
+        clearInterval(realtimeFallbackIntervalRef.current);
+        realtimeFallbackIntervalRef.current = null;
+      }
       supabase.removeChannel(channel);
     };
   }, [userId]);

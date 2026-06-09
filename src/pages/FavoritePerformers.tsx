@@ -160,10 +160,11 @@ const FavoritePerformers = () => {
                       </Button>
                       <Button
                         size="sm"
-                        className="text-xs h-7 px-2 w-full justify-center"
+                        className="text-xs h-7 px-2 w-full inline-flex items-center justify-center gap-1"
                         onClick={() => navigate(`/messages?conversation=${f.performer_id}`)}
                       >
-                        <MessageCircle className="h-3 w-3 mr-1" /> Message
+                        <MessageCircle className="h-3 w-3 shrink-0" />
+                        <span>Message</span>
                       </Button>
                     </div>
                   </CardContent>

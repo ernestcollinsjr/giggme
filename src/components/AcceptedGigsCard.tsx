@@ -41,7 +41,55 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
   const [acceptedGigs, setAcceptedGigs] = useState<AcceptedGig[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<AcceptedGig | null>(null);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelling, setCancelling] = useState(false);
   const { toast } = useToast();
+
+  const handleCancelGig = async () => {
+    if (!cancelTarget) return;
+    setCancelling(true);
+    try {
+      if (cancelTarget.isOwned) {
+        const { error } = await supabase
+          .from("gigs")
+          .update({ status: "cancelled" })
+          .eq("id", cancelTarget.gig.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("gig_members")
+          .update({ status: "declined" })
+          .eq("id", cancelTarget.id);
+        if (error) throw error;
+      }
+
+      const { error: fnError } = await supabase.functions.invoke("notify-gig-cancellation", {
+        body: {
+          gig_id: cancelTarget.gig.id,
+          performer_id: userId,
+          reason: cancelReason.trim() || undefined,
+        },
+      });
+      if (fnError) console.error("Email notification error:", fnError);
+
+      setAcceptedGigs((prev) => prev.filter((g) => g.id !== cancelTarget.id));
+      toast({
+        title: "Gig cancelled",
+        description: "Confirmation emails have been sent.",
+      });
+      setCancelTarget(null);
+      setCancelReason("");
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Failed to cancel gig",
+        description: error.message,
+      });
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   useEffect(() => {
     if (!userId) return;

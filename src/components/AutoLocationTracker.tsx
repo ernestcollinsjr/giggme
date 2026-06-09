@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { MapPin, X, CheckCircle2 } from "lucide-react";
+import {
+  isNativeGeofenceSupported,
+  startVenueGeofencing,
+  stopVenueGeofencing,
+} from "@/lib/venueGeofence";
 
 interface VenueTarget {
   gigId: string;

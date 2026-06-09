@@ -148,6 +148,31 @@ const isBookingRequestPast = (br: any): boolean => {
   return isPastDate(br.created_at);
 };
 
+const expandBookingRequestDateCards = (br: any) => {
+  const datesText = typeof br?.dates_text === "string" ? br.dates_text : "";
+  const parts = datesText
+    .split(";")
+    .map((part) => part.trim())
+    .filter(Boolean);
+  const parsedDates = getBookingRequestCalendarDates(br);
+
+  if (parts.length <= 1) {
+    return [{ ...br, __displayKey: br.id, __displayDatesText: datesText, __displayDate: parsedDates[0] || null }];
+  }
+
+  return parts.map((part, index) => ({
+    ...br,
+    __displayKey: `${br.id}-${index}`,
+    __displayDatesText: part,
+    __displayDate: parsedDates[index] || null,
+  }));
+};
+
+const isBookingRequestCardPast = (br: any): boolean => {
+  if (br.__displayDate instanceof Date) return isPastDate(br.__displayDate.toISOString());
+  return isBookingRequestPast(br);
+};
+
 const Bookings = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -1138,12 +1163,13 @@ const Bookings = () => {
   const visibleBookingRequests = bookingRequests.filter(
     (br: any) => !isOldDeclined(br.status, br.updated_at || br.created_at)
   );
+  const visibleBookingRequestCards = visibleBookingRequests.flatMap(expandBookingRequestDateCards);
   const visibleGigInvitations = gigInvitations.filter(
     (gi: any) => !isOldDeclined(gi.status, gi.updated_at || gi.created_at)
   );
 
-  const currentBookingRequests = visibleBookingRequests.filter((br) => !isBookingRequestPast(br));
-  const archivedBookingRequests = visibleBookingRequests.filter((br) => isBookingRequestPast(br));
+  const currentBookingRequests = visibleBookingRequestCards.filter((br) => !isBookingRequestCardPast(br));
+  const archivedBookingRequests = visibleBookingRequestCards.filter((br) => isBookingRequestCardPast(br));
 
   const currentGigInvitations = visibleGigInvitations.filter((gi: any) => !isPastDate(gi.gigs?.date));
   const archivedGigInvitations = visibleGigInvitations.filter((gi: any) => isPastDate(gi.gigs?.date));
@@ -1242,7 +1268,7 @@ const Bookings = () => {
             <CardContent className="space-y-3">
               {currentBookingRequests.map((br) => (
                 <div
-                  key={`br-${br.id}`}
+                  key={`br-${br.__displayKey || br.id}`}
                   className="p-4 border rounded-lg cursor-pointer hover:bg-accent/40 transition-colors"
                   onClick={() => navigate(`/booking-request/${br.id}`)}
                 >
@@ -1257,10 +1283,10 @@ const Bookings = () => {
                       <p className="font-semibold truncate">{br.venue}</p>
                       <p className="text-sm text-muted-foreground">
                         {br.booker_id === br.performer_id
-                          ? `${to12hText(br.dates_text)}`
+                          ? `${to12hText(br.__displayDatesText || br.dates_text)}`
                           : br.performer_id && br.booker_name && br.performer_name
-                            ? `${br.booker_name} → ${br.performer_name} · ${to12hText(br.dates_text)}`
-                            : `From ${br.booker_name || 'a client'} · ${to12hText(br.dates_text)}`}
+                            ? `${br.booker_name} → ${br.performer_name} · ${to12hText(br.__displayDatesText || br.dates_text)}`
+                            : `From ${br.booker_name || 'a client'} · ${to12hText(br.__displayDatesText || br.dates_text)}`}
                         {br.time_text && ` · ${to12hText(br.time_text)}`}
                       </p>
                       {br.budget && (
@@ -1391,7 +1417,7 @@ const Bookings = () => {
             <CardContent className="space-y-3">
               {archivedBookingRequests.map((br) => (
                 <div
-                  key={`br-archived-${br.id}`}
+                  key={`br-archived-${br.__displayKey || br.id}`}
                   className="p-4 border rounded-lg opacity-60 bg-muted/20"
                 >
                   <div className="flex items-start justify-between gap-2 flex-wrap">
@@ -1405,10 +1431,10 @@ const Bookings = () => {
                       <p className="font-semibold truncate">{br.venue}</p>
                       <p className="text-sm text-muted-foreground">
                         {br.booker_id === br.performer_id
-                          ? `${to12hText(br.dates_text)}`
+                          ? `${to12hText(br.__displayDatesText || br.dates_text)}`
                           : br.performer_id && br.booker_name && br.performer_name
-                            ? `${br.booker_name} → ${br.performer_name} · ${to12hText(br.dates_text)}`
-                            : `From ${br.booker_name || 'a client'} · ${to12hText(br.dates_text)}`}
+                            ? `${br.booker_name} → ${br.performer_name} · ${to12hText(br.__displayDatesText || br.dates_text)}`
+                            : `From ${br.booker_name || 'a client'} · ${to12hText(br.__displayDatesText || br.dates_text)}`}
                         {br.time_text && ` · ${to12hText(br.time_text)}`}
                       </p>
                       {br.budget && (

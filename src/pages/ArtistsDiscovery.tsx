@@ -156,6 +156,18 @@ const ArtistsDiscovery = () => {
         venuesMap.set(row.user_id, row.venues || []);
       });
 
+      const userIds = (data || []).map((p: any) => p.user_id).filter(Boolean);
+      let categoriesMap = new Map<string, string[]>();
+      if (userIds.length > 0) {
+        const { data: catRows } = await supabase
+          .from("profiles")
+          .select("id, entertainer_categories")
+          .in("id", userIds);
+        (catRows || []).forEach((row: any) => {
+          categoriesMap.set(row.id, row.entertainer_categories || []);
+        });
+      }
+
       const combined = (data || []).map((performer: any) => ({
         id: performer.user_id,
         user_id: performer.user_id,
@@ -164,6 +176,7 @@ const ArtistsDiscovery = () => {
         genres: performer.genres || [],
         instrument: performer.instrument || null,
         performer_category: performer.performer_category || null,
+        entertainer_categories: categoriesMap.get(performer.user_id) || null,
         years_experience: performer.years_experience ?? null,
         availability: performer.availability || null,
         rate_range: performer.rate_range || (

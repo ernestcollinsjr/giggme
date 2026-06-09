@@ -160,6 +160,12 @@ export const PreferredEntertainersBookList = () => {
                   <p className="text-xs text-muted-foreground truncate">{e.genre}</p>
                 )}
                 <div className="flex flex-wrap gap-1 mt-1 mb-2">
+                  {(e.entertainer_categories || []).map((cat) => (
+                    <Badge key={cat} variant="secondary" className="text-[10px] px-1.5 py-0">
+                      <Sparkles className="h-2.5 w-2.5 mr-0.5" />
+                      {cat}
+                    </Badge>
+                  ))}
                   {(e.instrument_custom || e.instrument) && (
                     <Badge variant="secondary" className="text-[10px] px-1.5 py-0 capitalize">
                       <Music className="h-2.5 w-2.5 mr-0.5" />

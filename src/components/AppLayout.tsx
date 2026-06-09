@@ -12,6 +12,7 @@ import { usePushSoundListener } from "@/hooks/usePushSoundListener";
  */
 export default function AppLayout() {
   const [role, setRole] = useState<ActiveRole | null>(null);
+  usePushSoundListener();
 
   useEffect(() => {
     let active = true;

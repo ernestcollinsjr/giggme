@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar, Music, Users, Heart } from "lucide-react";
+import { Calendar, Music, Users, Heart, Mic } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface Entertainer {
   user_id: string;
@@ -12,6 +13,9 @@ interface Entertainer {
   stage_name: string | null;
   genre: string | null;
   photo_urls: string[] | null;
+  instrument: string | null;
+  instrument_custom: string | null;
+  is_singer: boolean | null;
 }
 
 export const PreferredEntertainersBookList = () => {
@@ -43,6 +47,9 @@ export const PreferredEntertainersBookList = () => {
           stage_name: r.stage_name,
           genre: r.genre,
           photo_urls: r.photo_urls,
+          instrument: r.instrument,
+          instrument_custom: r.instrument_custom,
+          is_singer: r.is_singer,
         }));
         setEntertainers(rows);
       } catch (e: any) {

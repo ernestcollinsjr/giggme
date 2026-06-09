@@ -74,6 +74,7 @@ const App = () => (
               <Route path="/artist-profile/:userId" element={<PerformerProfileView />} />
               <Route path="/artists" element={<ArtistsDiscovery />} />
               <Route path="/book-performers" element={<BookPerformers />} />
+              <Route path="/favorites" element={<FavoritePerformers />} />
               <Route path="/tours" element={<Tours />} />
               <Route path="/tours/:tourId" element={<TourDetail />} />
               <Route path="/booking-manager" element={<BookingManagerAdmin />} />

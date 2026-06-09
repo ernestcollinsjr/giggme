@@ -711,27 +711,20 @@ export default function TourDetail() {
               </p>
             ) : (
               <div className="space-y-6">
-                {['band_members', 'singer', 'sound_crew', 'lighting_crew'].map((type) => {
+                {CREW_TYPES.map((type) => {
                   const typeMembers = crewMembers.filter(m => m.crew_type === type);
                   if (typeMembers.length === 0) return null;
-                  
-                  const typeLabels = {
-                    band_members: 'Group Members',
-                    singer: 'Singer',
-                    sound_crew: 'Sound Crew',
-                    lighting_crew: 'Lighting Crew'
-                  };
-                  
+
                   return (
                     <div key={type}>
                       <h3 className="font-semibold mb-3 text-sm uppercase tracking-wide text-muted-foreground">
-                        {typeLabels[type as keyof typeof typeLabels]} ({typeMembers.length})
+                        {CREW_TYPE_LABELS[type]} ({typeMembers.length})
                       </h3>
                       <div className="space-y-2">
                         {typeMembers.map((member) => (
                           <div key={member.id} className="p-3 border rounded-lg space-y-2">
                             <div className="flex items-center justify-between">
-                              <div 
+                              <div
                                 className="cursor-pointer hover:underline flex-1"
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -743,6 +736,11 @@ export default function TourDetail() {
                                 {member.role_title && (
                                   <p className="text-xs text-muted-foreground mt-1">{member.role_title}</p>
                                 )}
+                                {member.payment_amount != null && (
+                                  <p className="text-xs font-medium text-primary mt-1">
+                                    Pay: ${Number(member.payment_amount).toFixed(2)}
+                                  </p>
+                                )}
                               </div>
                               <div className="flex items-center gap-2">
                                 <span className={`px-2 py-1 rounded text-xs ${
@@ -753,6 +751,19 @@ export default function TourDetail() {
                                 <Button
                                   size="sm"
                                   variant="ghost"
+                                  title="Crew Profile"
+                                  onClick={() => {
+                                    setProfileUserId(member.crew_member_id);
+                                    setProfileUserName(member.profiles.name);
+                                    setProfileDialogOpen(true);
+                                  }}
+                                >
+                                  <IdCard className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  title="Tour Logistics"
                                   onClick={() => {
                                     setSelectedMember(member);
                                     setDetailsDialogOpen(true);
@@ -762,7 +773,7 @@ export default function TourDetail() {
                                 </Button>
                               </div>
                             </div>
-                            
+
                             {(member.hotel_name || member.flight_confirmation) && (
                               <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t">
                                 {member.flight_confirmation && (

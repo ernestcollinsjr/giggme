@@ -6,8 +6,12 @@
 // arrival radius. On the web (no Capacitor) this is a no-op — the in-app
 // AutoLocationTracker handles foreground arrival there.
 
-import { Capacitor } from "@capacitor/core";
+import { Capacitor, registerPlugin } from "@capacitor/core";
+import type { BackgroundGeolocationPlugin } from "@capacitor-community/background-geolocation";
 import { supabase } from "@/integrations/supabase/client";
+
+const BackgroundGeolocation =
+  registerPlugin<BackgroundGeolocationPlugin>("BackgroundGeolocation");
 
 export interface GeofenceVenue {
   gigId: string;

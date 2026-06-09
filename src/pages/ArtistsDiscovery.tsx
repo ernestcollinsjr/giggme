@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Music, MapPin, Calendar, DollarSign, Youtube, Search, Filter, Users, X, Send } from "lucide-react";
+import { Music, MapPin, Calendar, DollarSign, Youtube, Search, Filter, Users, X, Send, Sparkles } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { normalizeRole } from "@/lib/roles";
@@ -24,6 +24,7 @@ interface ArtistWithProfile {
   genres?: string[] | null;
   instrument?: string | null;
   performer_category?: string | null;
+  entertainer_categories?: string[] | null;
   years_experience: number | null;
   availability: string | null;
   rate_range: string | null;
@@ -155,6 +156,18 @@ const ArtistsDiscovery = () => {
         venuesMap.set(row.user_id, row.venues || []);
       });
 
+      const userIds = (data || []).map((p: any) => p.user_id).filter(Boolean);
+      let categoriesMap = new Map<string, string[]>();
+      if (userIds.length > 0) {
+        const { data: catRows } = await supabase
+          .from("profiles")
+          .select("id, entertainer_categories")
+          .in("id", userIds);
+        (catRows || []).forEach((row: any) => {
+          categoriesMap.set(row.id, row.entertainer_categories || []);
+        });
+      }
+
       const combined = (data || []).map((performer: any) => ({
         id: performer.user_id,
         user_id: performer.user_id,
@@ -163,6 +176,7 @@ const ArtistsDiscovery = () => {
         genres: performer.genres || [],
         instrument: performer.instrument || null,
         performer_category: performer.performer_category || null,
+        entertainer_categories: categoriesMap.get(performer.user_id) || null,
         years_experience: performer.years_experience ?? null,
         availability: performer.availability || null,
         rate_range: performer.rate_range || (
@@ -401,16 +415,15 @@ const ArtistsDiscovery = () => {
                         Invited
                       </Badge>
                     )}
-                    {artist.performer_category && (
-                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0 w-fit">
-                        {artist.performer_category}
-                      </Badge>
-                    )}
-                    {artist.genre && (
-                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0 w-fit">
-                        <Music className="h-2.5 w-2.5 mr-0.5" />
-                        {artist.genre}
-                      </Badge>
+                    {artist.entertainer_categories && artist.entertainer_categories.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {artist.entertainer_categories.map((cat) => (
+                          <Badge key={cat} variant="secondary" className="text-[10px] px-1.5 py-0 w-fit">
+                            <Sparkles className="h-2.5 w-2.5 mr-0.5" />
+                            {cat}
+                          </Badge>
+                        ))}
+                      </div>
                     )}
                   </div>
                 </CardHeader>

@@ -176,8 +176,65 @@ serve(async (req) => {
       });
     }
 
+    // Push notifications + in-app notifications
+    const pushUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-push-notification`;
+    const pushHeaders = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+    };
+
+    const mgrPushPromises = Array.from(managerIds).map((uid) =>
+      fetch(pushUrl, {
+        method: "POST",
+        headers: pushHeaders,
+        body: JSON.stringify({
+          user_id: uid,
+          title: "Gig Cancellation",
+          body: `${performerName} cancelled ${venueDisplay} on ${gigDate}${reason ? ` — ${reason}` : ""}`,
+          url: "/booking-manager",
+        }),
+      }).catch((e) => console.error("mgr push err", e))
+    );
+
+    const performerPushPromise = performer_id
+      ? fetch(pushUrl, {
+          method: "POST",
+          headers: pushHeaders,
+          body: JSON.stringify({
+            user_id: performer_id,
+            title: "Cancellation Confirmed",
+            body: `Your cancellation for ${venueDisplay} on ${gigDate} has been recorded.`,
+            url: "/dashboard",
+          }),
+        }).catch((e) => console.error("perf push err", e))
+      : Promise.resolve();
+
+    const notifRows = [
+      ...Array.from(managerIds).map((uid) => ({
+        user_id: uid,
+        type: "gig_cancellation",
+        title: "Gig Cancellation",
+        message: `${performerName} cancelled ${venueDisplay} on ${gigDate}${reason ? ` — ${reason}` : ""}`,
+        data: { gig_id, performer_id, reason },
+      })),
+      ...(performer_id
+        ? [{
+            user_id: performer_id,
+            type: "gig_cancellation_confirmed",
+            title: "Cancellation Confirmed",
+            message: `Your cancellation for ${venueDisplay} on ${gigDate} has been recorded.`,
+            data: { gig_id, reason },
+          }]
+        : []),
+    ];
+    if (notifRows.length) {
+      await supabase.from("notifications").insert(notifRows as any);
+    }
+
+    await Promise.allSettled([...mgrPushPromises, performerPushPromise]);
+
     return new Response(
-      JSON.stringify({ success: true, managersNotified: managerEmails.length }),
+      JSON.stringify({ success: true, managersNotified: managerEmails.length, pushSent: managerIds.size + (performer_id ? 1 : 0) }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: any) {

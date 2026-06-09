@@ -338,6 +338,27 @@ const Bookings = () => {
     setUserRole(userActiveRole);
     setCurrentUserId(user.id);
 
+    // Permanently delete declined/canceled records older than 30 days
+    const cutoff30Iso = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    try {
+      await supabase
+        .from("booking_requests")
+        .delete()
+        .in("status", ["declined", "rejected", "cancelled", "expired"])
+        .lt("updated_at", cutoff30Iso)
+        .or(`performer_id.eq.${user.id},booker_id.eq.${user.id}`);
+
+      await supabase
+        .from("gig_members")
+        .delete()
+        .eq("status", "declined")
+        .lt("updated_at", cutoff30Iso)
+        .eq("member_id", user.id);
+    } catch (e) {
+      console.warn("Cleanup of old declined/canceled records failed", e);
+    }
+
+
     // Fetch managed artists (for quick-book from calendar) — booking managers & band leaders
     if (
       userActiveRole === "booking_manager" ||

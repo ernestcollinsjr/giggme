@@ -23,7 +23,7 @@ interface Tour {
   end_date: string | null;
   created_at: string;
   tour_crew_members?: Array<{
-    crew_type: 'band_members' | 'singer' | 'sound_crew' | 'lighting_crew';
+    crew_type: string;
     status: string;
   }>;
 }

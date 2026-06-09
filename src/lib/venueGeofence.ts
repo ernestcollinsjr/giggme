@@ -149,9 +149,6 @@ export async function startVenueGeofencing(userId: string, venues: GeofenceVenue
 export async function stopVenueGeofencing() {
   if (!watcherId) return;
   try {
-    const { BackgroundGeolocation } = await import(
-      "@capacitor-community/background-geolocation"
-    );
     await BackgroundGeolocation.removeWatcher({ id: watcherId });
   } catch {
     /* ignore */

@@ -187,6 +187,12 @@ const FavoritePerformers = () => {
           </div>
         )}
       </div>
+      <CrewProfileDialog
+        userId={profileTarget?.id ?? null}
+        userName={profileTarget?.name}
+        open={!!profileTarget}
+        onOpenChange={(o) => !o && setProfileTarget(null)}
+      />
     </div>
   );
 };

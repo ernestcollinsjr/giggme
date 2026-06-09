@@ -80,13 +80,16 @@ export default function CrewProfileDialog({
 
   useEffect(() => {
     if (!open || !userId) return;
+    let cancelled = false;
     setLoading(true);
-    supabase
-      .from("crew_profiles")
-      .select("*")
-      .eq("user_id", userId)
-      .maybeSingle()
-      .then(({ data }) => {
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from("crew_profiles")
+          .select("*")
+          .eq("user_id", userId)
+          .maybeSingle();
+        if (cancelled) return;
         if (data) {
           setForm({
             stage_name: data.stage_name || "",
@@ -114,10 +117,17 @@ export default function CrewProfileDialog({
         } else {
           setForm(empty);
         }
-      })
-      .then(undefined, (e) => console.error(e))
-      .finally(() => setLoading(false));
+      } catch (e) {
+        console.error(e);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [open, userId]);
+
 
   const set = <K extends keyof ProfileForm>(k: K, v: ProfileForm[K]) =>
     setForm((f) => ({ ...f, [k]: v }));

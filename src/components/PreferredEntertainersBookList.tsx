@@ -16,6 +16,7 @@ interface Entertainer {
   instrument: string | null;
   instrument_custom: string | null;
   is_singer: boolean | null;
+  entertainer_categories: string[] | null;
 }
 
 export const PreferredEntertainersBookList = () => {

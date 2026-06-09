@@ -43,7 +43,13 @@ export function useTimeFormat() {
     setFormatState(f);
   }, []);
 
+  const resetFormat = useCallback(() => {
+    window.localStorage.removeItem(STORAGE_KEY);
+    window.dispatchEvent(new Event(EVENT_NAME));
+    setFormatState(getTimeFormat());
+  }, []);
+
   const formatTime = useCallback((text: string) => formatTimeString(text, format), [format]);
 
-  return { format, setFormat, formatTime };
+  return { format, setFormat, resetFormat, formatTime };
 }

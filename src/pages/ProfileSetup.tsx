@@ -1993,7 +1993,6 @@ const ProfileSetup = () => {
                       "Choir Director",
                       "Vocal",
                       "Rap",
-                      "RnB",
                       "Hip Hop",
                       "Country",
                       "Pop",

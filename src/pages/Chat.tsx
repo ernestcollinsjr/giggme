@@ -273,7 +273,7 @@ const Chat = () => {
       setTypingUsers((prev) => {
         const next = new Map(prev);
         if (isTyping) {
-          next.set(remoteUserId, name || profiles.find(p => p.id === remoteUserId)?.name || 'Someone');
+          next.set(remoteUserId, name || profilesRef.current.find(p => p.id === remoteUserId)?.name || 'Someone');
         } else {
           next.delete(remoteUserId);
         }

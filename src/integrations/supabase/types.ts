@@ -557,6 +557,7 @@ export type Database = {
       }
       crew_profiles: {
         Row: {
+          backline_requirements: string | null
           bio: string | null
           certifications: string[] | null
           console_experience: string | null
@@ -566,16 +567,22 @@ export type Database = {
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
           gear_list: string | null
+          hospitality_rider: string | null
+          input_list: string | null
           instruments: string[] | null
           lighting_rig_experience: string | null
+          monitor_mix_preferences: string | null
           passport_expiry: string | null
           passport_number: string | null
           phone: string | null
           photo_gallery: string[] | null
           photo_url: string | null
           resume_url: string | null
+          rider_notes: string | null
           shirt_size: string | null
           stage_name: string | null
+          stage_plot_url: string | null
+          technical_rider: string | null
           tsa_precheck: string | null
           updated_at: string
           user_id: string
@@ -583,6 +590,7 @@ export type Database = {
           years_experience: number | null
         }
         Insert: {
+          backline_requirements?: string | null
           bio?: string | null
           certifications?: string[] | null
           console_experience?: string | null
@@ -592,16 +600,22 @@ export type Database = {
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           gear_list?: string | null
+          hospitality_rider?: string | null
+          input_list?: string | null
           instruments?: string[] | null
           lighting_rig_experience?: string | null
+          monitor_mix_preferences?: string | null
           passport_expiry?: string | null
           passport_number?: string | null
           phone?: string | null
           photo_gallery?: string[] | null
           photo_url?: string | null
           resume_url?: string | null
+          rider_notes?: string | null
           shirt_size?: string | null
           stage_name?: string | null
+          stage_plot_url?: string | null
+          technical_rider?: string | null
           tsa_precheck?: string | null
           updated_at?: string
           user_id: string
@@ -609,6 +623,7 @@ export type Database = {
           years_experience?: number | null
         }
         Update: {
+          backline_requirements?: string | null
           bio?: string | null
           certifications?: string[] | null
           console_experience?: string | null
@@ -618,16 +633,22 @@ export type Database = {
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           gear_list?: string | null
+          hospitality_rider?: string | null
+          input_list?: string | null
           instruments?: string[] | null
           lighting_rig_experience?: string | null
+          monitor_mix_preferences?: string | null
           passport_expiry?: string | null
           passport_number?: string | null
           phone?: string | null
           photo_gallery?: string[] | null
           photo_url?: string | null
           resume_url?: string | null
+          rider_notes?: string | null
           shirt_size?: string | null
           stage_name?: string | null
+          stage_plot_url?: string | null
+          technical_rider?: string | null
           tsa_precheck?: string | null
           updated_at?: string
           user_id?: string

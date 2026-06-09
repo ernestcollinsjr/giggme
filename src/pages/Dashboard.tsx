@@ -1519,6 +1519,14 @@ const Dashboard = () => {
                                 </Button>
                                 <Button 
                                   variant="outline"
+                                  onClick={() => navigate("/book-performers")}
+                                  className="h-16 gap-2"
+                                >
+                                  <Sparkles className="h-5 w-5" />
+                                  Book Performers
+                                </Button>
+                                <Button 
+                                  variant="outline"
                                   onClick={() => navigate("/schedule-reminder?type=custom")}
                                   className="h-16 gap-2"
                                 >

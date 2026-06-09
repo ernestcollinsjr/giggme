@@ -72,13 +72,17 @@ export default function Tours() {
       return;
     }
 
-    const { data: roleData } = await supabase
+    const { data: roleRows } = await supabase
       .from("user_roles")
       .select("role")
-      .eq("user_id", user.id)
-      .single();
+      .eq("user_id", user.id);
 
-    if (!roleData || roleData.role !== "entertainer") {
+    const roles = (roleRows || []).map((r: any) => r.role);
+    const allowed = roles.some((r: string) =>
+      ["super_admin", "entertainer", "booking_manager", "admin", "tour_manager"].includes(r)
+    );
+
+    if (!allowed) {
       toast({
         title: "Access Denied",
         description: "You need to be a Tour Manager to access this page.",
@@ -86,6 +90,7 @@ export default function Tours() {
       });
       navigate("/dashboard");
     }
+
   };
 
   const fetchTours = async () => {

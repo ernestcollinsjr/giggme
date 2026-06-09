@@ -19,9 +19,12 @@ import {
 import { Calendar, MapPin, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+type GigSource = "gig_member" | "owned_gig" | "booking_request";
+
 interface AcceptedGig {
   id: string;
   isOwned: boolean;
+  source: GigSource;
   location_sharing_enabled: boolean;
   gig: {
     id: string;
@@ -50,7 +53,13 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
     if (!cancelTarget) return;
     setCancelling(true);
     try {
-      if (cancelTarget.isOwned) {
+      if (cancelTarget.source === "booking_request") {
+        const { error } = await supabase
+          .from("booking_requests")
+          .update({ status: "declined" })
+          .eq("id", cancelTarget.gig.id);
+        if (error) throw error;
+      } else if (cancelTarget.isOwned) {
         const { error } = await supabase
           .from("gigs")
           .update({ status: "cancelled" })
@@ -99,7 +108,7 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
   const fetchAcceptedGigs = async () => {
     try {
       setErrorMessage(null);
-      const [membersRes, ownedRes] = await Promise.all([
+      const [membersRes, ownedRes, bookingReqRes] = await Promise.all([
         supabase
           .from("gig_members")
           .select(`
@@ -121,14 +130,21 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
           .select("id, date, venue, notes, loading_time, sound_check_time")
           .eq("user_id", userId)
           .in("status", ["confirmed"]),
+        supabase
+          .from("booking_requests")
+          .select("id, event_date, venue, time_text, dates_text, booker_name")
+          .eq("performer_id", userId)
+          .eq("status", "accepted"),
       ]);
 
       if (membersRes.error) throw membersRes.error;
       if (ownedRes.error) throw ownedRes.error;
+      if (bookingReqRes.error) throw bookingReqRes.error;
 
       const memberGigs: AcceptedGig[] = (membersRes.data || []).map((item: any) => ({
         id: item.id,
         isOwned: false,
+        source: "gig_member",
         location_sharing_enabled: item.location_sharing_enabled,
         gig: item.gigs,
       }));
@@ -136,13 +152,31 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
       const ownedGigs: AcceptedGig[] = (ownedRes.data || []).map((g: any) => ({
         id: `owned-${g.id}`,
         isOwned: true,
+        source: "owned_gig",
         location_sharing_enabled: false,
         gig: g,
       }));
 
+      const bookingGigs: AcceptedGig[] = (bookingReqRes.data || [])
+        .filter((b: any) => b.event_date)
+        .map((b: any) => ({
+          id: `br-${b.id}`,
+          isOwned: false,
+          source: "booking_request",
+          location_sharing_enabled: false,
+          gig: {
+            id: b.id,
+            date: b.event_date,
+            venue: b.venue || b.booker_name || "Booking",
+            notes: b.time_text || b.dates_text || null,
+            loading_time: null,
+            sound_check_time: null,
+          },
+        }));
+
       // De-dupe in case the owner is also listed as a member
       const seen = new Set<string>();
-      const combined = [...memberGigs, ...ownedGigs].filter((entry) => {
+      const combined = [...memberGigs, ...ownedGigs, ...bookingGigs].filter((entry) => {
         if (seen.has(entry.gig.id)) return false;
         seen.add(entry.gig.id);
         return true;

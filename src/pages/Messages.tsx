@@ -1578,6 +1578,11 @@ const Messages = () => {
                                 
                                 return <Check className="h-3 w-3 text-muted-foreground" />;
                               })()}
+                              {isOwn && justSentId === m.id && (
+                                <span className="text-[10px] font-medium text-primary animate-in fade-in slide-in-from-bottom-1">
+                                  Sent
+                                </span>
+                              )}
                               <span className="text-[10px] text-muted-foreground">
                                 {formatMessageTime(m.created_at)}
                               </span>

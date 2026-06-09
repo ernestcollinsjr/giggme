@@ -16,6 +16,7 @@ import { Browser } from '@capacitor/browser';
 import { Capacitor } from '@capacitor/core';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { YouTubePlayer, getYoutubeVideoId } from "@/components/YouTubePlayer";
 import { AvailabilityCalendar } from "@/components/AvailabilityCalendar";

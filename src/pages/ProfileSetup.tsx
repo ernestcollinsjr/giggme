@@ -1987,9 +1987,9 @@ const ProfileSetup = () => {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {[
-                      "Musician/Church",
-                      "RnB Musician",
-                      "Musician/Church + RnB",
+                      "Church",
+                      "RnB",
+                      "Church + RnB",
                       "RnB Singer",
                       "Church Singer",
                       "Minister of Music",

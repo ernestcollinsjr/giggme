@@ -64,7 +64,8 @@ interface CrewMember {
   crew_member_id: string;
   status: string;
   role_title: string | null;
-  crew_type: 'band_members' | 'singer' | 'sound_crew' | 'lighting_crew';
+  crew_type: CrewType;
+  payment_amount: number | null;
   flight_confirmation: string | null;
   hotel_name: string | null;
   hotel_address: string | null;

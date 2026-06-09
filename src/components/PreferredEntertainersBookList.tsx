@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar, Music, Users, Heart, Mic } from "lucide-react";
+import { Calendar, Music, Users, Heart, Mic, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface Entertainer {
@@ -16,6 +16,7 @@ interface Entertainer {
   instrument: string | null;
   instrument_custom: string | null;
   is_singer: boolean | null;
+  entertainer_categories: string[] | null;
 }
 
 export const PreferredEntertainersBookList = () => {
@@ -50,6 +51,7 @@ export const PreferredEntertainersBookList = () => {
           instrument: r.instrument,
           instrument_custom: r.instrument_custom,
           is_singer: r.is_singer,
+          entertainer_categories: r.entertainer_categories,
         }));
         setEntertainers(rows);
       } catch (e: any) {
@@ -158,6 +160,12 @@ export const PreferredEntertainersBookList = () => {
                   <p className="text-xs text-muted-foreground truncate">{e.genre}</p>
                 )}
                 <div className="flex flex-wrap gap-1 mt-1 mb-2">
+                  {(e.entertainer_categories || []).map((cat) => (
+                    <Badge key={cat} variant="secondary" className="text-[10px] px-1.5 py-0">
+                      <Sparkles className="h-2.5 w-2.5 mr-0.5" />
+                      {cat}
+                    </Badge>
+                  ))}
                   {(e.instrument_custom || e.instrument) && (
                     <Badge variant="secondary" className="text-[10px] px-1.5 py-0 capitalize">
                       <Music className="h-2.5 w-2.5 mr-0.5" />

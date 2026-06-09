@@ -2389,6 +2389,7 @@ export type Database = {
         Returns: {
           availability: string
           bio: string
+          entertainer_categories: string[]
           genre: string
           genres: string[]
           instrument: string

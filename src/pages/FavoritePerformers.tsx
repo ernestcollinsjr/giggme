@@ -18,6 +18,7 @@ interface FavRow {
     instrument: string | null;
     instrument_custom: string | null;
     is_singer: boolean | null;
+    entertainer_categories: string[] | null;
   } | null;
   artist: { stage_name: string | null; genre: string | null } | null;
 }
@@ -51,7 +52,7 @@ const FavoritePerformers = () => {
       return;
     }
     const [{ data: profiles }, { data: artists }] = await Promise.all([
-      supabase.from("profiles").select("id,name,photo_urls,performer_category,instrument,instrument_custom,is_singer").in("id", ids),
+      supabase.from("profiles").select("id,name,photo_urls,performer_category,instrument,instrument_custom,is_singer,entertainer_categories").in("id", ids),
       supabase.from("artist_profiles").select("user_id,stage_name,genre").in("user_id", ids),
     ]);
     const merged: FavRow[] = ids.map((id) => ({
@@ -141,6 +142,11 @@ const FavoritePerformers = () => {
                       {p?.performer_category && (
                         <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{p.performer_category}</Badge>
                       )}
+                      {(p?.entertainer_categories || []).map((cat) => (
+                        <Badge key={cat} variant="outline" className="text-[10px] px-1.5 py-0">
+                          {cat}
+                        </Badge>
+                      ))}
                       {(p?.instrument_custom || p?.instrument) && (
                         <Badge variant="secondary" className="text-[10px] px-1.5 py-0 capitalize">
                           <Music className="h-2.5 w-2.5 mr-0.5" />

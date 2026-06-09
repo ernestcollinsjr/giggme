@@ -296,6 +296,11 @@ const ArtistsDiscovery = () => {
                         Invited
                       </Badge>
                     )}
+                    {artist.performer_category && (
+                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0 w-fit">
+                        {artist.performer_category}
+                      </Badge>
+                    )}
                     {artist.genre && (
                       <Badge variant="secondary" className="text-[10px] px-1.5 py-0 w-fit">
                         <Music className="h-2.5 w-2.5 mr-0.5" />

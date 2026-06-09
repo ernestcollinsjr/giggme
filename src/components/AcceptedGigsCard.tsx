@@ -120,7 +120,7 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
       bookingRequestsQuery = userEmail
         ? bookingRequestsQuery.or(`performer_id.eq.${userId},performer_email.ilike.${userEmail}`)
         : bookingRequestsQuery.eq("performer_id", userId);
-      void bookingRequestsQuery;
+      
 
       const [membersRes, ownedRes, bookingReqRes] = await Promise.all([
         supabase

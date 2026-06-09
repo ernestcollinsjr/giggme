@@ -43,6 +43,12 @@ const BookPerformers = () => {
 
       // Resolve booking_manager id (self if BM, otherwise parent BM if admin).
       if (user) {
+        setCurrentUserId(user.id);
+        const { data: favRows } = await supabase
+          .from("favorite_performers")
+          .select("performer_id")
+          .eq("user_id", user.id);
+        setFavoriteIds(new Set((favRows || []).map((r: any) => r.performer_id)));
         const { data: roles } = await supabase
           .from("user_roles")
           .select("role")

@@ -21,6 +21,8 @@ import { PageContainer } from "@/components/PageContainer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { RealtimeChannel } from "@supabase/supabase-js";
+import { typingDebug } from "@/lib/typingDebug";
+import TypingDebugOverlay from "@/components/TypingDebugOverlay";
 
 const REPORT_REASONS = [
   { value: "harassment", label: "Harassment or bullying" },
@@ -207,6 +209,7 @@ const Messages = () => {
   const remoteTypingTimeoutsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const typingStatusPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastTypingPersistRef = useRef<{ isTyping: boolean; sentAt: number }>({ isTyping: false, sentAt: 0 });
+  const [typingChannelStatus, setTypingChannelStatus] = useState<string>("idle");
   const realtimeRefreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const realtimeFallbackIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
@@ -621,6 +624,7 @@ const Messages = () => {
 
   const setRemoteTyping = useCallback((remoteUserId: string, name: string | null | undefined, isTyping: boolean) => {
     if (!remoteUserId || remoteUserId === userId) return;
+    typingDebug.log("Messages", "set-remote", { remoteUserId: remoteUserId.slice(0, 8), name, isTyping });
 
     const existingTimeout = remoteTypingTimeoutsRef.current.get(remoteUserId);
     if (existingTimeout) clearTimeout(existingTimeout);
@@ -688,6 +692,7 @@ const Messages = () => {
 
     setTypingUsers(new Map());
     const channelName = `typing:${conversationKey}`;
+    typingDebug.log("Messages", "subscribe", { channelName, isGroup: activeConversation.isGroup }, conversationKey);
 
     const channel = supabase.channel(channelName, {
       config: { presence: { key: userId } }
@@ -697,7 +702,7 @@ const Messages = () => {
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState();
         const activePresenceTypers = new Map<string, string>();
-        
+
         Object.entries(state).forEach(([key, presences]) => {
           if (key !== userId && Array.isArray(presences)) {
             const presence = presences.find((entry: any) => entry?.isTyping) as any;
@@ -706,18 +711,22 @@ const Messages = () => {
             }
           }
         });
-        
+
+        typingDebug.log("Messages", "presence-sync", { peers: Object.keys(state).length, typing: activePresenceTypers.size }, conversationKey);
+
         if (activePresenceTypers.size > 0) {
           setTypingUsers((prev) => new Map([...prev, ...activePresenceTypers]));
         }
       })
       .on('broadcast', { event: 'typing' }, ({ payload }) => {
+        typingDebug.log("Messages", "broadcast-recv", { from: String(payload?.userId).slice(0, 8), name: payload?.name, isTyping: payload?.isTyping }, conversationKey);
         setRemoteTyping(payload?.userId, payload?.name, Boolean(payload?.isTyping));
       })
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "message_typing_status", filter: `conversation_key=eq.${conversationKey}` },
         (payload) => {
+          typingDebug.log("Messages", "db-change", { event: payload.eventType, row: payload.new ?? payload.old }, conversationKey);
           if (payload.eventType === "DELETE") {
             const oldStatus = payload.old as TypingStatus;
             setRemoteTyping(oldStatus.user_id, profilesRef.current[oldStatus.user_id]?.name, false);
@@ -727,6 +736,8 @@ const Messages = () => {
         }
       )
       .subscribe(async (status) => {
+        setTypingChannelStatus(status);
+        typingDebug.log("Messages", "subscribe-status", { status }, conversationKey);
         if (status === 'SUBSCRIBED') {
           const myProfile = profilesRef.current[userId];
           await channel.track({
@@ -779,6 +790,7 @@ const Messages = () => {
 
     typingChannelRef.current.track(payload);
     typingChannelRef.current.send({ type: 'broadcast', event: 'typing', payload });
+    typingDebug.log("Messages", "broadcast-send", { isTyping, name: payload.name }, conversationKey);
     supabase
       .from("message_typing_status")
       .upsert({
@@ -790,6 +802,7 @@ const Messages = () => {
         updated_at: new Date().toISOString(),
       }, { onConflict: "conversation_key,user_id" })
       .then(({ error }) => {
+        typingDebug.log("Messages", "db-upsert", { isTyping, error: error?.message ?? null }, conversationKey);
         if (error) console.error("Failed to update typing status:", error);
       });
   }, [activeConversation, getTypingConversationKey, userId]);
@@ -2325,6 +2338,12 @@ const Messages = () => {
       </Dialog>
 
       <BottomNav />
+      <TypingDebugOverlay
+        surface="Messages"
+        conversationKey={getTypingConversationKey()}
+        channelStatus={typingChannelStatus}
+        typingUsers={typingUsers}
+      />
     </PageContainer>
   );
 };

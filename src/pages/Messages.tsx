@@ -394,18 +394,26 @@ const Messages = () => {
       }
       setUserId(user.id);
       
-      // Fetch user role
-      const { data: roleData } = await supabase
+      // Fetch all user roles and prioritize the most privileged role for messaging rules
+      const { data: rolesData } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", user.id)
-        .single();
+        .eq("user_id", user.id);
       
-      if (roleData) {
-        setUserRole(roleData.role);
+      if (rolesData && rolesData.length > 0) {
+        const roles = rolesData.map((row) => row.role);
+        const primaryRole = roles.includes("super_admin")
+          ? "super_admin"
+          : roles.includes("booking_manager")
+            ? "booking_manager"
+            : roles.includes("admin")
+              ? "admin"
+              : roles[0];
+
+        setUserRole(primaryRole);
         
         // Fetch associated members based on role
-        if (roleData.role === "booking_manager") {
+        if (primaryRole === "booking_manager") {
           // Get bands the user leads
           const { data: bands } = await supabase
             .from("bands")
@@ -425,7 +433,7 @@ const Messages = () => {
               setAllowedMemberIds(memberIds);
             }
           }
-        } else if (roleData.role === "admin") {
+        } else if (primaryRole === "admin" || primaryRole === "super_admin") {
           // Booking managers (and their admins) can see ALL their messages - no filtering
           setAllowedMemberIds([]);
         }
@@ -761,12 +769,17 @@ const Messages = () => {
       );
     }
     
-    return allMessages.filter(m => 
-      !m.is_group_message && 
-      ((m.sender_id === userId && m.recipient_id === activeConversation.participantId) ||
-       (m.sender_id === activeConversation.participantId && m.recipient_id === userId))
-    ).sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-  }, [allMessages, activeConversation, userId]);
+    return allMessages.filter(m => {
+      if (m.is_group_message) return false;
+
+      if (userRole === "super_admin") {
+        return m.sender_id === activeConversation.participantId || m.recipient_id === activeConversation.participantId;
+      }
+
+      return (m.sender_id === userId && m.recipient_id === activeConversation.participantId) ||
+        (m.sender_id === activeConversation.participantId && m.recipient_id === userId);
+    }).sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+  }, [allMessages, activeConversation, userId, userRole]);
 
   // Auto-scroll and mark as read
   useEffect(() => {
@@ -812,6 +825,10 @@ const Messages = () => {
         if (conversation.isGroup) {
           return m.is_group_message && m.sender_id !== userId;
         }
+        if (userRole === "super_admin") {
+          return !m.is_group_message && m.sender_id === conversation.participantId;
+        }
+
         return !m.is_group_message && m.sender_id === conversation.participantId;
       });
 

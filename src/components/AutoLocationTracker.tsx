@@ -30,6 +30,11 @@ function distanceMeters(lat1: number, lng1: number, lat2: number, lng2: number) 
 }
 
 const ARRIVAL_RADIUS_METERS = 150;
+// Battery-friendly ping cadence. We poll on an interval instead of
+// watchPosition (which fires on every sensor update and drains battery).
+const PING_INTERVAL_FAR_MS = 4 * 60 * 1000;   // 4 min when far from venue
+const PING_INTERVAL_NEAR_MS = 30 * 1000;      // 30s when within geofence radius
+const GEOFENCE_RADIUS_METERS = 2000;          // switch to fast pings within 2km
 
 export const AutoLocationTracker = ({ userId, isEnabled, venues = [] }: AutoLocationTrackerProps) => {
   const [isTracking, setIsTracking] = useState(false);
@@ -41,21 +46,21 @@ export const AutoLocationTracker = ({ userId, isEnabled, venues = [] }: AutoLoca
   useEffect(() => {
     if (!isEnabled || !navigator.geolocation) return;
 
-    let watchId: number;
+    let timerId: ReturnType<typeof setTimeout> | null = null;
+    let cancelled = false;
+    let lastNear = false;
 
     const handleArrival = async (venue: VenueTarget) => {
       if (arrivedGigsRef.current.has(venue.gigId)) return;
       arrivedGigsRef.current.add(venue.gigId);
 
       try {
-        // Turn off sharing for this gig member
         await supabase
           .from("gig_members")
           .update({ location_sharing_enabled: false })
           .eq("gig_id", venue.gigId)
           .eq("member_id", userId);
 
-        // Notify the gig owner (manager / band leader)
         if (venue.gigOwnerId) {
           const { data: profile } = await supabase
             .from("profiles")
@@ -78,68 +83,91 @@ export const AutoLocationTracker = ({ userId, isEnabled, venues = [] }: AutoLoca
       }
     };
 
-    const requestPermission = async () => {
-      try {
-        await new Promise<GeolocationPosition>((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, {
-            enableHighAccuracy: true,
-            timeout: 10000,
-          });
+    const getPosition = (highAccuracy: boolean) =>
+      new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: highAccuracy,
+          timeout: 15000,
+          maximumAge: 60000,
         });
+      });
+
+    const ping = async () => {
+      if (cancelled) return;
+      // Pause work entirely when tab is hidden — saves battery & quota.
+      if (typeof document !== "undefined" && document.hidden) {
+        scheduleNext(PING_INTERVAL_FAR_MS);
+        return;
+      }
+      try {
+        // Use high-accuracy only when we're close to a target venue.
+        const position = await getPosition(lastNear);
+        const { latitude, longitude } = position.coords;
+
+        await supabase
+          .from("profiles")
+          .update({ location_lat: latitude, location_lng: longitude })
+          .eq("id", userId);
+
+        let near = false;
+        for (const v of venues) {
+          if (arrivedGigsRef.current.has(v.gigId)) continue;
+          const d = distanceMeters(latitude, longitude, v.venueLat, v.venueLng);
+          if (d <= ARRIVAL_RADIUS_METERS) {
+            await handleArrival(v);
+          } else if (d <= GEOFENCE_RADIUS_METERS) {
+            near = true;
+          }
+        }
+        lastNear = near;
+        scheduleNext(near ? PING_INTERVAL_NEAR_MS : PING_INTERVAL_FAR_MS);
+      } catch (error: any) {
+        if (error?.code === 1) {
+          setPermissionDenied(true);
+          setIsTracking(false);
+          return;
+        }
+        console.error("Geolocation ping error:", error);
+        scheduleNext(PING_INTERVAL_FAR_MS);
+      }
+    };
+
+    const scheduleNext = (ms: number) => {
+      if (cancelled) return;
+      timerId = setTimeout(ping, ms);
+    };
+
+    const onVisibility = () => {
+      if (!document.hidden && !cancelled) {
+        // Resume immediately when user returns to the tab.
+        if (timerId) clearTimeout(timerId);
+        ping();
+      }
+    };
+
+    const start = async () => {
+      try {
+        await getPosition(true);
         setPermissionDenied(false);
         setIsDismissed(false);
-        startTracking();
+        setIsTracking(true);
+        ping();
+        document.addEventListener("visibilitychange", onVisibility);
       } catch (error: any) {
-        console.error("Geolocation permission error:", error);
-        if (error.code === 1) {
+        if (error?.code === 1) {
           setPermissionDenied(true);
           setIsTracking(false);
         }
       }
     };
 
-    const startTracking = () => {
-      setIsTracking(true);
-
-      watchId = navigator.geolocation.watchPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          try {
-            await supabase
-              .from("profiles")
-              .update({ location_lat: latitude, location_lng: longitude })
-              .eq("id", userId);
-          } catch (error) {
-            console.error("Failed to update location:", error);
-          }
-
-          // Arrival check
-          for (const v of venues) {
-            if (arrivedGigsRef.current.has(v.gigId)) continue;
-            const d = distanceMeters(latitude, longitude, v.venueLat, v.venueLng);
-            if (d <= ARRIVAL_RADIUS_METERS) {
-              await handleArrival(v);
-            }
-          }
-        },
-        (error) => {
-          console.error("Geolocation error:", error);
-          if (error.code === error.PERMISSION_DENIED) {
-            setPermissionDenied(true);
-            setIsTracking(false);
-          }
-        },
-        { enableHighAccuracy: true, timeout: 30000, maximumAge: 60000 }
-      );
-    };
-
-    requestPermission();
+    start();
 
     return () => {
-      if (watchId) {
-        navigator.geolocation.clearWatch(watchId);
-        setIsTracking(false);
-      }
+      cancelled = true;
+      if (timerId) clearTimeout(timerId);
+      document.removeEventListener("visibilitychange", onVisibility);
+      setIsTracking(false);
     };
   }, [userId, isEnabled, JSON.stringify(venues.map(v => v.gigId))]);
 

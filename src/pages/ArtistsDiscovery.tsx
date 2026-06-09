@@ -484,7 +484,7 @@ const ArtistsDiscovery = () => {
                       <Button
                         size="sm"
                         className="text-xs h-7 px-2 w-full justify-center"
-                        onClick={(e) => { e.stopPropagation(); navigate(`/artist-profile/${artist.user_id}`); }}
+                        onClick={(e) => { e.stopPropagation(); navigate(`/artist-profile/${artist.user_id}?book=1`); }}
                       >
                         <Calendar className="h-3 w-3 mr-1" /> Book
                       </Button>

@@ -18,16 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Calendar, MapPin, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-function formatTime12h(text: string): string {
-  return text.replace(/\b(\d{1,2}):(\d{2})\b/g, (_, hh, mm) => {
-    const h = parseInt(hh, 10);
-    if (isNaN(h) || h < 0 || h > 23) return `${hh}:${mm}`;
-    const period = h >= 12 ? "pm" : "am";
-    const h12 = h % 12 === 0 ? 12 : h % 12;
-    return mm === "00" ? `${h12}${period}` : `${h12}:${mm}${period}`;
-  });
-}
+import { useTimeFormat } from "@/hooks/useTimeFormat";
 
 type GigSource = "gig_member" | "owned_gig" | "booking_request";
 

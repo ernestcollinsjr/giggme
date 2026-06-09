@@ -17,6 +17,7 @@ import SongLyrics from "./pages/SongLyrics";
 import Pricing from "./pages/Pricing";
 import PerformerProfileView from "./pages/PerformerProfileView";
 import ArtistsDiscovery from "./pages/ArtistsDiscovery";
+import BookPerformers from "./pages/BookPerformers";
 
 import NotFound from "./pages/NotFound";
 import OpenExternal from "./pages/OpenExternal";

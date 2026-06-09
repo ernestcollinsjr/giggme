@@ -9,14 +9,16 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Mail, Users, Copy, Check, Edit, UserPlus, Calendar as CalendarIconLucide, MapPin, Plus, Trash } from "lucide-react";
+import { ArrowLeft, Mail, Users, Copy, Check, Edit, UserPlus, Calendar as CalendarIconLucide, MapPin, Plus, Trash, IdCard } from "lucide-react";
 import { format } from "date-fns";
 import CrewMemberDetailsDialog from "@/components/CrewMemberDetailsDialog";
+import CrewProfileDialog from "@/components/CrewProfileDialog";
 import { PlaceAutocomplete } from "@/components/PlaceAutocomplete";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { CREW_TYPES, CREW_TYPE_LABELS, CREW_TYPE_OPTIONS, type CrewType } from "@/lib/crewTypes";
 
 interface Tour {
   id: string;
@@ -62,7 +64,8 @@ interface CrewMember {
   crew_member_id: string;
   status: string;
   role_title: string | null;
-  crew_type: 'band_members' | 'singer' | 'sound_crew' | 'lighting_crew';
+  crew_type: CrewType;
+  payment_amount: number | null;
   flight_confirmation: string | null;
   hotel_name: string | null;
   hotel_address: string | null;
@@ -96,15 +99,19 @@ export default function TourDetail() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteCrewType, setInviteCrewType] = useState<'band_members' | 'singer' | 'sound_crew' | 'lighting_crew'>('band_members');
+  const [inviteCrewType, setInviteCrewType] = useState<CrewType>('band_member');
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [selectedMember, setSelectedMember] = useState<CrewMember | null>(null);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+  const [profileUserId, setProfileUserId] = useState<string | null>(null);
+  const [profileUserName, setProfileUserName] = useState<string>("");
   const [addMemberDialogOpen, setAddMemberDialogOpen] = useState(false);
   const [availableProfiles, setAvailableProfiles] = useState<Array<{ id: string; name: string; email: string }>>([]);
   const [selectedProfileId, setSelectedProfileId] = useState("");
-  const [selectedCrewType, setSelectedCrewType] = useState<'band_members' | 'singer' | 'sound_crew' | 'lighting_crew'>('band_members');
+  const [selectedCrewType, setSelectedCrewType] = useState<CrewType>('band_member');
+  const [memberPaymentAmount, setMemberPaymentAmount] = useState("");
   const [tourDates, setTourDates] = useState<TourDate[]>([]);
   const [dateDialogOpen, setDateDialogOpen] = useState(false);
   const [editingDate, setEditingDate] = useState<TourDate | null>(null);
@@ -265,7 +272,7 @@ export default function TourDetail() {
 
       setDialogOpen(false);
       setInviteEmail("");
-      setInviteCrewType('band_members');
+      setInviteCrewType('band_member');
       fetchTourData();
     } catch (error) {
       console.error("Error sending invite:", error);
@@ -334,7 +341,8 @@ export default function TourDetail() {
           tour_id: tourId,
           crew_member_id: selectedProfileId,
           crew_type: selectedCrewType,
-          status: "accepted"
+          status: "accepted",
+          payment_amount: memberPaymentAmount ? parseFloat(memberPaymentAmount) : null,
         });
 
       if (error) throw error;
@@ -346,7 +354,8 @@ export default function TourDetail() {
 
       setAddMemberDialogOpen(false);
       setSelectedProfileId("");
-      setSelectedCrewType('band_members');
+      setSelectedCrewType('band_member');
+      setMemberPaymentAmount("");
       fetchTourData();
     } catch (error) {
       console.error("Error adding crew member:", error);
@@ -569,7 +578,20 @@ export default function TourDetail() {
             </p>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <Button
+            variant="outline"
+            onClick={async () => {
+              const { data: { session } } = await supabase.auth.getSession();
+              if (!session?.user) return;
+              setProfileUserId(session.user.id);
+              setProfileUserName("My Profile");
+              setProfileDialogOpen(true);
+            }}
+          >
+            <IdCard className="mr-2 h-4 w-4" />
+            My Crew Profile
+          </Button>
           <Dialog open={addMemberDialogOpen} onOpenChange={setAddMemberDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline">
@@ -607,12 +629,22 @@ export default function TourDetail() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="band_members">Group Members</SelectItem>
-                      <SelectItem value="singer">Singer</SelectItem>
-                      <SelectItem value="sound_crew">Sound Crew</SelectItem>
-                      <SelectItem value="lighting_crew">Lighting Crew</SelectItem>
+                      {CREW_TYPE_OPTIONS.map((t) => (
+                        <SelectItem key={t} value={t}>{CREW_TYPE_LABELS[t]}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
+                </div>
+                <div>
+                  <Label htmlFor="memberPayment">Payment Amount ($)</Label>
+                  <Input
+                    id="memberPayment"
+                    type="number"
+                    step="0.01"
+                    value={memberPaymentAmount}
+                    onChange={(e) => setMemberPaymentAmount(e.target.value)}
+                    placeholder="0.00"
+                  />
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button type="button" variant="outline" onClick={() => setAddMemberDialogOpen(false)}>
@@ -659,10 +691,9 @@ export default function TourDetail() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="band_members">Group Members</SelectItem>
-                    <SelectItem value="singer">Singer</SelectItem>
-                    <SelectItem value="sound_crew">Sound Crew</SelectItem>
-                    <SelectItem value="lighting_crew">Lighting Crew</SelectItem>
+                    {CREW_TYPE_OPTIONS.map((t) => (
+                      <SelectItem key={t} value={t}>{CREW_TYPE_LABELS[t]}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -693,27 +724,20 @@ export default function TourDetail() {
               </p>
             ) : (
               <div className="space-y-6">
-                {['band_members', 'singer', 'sound_crew', 'lighting_crew'].map((type) => {
+                {CREW_TYPES.map((type) => {
                   const typeMembers = crewMembers.filter(m => m.crew_type === type);
                   if (typeMembers.length === 0) return null;
-                  
-                  const typeLabels = {
-                    band_members: 'Group Members',
-                    singer: 'Singer',
-                    sound_crew: 'Sound Crew',
-                    lighting_crew: 'Lighting Crew'
-                  };
-                  
+
                   return (
                     <div key={type}>
                       <h3 className="font-semibold mb-3 text-sm uppercase tracking-wide text-muted-foreground">
-                        {typeLabels[type as keyof typeof typeLabels]} ({typeMembers.length})
+                        {CREW_TYPE_LABELS[type]} ({typeMembers.length})
                       </h3>
                       <div className="space-y-2">
                         {typeMembers.map((member) => (
                           <div key={member.id} className="p-3 border rounded-lg space-y-2">
                             <div className="flex items-center justify-between">
-                              <div 
+                              <div
                                 className="cursor-pointer hover:underline flex-1"
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -725,6 +749,11 @@ export default function TourDetail() {
                                 {member.role_title && (
                                   <p className="text-xs text-muted-foreground mt-1">{member.role_title}</p>
                                 )}
+                                {member.payment_amount != null && (
+                                  <p className="text-xs font-medium text-primary mt-1">
+                                    Pay: ${Number(member.payment_amount).toFixed(2)}
+                                  </p>
+                                )}
                               </div>
                               <div className="flex items-center gap-2">
                                 <span className={`px-2 py-1 rounded text-xs ${
@@ -735,6 +764,19 @@ export default function TourDetail() {
                                 <Button
                                   size="sm"
                                   variant="ghost"
+                                  title="Crew Profile"
+                                  onClick={() => {
+                                    setProfileUserId(member.crew_member_id);
+                                    setProfileUserName(member.profiles.name);
+                                    setProfileDialogOpen(true);
+                                  }}
+                                >
+                                  <IdCard className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  title="Tour Logistics"
                                   onClick={() => {
                                     setSelectedMember(member);
                                     setDetailsDialogOpen(true);
@@ -744,7 +786,7 @@ export default function TourDetail() {
                                 </Button>
                               </div>
                             </div>
-                            
+
                             {(member.hotel_name || member.flight_confirmation) && (
                               <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t">
                                 {member.flight_confirmation && (
@@ -1290,6 +1332,14 @@ export default function TourDetail() {
         onOpenChange={setDetailsDialogOpen}
         onUpdate={fetchTourData}
       />
+
+      <CrewProfileDialog
+        userId={profileUserId}
+        userName={profileUserName}
+        open={profileDialogOpen}
+        onOpenChange={setProfileDialogOpen}
+      />
+
     </div>
   );
 }

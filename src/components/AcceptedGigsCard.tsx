@@ -192,7 +192,7 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
           source: "booking_request" as GigSource,
           location_sharing_enabled: b.location_sharing_enabled ?? true,
           gig: {
-            id: dates.length > 1 ? `${b.id}-${idx}` : b.id,
+            id: b.id,
             date: dateIso,
             venue: b.venue || b.booker_name || "Booking",
             notes: b.time_text || null,

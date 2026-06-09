@@ -1792,7 +1792,7 @@ const Bookings = () => {
               </p>
             ) : (
               <div className="space-y-3">
-                {gigs
+                {currentGigs
                   .filter(gig => !showPendingOnly || (gigResponseCounts[gig.id]?.pending > 0))
                   .map((gig) => (
                   <div key={gig.id} className="p-4 border rounded-lg">

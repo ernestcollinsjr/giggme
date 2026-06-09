@@ -56,7 +56,7 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
       if (cancelTarget.source === "booking_request") {
         const { error } = await supabase
           .from("booking_requests")
-          .update({ status: "cancelled" })
+          .update({ status: "declined" })
           .eq("id", cancelTarget.gig.id);
         if (error) throw error;
       } else if (cancelTarget.isOwned) {

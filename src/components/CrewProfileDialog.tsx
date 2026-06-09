@@ -182,6 +182,13 @@ export default function CrewProfileDialog({
         resume_url: form.resume_url.trim() || null,
         demo_video_urls: fromCsv(form.demo_video_urls),
         photo_gallery: fromCsv(form.photo_gallery),
+        technical_rider: form.technical_rider.trim() || null,
+        hospitality_rider: form.hospitality_rider.trim() || null,
+        stage_plot_url: form.stage_plot_url.trim() || null,
+        input_list: form.input_list.trim() || null,
+        monitor_mix_preferences: form.monitor_mix_preferences.trim() || null,
+        backline_requirements: form.backline_requirements.trim() || null,
+        rider_notes: form.rider_notes.trim() || null,
       };
 
       const { error } = await supabase

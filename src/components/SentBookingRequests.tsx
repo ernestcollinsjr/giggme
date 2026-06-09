@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Mail, MapPin, Calendar, Clock, Trash2, BellOff, Archive, DollarSign, CheckCircle2 } from "lucide-react";
+import { Mail, MapPin, Calendar, Clock, Trash2, BellOff, Archive, DollarSign, CheckCircle2, RefreshCw } from "lucide-react";
 import { formatTimeString } from "@/hooks/useTimeFormat";
 
 interface BookingRequest {
@@ -72,6 +72,7 @@ function parseBudget(b: string | null): number {
 export const SentBookingRequests = () => {
   const [requests, setRequests] = useState<BookingRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [resendingId, setResendingId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleDelete = async (id: string) => {
@@ -96,6 +97,28 @@ export const SentBookingRequests = () => {
     }
     setRequests((prev) => prev.map((r) => (r.id === id ? { ...r, auto_reminders_disabled: disabled } : r)));
     toast({ title: disabled ? "Auto reminders off" : "Auto reminders on" });
+  };
+
+  const handleResend = async (id: string) => {
+    setResendingId(id);
+    try {
+      const { data, error } = await supabase.functions.invoke("resend-booking-request", {
+        body: { bookingRequestId: id },
+      });
+      if (error) throw error;
+      setRequests((prev) =>
+        prev.map((r) => (r.id === id ? { ...r, expires_at: data?.expiresAt || r.expires_at } : r))
+      );
+      toast({ title: "Booking email resent", description: "The performer will receive the email again." });
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: "Failed to resend",
+        description: err?.message || "Something went wrong.",
+      });
+    } finally {
+      setResendingId(null);
+    }
   };
 
   const fetchRequests = async () => {
@@ -194,6 +217,18 @@ export const SentBookingRequests = () => {
                 onCheckedChange={(v) => handleToggleReminders(r.id, v)}
               />
             </label>
+          )}
+          {!archived && r.status === "pending" && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-primary"
+              onClick={() => handleResend(r.id)}
+              disabled={resendingId === r.id}
+              aria-label="Resend book performer email"
+            >
+              <RefreshCw className={`h-4 w-4 ${resendingId === r.id ? "animate-spin" : ""}`} />
+            </Button>
           )}
           <Button
             variant="ghost"

@@ -32,6 +32,9 @@ const BookPerformers = () => {
   const [myRosterIds, setMyRosterIds] = useState<Set<string>>(new Set());
   const [bmId, setBmId] = useState<string | null>(null);
   const [addingId, setAddingId] = useState<string | null>(null);
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [togglingFavId, setTogglingFavId] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {

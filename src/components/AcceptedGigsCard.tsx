@@ -291,10 +291,73 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
                   </Label>
                 </div>
               </div>
+              <div className="mt-3 flex justify-end">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setCancelTarget(gig)}
+                >
+                  <XCircle className="h-4 w-4" />
+                  Cancel Gig
+                </Button>
+              </div>
             </div>
           ))}
         </div>
       </CardContent>
+
+      <AlertDialog
+        open={!!cancelTarget}
+        onOpenChange={(open) => {
+          if (!open && !cancelling) {
+            setCancelTarget(null);
+            setCancelReason("");
+          }
+        }}
+      >
+        <AlertDialogContent className="backdrop-blur-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel this gig?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to cancel{" "}
+              <strong>{cancelTarget?.gig.venue}</strong> on{" "}
+              {cancelTarget &&
+                new Date(cancelTarget.gig.date).toLocaleDateString("en-US", {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              ? The booking manager will be notified by email.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="cancel-reason" className="text-sm">
+              Reason (optional)
+            </Label>
+            <Textarea
+              id="cancel-reason"
+              placeholder="Let the booking manager know why..."
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              disabled={cancelling}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={cancelling}>Keep Gig</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleCancelGig();
+              }}
+              disabled={cancelling}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {cancelling ? "Cancelling..." : "Yes, Cancel Gig"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 };

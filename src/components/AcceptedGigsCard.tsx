@@ -202,11 +202,11 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
         }));
       });
 
-      // De-dupe in case the owner is also listed as a member
+      // De-dupe by entry id (allow same booking_request to produce multiple per-date cards)
       const seen = new Set<string>();
       const combined = [...memberGigs, ...ownedGigs, ...bookingGigs].filter((entry) => {
-        if (seen.has(entry.gig.id)) return false;
-        seen.add(entry.gig.id);
+        if (seen.has(entry.id)) return false;
+        seen.add(entry.id);
         return true;
       });
 

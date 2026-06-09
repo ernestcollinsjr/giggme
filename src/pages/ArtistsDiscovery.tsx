@@ -446,11 +446,12 @@ const ArtistsDiscovery = () => {
                       variant="outline"
                       size="sm"
                       className="w-full mt-2 text-xs h-7"
-                      onClick={() => navigate(`/artist-profile/${artist.user_id}`)}
+                      onClick={(e) => { e.stopPropagation(); navigate(`/artist-profile/${artist.user_id}`); }}
                     >
                       View Profile
                     </Button>
                   )}
+
                 </CardContent>
               </Card>
               );

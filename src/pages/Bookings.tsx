@@ -1058,14 +1058,31 @@ const Bookings = () => {
     }
   };
 
-  const currentBookingRequests = bookingRequests.filter((br) => !isBookingRequestPast(br));
-  const archivedBookingRequests = bookingRequests.filter((br) => isBookingRequestPast(br));
+  // Hide declined/canceled records older than 30 days (they will be permanently deleted on next load)
+  const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+  const isOldDeclined = (status: string | null | undefined, updatedAt: string | null | undefined) => {
+    const s = (status || "").toLowerCase();
+    if (!["declined", "rejected", "cancelled", "canceled", "expired"].includes(s)) return false;
+    if (!updatedAt) return false;
+    return Date.now() - new Date(updatedAt).getTime() > THIRTY_DAYS_MS;
+  };
 
-  const currentGigInvitations = gigInvitations.filter((gi: any) => !isPastDate(gi.gigs?.date));
-  const archivedGigInvitations = gigInvitations.filter((gi: any) => isPastDate(gi.gigs?.date));
+  const visibleBookingRequests = bookingRequests.filter(
+    (br: any) => !isOldDeclined(br.status, br.updated_at || br.created_at)
+  );
+  const visibleGigInvitations = gigInvitations.filter(
+    (gi: any) => !isOldDeclined(gi.status, gi.updated_at || gi.created_at)
+  );
+
+  const currentBookingRequests = visibleBookingRequests.filter((br) => !isBookingRequestPast(br));
+  const archivedBookingRequests = visibleBookingRequests.filter((br) => isBookingRequestPast(br));
+
+  const currentGigInvitations = visibleGigInvitations.filter((gi: any) => !isPastDate(gi.gigs?.date));
+  const archivedGigInvitations = visibleGigInvitations.filter((gi: any) => isPastDate(gi.gigs?.date));
 
   const currentGigs = gigs.filter((g) => !isPastDate(g.date));
   const archivedGigs = gigs.filter((g) => isPastDate(g.date));
+
 
   if (loading) {
     return (

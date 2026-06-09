@@ -59,7 +59,7 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
           .from("gigs")
           .select("id, date, venue, notes, loading_time, sound_check_time")
           .eq("user_id", userId)
-          .in("status", ["confirmed", "accepted"]),
+          .in("status", ["confirmed"]),
       ]);
 
       if (membersRes.error) throw membersRes.error;

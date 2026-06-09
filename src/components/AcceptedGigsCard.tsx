@@ -398,7 +398,7 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
                 e.preventDefault();
                 handleCancelGig();
               }}
-              disabled={cancelling}
+              disabled={cancelling || !cancelReason.trim()}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {cancelling ? "Cancelling..." : "Yes, Cancel Gig"}

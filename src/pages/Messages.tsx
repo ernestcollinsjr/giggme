@@ -704,7 +704,7 @@ const Messages = () => {
 
   const broadcastTyping = useCallback((isTyping: boolean) => {
     if (!typingChannelRef.current || !userId) return;
-    const myProfile = profiles[userId];
+    const myProfile = profilesRef.current[userId];
     const payload = {
       userId,
       name: myProfile?.name || 'User',
@@ -713,7 +713,7 @@ const Messages = () => {
 
     typingChannelRef.current.track(payload);
     typingChannelRef.current.send({ type: 'broadcast', event: 'typing', payload });
-  }, [userId, profiles]);
+  }, [userId]);
 
   const handleTextChange = useCallback((value: string) => {
     console.log("handleTextChange called with:", value);

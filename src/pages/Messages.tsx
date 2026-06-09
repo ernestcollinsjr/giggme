@@ -635,7 +635,7 @@ const Messages = () => {
       setTypingUsers((prev) => {
         const next = new Map(prev);
         if (isTyping) {
-          next.set(remoteUserId, name || profiles[remoteUserId]?.name || 'Someone');
+          next.set(remoteUserId, name || profilesRef.current[remoteUserId]?.name || 'Someone');
         } else {
           next.delete(remoteUserId);
         }

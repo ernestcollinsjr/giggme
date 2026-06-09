@@ -1989,9 +1989,6 @@ const ProfileSetup = () => {
                     {[
                       "Church",
                       "RnB",
-                      "Church + RnB",
-                      "RnB Singer",
-                      "Church Singer",
                       "Minister of Music",
                       "Choir Director",
                       "Vocal",

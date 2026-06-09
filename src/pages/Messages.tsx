@@ -635,7 +635,7 @@ const Messages = () => {
       setProfiles(profileObj);
       // Filter profiles list based on allowed members for role-based messaging
       // For band_leader/booking_manager: ONLY show their assigned members
-      const isRestrictedRole = userRole === "booking_manager";
+      const isRestrictedRole = userRole === "booking_manager" && allowedMemberIds.length > 0;
       const filteredProfiles = data.filter((p) => {
         if (p.id === userId) return false;
         if (isRestrictedRole) return allowedMemberIds.includes(p.id);

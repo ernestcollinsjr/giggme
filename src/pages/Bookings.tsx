@@ -1201,7 +1201,7 @@ const Bookings = () => {
                   </div>
                 </div>
               ))}
-              {gigInvitations.map((gi: any) => {
+              {currentGigInvitations.map((gi: any) => {
                 const fullGig = gigs.find((g) => g.id === gi.gigs?.id);
                 return (
                   <div key={`gi-${gi.id}`} className="p-4 border rounded-lg">

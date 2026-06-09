@@ -194,6 +194,7 @@ const Messages = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingChannelRef = useRef<RealtimeChannel | null>(null);
+  const remoteTypingTimeoutsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const realtimeRefreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const realtimeFallbackIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
@@ -624,6 +625,37 @@ const Messages = () => {
       config: { presence: { key: userId } }
     });
 
+    const setRemoteTyping = (remoteUserId: string, name: string, isTyping: boolean) => {
+      if (!remoteUserId || remoteUserId === userId) return;
+
+      const existingTimeout = remoteTypingTimeoutsRef.current.get(remoteUserId);
+      if (existingTimeout) clearTimeout(existingTimeout);
+
+      setTypingUsers((prev) => {
+        const next = new Map(prev);
+        if (isTyping) {
+          next.set(remoteUserId, name || profiles[remoteUserId]?.name || 'Someone');
+        } else {
+          next.delete(remoteUserId);
+        }
+        return next;
+      });
+
+      if (isTyping) {
+        const timeout = setTimeout(() => {
+          setTypingUsers((prev) => {
+            const next = new Map(prev);
+            next.delete(remoteUserId);
+            return next;
+          });
+          remoteTypingTimeoutsRef.current.delete(remoteUserId);
+        }, 3500);
+        remoteTypingTimeoutsRef.current.set(remoteUserId, timeout);
+      } else {
+        remoteTypingTimeoutsRef.current.delete(remoteUserId);
+      }
+    };
+
     channel
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState();
@@ -640,11 +672,14 @@ const Messages = () => {
         
         setTypingUsers(newTypingUsers);
       })
+      .on('broadcast', { event: 'typing' }, ({ payload }) => {
+        setRemoteTyping(payload?.userId, payload?.name, Boolean(payload?.isTyping));
+      })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
           const myProfile = profiles[userId];
           await channel.track({
-            oderId: userId,
+            userId,
             name: myProfile?.name || 'User',
             isTyping: false,
           });
@@ -664,11 +699,14 @@ const Messages = () => {
   const broadcastTyping = useCallback((isTyping: boolean) => {
     if (!typingChannelRef.current || !userId) return;
     const myProfile = profiles[userId];
-    typingChannelRef.current.track({
-      oderId: userId,
+    const payload = {
+      userId,
       name: myProfile?.name || 'User',
       isTyping,
-    });
+    };
+
+    typingChannelRef.current.track(payload);
+    typingChannelRef.current.send({ type: 'broadcast', event: 'typing', payload });
   }, [userId, profiles]);
 
   const handleTextChange = useCallback((value: string) => {
@@ -686,6 +724,8 @@ const Messages = () => {
   useEffect(() => {
     return () => {
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      remoteTypingTimeoutsRef.current.forEach((timeout) => clearTimeout(timeout));
+      remoteTypingTimeoutsRef.current.clear();
     };
   }, []);
 

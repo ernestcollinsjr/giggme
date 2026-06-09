@@ -160,6 +160,24 @@ const Bookings = () => {
   const [editingRequest, setEditingRequest] = useState<any | null>(null);
   const [editForm, setEditForm] = useState({ venue: "", dates_text: "", time_text: "", budget: "", note: "" });
   const [savingEdit, setSavingEdit] = useState(false);
+  const [resendingId, setResendingId] = useState<string | null>(null);
+
+  const handleResendBookingRequest = async (br: any) => {
+    if (!br?.id) return;
+    setResendingId(br.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("resend-booking-request", {
+        body: { bookingRequestId: br.id },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast({ title: "Email resent", description: "The booking request email has been resent." });
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Failed to resend", description: err?.message || "Please try again." });
+    } finally {
+      setResendingId(null);
+    }
+  };
   const [gigInvitations, setGigInvitations] = useState<any[]>([]);
   const [bands, setBands] = useState<{ id: string; name: string }[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);

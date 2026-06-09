@@ -37,6 +37,13 @@ type ProfileForm = {
   resume_url: string;
   demo_video_urls: string;
   photo_gallery: string;
+  technical_rider: string;
+  hospitality_rider: string;
+  stage_plot_url: string;
+  input_list: string;
+  monitor_mix_preferences: string;
+  backline_requirements: string;
+  rider_notes: string;
 };
 
 const empty: ProfileForm = {
@@ -61,6 +68,13 @@ const empty: ProfileForm = {
   resume_url: "",
   demo_video_urls: "",
   photo_gallery: "",
+  technical_rider: "",
+  hospitality_rider: "",
+  stage_plot_url: "",
+  input_list: "",
+  monitor_mix_preferences: "",
+  backline_requirements: "",
+  rider_notes: "",
 };
 
 const toCsv = (arr: string[] | null | undefined) => (arr || []).join(", ");

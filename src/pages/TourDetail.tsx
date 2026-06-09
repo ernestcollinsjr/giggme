@@ -578,7 +578,20 @@ export default function TourDetail() {
             </p>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <Button
+            variant="outline"
+            onClick={async () => {
+              const { data: { session } } = await supabase.auth.getSession();
+              if (!session?.user) return;
+              setProfileUserId(session.user.id);
+              setProfileUserName("My Profile");
+              setProfileDialogOpen(true);
+            }}
+          >
+            <IdCard className="mr-2 h-4 w-4" />
+            My Crew Profile
+          </Button>
           <Dialog open={addMemberDialogOpen} onOpenChange={setAddMemberDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline">

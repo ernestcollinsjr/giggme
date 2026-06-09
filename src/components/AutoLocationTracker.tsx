@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { MapPin, X, CheckCircle2 } from "lucide-react";
+import {
+  isNativeGeofenceSupported,
+  startVenueGeofencing,
+  stopVenueGeofencing,
+} from "@/lib/venueGeofence";
 
 interface VenueTarget {
   gigId: string;
@@ -45,6 +50,21 @@ export const AutoLocationTracker = ({ userId, isEnabled, venues = [] }: AutoLoca
 
   useEffect(() => {
     if (!isEnabled || !navigator.geolocation) return;
+
+
+    // On native (iOS/Android via Capacitor), hand off to the background
+    // geolocation watcher which keeps firing while the app is backgrounded
+    // and triggers a local notification on venue entry.
+    if (isNativeGeofenceSupported() && venues.length > 0) {
+      startVenueGeofencing(userId, venues).catch((e) =>
+        console.warn("[geofence] start failed", e),
+      );
+      setIsTracking(true);
+      return () => {
+        stopVenueGeofencing();
+        setIsTracking(false);
+      };
+    }
 
     let timerId: ReturnType<typeof setTimeout> | null = null;
     let cancelled = false;

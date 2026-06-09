@@ -16,6 +16,7 @@ import {
   LogOut,
   HelpCircle,
   CreditCard,
+  Heart,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
 import {

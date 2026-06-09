@@ -568,20 +568,12 @@ export default function Tours() {
                     <p className="text-sm text-muted-foreground">No crew members yet</p>
                   ) : (
                     <div className="space-y-2">
-                      {['band_members', 'singer', 'sound_crew', 'lighting_crew'].map((type) => {
+                      {CREW_TYPES.map((type) => {
                         const typeMembers = tour.tour_crew_members?.filter(m => m.crew_type === type) || [];
                         if (typeMembers.length === 0) return null;
-                        
-                        const typeLabels: Record<string, string> = {
-                          band_members: 'Group Members',
-                          singer: 'Singer',
-                          sound_crew: 'Sound Crew',
-                          lighting_crew: 'Lighting Crew'
-                        };
-                        
                         return (
                           <div key={type} className="flex items-center justify-between text-sm">
-                            <span className="text-muted-foreground">{typeLabels[type]}</span>
+                            <span className="text-muted-foreground">{CREW_TYPE_LABELS[type]}</span>
                             <span className="font-medium">{typeMembers.length}</span>
                           </div>
                         );

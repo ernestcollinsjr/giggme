@@ -367,11 +367,23 @@ const Dashboard = () => {
           .eq("member_id", user.id)
           .eq("status", "accepted")
           .eq("location_sharing_enabled", true);
+        let activeBookingRequestsQuery = supabase
+          .from("booking_requests")
+          .select("id")
+          .eq("status", "accepted")
+          .eq("location_sharing_enabled", true);
+
+        activeBookingRequestsQuery = user.email
+          ? activeBookingRequestsQuery.or(`performer_id.eq.${user.id},performer_email.ilike.${user.email}`)
+          : activeBookingRequestsQuery.eq("performer_id", user.id);
+
+        const { data: activeBookingRequests } = await activeBookingRequestsQuery;
         
-        if (activeGigs) {
-          const activeGigIds = activeGigs.map((g: any) => g.gig_id);
-          setActiveGigsWithSharing(activeGigIds);
-        }
+        const activeGigIds = [
+          ...(activeGigs || []).map((g: any) => g.gig_id),
+          ...(activeBookingRequests || []).map((br: any) => `booking-${br.id}`),
+        ];
+        setActiveGigsWithSharing(activeGigIds);
       }
       
       // Booking managers see bands (leaders and members)

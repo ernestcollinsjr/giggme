@@ -56,7 +56,7 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
       if (cancelTarget.source === "booking_request") {
         const { error } = await supabase
           .from("booking_requests")
-          .update({ status: "declined" })
+          .update({ status: "declined", location_sharing_enabled: false } as any)
           .eq("id", cancelTarget.gig.id);
         if (error) throw error;
       } else if (cancelTarget.isOwned) {
@@ -68,7 +68,7 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
       } else {
         const { error } = await supabase
           .from("gig_members")
-          .update({ status: "declined" })
+          .update({ status: "declined", location_sharing_enabled: false })
           .eq("id", cancelTarget.id);
         if (error) throw error;
       }
@@ -108,6 +108,17 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
   const fetchAcceptedGigs = async () => {
     try {
       setErrorMessage(null);
+      const { data: { session } } = await supabase.auth.getSession();
+      const userEmail = session?.user?.email?.trim();
+      let bookingRequestsQuery = supabase
+        .from("booking_requests")
+        .select("id, event_date, venue, time_text, dates_text, booker_name, location_sharing_enabled")
+        .eq("status", "accepted");
+
+      bookingRequestsQuery = userEmail
+        ? bookingRequestsQuery.or(`performer_id.eq.${userId},performer_email.ilike.${userEmail}`)
+        : bookingRequestsQuery.eq("performer_id", userId);
+
       const [membersRes, ownedRes, bookingReqRes] = await Promise.all([
         supabase
           .from("gig_members")
@@ -130,11 +141,7 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
           .select("id, date, venue, notes, loading_time, sound_check_time")
           .eq("user_id", userId)
           .in("status", ["confirmed"]),
-        supabase
-          .from("booking_requests")
-          .select("id, event_date, venue, time_text, dates_text, booker_name")
-          .eq("performer_id", userId)
-          .eq("status", "accepted"),
+        bookingRequestsQuery,
       ]);
 
       if (membersRes.error) throw membersRes.error;
@@ -163,7 +170,7 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
           id: `br-${b.id}`,
           isOwned: false,
           source: "booking_request",
-          location_sharing_enabled: false,
+          location_sharing_enabled: b.location_sharing_enabled ?? true,
           gig: {
             id: b.id,
             date: b.event_date,
@@ -197,10 +204,16 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
 
   const handleToggleLocationSharing = async (gigMemberId: string, currentValue: boolean) => {
     try {
-      const { error } = await supabase
-        .from("gig_members")
-        .update({ location_sharing_enabled: !currentValue })
-        .eq("id", gigMemberId);
+      const targetGig = acceptedGigs.find((gig) => gig.id === gigMemberId);
+      const { error } = targetGig?.source === "booking_request"
+        ? await supabase
+            .from("booking_requests")
+            .update({ location_sharing_enabled: !currentValue } as any)
+            .eq("id", targetGig.gig.id)
+        : await supabase
+            .from("gig_members")
+            .update({ location_sharing_enabled: !currentValue })
+            .eq("id", gigMemberId);
 
       if (error) throw error;
 

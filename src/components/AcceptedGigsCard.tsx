@@ -49,6 +49,7 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
   const [cancelReason, setCancelReason] = useState("");
   const [cancelling, setCancelling] = useState(false);
   const { toast } = useToast();
+  const { formatTime: formatTime12h } = useTimeFormat();
 
   const handleCancelGig = async () => {
     if (!cancelTarget) return;

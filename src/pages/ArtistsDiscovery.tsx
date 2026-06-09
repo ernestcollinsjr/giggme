@@ -41,6 +41,7 @@ interface ArtistWithProfile {
 
 const ArtistsDiscovery = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const [artists, setArtists] = useState<ArtistWithProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,6 +49,73 @@ const ArtistsDiscovery = () => {
   const [selectedGenre, setSelectedGenre] = useState<string>("all");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  // Group cover request
+  const [canManageRoster, setCanManageRoster] = useState(false);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [coverVenue, setCoverVenue] = useState("");
+  const [coverDate, setCoverDate] = useState("");
+  const [coverTime, setCoverTime] = useState("");
+  const [coverMessage, setCoverMessage] = useState("");
+  const [sending, setSending] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+      const roles = (data || []).map((r: any) => normalizeRole(r.role));
+      setCanManageRoster(roles.some((r) => r === "booking_manager" || r === "admin" || r === "super_admin"));
+    })();
+  }, []);
+
+  const toggleSelected = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const exitSelectionMode = () => {
+    setSelectionMode(false);
+    setSelectedIds(new Set());
+  };
+
+  const handleSendGroupRequest = async () => {
+    if (selectedIds.size === 0 || !coverMessage.trim()) {
+      toast({ variant: "destructive", title: "Message required", description: "Add a message and select at least one performer." });
+      return;
+    }
+    setSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-replacement-request", {
+        body: {
+          performer_ids: Array.from(selectedIds),
+          message: coverMessage.trim(),
+          venue: coverVenue.trim() || null,
+          event_date: coverDate || null,
+          event_time: coverTime || null,
+        },
+      });
+      if (error) throw error;
+      toast({
+        title: "Cover request sent",
+        description: `Sent to ${data?.recipients ?? selectedIds.size} performer(s). They have 30 minutes to respond.`,
+      });
+      setDialogOpen(false);
+      setCoverMessage(""); setCoverVenue(""); setCoverDate(""); setCoverTime("");
+      exitSelectionMode();
+    } catch (e: any) {
+      toast({ variant: "destructive", title: "Failed to send", description: e.message });
+    } finally {
+      setSending(false);
+    }
+  };
+
 
   // Close suggestions when clicking outside
   useEffect(() => {

@@ -204,10 +204,16 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
 
   const handleToggleLocationSharing = async (gigMemberId: string, currentValue: boolean) => {
     try {
-      const { error } = await supabase
-        .from("gig_members")
-        .update({ location_sharing_enabled: !currentValue })
-        .eq("id", gigMemberId);
+      const targetGig = acceptedGigs.find((gig) => gig.id === gigMemberId);
+      const { error } = targetGig?.source === "booking_request"
+        ? await supabase
+            .from("booking_requests")
+            .update({ location_sharing_enabled: !currentValue } as any)
+            .eq("id", targetGig.gig.id)
+        : await supabase
+            .from("gig_members")
+            .update({ location_sharing_enabled: !currentValue })
+            .eq("id", gigMemberId);
 
       if (error) throw error;
 

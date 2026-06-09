@@ -24,6 +24,7 @@ interface ArtistWithProfile {
   genres?: string[] | null;
   instrument?: string | null;
   performer_category?: string | null;
+  entertainer_categories?: string[] | null;
   years_experience: number | null;
   availability: string | null;
   rate_range: string | null;

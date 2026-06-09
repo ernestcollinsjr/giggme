@@ -415,16 +415,15 @@ const ArtistsDiscovery = () => {
                         Invited
                       </Badge>
                     )}
-                    {artist.performer_category && (
-                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0 w-fit">
-                        {artist.performer_category}
-                      </Badge>
-                    )}
-                    {artist.genre && (
-                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0 w-fit">
-                        <Music className="h-2.5 w-2.5 mr-0.5" />
-                        {artist.genre}
-                      </Badge>
+                    {artist.entertainer_categories && artist.entertainer_categories.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {artist.entertainer_categories.map((cat) => (
+                          <Badge key={cat} variant="secondary" className="text-[10px] px-1.5 py-0 w-fit">
+                            <Sparkles className="h-2.5 w-2.5 mr-0.5" />
+                            {cat}
+                          </Badge>
+                        ))}
+                      </div>
                     )}
                   </div>
                 </CardHeader>

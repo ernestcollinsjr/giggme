@@ -1134,7 +1134,7 @@ const Bookings = () => {
               <CardDescription>Your book performers and gig invitations</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              {bookingRequests.map((br) => (
+              {currentBookingRequests.map((br) => (
                 <div
                   key={`br-${br.id}`}
                   className="p-4 border rounded-lg cursor-pointer hover:bg-accent/40 transition-colors"

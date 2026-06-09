@@ -664,13 +664,14 @@ const Messages = () => {
     const conversationKey = getTypingConversationKey();
     if (!conversationKey || !userId) return;
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("message_typing_status")
       .select("conversation_key, user_id, recipient_id, is_group, is_typing, updated_at")
       .eq("conversation_key", conversationKey)
       .neq("user_id", userId)
       .gte("updated_at", new Date(Date.now() - 4500).toISOString());
 
+    typingDebug.log("Messages", "poll", { rows: data?.length ?? 0, error: error?.message ?? null }, conversationKey);
     (data as TypingStatus[] | null)?.forEach(applyTypingStatus);
   }, [applyTypingStatus, getTypingConversationKey, userId]);
 

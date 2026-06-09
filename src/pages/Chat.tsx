@@ -105,6 +105,22 @@ const Chat = () => {
   const lastTypingPersistRef = useRef<{ isTyping: boolean; sentAt: number }>({ isTyping: false, sentAt: 0 });
   const [typingChannelStatus, setTypingChannelStatus] = useState<string>("idle");
 
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session?.access_token) {
+        supabase.realtime.setAuth(data.session.access_token);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.access_token) {
+        supabase.realtime.setAuth(session.access_token);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   // Handle URL parameters to open specific conversations
   useEffect(() => {
     if (urlParamsProcessed) return;
@@ -130,6 +146,9 @@ const Chat = () => {
     (async () => {
       const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) return;
+      if (session?.access_token) {
+        supabase.realtime.setAuth(session.access_token);
+      }
       setUserId(user.id);
 
       // Get user role
@@ -296,13 +315,14 @@ const Chat = () => {
     const conversationKey = getTypingConversationKey();
     if (!conversationKey || !userId) return;
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("message_typing_status")
       .select("conversation_key, user_id, recipient_id, is_group, is_typing, updated_at")
       .eq("conversation_key", conversationKey)
       .neq("user_id", userId)
       .gte("updated_at", new Date(Date.now() - 4500).toISOString());
 
+    typingDebug.log("Chat", "poll", { rows: data?.length ?? 0, error: error?.message ?? null }, conversationKey);
     (data as TypingStatus[] | null)?.forEach(applyTypingStatus);
   }, [applyTypingStatus, getTypingConversationKey, userId]);
 

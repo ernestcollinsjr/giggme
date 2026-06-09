@@ -7,8 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
-import { Music, MapPin, Calendar, DollarSign, Youtube, Search, Filter } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Music, MapPin, Calendar, DollarSign, Youtube, Search, Filter, Users, X, Send } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
+import { normalizeRole } from "@/lib/roles";
 
 interface ArtistWithProfile {
   id: string;
@@ -35,6 +41,7 @@ interface ArtistWithProfile {
 
 const ArtistsDiscovery = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const [artists, setArtists] = useState<ArtistWithProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,6 +49,73 @@ const ArtistsDiscovery = () => {
   const [selectedGenre, setSelectedGenre] = useState<string>("all");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  // Group cover request
+  const [canManageRoster, setCanManageRoster] = useState(false);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [coverVenue, setCoverVenue] = useState("");
+  const [coverDate, setCoverDate] = useState("");
+  const [coverTime, setCoverTime] = useState("");
+  const [coverMessage, setCoverMessage] = useState("");
+  const [sending, setSending] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+      const roles = (data || []).map((r: any) => normalizeRole(r.role));
+      setCanManageRoster(roles.some((r) => r === "booking_manager" || r === "admin" || r === "super_admin"));
+    })();
+  }, []);
+
+  const toggleSelected = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const exitSelectionMode = () => {
+    setSelectionMode(false);
+    setSelectedIds(new Set());
+  };
+
+  const handleSendGroupRequest = async () => {
+    if (selectedIds.size === 0 || !coverMessage.trim()) {
+      toast({ variant: "destructive", title: "Message required", description: "Add a message and select at least one performer." });
+      return;
+    }
+    setSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-replacement-request", {
+        body: {
+          performer_ids: Array.from(selectedIds),
+          message: coverMessage.trim(),
+          venue: coverVenue.trim() || null,
+          event_date: coverDate || null,
+          event_time: coverTime || null,
+        },
+      });
+      if (error) throw error;
+      toast({
+        title: "Cover request sent",
+        description: `Sent to ${data?.recipients ?? selectedIds.size} performer(s). They have 30 minutes to respond.`,
+      });
+      setDialogOpen(false);
+      setCoverMessage(""); setCoverVenue(""); setCoverDate(""); setCoverTime("");
+      exitSelectionMode();
+    } catch (e: any) {
+      toast({ variant: "destructive", title: "Failed to send", description: e.message });
+    } finally {
+      setSending(false);
+    }
+  };
+
 
   // Close suggestions when clicking outside
   useEffect(() => {
@@ -262,8 +336,21 @@ const ArtistsDiscovery = () => {
                 ))}
               </SelectContent>
             </Select>
+
+            {canManageRoster && (
+              selectionMode ? (
+                <Button variant="outline" onClick={exitSelectionMode}>
+                  <X className="h-4 w-4 mr-2" /> Cancel ({selectedIds.size})
+                </Button>
+              ) : (
+                <Button variant="secondary" onClick={() => setSelectionMode(true)}>
+                  <Users className="h-4 w-4 mr-2" /> Find Replacement
+                </Button>
+              )
+            )}
           </div>
         </div>
+
 
         {filteredArtists.length === 0 ? (
           <Card>
@@ -273,8 +360,20 @@ const ArtistsDiscovery = () => {
           </Card>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-            {filteredArtists.map((artist) => (
-              <Card key={artist.id} className={`hover:shadow-lg transition-shadow ${artist.is_pending ? "opacity-90 border-dashed" : ""}`}>
+            {filteredArtists.map((artist) => {
+              const isSelectable = selectionMode && !artist.is_pending;
+              const isSelected = selectedIds.has(artist.user_id);
+              return (
+              <Card
+                key={artist.id}
+                onClick={isSelectable ? () => toggleSelected(artist.user_id) : undefined}
+                className={`relative hover:shadow-lg transition-shadow ${artist.is_pending ? "opacity-90 border-dashed" : ""} ${isSelectable ? "cursor-pointer" : ""} ${isSelected ? "ring-2 ring-primary" : ""}`}
+              >
+                {selectionMode && !artist.is_pending && (
+                  <div className="absolute top-2 right-2 z-10 bg-background rounded p-0.5 shadow-sm">
+                    <Checkbox checked={isSelected} onCheckedChange={() => toggleSelected(artist.user_id)} />
+                  </div>
+                )}
                 <CardHeader className="p-3 pb-2">
                   <div className="flex items-center gap-2 mb-1">
                     <Avatar className="h-9 w-9 flex-shrink-0">
@@ -347,14 +446,16 @@ const ArtistsDiscovery = () => {
                       variant="outline"
                       size="sm"
                       className="w-full mt-2 text-xs h-7"
-                      onClick={() => navigate(`/artist-profile/${artist.user_id}`)}
+                      onClick={(e) => { e.stopPropagation(); navigate(`/artist-profile/${artist.user_id}`); }}
                     >
                       View Profile
                     </Button>
                   )}
+
                 </CardContent>
               </Card>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -364,8 +465,61 @@ const ArtistsDiscovery = () => {
           </Button>
         </div>
       </div>
+
+      {selectionMode && selectedIds.size > 0 && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-40 bg-background border shadow-lg rounded-full px-4 py-2 flex items-center gap-3">
+          <span className="text-sm font-medium">{selectedIds.size} selected</span>
+          <Button size="sm" onClick={() => setDialogOpen(true)}>
+            <Send className="h-4 w-4 mr-2" /> Send Group Message
+          </Button>
+        </div>
+      )}
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-md bg-black/60 backdrop-blur-sm">
+          <DialogHeader>
+            <DialogTitle>Send Cover Request</DialogTitle>
+            <DialogDescription>
+              Group message to {selectedIds.size} performer(s). Each has 30 minutes to accept or decline.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <Label htmlFor="cover-venue">Venue (optional)</Label>
+              <Input id="cover-venue" value={coverVenue} onChange={(e) => setCoverVenue(e.target.value)} placeholder="e.g. The Blue Note" />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label htmlFor="cover-date">Date</Label>
+                <Input id="cover-date" type="date" value={coverDate} onChange={(e) => setCoverDate(e.target.value)} />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="cover-time">Time</Label>
+                <Input id="cover-time" type="time" value={coverTime} onChange={(e) => setCoverTime(e.target.value)} />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="cover-msg">Message *</Label>
+              <Textarea
+                id="cover-msg"
+                rows={4}
+                value={coverMessage}
+                onChange={(e) => setCoverMessage(e.target.value)}
+                placeholder="Performer cancelled — need a cover. Pay is $X. Reply ASAP."
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={sending}>Cancel</Button>
+            <Button onClick={handleSendGroupRequest} disabled={sending || !coverMessage.trim()}>
+              {sending ? "Sending..." : `Send to ${selectedIds.size}`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
+
 
 export default ArtistsDiscovery;

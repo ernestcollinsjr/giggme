@@ -35,7 +35,8 @@ const TypingDebugOverlay = ({ surface, conversationKey, channelStatus, typingUse
 
   useEffect(() => {
     if (!enabled) return;
-    return typingDebug.subscribe(setEvents);
+    const unsub = typingDebug.subscribe(setEvents);
+    return () => { unsub(); };
   }, [enabled]);
 
   const filtered = useMemo(() => events.filter((e) => e.surface === surface), [events, surface]);

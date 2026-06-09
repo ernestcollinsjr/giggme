@@ -2326,6 +2326,7 @@ export type Database = {
           availability: string
           bio: string
           email: string
+          expires_at: string
           genre: string
           genres: string[]
           instrument: string

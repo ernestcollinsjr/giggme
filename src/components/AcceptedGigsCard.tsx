@@ -162,7 +162,7 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
         id: `owned-${g.id}`,
         isOwned: true,
         source: "owned_gig",
-        location_sharing_enabled: false,
+        location_sharing_enabled: true,
         gig: g,
       }));
 

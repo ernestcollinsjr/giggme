@@ -113,8 +113,11 @@ const PerformerProfileView = () => {
       }
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        // If viewing own profile, redirect to editable My Profile
+        // If viewing own profile, redirect to editable My Profile (unless trying to book)
         if (session?.user?.id === userId) {
+          if (searchParams.get("book") === "1") {
+            toast({ title: "Can't book yourself", description: "Open another performer's profile to send a booking request." });
+          }
           navigate("/profile-setup", { replace: true });
           return;
         }

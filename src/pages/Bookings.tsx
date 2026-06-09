@@ -478,7 +478,7 @@ const Bookings = () => {
     // Fetch booking requests — performer OR booker (so booking managers see what they booked).
     const { data: brData } = await supabase
       .from("booking_requests")
-      .select("id, status, booker_name, performer_name, dates_text, time_text, venue, budget, contact_person, event_date, created_at, performer_id, booker_id")
+      .select("id, status, booker_name, performer_name, dates_text, time_text, venue, budget, contact_person, event_date, created_at, updated_at, performer_id, booker_id")
       .or(`performer_id.eq.${user.id},booker_id.eq.${user.id}`)
       .order("created_at", { ascending: false });
     setBookingRequests(brData || []);
@@ -486,10 +486,11 @@ const Bookings = () => {
     // Fetch gig invitations from bands (gigs the user has been invited to)
     const { data: giData } = await supabase
       .from("gig_members")
-      .select("id, status, location_sharing_enabled, gigs!inner(id, date, venue, venue_name, notes)")
+      .select("id, status, location_sharing_enabled, updated_at, created_at, gigs!inner(id, date, venue, venue_name, notes)")
       .eq("member_id", user.id)
       .order("status", { ascending: true });
     setGigInvitations(giData || []);
+
 
     setLoading(false);
   };

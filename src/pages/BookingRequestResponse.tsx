@@ -221,7 +221,7 @@ export default function BookingRequestResponse() {
             )}
 
             <div className="divide-y border rounded-lg overflow-hidden">
-              <Row label="Date(s)" value={`${request.dates_text}${request.time_text ? " " + request.time_text : ""}`} />
+              <Row label="Date(s)" value={`${request.dates_text}${request.time_text ? " " + formatTime12h(request.time_text) : ""}`} />
               <Row label="Venue" value={request.venue} />
               {request.venue_phone && <Row label="Venue Phone" value={request.venue_phone} />}
               {request.budget && <Row label="Budget" value={request.budget} />}

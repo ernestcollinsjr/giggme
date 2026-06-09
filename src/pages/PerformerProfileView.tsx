@@ -44,6 +44,8 @@ interface PerformerProfile {
   band_name?: string | null;
   performer_category?: string | null;
   instrument?: string | null;
+  instrument_custom?: string | null;
+  is_singer?: boolean | null;
   years_experience?: number | null;
   travel_distance?: number | null;
   preferred_pay?: number | null;
@@ -495,11 +497,22 @@ const PerformerProfileView = () => {
                 </div>
               )}
 
-              {/* Primary Instrument */}
-              {profile.instrument && (
-                <div className="space-y-1">
-                  <Label className="text-sm font-medium flex items-center gap-2"><Music className="h-4 w-4" /> Primary Instrument</Label>
-                  <Input value={profile.instrument} readOnly className="capitalize" />
+              {/* Talent */}
+              {(profile.instrument || profile.instrument_custom || profile.is_singer) && (
+                <div className="space-y-2 pt-4 border-t">
+                  <Label className="text-sm font-medium flex items-center gap-2"><Music className="h-4 w-4" /> Talent</Label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {(profile.instrument_custom || profile.instrument) && (
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">Instrument</Label>
+                        <Input value={profile.instrument_custom || profile.instrument || ""} readOnly className="capitalize" />
+                      </div>
+                    )}
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Singer</Label>
+                      <Input value={profile.is_singer ? "Yes" : "No"} readOnly />
+                    </div>
+                  </div>
                 </div>
               )}
 

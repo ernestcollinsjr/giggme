@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Music, Search, Filter, Sparkles, UserPlus, Eye, Heart } from "lucide-react";
+import { Music, Search, Filter, Sparkles, UserPlus, Eye, Heart, Mic } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface FeaturedEntertainer {
@@ -19,6 +19,8 @@ interface FeaturedEntertainer {
   stage_name: string | null;
   genre: string | null;
   instrument: string | null;
+  instrument_custom: string | null;
+  is_singer: boolean | null;
   entertainer_categories: string[] | null;
 }
 
@@ -253,18 +255,25 @@ const BookPerformers = () => {
                       {e.performer_category && (
                         <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{e.performer_category}</Badge>
                       )}
-                      {e.genre && (
-                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                      {(e.instrument_custom || e.instrument) && (
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 capitalize">
                           <Music className="h-2.5 w-2.5 mr-0.5" />
-                          {e.genre}
+                          {e.instrument_custom || e.instrument}
                         </Badge>
+                      )}
+                      {e.is_singer && (
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                          <Mic className="h-2.5 w-2.5 mr-0.5" />
+                          Singer
+                        </Badge>
+                      )}
+                      {e.genre && (
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{e.genre}</Badge>
                       )}
                     </div>
                   </CardHeader>
                   <CardContent className="p-3 pt-0 space-y-2">
-                    {e.bio && (
-                      <p className="text-xs text-muted-foreground line-clamp-2">{e.bio}</p>
-                    )}
+
                     <Button
                       variant="outline"
                       size="sm"

@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar, Music, Users, Heart } from "lucide-react";
+import { Calendar, Music, Users, Heart, Mic } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface Entertainer {
   user_id: string;
@@ -12,6 +13,9 @@ interface Entertainer {
   stage_name: string | null;
   genre: string | null;
   photo_urls: string[] | null;
+  instrument: string | null;
+  instrument_custom: string | null;
+  is_singer: boolean | null;
 }
 
 export const PreferredEntertainersBookList = () => {
@@ -43,6 +47,9 @@ export const PreferredEntertainersBookList = () => {
           stage_name: r.stage_name,
           genre: r.genre,
           photo_urls: r.photo_urls,
+          instrument: r.instrument,
+          instrument_custom: r.instrument_custom,
+          is_singer: r.is_singer,
         }));
         setEntertainers(rows);
       } catch (e: any) {
@@ -148,8 +155,22 @@ export const PreferredEntertainersBookList = () => {
                   {e.stage_name || e.name || "Unknown"}
                 </h3>
                 {e.genre && (
-                  <p className="text-xs text-muted-foreground truncate mb-2">{e.genre}</p>
+                  <p className="text-xs text-muted-foreground truncate">{e.genre}</p>
                 )}
+                <div className="flex flex-wrap gap-1 mt-1 mb-2">
+                  {(e.instrument_custom || e.instrument) && (
+                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0 capitalize">
+                      <Music className="h-2.5 w-2.5 mr-0.5" />
+                      {e.instrument_custom || e.instrument}
+                    </Badge>
+                  )}
+                  {e.is_singer && (
+                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                      <Mic className="h-2.5 w-2.5 mr-0.5" />
+                      Singer
+                    </Badge>
+                  )}
+                </div>
                 <Button
                   size="sm"
                   className="w-full h-7 text-xs"

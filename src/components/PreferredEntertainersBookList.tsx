@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar, Music, Users, Heart, Mic, Sparkles } from "lucide-react";
+import { Calendar, Music, Users, Heart, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface Entertainer {

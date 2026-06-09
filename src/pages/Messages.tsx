@@ -660,18 +660,20 @@ const Messages = () => {
     channel
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState();
-        const newTypingUsers = new Map<string, string>();
+        const activePresenceTypers = new Map<string, string>();
         
         Object.entries(state).forEach(([key, presences]) => {
           if (key !== userId && Array.isArray(presences)) {
-            const presence = presences[0] as any;
+            const presence = presences.find((entry: any) => entry?.isTyping) as any;
             if (presence?.isTyping) {
-              newTypingUsers.set(key, presence.name || 'Someone');
+              activePresenceTypers.set(key, presence.name || profilesRef.current[key]?.name || 'Someone');
             }
           }
         });
         
-        setTypingUsers(newTypingUsers);
+        if (activePresenceTypers.size > 0) {
+          setTypingUsers((prev) => new Map([...prev, ...activePresenceTypers]));
+        }
       })
       .on('broadcast', { event: 'typing' }, ({ payload }) => {
         setRemoteTyping(payload?.userId, payload?.name, Boolean(payload?.isTyping));
@@ -734,6 +736,12 @@ const Messages = () => {
       remoteTypingTimeoutsRef.current.clear();
     };
   }, []);
+
+  useEffect(() => {
+    if (typingUsers.size > 0 && isAtBottom) {
+      scrollToBottom();
+    }
+  }, [typingUsers.size, isAtBottom, scrollToBottom]);
 
   const fetchProfiles = async () => {
     const { data } = await supabase.from("profiles").select("id, name, photo_urls");

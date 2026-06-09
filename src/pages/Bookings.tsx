@@ -128,6 +128,26 @@ const to12hText = (text: string | null | undefined): string => {
   });
 };
 
+const isPastDate = (dateStr: string | null | undefined): boolean => {
+  if (!dateStr) return false;
+  const date = new Date(dateStr);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return date.getTime() < today.getTime();
+};
+
+const isBookingRequestPast = (br: any): boolean => {
+  if (br.event_date) return isPastDate(br.event_date);
+  const dates = getBookingRequestCalendarDates(br);
+  if (dates.length > 0) {
+    const latest = new Date(Math.max(...dates.map((d) => d.getTime())));
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return latest.getTime() < today.getTime();
+  }
+  return isPastDate(br.created_at);
+};
+
 const Bookings = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();

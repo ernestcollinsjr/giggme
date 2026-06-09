@@ -44,6 +44,8 @@ interface PerformerProfile {
   band_name?: string | null;
   performer_category?: string | null;
   instrument?: string | null;
+  instrument_custom?: string | null;
+  is_singer?: boolean | null;
   years_experience?: number | null;
   travel_distance?: number | null;
   preferred_pay?: number | null;

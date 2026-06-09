@@ -155,8 +155,22 @@ export const PreferredEntertainersBookList = () => {
                   {e.stage_name || e.name || "Unknown"}
                 </h3>
                 {e.genre && (
-                  <p className="text-xs text-muted-foreground truncate mb-2">{e.genre}</p>
+                  <p className="text-xs text-muted-foreground truncate">{e.genre}</p>
                 )}
+                <div className="flex flex-wrap gap-1 mt-1 mb-2">
+                  {(e.instrument_custom || e.instrument) && (
+                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0 capitalize">
+                      <Music className="h-2.5 w-2.5 mr-0.5" />
+                      {e.instrument_custom || e.instrument}
+                    </Badge>
+                  )}
+                  {e.is_singer && (
+                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                      <Mic className="h-2.5 w-2.5 mr-0.5" />
+                      Singer
+                    </Badge>
+                  )}
+                </div>
                 <Button
                   size="sm"
                   className="w-full h-7 text-xs"

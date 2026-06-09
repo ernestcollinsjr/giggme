@@ -53,7 +53,13 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
     if (!cancelTarget) return;
     setCancelling(true);
     try {
-      if (cancelTarget.isOwned) {
+      if (cancelTarget.source === "booking_request") {
+        const { error } = await supabase
+          .from("booking_requests")
+          .update({ status: "cancelled" })
+          .eq("id", cancelTarget.gig.id);
+        if (error) throw error;
+      } else if (cancelTarget.isOwned) {
         const { error } = await supabase
           .from("gigs")
           .update({ status: "cancelled" })

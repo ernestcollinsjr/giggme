@@ -6,11 +6,12 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Bell, Mail, MessageSquare, Smartphone, Loader2, Send, Volume2, VolumeX, Play, Volume1 } from "lucide-react";
+import { Bell, Mail, MessageSquare, Smartphone, Loader2, Send, Volume2, VolumeX, Play, Volume1, Clock } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useNativePushNotifications } from "@/hooks/useNativePushNotifications";
 import { useSoundPreference, SoundType } from "@/hooks/useSoundPreference";
+import { useTimeFormat } from "@/hooks/useTimeFormat";
 
 interface NotificationPrefs {
   id?: string;
@@ -52,6 +53,7 @@ export const NotificationPreferences = () => {
   
   const { isSupported, isSubscribed, isLoading: pushLoading, supportMessage, subscribe, unsubscribe } = pushNotifications;
   const { playTestSound } = useSoundPreference();
+  const { format: timeFormat, setFormat: setTimeFormat } = useTimeFormat();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [sendingTest, setSendingTest] = useState(false);
@@ -180,8 +182,33 @@ export const NotificationPreferences = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Sound Settings */}
+        {/* Display Settings */}
         <div className="space-y-4">
+          <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+            Display Settings
+          </h4>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <Label htmlFor="time-format" className="cursor-pointer">
+                  24-Hour Time
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  {timeFormat === "24h" ? "Times shown as 18:30" : "Times shown as 6:30pm"}
+                </p>
+              </div>
+            </div>
+            <Switch
+              id="time-format"
+              checked={timeFormat === "24h"}
+              onCheckedChange={(checked) => setTimeFormat(checked ? "24h" : "12h")}
+            />
+          </div>
+        </div>
+
+        {/* Sound Settings */}
+        <div className="space-y-4 pt-4 border-t">
           <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
             Sound Settings
           </h4>

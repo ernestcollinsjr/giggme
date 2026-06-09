@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Mail, MapPin, Calendar, Clock, Trash2, BellOff, Archive, DollarSign, CheckCircle2 } from "lucide-react";
+import { formatTimeString } from "@/hooks/useTimeFormat";
 
 interface BookingRequest {
   id: string;
@@ -35,14 +36,7 @@ const statusVariant: Record<DisplayStatus, "default" | "secondary" | "destructiv
 };
 
 function formatTime12h(text: string): string {
-  return text.replace(/\b(\d{1,2}):(\d{2})\b/g, (_, hh, mm) => {
-    let h = parseInt(hh, 10);
-    if (isNaN(h) || h < 0 || h > 23) return `${hh}:${mm}`;
-    const period = h >= 12 ? "pm" : "am";
-    h = h % 12;
-    if (h === 0) h = 12;
-    return mm === "00" ? `${h}${period}` : `${h}:${mm}${period}`;
-  });
+  return formatTimeString(text);
 }
 
 function Countdown({ expiresAt }: { expiresAt: string }) {

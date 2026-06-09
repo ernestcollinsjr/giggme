@@ -678,7 +678,7 @@ const Messages = () => {
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
-          const myProfile = profiles[userId];
+          const myProfile = profilesRef.current[userId];
           await channel.track({
             userId,
             name: myProfile?.name || 'User',
@@ -695,7 +695,12 @@ const Messages = () => {
         typingChannelRef.current = null;
       }
     };
-  }, [activeConversation, userId, profiles]);
+  }, [activeConversation?.participantId, activeConversation?.isGroup, userId]);
+
+  // Keep profiles ref in sync without re-subscribing typing channel
+  useEffect(() => {
+    profilesRef.current = profiles;
+  }, [profiles]);
 
   const broadcastTyping = useCallback((isTyping: boolean) => {
     if (!typingChannelRef.current || !userId) return;

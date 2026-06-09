@@ -120,7 +120,7 @@ const FavoritePerformers = () => {
                     aria-label="Remove from favorites"
                     className="absolute top-2 right-2 z-10 rounded-full bg-background/80 backdrop-blur p-1.5 border border-border hover:bg-background"
                   >
-                    <Heart className="h-3.5 w-3.5 fill-primary text-primary" />
+                    <Heart className="h-3.5 w-3.5 fill-red-500 text-red-500" />
                   </button>
                   <CardHeader className="p-3 pb-2">
                     <div className="flex items-center gap-2 mb-1">

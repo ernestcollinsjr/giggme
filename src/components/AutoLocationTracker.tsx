@@ -51,8 +51,6 @@ export const AutoLocationTracker = ({ userId, isEnabled, venues = [] }: AutoLoca
   useEffect(() => {
     if (!isEnabled || !navigator.geolocation) return;
 
-  useEffect(() => {
-    if (!isEnabled || !navigator.geolocation) return;
 
     // On native (iOS/Android via Capacitor), hand off to the background
     // geolocation watcher which keeps firing while the app is backgrounded

@@ -120,6 +120,7 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
       bookingRequestsQuery = userEmail
         ? bookingRequestsQuery.or(`performer_id.eq.${userId},performer_email.ilike.${userEmail}`)
         : bookingRequestsQuery.eq("performer_id", userId);
+      
 
       const [membersRes, ownedRes, bookingReqRes] = await Promise.all([
         supabase
@@ -166,28 +167,46 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
         gig: g,
       }));
 
-      const bookingGigs: AcceptedGig[] = (bookingReqRes.data || [])
-        .filter((b: any) => b.event_date)
-        .map((b: any) => ({
-          id: `br-${b.id}`,
+      const bookingGigs: AcceptedGig[] = (bookingReqRes.data || []).flatMap((b: any) => {
+        const timeMatch = (b.time_text || '').match(/\d{1,2}:\d{2}/)?.[0];
+        const parts = (b.dates_text || '')
+          .split(';')
+          .map((s: string) => s.trim())
+          .filter(Boolean);
+        const dates: string[] = [];
+        for (const p of parts) {
+          const d = new Date(p);
+          if (!isNaN(d.getTime())) {
+            if (timeMatch) {
+              const [hh, mm] = timeMatch.split(':').map(Number);
+              d.setHours(hh, mm, 0, 0);
+            }
+            dates.push(d.toISOString());
+          }
+        }
+        if (dates.length === 0 && b.event_date) dates.push(b.event_date);
+
+        return dates.map((dateIso, idx) => ({
+          id: `br-${b.id}-${idx}`,
           isOwned: false,
-          source: "booking_request",
+          source: "booking_request" as GigSource,
           location_sharing_enabled: b.location_sharing_enabled ?? true,
           gig: {
             id: b.id,
-            date: b.event_date,
+            date: dateIso,
             venue: b.venue || b.booker_name || "Booking",
-            notes: b.time_text || b.dates_text || null,
+            notes: b.time_text || null,
             loading_time: null,
             sound_check_time: null,
           },
         }));
+      });
 
-      // De-dupe in case the owner is also listed as a member
+      // De-dupe by entry id (allow same booking_request to produce multiple per-date cards)
       const seen = new Set<string>();
       const combined = [...memberGigs, ...ownedGigs, ...bookingGigs].filter((entry) => {
-        if (seen.has(entry.gig.id)) return false;
-        seen.add(entry.gig.id);
+        if (seen.has(entry.id)) return false;
+        seen.add(entry.id);
         return true;
       });
 

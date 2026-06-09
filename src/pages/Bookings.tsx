@@ -338,6 +338,27 @@ const Bookings = () => {
     setUserRole(userActiveRole);
     setCurrentUserId(user.id);
 
+    // Permanently delete declined/canceled records older than 30 days
+    const cutoff30Iso = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    try {
+      await supabase
+        .from("booking_requests")
+        .delete()
+        .in("status", ["declined", "rejected", "cancelled", "expired"] as any)
+        .lt("updated_at", cutoff30Iso)
+        .or(`performer_id.eq.${user.id},booker_id.eq.${user.id}`);
+
+      await supabase
+        .from("gig_members")
+        .delete()
+        .eq("status", "declined")
+        .lt("updated_at", cutoff30Iso)
+        .eq("member_id", user.id);
+    } catch (e) {
+      console.warn("Cleanup of old declined/canceled records failed", e);
+    }
+
+
     // Fetch managed artists (for quick-book from calendar) — booking managers & band leaders
     if (
       userActiveRole === "booking_manager" ||
@@ -457,7 +478,7 @@ const Bookings = () => {
     // Fetch booking requests — performer OR booker (so booking managers see what they booked).
     const { data: brData } = await supabase
       .from("booking_requests")
-      .select("id, status, booker_name, performer_name, dates_text, time_text, venue, budget, contact_person, event_date, created_at, performer_id, booker_id")
+      .select("id, status, booker_name, performer_name, dates_text, time_text, venue, budget, contact_person, event_date, created_at, updated_at, performer_id, booker_id")
       .or(`performer_id.eq.${user.id},booker_id.eq.${user.id}`)
       .order("created_at", { ascending: false });
     setBookingRequests(brData || []);
@@ -465,10 +486,11 @@ const Bookings = () => {
     // Fetch gig invitations from bands (gigs the user has been invited to)
     const { data: giData } = await supabase
       .from("gig_members")
-      .select("id, status, location_sharing_enabled, gigs!inner(id, date, venue, venue_name, notes)")
+      .select("id, status, location_sharing_enabled, updated_at, created_at, gigs!inner(id, date, venue, venue_name, notes)")
       .eq("member_id", user.id)
       .order("status", { ascending: true });
     setGigInvitations(giData || []);
+
 
     setLoading(false);
   };
@@ -1037,14 +1059,31 @@ const Bookings = () => {
     }
   };
 
-  const currentBookingRequests = bookingRequests.filter((br) => !isBookingRequestPast(br));
-  const archivedBookingRequests = bookingRequests.filter((br) => isBookingRequestPast(br));
+  // Hide declined/canceled records older than 30 days (they will be permanently deleted on next load)
+  const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+  const isOldDeclined = (status: string | null | undefined, updatedAt: string | null | undefined) => {
+    const s = (status || "").toLowerCase();
+    if (!["declined", "rejected", "cancelled", "canceled", "expired"].includes(s)) return false;
+    if (!updatedAt) return false;
+    return Date.now() - new Date(updatedAt).getTime() > THIRTY_DAYS_MS;
+  };
 
-  const currentGigInvitations = gigInvitations.filter((gi: any) => !isPastDate(gi.gigs?.date));
-  const archivedGigInvitations = gigInvitations.filter((gi: any) => isPastDate(gi.gigs?.date));
+  const visibleBookingRequests = bookingRequests.filter(
+    (br: any) => !isOldDeclined(br.status, br.updated_at || br.created_at)
+  );
+  const visibleGigInvitations = gigInvitations.filter(
+    (gi: any) => !isOldDeclined(gi.status, gi.updated_at || gi.created_at)
+  );
+
+  const currentBookingRequests = visibleBookingRequests.filter((br) => !isBookingRequestPast(br));
+  const archivedBookingRequests = visibleBookingRequests.filter((br) => isBookingRequestPast(br));
+
+  const currentGigInvitations = visibleGigInvitations.filter((gi: any) => !isPastDate(gi.gigs?.date));
+  const archivedGigInvitations = visibleGigInvitations.filter((gi: any) => isPastDate(gi.gigs?.date));
 
   const currentGigs = gigs.filter((g) => !isPastDate(g.date));
   const archivedGigs = gigs.filter((g) => isPastDate(g.date));
+
 
   if (loading) {
     return (

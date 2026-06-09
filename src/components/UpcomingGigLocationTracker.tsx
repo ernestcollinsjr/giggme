@@ -343,33 +343,119 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
     try {
       const now = new Date();
       const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000);
-      if (userRole === "entertainer" || userRole === "artist") {
+      if (userRole === "entertainer" || userRole === "artist" || userRole === "member") {
         // Performer: tracking window starts 90 min (1.5 hr) before earliest time
-        const { data: gigMembers, error } = await supabase
-          .from("gig_members")
-          .select(`
-            gig_id,
-            location_sharing_enabled,
-            gigs!inner (
-              id,
-              user_id,
-              date,
-              venue,
-              venue_name,
-              venue_lat,
-              venue_lng,
-              loading_time,
-              sound_check_time,
-              end_time
-            )
-          `)
-          .eq("member_id", userId)
-          .eq("status", "accepted");
+        const { data: { session } } = await supabase.auth.getSession();
+        const userEmail = session?.user?.email?.trim();
 
-        if (error) throw error;
+        const bookingReqQuery = userEmail
+          ? supabase
+              .from("booking_requests")
+              .select("id, booker_id, event_date, dates_text, time_text, venue, status, location_sharing_enabled")
+              .eq("status", "accepted")
+              .or(`performer_id.eq.${userId},performer_email.ilike.${userEmail}`)
+          : supabase
+              .from("booking_requests")
+              .select("id, booker_id, event_date, dates_text, time_text, venue, status, location_sharing_enabled")
+              .eq("status", "accepted")
+              .eq("performer_id", userId);
 
-        const gigsWithinWindow = (gigMembers || []).filter((gm: any) => {
-          const gig = gm.gigs;
+        const [gigMembersRes, bookingReqRes] = await Promise.all([
+          supabase
+            .from("gig_members")
+            .select(`
+              gig_id,
+              location_sharing_enabled,
+              gigs!inner (
+                id,
+                user_id,
+                date,
+                venue,
+                venue_name,
+                venue_lat,
+                venue_lng,
+                loading_time,
+                sound_check_time,
+                end_time
+              )
+            `)
+            .eq("member_id", userId)
+            .eq("status", "accepted"),
+          bookingReqQuery,
+        ]);
+
+        if (gigMembersRes.error) throw gigMembersRes.error;
+
+        const MONTHS: Record<string, number> = {
+          jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+          jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
+        };
+        const parseDateText = (raw: string): Date | null => {
+          const s = raw.replace(/^[A-Za-z]+,\s*/, "").trim();
+          const m = s.match(/([A-Za-z]+)\s+(\d{1,2}),?\s*(\d{4})/);
+          if (m) {
+            const mo = MONTHS[m[1].slice(0, 3).toLowerCase()];
+            if (mo !== undefined) return new Date(Number(m[3]), mo, Number(m[2]));
+          }
+          const d = new Date(raw);
+          return isNaN(d.getTime()) ? null : d;
+        };
+
+        const memberItems = (gigMembersRes.data || []).map((gm: any) => ({
+          id: gm.gigs.id,
+          date: gm.gigs.date,
+          venue: gm.gigs.venue,
+          venue_name: gm.gigs.venue_name,
+          venue_lat: gm.gigs.venue_lat,
+          venue_lng: gm.gigs.venue_lng,
+          loading_time: gm.gigs.loading_time,
+          sound_check_time: gm.gigs.sound_check_time,
+          end_time: gm.gigs.end_time,
+          location_sharing_enabled: gm.location_sharing_enabled || false,
+          gig_owner_id: gm.gigs.user_id,
+        }));
+
+        const bookingItems = (bookingReqRes.data || []).flatMap((b: any) => {
+          const timeMatch = (b.time_text || '').match(/\d{1,2}:\d{2}/)?.[0];
+          const parts = (b.dates_text || '')
+            .split(';')
+            .map((s: string) => s.trim())
+            .filter(Boolean);
+          const dates: string[] = [];
+          for (const p of parts) {
+            const d = parseDateText(p);
+            if (d) {
+              if (timeMatch) {
+                const [hh, mm] = timeMatch.split(':').map(Number);
+                d.setHours(hh, mm, 0, 0);
+              }
+              dates.push(d.toISOString());
+            }
+          }
+          if (dates.length === 0 && b.event_date) dates.push(b.event_date);
+
+          const rawVenue = b.venue || "";
+          const separator = rawVenue.includes(" — ") ? " — " : rawVenue.includes(" - ") ? " - " : null;
+          const [venueName, venueAddress] = separator ? rawVenue.split(separator, 2) : [null, rawVenue];
+
+          return dates.map((iso, idx) => ({
+            id: dates.length > 1 ? `${b.id}-${idx}` : b.id,
+            date: iso,
+            venue: venueAddress || rawVenue,
+            venue_name: venueName,
+            venue_lat: null,
+            venue_lng: null,
+            loading_time: null,
+            sound_check_time: null,
+            end_time: null,
+            location_sharing_enabled: b.location_sharing_enabled ?? true,
+            gig_owner_id: b.booker_id,
+          }));
+        });
+
+        const allItems = [...memberItems, ...bookingItems];
+
+        const gigsWithinWindow = allItems.filter((gig: any) => {
           const gigDate = parseISO(gig.date);
           let earliestTime = gigDate;
           if (gig.loading_time) {
@@ -381,7 +467,6 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
             earliestTime = new Date(gigDate);
             earliestTime.setHours(hours, minutes, 0, 0);
           }
-          // End of gig: use end_time if set, else 2 hr after earliest time
           let endTime = new Date(earliestTime.getTime() + 2 * 60 * 60 * 1000);
           if (gig.end_time) {
             const [eh, em] = gig.end_time.split(':').map(Number);
@@ -392,18 +477,7 @@ export const UpcomingGigLocationTracker = ({ userId, userRole }: UpcomingGigLoca
           if (now > endTime) return false;
           const minutesUntil = differenceInMinutes(earliestTime, now);
           return minutesUntil <= 90;
-        }).map((gm: any) => ({
-          id: gm.gigs.id,
-          date: gm.gigs.date,
-          venue: gm.gigs.venue,
-          venue_name: gm.gigs.venue_name,
-          venue_lat: gm.gigs.venue_lat,
-          venue_lng: gm.gigs.venue_lng,
-          loading_time: gm.gigs.loading_time,
-          sound_check_time: gm.gigs.sound_check_time,
-          location_sharing_enabled: gm.location_sharing_enabled || false,
-          gig_owner_id: gm.gigs.user_id,
-        }));
+        });
 
         setUpcomingGigs(gigsWithinWindow);
       } else if (userRole === "booking_manager" || userRole === "admin" || userRole === "super_admin") {

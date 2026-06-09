@@ -226,6 +226,16 @@ const BookPerformers = () => {
               const inRoster = myRosterIds.has(e.user_id);
               return (
                 <Card key={e.user_id} className="relative hover:shadow-lg transition-shadow">
+                  <button
+                    onClick={() => toggleFavorite(e.user_id)}
+                    disabled={togglingFavId === e.user_id}
+                    aria-label={favoriteIds.has(e.user_id) ? "Remove from favorites" : "Add to favorites"}
+                    className="absolute top-2 right-2 z-10 rounded-full bg-background/80 backdrop-blur p-1.5 border border-border hover:bg-background transition-colors"
+                  >
+                    <Heart
+                      className={`h-3.5 w-3.5 ${favoriteIds.has(e.user_id) ? "fill-primary text-primary" : "text-muted-foreground"}`}
+                    />
+                  </button>
                   <CardHeader className="p-3 pb-2">
                     <div className="flex items-center gap-2 mb-1">
                       <Avatar className="h-9 w-9 flex-shrink-0">

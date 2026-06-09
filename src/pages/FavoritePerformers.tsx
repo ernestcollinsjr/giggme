@@ -174,7 +174,7 @@ const FavoritePerformers = () => {
                     <Button
                       size="sm"
                       className="text-xs h-7 px-2 w-full justify-center"
-                      onClick={() => navigate(`/artist-profile/${f.performer_id}`)}
+                      onClick={() => navigate(`/artist-profile/${f.performer_id}?book=1`)}
                     >
                       <Calendar className="h-3 w-3 mr-1" /> Book
                     </Button>

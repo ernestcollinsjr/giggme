@@ -18,6 +18,7 @@ interface FavRow {
     instrument: string | null;
     instrument_custom: string | null;
     is_singer: boolean | null;
+    entertainer_categories: string[] | null;
   } | null;
   artist: { stage_name: string | null; genre: string | null } | null;
 }

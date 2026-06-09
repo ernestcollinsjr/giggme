@@ -82,19 +82,44 @@ export function PaymentScheduler({ mode }: { mode: Mode }) {
   };
 
   const loadManager = async (uid: string) => {
+    // Direct managed artists
     const { data: ma } = await supabase
       .from("booking_manager_artists")
       .select("artist_id")
       .eq("booking_manager_id", uid);
-    const artistIds = (ma || []).map((r: any) => r.artist_id);
+    const directIds = (ma || []).map((r: any) => r.artist_id);
+
+    // Bands owned by this manager (either led by them or linked via booking_manager_bands)
+    const { data: ownedBands } = await supabase
+      .from("bands").select("id, band_leader_id").eq("band_leader_id", uid);
+    const { data: linkedBands } = await supabase
+      .from("booking_manager_bands").select("band_id").eq("booking_manager_id", uid);
+    const bandIds = Array.from(new Set([
+      ...((ownedBands || []).map((b: any) => b.id)),
+      ...((linkedBands || []).map((b: any) => b.band_id)),
+    ]));
+    const leaderIds: string[] = (ownedBands || []).map((b: any) => b.band_leader_id).filter(Boolean);
+
+    let memberIds: string[] = [];
+    if (bandIds.length) {
+      const { data: bm } = await supabase
+        .from("band_members").select("member_id, band_id").in("band_id", bandIds);
+      memberIds = (bm || []).map((r: any) => r.member_id);
+      const { data: lb } = await supabase
+        .from("bands").select("band_leader_id").in("id", bandIds);
+      leaderIds.push(...((lb || []).map((b: any) => b.band_leader_id).filter(Boolean)));
+    }
+
+    const artistIds = Array.from(new Set([...directIds, ...memberIds, ...leaderIds])).filter(Boolean);
     if (artistIds.length === 0) return;
+
     const { data: profs } = await supabase
       .from("profiles")
       .select("id, name, email, photo_urls")
       .in("id", artistIds);
     setPerformers((profs || []).map((p: any) => ({
       id: p.id, name: p.name, email: p.email, photo_url: p.photo_urls?.[0] ?? null,
-    })));
+    })).sort((a, b) => (a.name || "").localeCompare(b.name || "")));
 
     const { data: brs } = await supabase
       .from("booking_requests")

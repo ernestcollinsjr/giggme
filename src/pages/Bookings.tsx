@@ -1124,7 +1124,7 @@ const Bookings = () => {
 
         {/* Current bookings (booking requests + gig invitations) */}
 
-        {(bookingRequests.length > 0 || gigInvitations.length > 0) && (
+        {(currentBookingRequests.length > 0 || currentGigInvitations.length > 0) && (
           <Card className="border-border/50 shadow-lg mb-4">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">

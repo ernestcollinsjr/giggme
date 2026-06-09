@@ -52,7 +52,7 @@ const FavoritePerformers = () => {
       return;
     }
     const [{ data: profiles }, { data: artists }] = await Promise.all([
-      supabase.from("profiles").select("id,name,photo_urls,performer_category,instrument,instrument_custom,is_singer").in("id", ids),
+      supabase.from("profiles").select("id,name,photo_urls,performer_category,instrument,instrument_custom,is_singer,entertainer_categories").in("id", ids),
       supabase.from("artist_profiles").select("user_id,stage_name,genre").in("user_id", ids),
     ]);
     const merged: FavRow[] = ids.map((id) => ({

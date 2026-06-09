@@ -678,10 +678,9 @@ export default function TourDetail() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="band_members">Group Members</SelectItem>
-                    <SelectItem value="singer">Singer</SelectItem>
-                    <SelectItem value="sound_crew">Sound Crew</SelectItem>
-                    <SelectItem value="lighting_crew">Lighting Crew</SelectItem>
+                    {CREW_TYPE_OPTIONS.map((t) => (
+                      <SelectItem key={t} value={t}>{CREW_TYPE_LABELS[t]}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

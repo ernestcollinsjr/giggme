@@ -336,8 +336,21 @@ const ArtistsDiscovery = () => {
                 ))}
               </SelectContent>
             </Select>
+
+            {canManageRoster && (
+              selectionMode ? (
+                <Button variant="outline" onClick={exitSelectionMode}>
+                  <X className="h-4 w-4 mr-2" /> Cancel ({selectedIds.size})
+                </Button>
+              ) : (
+                <Button variant="secondary" onClick={() => setSelectionMode(true)}>
+                  <Users className="h-4 w-4 mr-2" /> Find Replacement
+                </Button>
+              )
+            )}
           </div>
         </div>
+
 
         {filteredArtists.length === 0 ? (
           <Card>

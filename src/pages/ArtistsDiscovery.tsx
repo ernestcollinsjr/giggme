@@ -25,6 +25,7 @@ interface ArtistWithProfile {
   venues?: string[];
   is_pending?: boolean;
   email?: string | null;
+  expires_at?: string | null;
   profile: {
     name: string;
     bio: string | null;
@@ -99,6 +100,7 @@ const ArtistsDiscovery = () => {
         venues: venuesMap.get(performer.user_id) || [],
         is_pending: !!performer.is_pending,
         email: performer.email || null,
+        expires_at: performer.expires_at || null,
         profile: {
           name: performer.name || "Unknown",
           bio: performer.bio || null,
@@ -325,9 +327,16 @@ const ArtistsDiscovery = () => {
                   )}
 
                   {artist.is_pending ? (
-                    <p className="text-[11px] text-muted-foreground mt-2 italic">
-                      Awaiting invitation acceptance
-                    </p>
+                    <div className="mt-2 space-y-0.5">
+                      <p className="text-[11px] text-muted-foreground italic">
+                        Awaiting invitation acceptance
+                      </p>
+                      {artist.expires_at && (
+                        <p className="text-[10px] text-amber-600">
+                          Expires {new Date(artist.expires_at).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
                   ) : (
                     <Button
                       variant="outline"

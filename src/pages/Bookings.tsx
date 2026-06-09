@@ -128,6 +128,26 @@ const to12hText = (text: string | null | undefined): string => {
   });
 };
 
+const isPastDate = (dateStr: string | null | undefined): boolean => {
+  if (!dateStr) return false;
+  const date = new Date(dateStr);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return date.getTime() < today.getTime();
+};
+
+const isBookingRequestPast = (br: any): boolean => {
+  if (br.event_date) return isPastDate(br.event_date);
+  const dates = getBookingRequestCalendarDates(br);
+  if (dates.length > 0) {
+    const latest = new Date(Math.max(...dates.map((d) => d.getTime())));
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return latest.getTime() < today.getTime();
+  }
+  return isPastDate(br.created_at);
+};
+
 const Bookings = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -1017,6 +1037,15 @@ const Bookings = () => {
     }
   };
 
+  const currentBookingRequests = bookingRequests.filter((br) => !isBookingRequestPast(br));
+  const archivedBookingRequests = bookingRequests.filter((br) => isBookingRequestPast(br));
+
+  const currentGigInvitations = gigInvitations.filter((gi: any) => !isPastDate(gi.gigs?.date));
+  const archivedGigInvitations = gigInvitations.filter((gi: any) => isPastDate(gi.gigs?.date));
+
+  const currentGigs = gigs.filter((g) => !isPastDate(g.date));
+  const archivedGigs = gigs.filter((g) => isPastDate(g.date));
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -1095,7 +1124,7 @@ const Bookings = () => {
 
         {/* Current bookings (booking requests + gig invitations) */}
 
-        {(bookingRequests.length > 0 || gigInvitations.length > 0) && (
+        {(currentBookingRequests.length > 0 || currentGigInvitations.length > 0) && (
           <Card className="border-border/50 shadow-lg mb-4">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -1105,7 +1134,7 @@ const Bookings = () => {
               <CardDescription>Your book performers and gig invitations</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              {bookingRequests.map((br) => (
+              {currentBookingRequests.map((br) => (
                 <div
                   key={`br-${br.id}`}
                   className="p-4 border rounded-lg cursor-pointer hover:bg-accent/40 transition-colors"
@@ -1172,7 +1201,7 @@ const Bookings = () => {
                   </div>
                 </div>
               ))}
-              {gigInvitations.map((gi: any) => {
+              {currentGigInvitations.map((gi: any) => {
                 const fullGig = gigs.find((g) => g.id === gi.gigs?.id);
                 return (
                   <div key={`gi-${gi.id}`} className="p-4 border rounded-lg">
@@ -1218,6 +1247,70 @@ const Bookings = () => {
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Archived bookings */}
+        {(archivedBookingRequests.length > 0 || archivedGigInvitations.length > 0) && (
+          <Card className="border-border/50 shadow-lg mb-4 opacity-80">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-muted-foreground">
+                <CalendarIcon className="h-5 w-5" />
+                Archived Bookings
+              </CardTitle>
+              <CardDescription>Past book performers and gig invitations</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {archivedBookingRequests.map((br) => (
+                <div
+                  key={`br-archived-${br.id}`}
+                  className="p-4 border rounded-lg opacity-60 bg-muted/20"
+                >
+                  <div className="flex items-start justify-between gap-2 flex-wrap">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <Badge variant={br.status === 'accepted' ? 'default' : br.status === 'pending' ? 'secondary' : 'outline'}>
+                          {br.status}
+                        </Badge>
+                        <Badge variant="outline">Book Performer</Badge>
+                      </div>
+                      <p className="font-semibold truncate">{br.venue}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {br.booker_id === br.performer_id
+                          ? `${to12hText(br.dates_text)}`
+                          : br.performer_id && br.booker_name && br.performer_name
+                            ? `${br.booker_name} → ${br.performer_name} · ${to12hText(br.dates_text)}`
+                            : `From ${br.booker_name || 'a client'} · ${to12hText(br.dates_text)}`}
+                        {br.time_text && ` · ${to12hText(br.time_text)}`}
+                      </p>
+                      {br.budget && (
+                        <p className="text-xs text-muted-foreground mt-1">Budget: {br.budget}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {archivedGigInvitations.map((gi: any) => {
+                return (
+                  <div key={`gi-archived-${gi.id}`} className="p-4 border rounded-lg opacity-60 bg-muted/20">
+                    <div className="flex items-start justify-between gap-2 flex-wrap">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <Badge variant={gi.status === 'accepted' ? 'default' : gi.status === 'pending' ? 'secondary' : 'outline'}>
+                            {gi.status}
+                          </Badge>
+                          <Badge variant="outline">Group Gig</Badge>
+                        </div>
+                        <p className="font-semibold truncate">{gi.gigs?.venue_name || gi.gigs?.venue}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {gi.gigs?.date && format(new Date(gi.gigs.date), "PPP p")}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -1763,7 +1856,7 @@ const Bookings = () => {
               </p>
             ) : (
               <div className="space-y-3">
-                {gigs
+                {currentGigs
                   .filter(gig => !showPendingOnly || (gigResponseCounts[gig.id]?.pending > 0))
                   .map((gig) => (
                   <div key={gig.id} className="p-4 border rounded-lg">
@@ -2150,6 +2243,52 @@ const Bookings = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Archived Gigs */}
+        {archivedGigs.length > 0 && (
+          <Card className="border-border/50 shadow-lg opacity-80">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-muted-foreground">
+                <Music className="h-5 w-5" />
+                Archived Gigs
+              </CardTitle>
+              <CardDescription>Past performances and bookings</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {archivedGigs.map((gig) => (
+                  <div key={`gig-archived-${gig.id}`} className="p-4 border rounded-lg opacity-60 bg-muted/20">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2 flex-wrap">
+                          <Badge variant={gig.status === 'confirmed' ? 'default' : 'secondary'}>
+                            {gig.status}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                          <CalendarIcon className="h-4 w-4" />
+                          {format(new Date(gig.date), "PPP")}
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                          <Clock className="h-4 w-4" />
+                          {format(new Date(gig.date), "p")}
+                          {gig.end_time && ` - ${formatTime12Hour(gig.end_time)}`}
+                        </div>
+                        {gig.venue_name && (
+                          <h3 className="font-bold text-lg mb-2">{gig.venue_name}</h3>
+                        )}
+                        <div className="flex items-center gap-2 mb-2">
+                          <MapPin className="h-4 w-4 text-primary" />
+                          <h4 className="font-semibold">{gig.venue}</h4>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Edit Gig Dialog */}

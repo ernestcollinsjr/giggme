@@ -87,6 +87,7 @@ const Chat = () => {
   const [urlParamsProcessed, setUrlParamsProcessed] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const typingChannelRef = useRef<RealtimeChannel | null>(null);
+  const profilesRef = useRef<typeof profiles>([]);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const remoteTypingTimeoutsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 

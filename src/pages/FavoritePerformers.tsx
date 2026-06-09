@@ -162,15 +162,14 @@ const FavoritePerformers = () => {
                         <Eye className="h-3 w-3 mr-1" /> View
                       </Button>
                       <Button
-                        variant="outline"
                         size="sm"
                         className="text-xs h-7 px-2 w-full justify-center"
-                        onClick={() => setProfileTarget({ id: f.performer_id, name: a?.stage_name || p?.name || "Performer" })}
-                        title="Open full profile & rider"
+                        onClick={() => navigate(`/artist-profile/${f.performer_id}`)}
                       >
-                        <IdCard className="h-3 w-3 mr-1" /> Profile
+                        <Calendar className="h-3 w-3 mr-1" /> Book
                       </Button>
                       <Button
+                        variant="outline"
                         size="sm"
                         className="text-xs h-7 px-2 w-full inline-flex items-center justify-center gap-1"
                         onClick={() => navigate(`/messages?conversation=${f.performer_id}`)}
@@ -186,12 +185,6 @@ const FavoritePerformers = () => {
           </div>
         )}
       </div>
-      <CrewProfileDialog
-        userId={profileTarget?.id ?? null}
-        userName={profileTarget?.name}
-        open={!!profileTarget}
-        onOpenChange={(o) => !o && setProfileTarget(null)}
-      />
     </div>
   );
 };

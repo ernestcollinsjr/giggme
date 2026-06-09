@@ -167,6 +167,21 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
         gig: g,
       }));
 
+      const MONTHS: Record<string, number> = {
+        jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+        jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
+      };
+      const parseDateText = (raw: string): Date | null => {
+        const s = raw.replace(/^[A-Za-z]+,\s*/, "").trim(); // strip weekday
+        const m = s.match(/([A-Za-z]+)\s+(\d{1,2}),?\s*(\d{4})/);
+        if (m) {
+          const mo = MONTHS[m[1].slice(0, 3).toLowerCase()];
+          if (mo !== undefined) return new Date(Number(m[3]), mo, Number(m[2]));
+        }
+        const d = new Date(raw);
+        return isNaN(d.getTime()) ? null : d;
+      };
+
       const bookingGigs: AcceptedGig[] = (bookingReqRes.data || []).flatMap((b: any) => {
         const timeMatch = (b.time_text || '').match(/\d{1,2}:\d{2}/)?.[0];
         const parts = (b.dates_text || '')
@@ -175,8 +190,8 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
           .filter(Boolean);
         const dates: string[] = [];
         for (const p of parts) {
-          const d = new Date(p);
-          if (!isNaN(d.getTime())) {
+          const d = parseDateText(p);
+          if (d) {
             if (timeMatch) {
               const [hh, mm] = timeMatch.split(':').map(Number);
               d.setHours(hh, mm, 0, 0);
@@ -201,6 +216,7 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
           },
         }));
       });
+
 
       // De-dupe by entry id (allow same booking_request to produce multiple per-date cards)
       const seen = new Set<string>();

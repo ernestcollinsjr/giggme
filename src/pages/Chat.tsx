@@ -87,6 +87,7 @@ const Chat = () => {
   const [urlParamsProcessed, setUrlParamsProcessed] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const typingChannelRef = useRef<RealtimeChannel | null>(null);
+  const profilesRef = useRef<typeof profiles>([]);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const remoteTypingTimeoutsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
@@ -272,7 +273,7 @@ const Chat = () => {
       setTypingUsers((prev) => {
         const next = new Map(prev);
         if (isTyping) {
-          next.set(remoteUserId, name || profiles.find(p => p.id === remoteUserId)?.name || 'Someone');
+          next.set(remoteUserId, name || profilesRef.current.find(p => p.id === remoteUserId)?.name || 'Someone');
         } else {
           next.delete(remoteUserId);
         }
@@ -316,7 +317,7 @@ const Chat = () => {
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
           // Track presence with initial state
-          const myProfile = profiles.find(p => p.id === userId);
+          const myProfile = profilesRef.current.find(p => p.id === userId);
           await channel.track({
             userId,
             name: myProfile?.name || 'User',
@@ -333,13 +334,18 @@ const Chat = () => {
         typingChannelRef.current = null;
       }
     };
-  }, [activeConversation, userId, profiles, targetType]);
+  }, [activeConversation, userId, targetType]);
+
+  // Keep profiles ref in sync without re-subscribing typing channel
+  useEffect(() => {
+    profilesRef.current = profiles;
+  }, [profiles]);
 
   // Handle typing indicator broadcast
   const broadcastTyping = useCallback((isTyping: boolean) => {
     if (!typingChannelRef.current || !userId) return;
 
-    const myProfile = profiles.find(p => p.id === userId);
+    const myProfile = profilesRef.current.find(p => p.id === userId);
     const payload = {
       userId,
       name: myProfile?.name || 'User',
@@ -348,7 +354,7 @@ const Chat = () => {
 
     typingChannelRef.current.track(payload);
     typingChannelRef.current.send({ type: 'broadcast', event: 'typing', payload });
-  }, [userId, profiles]);
+  }, [userId]);
 
   // Handle text change with typing indicator
   const handleTextChange = useCallback((value: string) => {

@@ -194,6 +194,7 @@ const Messages = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingChannelRef = useRef<RealtimeChannel | null>(null);
+  const profilesRef = useRef<Record<string, Profile>>({});
   const remoteTypingTimeoutsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const realtimeRefreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const realtimeFallbackIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -634,7 +635,7 @@ const Messages = () => {
       setTypingUsers((prev) => {
         const next = new Map(prev);
         if (isTyping) {
-          next.set(remoteUserId, name || profiles[remoteUserId]?.name || 'Someone');
+          next.set(remoteUserId, name || profilesRef.current[remoteUserId]?.name || 'Someone');
         } else {
           next.delete(remoteUserId);
         }
@@ -677,7 +678,7 @@ const Messages = () => {
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
-          const myProfile = profiles[userId];
+          const myProfile = profilesRef.current[userId];
           await channel.track({
             userId,
             name: myProfile?.name || 'User',
@@ -694,11 +695,16 @@ const Messages = () => {
         typingChannelRef.current = null;
       }
     };
-  }, [activeConversation, userId, profiles]);
+  }, [activeConversation?.participantId, activeConversation?.isGroup, userId]);
+
+  // Keep profiles ref in sync without re-subscribing typing channel
+  useEffect(() => {
+    profilesRef.current = profiles;
+  }, [profiles]);
 
   const broadcastTyping = useCallback((isTyping: boolean) => {
     if (!typingChannelRef.current || !userId) return;
-    const myProfile = profiles[userId];
+    const myProfile = profilesRef.current[userId];
     const payload = {
       userId,
       name: myProfile?.name || 'User',
@@ -707,7 +713,7 @@ const Messages = () => {
 
     typingChannelRef.current.track(payload);
     typingChannelRef.current.send({ type: 'broadcast', event: 'typing', payload });
-  }, [userId, profiles]);
+  }, [userId]);
 
   const handleTextChange = useCallback((value: string) => {
     console.log("handleTextChange called with:", value);

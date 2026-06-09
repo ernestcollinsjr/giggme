@@ -42,6 +42,51 @@ Deno.serve(async (req) => {
     const { error: updErr } = await admin.from('booking_requests').update({ status: newStatus, responded_at: new Date().toISOString() }).eq('id', bookingRequestId);
     if (updErr) throw updErr;
 
+    // On accept, create one confirmed gig per date in dates_text
+    if (action === 'accept' && br.performer_id && br.dates_text) {
+      const startTime = (br.time_text || '').match(/\d{1,2}:\d{2}/)?.[0] || null;
+      const parts = br.dates_text.split(';').map((s: string) => s.trim()).filter(Boolean);
+      const candidates: Date[] = [];
+      for (const p of parts) {
+        const base = new Date(p);
+        if (!isNaN(base.getTime())) {
+          if (startTime) {
+            const [hh, mm] = startTime.split(':').map(Number);
+            base.setHours(hh, mm, 0, 0);
+          }
+          candidates.push(base);
+        }
+      }
+      if (candidates.length === 0 && br.event_date) {
+        const d = new Date(br.event_date);
+        if (!isNaN(d.getTime())) candidates.push(d);
+      }
+      for (const d of candidates) {
+        const dayStart = new Date(d); dayStart.setUTCHours(0, 0, 0, 0);
+        const dayEnd = new Date(d); dayEnd.setUTCHours(23, 59, 59, 999);
+        const { data: existing } = await admin
+          .from('gigs')
+          .select('id')
+          .eq('user_id', br.performer_id)
+          .eq('venue', br.venue || '')
+          .gte('date', dayStart.toISOString())
+          .lte('date', dayEnd.toISOString())
+          .maybeSingle();
+        if (existing) continue;
+        const { error: gigErr } = await admin.from('gigs').insert({
+          user_id: br.performer_id,
+          venue: br.venue || 'Booking',
+          venue_name: br.venue || null,
+          date: d.toISOString(),
+          status: 'confirmed',
+          notes: br.note || null,
+          venue_contact_person: br.contact_person || null,
+          attire: br.dress_code || null,
+        });
+        if (gigErr) console.error('Gig create error', gigErr);
+      }
+    }
+
     // Email booker
     if (br.booker_email) {
       const accent = action === 'accept' ? '#059669' : '#dc2626';

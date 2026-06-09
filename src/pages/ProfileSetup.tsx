@@ -1994,6 +1994,7 @@ const ProfileSetup = () => {
                       "Church Singer",
                       "Minister of Music",
                       "Choir Director",
+                      "Vocal",
                       "Rap",
                       "RnB",
                       "Hip Hop",

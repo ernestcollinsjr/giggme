@@ -72,6 +72,7 @@ function parseBudget(b: string | null): number {
 export const SentBookingRequests = () => {
   const [requests, setRequests] = useState<BookingRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [resendingId, setResendingId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleDelete = async (id: string) => {

@@ -82,6 +82,15 @@ interface ReadReceipt {
   read_at: string;
 }
 
+interface TypingStatus {
+  conversation_key: string;
+  user_id: string;
+  recipient_id: string | null;
+  is_group: boolean;
+  is_typing: boolean;
+  updated_at: string;
+}
+
 const EMOJI_OPTIONS = ['👍', '❤️', '😂', '😮', '😢', '🎉'];
 
 // Bubble color options
@@ -196,6 +205,8 @@ const Messages = () => {
   const typingChannelRef = useRef<RealtimeChannel | null>(null);
   const profilesRef = useRef<Record<string, Profile>>({});
   const remoteTypingTimeoutsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  const typingStatusPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lastTypingPersistRef = useRef<{ isTyping: boolean; sentAt: number }>({ isTyping: false, sentAt: 0 });
   const realtimeRefreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const realtimeFallbackIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);

@@ -13,7 +13,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, CalendarCheck, CalendarIcon, X, Loader2, Navigation, MessageCircle, Mail, Phone, Music, Briefcase, Wrench, Tag, MapPin, Users, DollarSign, Youtube, Facebook, Instagram, Twitter, Globe, Clock, Play, Check, HelpCircle, Crown, Bell, Shield, FileText, Lock, ArrowDown } from "lucide-react";
+import { ArrowLeft, CalendarCheck, CalendarIcon, X, Loader2, Navigation, MessageCircle, Mail, Phone, Music, Briefcase, Wrench, Tag, MapPin, Users, DollarSign, Youtube, Facebook, Instagram, Twitter, Globe, Clock, Play, Check, HelpCircle, Crown, Bell, Shield, FileText, Lock, ArrowDown, IdCard } from "lucide-react";
+import CrewProfileDialog from "@/components/CrewProfileDialog";
 import { TopNav } from "@/components/TopNav";
 import { PlaceAutocomplete } from "@/components/PlaceAutocomplete";
 import { PerformerRatingsDisplay } from "@/components/PerformerRatingsDisplay";
@@ -85,6 +86,7 @@ const PerformerProfileView = () => {
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [bookingSubmitting, setBookingSubmitting] = useState(false);
+  const [crewProfileOpen, setCrewProfileOpen] = useState(false);
   const [bookingForm, setBookingForm] = useState({
     dates: [] as Date[],
     startTime: "",
@@ -726,17 +728,30 @@ const PerformerProfileView = () => {
 
 
                 <TabsContent value="availability" className="mt-0 space-y-4">
-                  <div>
-                    <h3 className="text-lg font-semibold flex items-center gap-2">
-                      <Clock className="h-5 w-5 text-primary" /> Bookings
-                    </h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Full schedule view. Click a booked date to see details. Send a book performer to confirm a specific date.
-                    </p>
-
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <Clock className="h-5 w-5 text-primary" /> Bookings
+                      </h3>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Full schedule view. Click a booked date to see details. Send a book performer to confirm a specific date.
+                      </p>
+                    </div>
+                    {userId && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="shrink-0"
+                        onClick={() => setCrewProfileOpen(true)}
+                      >
+                        <IdCard className="h-4 w-4 mr-1.5" /> Full Profile & Rider
+                      </Button>
+                    )}
                   </div>
                   {userId && <AvailabilityCalendar userId={userId} readOnly />}
                 </TabsContent>
+
 
 
                 <TabsContent value="rider" className="mt-0 space-y-4">
@@ -957,9 +972,16 @@ const PerformerProfileView = () => {
           )}
         </DialogContent>
       </Dialog>
+      <CrewProfileDialog
+        userId={userId ?? null}
+        userName={profile?.name || undefined}
+        open={crewProfileOpen}
+        onOpenChange={setCrewProfileOpen}
+      />
     </div>
   );
 };
+
 
 const DetailRow = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) => (
   <div className="flex items-start gap-2">

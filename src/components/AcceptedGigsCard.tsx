@@ -38,34 +38,58 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
   const fetchAcceptedGigs = async () => {
     try {
       setErrorMessage(null);
-      const { data, error } = await supabase
-        .from("gig_members")
-        .select(`
-          id,
-          location_sharing_enabled,
-          gigs!inner (
+      const [membersRes, ownedRes] = await Promise.all([
+        supabase
+          .from("gig_members")
+          .select(`
             id,
-            date,
-            venue,
-            notes,
-            loading_time,
-            sound_check_time
-          )
-        `)
-        .eq("member_id", userId)
-        .eq("status", "accepted");
+            location_sharing_enabled,
+            gigs!inner (
+              id,
+              date,
+              venue,
+              notes,
+              loading_time,
+              sound_check_time
+            )
+          `)
+          .eq("member_id", userId)
+          .eq("status", "accepted"),
+        supabase
+          .from("gigs")
+          .select("id, date, venue, notes, loading_time, sound_check_time")
+          .eq("user_id", userId)
+          .in("status", ["confirmed"]),
+      ]);
 
-      if (error) throw error;
+      if (membersRes.error) throw membersRes.error;
+      if (ownedRes.error) throw ownedRes.error;
 
-      const formatted = data?.map((item: any) => ({
+      const memberGigs: AcceptedGig[] = (membersRes.data || []).map((item: any) => ({
         id: item.id,
         location_sharing_enabled: item.location_sharing_enabled,
         gig: item.gigs,
-      })).sort((a: AcceptedGig, b: AcceptedGig) =>
-        new Date(a.gig.date).getTime() - new Date(b.gig.date).getTime()
-      ) || [];
+      }));
 
-      setAcceptedGigs(formatted);
+      const ownedGigs: AcceptedGig[] = (ownedRes.data || []).map((g: any) => ({
+        id: `owned-${g.id}`,
+        location_sharing_enabled: false,
+        gig: g,
+      }));
+
+      // De-dupe in case the owner is also listed as a member
+      const seen = new Set<string>();
+      const combined = [...memberGigs, ...ownedGigs].filter((entry) => {
+        if (seen.has(entry.gig.id)) return false;
+        seen.add(entry.gig.id);
+        return true;
+      });
+
+      combined.sort(
+        (a, b) => new Date(a.gig.date).getTime() - new Date(b.gig.date).getTime()
+      );
+
+      setAcceptedGigs(combined);
     } catch (error: any) {
       console.error("Error fetching accepted gigs:", error);
       setErrorMessage(error?.message || "Unable to load accepted gigs.");

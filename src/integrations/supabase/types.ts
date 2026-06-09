@@ -471,6 +471,7 @@ export type Database = {
           expired_notified_at: string | null
           expires_at: string
           id: string
+          location_sharing_enabled: boolean
           note: string | null
           performer_email: string | null
           performer_id: string
@@ -502,6 +503,7 @@ export type Database = {
           expired_notified_at?: string | null
           expires_at?: string
           id?: string
+          location_sharing_enabled?: boolean
           note?: string | null
           performer_email?: string | null
           performer_id: string
@@ -533,6 +535,7 @@ export type Database = {
           expired_notified_at?: string | null
           expires_at?: string
           id?: string
+          location_sharing_enabled?: boolean
           note?: string | null
           performer_email?: string | null
           performer_id?: string

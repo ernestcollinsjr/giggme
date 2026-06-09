@@ -225,9 +225,10 @@ export default function CrewProfileDialog({
           <div className="py-8 text-center text-muted-foreground text-sm">Loading…</div>
         ) : (
           <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="basic">Basic</TabsTrigger>
               <TabsTrigger value="skills">Skills</TabsTrigger>
+              <TabsTrigger value="rider">Rider</TabsTrigger>
               <TabsTrigger value="travel">Travel</TabsTrigger>
               <TabsTrigger value="media">Media</TabsTrigger>
             </TabsList>

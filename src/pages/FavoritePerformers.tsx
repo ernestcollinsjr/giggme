@@ -153,7 +153,7 @@ const FavoritePerformers = () => {
                   </CardHeader>
                   <CardContent className="p-3 pt-0 space-y-2">
 
-                    <div className="grid grid-cols-2 gap-1.5">
+                    <div className="grid grid-cols-3 gap-1.5">
                       <Button
                         variant="outline"
                         size="sm"
@@ -163,12 +163,21 @@ const FavoritePerformers = () => {
                         <Eye className="h-3 w-3 mr-1" /> View
                       </Button>
                       <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs h-7 px-2 w-full justify-center"
+                        onClick={() => setProfileTarget({ id: f.performer_id, name: a?.stage_name || p?.name || "Performer" })}
+                        title="Open full profile & rider"
+                      >
+                        <IdCard className="h-3 w-3 mr-1" /> Profile
+                      </Button>
+                      <Button
                         size="sm"
                         className="text-xs h-7 px-2 w-full inline-flex items-center justify-center gap-1"
                         onClick={() => navigate(`/messages?conversation=${f.performer_id}`)}
                       >
                         <MessageCircle className="h-3 w-3 shrink-0" />
-                        <span>Message</span>
+                        <span>Msg</span>
                       </Button>
                     </div>
                   </CardContent>

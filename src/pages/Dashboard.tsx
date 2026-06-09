@@ -36,7 +36,7 @@ import { AvailabilityRequestResponder } from "@/components/AvailabilityRequestRe
 import { BandProfileEditor } from "@/components/BandProfileEditor";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
 import RoleSwitcher from "@/components/RoleSwitcher";
-import { MessageSquare, Send, Users as UsersIcon } from "lucide-react";
+import { MessageSquare, Send, Users as UsersIcon, Sparkles } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { formatInTimeZone } from "date-fns-tz";
 import { TopNav } from "@/components/TopNav";

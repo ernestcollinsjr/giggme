@@ -29,6 +29,7 @@ const FavoritePerformers = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [favs, setFavs] = useState<FavRow[]>([]);
+  const [profileTarget, setProfileTarget] = useState<{ id: string; name: string } | null>(null);
 
   const load = async () => {
     setLoading(true);

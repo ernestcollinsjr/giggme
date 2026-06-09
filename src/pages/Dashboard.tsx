@@ -1523,7 +1523,7 @@ const Dashboard = () => {
                                   className="h-16 gap-2"
                                 >
                                   <Sparkles className="h-5 w-5" />
-                                  Book Performers
+                                  Search Performers
                                 </Button>
                                 <Button 
                                   variant="outline"

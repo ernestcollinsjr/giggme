@@ -7,8 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
-import { Music, MapPin, Calendar, DollarSign, Youtube, Search, Filter } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Music, MapPin, Calendar, DollarSign, Youtube, Search, Filter, Users, X, Send } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
+import { normalizeRole } from "@/lib/roles";
 
 interface ArtistWithProfile {
   id: string;

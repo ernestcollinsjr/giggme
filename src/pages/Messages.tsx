@@ -195,6 +195,7 @@ const Messages = () => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingChannelRef = useRef<RealtimeChannel | null>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
+  const [justSentId, setJustSentId] = useState<string | null>(null);
 
   // Bubble color customization - per conversation
   const [conversationColors, setConversationColors] = useState<Record<string, string>>(() => {

@@ -33,12 +33,24 @@ serve(async (req) => {
 
     console.log('Sending push notification to user:', user_id);
 
-    // Get user's push tokens
+    // Get user's notification preferences (sound choice + mute state)
+    const ALLOWED_SOUNDS = new Set(['chime', 'bell', 'ding']);
+    const DEFAULT_SOUND = 'chime';
+    const { data: prefs } = await supabase
+      .from('notification_preferences')
+      .select('sound_muted, sound_type')
+      .eq('user_id', user_id)
+      .maybeSingle();
+
+    const rawSound = (prefs as any)?.sound_type ?? DEFAULT_SOUND;
+    const soundType = ALLOWED_SOUNDS.has(rawSound) ? rawSound : DEFAULT_SOUND;
+    const muted = (prefs as any)?.sound_muted === true;
+
+    // Get user's push tokens (all platforms; we tailor the payload below)
     const { data: tokens, error: tokensError } = await supabase
       .from('push_tokens')
       .select('*')
-      .eq('user_id', user_id)
-      .eq('platform', 'web');
+      .eq('user_id', user_id);
 
     if (tokensError) {
       console.error('Error fetching tokens:', tokensError);
@@ -53,11 +65,43 @@ serve(async (req) => {
       );
     }
 
-    const payload = JSON.stringify({
+    // Web payload — service worker reads `sound` to play the matching tone.
+    // (Web Push spec has no native sound field; the SW plays /sounds/<type>.mp3.)
+    const webPayload = JSON.stringify({
       title: title || 'Notification',
       body: body || '',
       url: url || '/',
+      sound: muted ? null : soundType,
       ...data,
+    });
+
+    // Native payload — APNs + FCM read the sound from these standard fields.
+    const nativePayload = JSON.stringify({
+      notification: {
+        title: title || 'Notification',
+        body: body || '',
+        // Android: filename in res/raw, no extension. "default" = system sound.
+        sound: muted ? 'default' : soundType,
+      },
+      data: {
+        url: url || '/',
+        sound: muted ? '' : soundType,
+        ...data,
+      },
+      apns: {
+        payload: {
+          aps: {
+            alert: { title: title || 'Notification', body: body || '' },
+            // iOS: filename in app bundle, extension required.
+            sound: muted ? 'default' : `${soundType}.caf`,
+          },
+        },
+      },
+      android: {
+        notification: {
+          sound: muted ? 'default' : soundType,
+        },
+      },
     });
 
     const results = [];

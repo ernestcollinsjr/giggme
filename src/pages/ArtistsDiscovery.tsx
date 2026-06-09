@@ -256,10 +256,10 @@ const ArtistsDiscovery = () => {
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Discover Artists & Musicians
+            My Roster
           </h1>
           <p className="text-muted-foreground mb-6">
-            Find talented artists and musicians for your next event
+            Browse and manage the performers on your roster
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4">

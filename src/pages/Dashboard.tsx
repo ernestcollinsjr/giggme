@@ -1514,8 +1514,8 @@ const Dashboard = () => {
                                   onClick={() => navigate("/artists")}
                                   className="h-16 gap-2"
                                 >
-                                  <Search className="h-5 w-5" />
-                                  Discover Artists
+                                  <UsersIcon className="h-5 w-5" />
+                                  My Roster
                                 </Button>
                                 <Button 
                                   variant="outline"

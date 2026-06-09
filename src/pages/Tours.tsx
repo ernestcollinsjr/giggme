@@ -14,6 +14,7 @@ import { PlaceAutocomplete } from "@/components/PlaceAutocomplete";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { CREW_TYPES, CREW_TYPE_LABELS } from "@/lib/crewTypes";
 
 interface Tour {
   id: string;

@@ -194,6 +194,7 @@ const Messages = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingChannelRef = useRef<RealtimeChannel | null>(null);
+  const remoteTypingTimeoutsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const realtimeRefreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const realtimeFallbackIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
@@ -686,6 +687,8 @@ const Messages = () => {
   useEffect(() => {
     return () => {
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      remoteTypingTimeoutsRef.current.forEach((timeout) => clearTimeout(timeout));
+      remoteTypingTimeoutsRef.current.clear();
     };
   }, []);
 

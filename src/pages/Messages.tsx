@@ -82,6 +82,15 @@ interface ReadReceipt {
   read_at: string;
 }
 
+interface TypingStatus {
+  conversation_key: string;
+  user_id: string;
+  recipient_id: string | null;
+  is_group: boolean;
+  is_typing: boolean;
+  updated_at: string;
+}
+
 const EMOJI_OPTIONS = ['👍', '❤️', '😂', '😮', '😢', '🎉'];
 
 // Bubble color options
@@ -196,6 +205,8 @@ const Messages = () => {
   const typingChannelRef = useRef<RealtimeChannel | null>(null);
   const profilesRef = useRef<Record<string, Profile>>({});
   const remoteTypingTimeoutsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  const typingStatusPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lastTypingPersistRef = useRef<{ isTyping: boolean; sentAt: number }>({ isTyping: false, sentAt: 0 });
   const realtimeRefreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const realtimeFallbackIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
@@ -602,6 +613,63 @@ const Messages = () => {
     }
   }, [userId, userRole, allowedMemberIds]);
 
+  const getTypingConversationKey = useCallback((conversation: Conversation | null = activeConversation) => {
+    if (!userId || !conversation) return null;
+    if (conversation.isGroup) return "group";
+    return conversation.participantId ? [userId, conversation.participantId].sort().join('-') : null;
+  }, [activeConversation, userId]);
+
+  const setRemoteTyping = useCallback((remoteUserId: string, name: string | null | undefined, isTyping: boolean) => {
+    if (!remoteUserId || remoteUserId === userId) return;
+
+    const existingTimeout = remoteTypingTimeoutsRef.current.get(remoteUserId);
+    if (existingTimeout) clearTimeout(existingTimeout);
+
+    setTypingUsers((prev) => {
+      const next = new Map(prev);
+      if (isTyping) {
+        next.set(remoteUserId, name || profilesRef.current[remoteUserId]?.name || 'Someone');
+      } else {
+        next.delete(remoteUserId);
+      }
+      return next;
+    });
+
+    if (isTyping) {
+      const timeout = setTimeout(() => {
+        setTypingUsers((prev) => {
+          const next = new Map(prev);
+          next.delete(remoteUserId);
+          return next;
+        });
+        remoteTypingTimeoutsRef.current.delete(remoteUserId);
+      }, 4500);
+      remoteTypingTimeoutsRef.current.set(remoteUserId, timeout);
+    } else {
+      remoteTypingTimeoutsRef.current.delete(remoteUserId);
+    }
+  }, [userId]);
+
+  const applyTypingStatus = useCallback((status: TypingStatus | null | undefined) => {
+    if (!status || status.user_id === userId) return;
+    const isRecent = Date.now() - new Date(status.updated_at).getTime() < 4500;
+    setRemoteTyping(status.user_id, profilesRef.current[status.user_id]?.name, Boolean(status.is_typing && isRecent));
+  }, [setRemoteTyping, userId]);
+
+  const fetchTypingStatuses = useCallback(async () => {
+    const conversationKey = getTypingConversationKey();
+    if (!conversationKey || !userId) return;
+
+    const { data } = await supabase
+      .from("message_typing_status")
+      .select("conversation_key, user_id, recipient_id, is_group, is_typing, updated_at")
+      .eq("conversation_key", conversationKey)
+      .neq("user_id", userId)
+      .gte("updated_at", new Date(Date.now() - 4500).toISOString());
+
+    (data as TypingStatus[] | null)?.forEach(applyTypingStatus);
+  }, [applyTypingStatus, getTypingConversationKey, userId]);
+
   // Set up typing indicator channel
   useEffect(() => {
     if (!userId || !activeConversation) {
@@ -609,53 +677,21 @@ const Messages = () => {
         supabase.removeChannel(typingChannelRef.current);
         typingChannelRef.current = null;
       }
+      setTypingUsers(new Map());
       return;
     }
 
-    let channelName: string;
-    if (activeConversation.isGroup) {
-      channelName = `typing:group`;
-    } else if (activeConversation.participantId) {
-      const channelIds = [userId, activeConversation.participantId].sort().join('-');
-      channelName = `typing:${channelIds}`;
-    } else {
+    const conversationKey = getTypingConversationKey(activeConversation);
+    if (!conversationKey) {
       return;
     }
+
+    setTypingUsers(new Map());
+    const channelName = `typing:${conversationKey}`;
 
     const channel = supabase.channel(channelName, {
       config: { presence: { key: userId } }
     });
-
-    const setRemoteTyping = (remoteUserId: string, name: string, isTyping: boolean) => {
-      if (!remoteUserId || remoteUserId === userId) return;
-
-      const existingTimeout = remoteTypingTimeoutsRef.current.get(remoteUserId);
-      if (existingTimeout) clearTimeout(existingTimeout);
-
-      setTypingUsers((prev) => {
-        const next = new Map(prev);
-        if (isTyping) {
-          next.set(remoteUserId, name || profilesRef.current[remoteUserId]?.name || 'Someone');
-        } else {
-          next.delete(remoteUserId);
-        }
-        return next;
-      });
-
-      if (isTyping) {
-        const timeout = setTimeout(() => {
-          setTypingUsers((prev) => {
-            const next = new Map(prev);
-            next.delete(remoteUserId);
-            return next;
-          });
-          remoteTypingTimeoutsRef.current.delete(remoteUserId);
-        }, 3500);
-        remoteTypingTimeoutsRef.current.set(remoteUserId, timeout);
-      } else {
-        remoteTypingTimeoutsRef.current.delete(remoteUserId);
-      }
-    };
 
     channel
       .on('presence', { event: 'sync' }, () => {
@@ -678,6 +714,18 @@ const Messages = () => {
       .on('broadcast', { event: 'typing' }, ({ payload }) => {
         setRemoteTyping(payload?.userId, payload?.name, Boolean(payload?.isTyping));
       })
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "message_typing_status", filter: `conversation_key=eq.${conversationKey}` },
+        (payload) => {
+          if (payload.eventType === "DELETE") {
+            const oldStatus = payload.old as TypingStatus;
+            setRemoteTyping(oldStatus.user_id, profilesRef.current[oldStatus.user_id]?.name, false);
+            return;
+          }
+          applyTypingStatus(payload.new as TypingStatus);
+        }
+      )
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
           const myProfile = profilesRef.current[userId];
@@ -686,18 +734,25 @@ const Messages = () => {
             name: myProfile?.name || 'User',
             isTyping: false,
           });
+          fetchTypingStatuses();
         }
       });
 
     typingChannelRef.current = channel;
+    typingStatusPollRef.current = setInterval(fetchTypingStatuses, 1500);
 
     return () => {
+      setTypingUsers(new Map());
+      if (typingStatusPollRef.current) {
+        clearInterval(typingStatusPollRef.current);
+        typingStatusPollRef.current = null;
+      }
       if (typingChannelRef.current) {
         supabase.removeChannel(typingChannelRef.current);
         typingChannelRef.current = null;
       }
     };
-  }, [activeConversation?.participantId, activeConversation?.isGroup, userId]);
+  }, [activeConversation?.participantId, activeConversation?.isGroup, applyTypingStatus, fetchTypingStatuses, getTypingConversationKey, setRemoteTyping, userId]);
 
   // Keep profiles ref in sync without re-subscribing typing channel
   useEffect(() => {
@@ -706,6 +761,15 @@ const Messages = () => {
 
   const broadcastTyping = useCallback((isTyping: boolean) => {
     if (!typingChannelRef.current || !userId) return;
+    const conversationKey = getTypingConversationKey();
+    if (!conversationKey || !activeConversation) return;
+
+    const now = Date.now();
+    if (isTyping && lastTypingPersistRef.current.isTyping && now - lastTypingPersistRef.current.sentAt < 900) {
+      return;
+    }
+    lastTypingPersistRef.current = { isTyping, sentAt: now };
+
     const myProfile = profilesRef.current[userId];
     const payload = {
       userId,
@@ -715,10 +779,22 @@ const Messages = () => {
 
     typingChannelRef.current.track(payload);
     typingChannelRef.current.send({ type: 'broadcast', event: 'typing', payload });
-  }, [userId]);
+    supabase
+      .from("message_typing_status")
+      .upsert({
+        conversation_key: conversationKey,
+        user_id: userId,
+        recipient_id: activeConversation.isGroup ? null : activeConversation.participantId!,
+        is_group: activeConversation.isGroup,
+        is_typing: isTyping,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "conversation_key,user_id" })
+      .then(({ error }) => {
+        if (error) console.error("Failed to update typing status:", error);
+      });
+  }, [activeConversation, getTypingConversationKey, userId]);
 
   const handleTextChange = useCallback((value: string) => {
-    console.log("handleTextChange called with:", value);
     setText(value);
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     if (value.trim()) {

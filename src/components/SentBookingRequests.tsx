@@ -293,16 +293,16 @@ export const SentBookingRequests = () => {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="active" className="mt-3">
-              {active.length === 0 ? (
+              {activeCards.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-6">
                   No active book performers.
                 </p>
               ) : (
-                <div className="space-y-2">{active.map((r) => renderRow(r, false))}</div>
+                <div className="space-y-2">{activeCards.map((r) => renderRow(r, false))}</div>
               )}
             </TabsContent>
             <TabsContent value="archive" className="mt-3 space-y-3">
-              {archive.length === 0 ? (
+              {archiveCards.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-6">
                   No completed bookings yet.
                 </p>
@@ -319,7 +319,7 @@ export const SentBookingRequests = () => {
                       </span>
                     </div>
                   )}
-                  <div className="space-y-2">{archive.map((r) => renderRow(r, true))}</div>
+                  <div className="space-y-2">{archiveCards.map((r) => renderRow(r, true))}</div>
                 </>
               )}
             </TabsContent>

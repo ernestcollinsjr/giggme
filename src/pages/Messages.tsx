@@ -194,6 +194,8 @@ const Messages = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingChannelRef = useRef<RealtimeChannel | null>(null);
+  const realtimeRefreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const realtimeFallbackIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [justSentId, setJustSentId] = useState<string | null>(null);
 
@@ -253,6 +255,22 @@ const Messages = () => {
   }>({ messageId: null, startX: 0, currentX: 0, isOwn: false });
 
   const SWIPE_THRESHOLD = 80;
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session?.access_token) {
+        supabase.realtime.setAuth(data.session.access_token);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.access_token) {
+        supabase.realtime.setAuth(session.access_token);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Combined touch handlers for long press and swipe
   const handleTouchStart = useCallback((message: Message, e: React.TouchEvent, isOwn: boolean) => {

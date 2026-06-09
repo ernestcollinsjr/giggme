@@ -73,7 +73,7 @@ export const AcceptedGigsCard = ({ userId }: AcceptedGigsCardProps) => {
 
       const ownedGigs: AcceptedGig[] = (ownedRes.data || []).map((g: any) => ({
         id: `owned-${g.id}`,
-        location_sharing_enabled: false,
+        location_sharing_enabled: true,
         gig: g,
       }));
 

@@ -922,6 +922,17 @@ const Bookings = () => {
   };
 
   const handleDeleteGig = async (id: string) => {
+    // Optimistically remove from UI so the action shows immediately
+    const prevGigs = gigs;
+    setGigs((prev) => prev.filter((g) => g.id !== id));
+    setGigResponseCounts((prev) => {
+      const { [id]: _omit, ...rest } = prev;
+      return rest;
+    });
+    setGigRehearsals((prev) => {
+      const { [id]: _omit, ...rest } = prev;
+      return rest;
+    });
     try {
       const { error } = await supabase
         .from("gigs")
@@ -934,9 +945,9 @@ const Bookings = () => {
         title: "Gig deleted",
         description: "The gig has been removed.",
       });
-
-      checkAuthAndFetchData();
     } catch (error: any) {
+      // Roll back optimistic update on failure
+      setGigs(prevGigs);
       toast({
         variant: "destructive",
         title: "Failed to delete gig",
@@ -944,6 +955,7 @@ const Bookings = () => {
       });
     }
   };
+
 
   const handleDeleteBookingRequest = async (id: string) => {
     if (!confirm("Delete this book performer? This cannot be undone.")) return;

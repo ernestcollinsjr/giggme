@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { normalizeRole, type ActiveRole } from "@/lib/roles";
+import { usePushSoundListener } from "@/hooks/usePushSoundListener";
 
 /**
  * Persistent layout: renders the desktop sidebar/topbar shell once and keeps it
